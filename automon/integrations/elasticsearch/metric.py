@@ -37,7 +37,7 @@ class Metric:
             }
           }
         },
-        "threads" : {
+        "threading" : {
           "count" : 141,
           "peak_count" : 223
         },
@@ -86,7 +86,7 @@ class Metric:
         self._timestamp = self.jvm['timestamp']
         self._uptime_in_millis = self.jvm['uptime_in_millis']
         self._gc = self.jvm['gc']
-        self._threads = self.jvm['threads']
+        self._threads = self.jvm['threading']
         self._buffer_pools = self.jvm['buffer_pools']
         self._classes = self.jvm['classes']
 
