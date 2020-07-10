@@ -1,2 +1,1 @@
-# automon-core
-Automonitoring core libraries
+# Automonitoring core libraries
