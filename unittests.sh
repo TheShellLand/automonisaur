@@ -1,5 +1,8 @@
 #!/bin/bash
 
 set -ex
+cd $(dirname $0)
 
-pytest --cov=automon --cov-report html automon
+# TODO: set pre-commit hook
+
+pytest --cov=automon --cov-report term automon
