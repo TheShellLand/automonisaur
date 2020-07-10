@@ -3,6 +3,7 @@ import warnings
 
 from automon.logger import Logging
 from automon.integrations.slack.config import ConfigSlack
+from automon.helpers.sanitation import Sanitation
 
 log = Logging('config')
 
@@ -39,3 +40,22 @@ class ConfigESJVMBot:
         self.slack_proxy = ConfigSlack.slack_proxy
         warnings.warn('self.slack_proxy is depreciated, use self.slack.slack_proxy instead', DeprecationWarning)
         self.elasticsearch_endpoint = ConfigES.elasticsearch_endpoint
+
+
+class ElasticsearchConfig:
+
+    def __init__(self, proxy=None):
+        self.hosts = []
+        self.proxy = proxy
+
+        hosts = os.getenv('ELASTICSEARCH_HOSTS')
+
+        if ',' in hosts:
+            hosts = hosts.split(',')
+        elif ' ' in hosts:
+            hosts = hosts.split(' ')
+
+        for host in hosts:
+            host = Sanitation.no_spaces(host)
+            host = Sanitation.no_quotes(host)
+            self.hosts.append(host)
