@@ -3,11 +3,10 @@ import traceback
 
 from json import dumps
 
-from automon.slack import Slack
-from automon.config import ConfigSlack
+from automon.integrations.slack import Slack
 from automon.helpers.asyncio_ import AsyncStarter
-from automon.slack_formatting import Emoji, Chat, Format
-from automon.logger import Logging, DEBUG, INFO, WARN, ERROR, CRITICAL, NOTSET
+from automon.integrations.slack import Emoji, Chat, Format
+from automon.logger import Logging, DEBUG, INFO, WARN, ERROR, CRITICAL
 
 log = Logging('slacklogger', level=ERROR)
 
@@ -148,7 +147,7 @@ class SlackLogging(Slack):
             if text is None:
                 break
 
-    async def _put_queue(self, level: str, channel: str, msg: str):
+    async def _put_queue(self, level: int, channel: str, msg: str or None):
         await self.queue.put((level, channel, msg))
 
     def run_until_complete(self):
@@ -173,10 +172,10 @@ class SlackLogging(Slack):
     def debug(self, msg: str) -> asyncio.tasks:
         asyncio.run(self._put_queue(DEBUG, self._debug_channel, msg))
 
-    def error(self, msg: str) -> asyncio.tasks:
+    def error(self, msg: str = None) -> asyncio.tasks:
         asyncio.run(self._put_queue(ERROR, self._error_channel, msg))
 
-    def critical(self, msg: str) -> asyncio.tasks:
+    def critical(self, msg: str = None) -> asyncio.tasks:
         asyncio.run(self._put_queue(CRITICAL, self._critical_channel, msg))
 
     def test(self, msg: str) -> asyncio.tasks:

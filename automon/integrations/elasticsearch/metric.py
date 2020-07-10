@@ -1,37 +1,4 @@
-import json
 import datetime
-import requests
-
-
-class ElasticsearchJvmMonitor:
-    def __init__(self, elasticsearch_endpoint):
-
-        self.endpoint = elasticsearch_endpoint
-        self._all_stats = None
-
-    def _get_all_stats(self, file=None):
-
-        if file:
-            with open(file, 'rb') as stats:
-                self._all_stats = json.load(stats)
-        else:
-            url = '{endpoint}/_nodes/stats?pretty'.format(endpoint=self.endpoint)
-
-            request_json = requests.get(url).content
-            self._all_stats = json.loads(request_json)
-
-    def _get_all_jvm_metrics(self):
-        metrics = self._all_stats
-        self.cluster = Cluster(metrics)
-
-    def read_file(self, file):
-        self._get_all_stats(file=file)
-
-    def get_metrics(self):
-        if not self._all_stats:
-            self._get_all_stats()
-
-        self._get_all_jvm_metrics()
 
 
 class Metric:
@@ -189,23 +156,3 @@ class MetricTimestamp(Metric):
             return NotImplemented
 
         return self.node_name == other.node_name
-
-
-class Cluster:
-    def __init__(self, raw_metrics):
-        self._all_metrics = raw_metrics
-        self._nodes = {
-            'total': self._all_metrics['_nodes']['total'],
-            'successful': self._all_metrics['_nodes']['successful'],
-            'failed': self._all_metrics['_nodes']['failed']
-        }
-
-        self.cluster_name = self._all_metrics['cluster_name']
-        self.nodes = []
-        self.metrics = []
-
-        for node in self._all_metrics['nodes'].items():
-            self.nodes.append(node[1])
-
-        for metric in self.nodes:
-            self.metrics.append(Metric(metric))

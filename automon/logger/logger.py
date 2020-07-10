@@ -3,7 +3,7 @@ import traceback
 
 from logging import DEBUG, INFO, WARN, ERROR, CRITICAL, NOTSET
 
-from automon.slack_formatting import Chat, Format
+from automon.integrations.slack.slack_formatting import Chat, Format
 
 log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
 # logging.basicConfig(format=log_format)

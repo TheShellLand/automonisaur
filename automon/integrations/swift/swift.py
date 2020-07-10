@@ -1,17 +1,16 @@
 import os
 import re
 import time
-import shutil
+import warnings
 import datetime
 
-from swiftclient.service import SwiftService, SwiftError, SwiftCopyObject
+from swiftclient.service import SwiftService, SwiftError
 
-from automon.logger import Logging, DEBUG, INFO, WARN, ERROR, CRITICAL
-from automon.slack_logger import SlackLogging
-
+from automon.logger import Logging, INFO, CRITICAL
+from automon.integrations.slack.slack_logger import SlackLogging
 
 log = Logging('swift', INFO).logging
-slacklog = SlackLogging(username='malsharebot', change_user=False, debug=False)
+slacklog = SlackLogging(change_user=False, debug=False)
 
 Logging('requests', CRITICAL)
 Logging('swiftclient', CRITICAL)
@@ -571,4 +570,4 @@ class Swift:
                 slacklog.error()
 
     def restore(self):
-        return NotImplemented
+        return warnings.warn(NotImplemented)
