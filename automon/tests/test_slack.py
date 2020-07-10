@@ -1,5 +1,5 @@
-from automon.slack import Slack
-from automon.config import ConfigSlack
+from automon.integrations.slack.slack import Slack
+from automon.integrations.slack.config import ConfigSlack
 
 
 def test_slack_test_message():
