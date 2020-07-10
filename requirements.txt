@@ -1,5 +1,4 @@
 # prerequisites
-pytest==5.2.1
 requests==2.22.0
 
 # flask
