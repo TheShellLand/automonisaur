@@ -1,28 +1,16 @@
 import os
 
 from automon.logger import Logging
-from automon.helpers.sanitation import Sanitation
+from automon.helpers.sanitation import Sanitation as S
 
 log = Logging('config')
 
 
-def fix_endpoints(endpoints: str) -> list:
-    if not endpoints:
-        return
-
-    if ',' in endpoints:
-        endpoints = endpoints.split(',')
-    elif ' ' in endpoints:
-        endpoints = endpoints.split(' ')
-
-    return Sanitation.strip_spaces_from_list(endpoints)
-
-
 class ElasticsearchConfig:
     def __init__(self, endpoints: str = None, proxy=None):
-        self.es_hosts = fix_endpoints(endpoints) if endpoints else \
-            fix_endpoints(os.getenv('ELASTICSEARCH_ENDPOINT')) or \
-            fix_endpoints(os.getenv('ELASTICSEARCH_HOSTS'))
+        self.es_hosts = S.list_from_string(endpoints) if endpoints else \
+            S.list_from_string(os.getenv('ELASTICSEARCH_ENDPOINT')) or \
+            S.list_from_string(os.getenv('ELASTICSEARCH_HOSTS'))
         self.es_proxy = proxy
 
         if not self.es_hosts:
