@@ -19,13 +19,13 @@ class LogStream(object):
     def __init__(self):
         self.logs = ''
 
-    def write(self, string):
+    def write(self, string: str) -> str:
         self.logs += string
 
     def flush(self):
         pass
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.logs
 
 
@@ -56,23 +56,23 @@ class Logging:
 
         log.debug('loaded')
 
-    def error(self, msg, enable_traceback: bool = True):
+    def error(self, msg: str, enable_traceback: bool = True) -> logging.error:
         tb = traceback.format_exc()
         # tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb and enable_traceback:
             self.logging.error(tb)
         return self.logging.error(msg)
 
-    def warning(self, msg):
+    def warning(self, msg: str) -> logging.warning:
         return self.logging.warning(msg)
 
-    def info(self, msg):
+    def info(self, msg: str) -> logging.info:
         return self.logging.info(msg)
 
-    def debug(self, msg):
+    def debug(self, msg: str) -> logging.debug:
         return self.logging.debug(msg)
 
-    def critical(self, msg):
+    def critical(self, msg: str) -> logging.critical:
         tb = traceback.format_exc()
         tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb:
