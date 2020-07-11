@@ -4,7 +4,7 @@ from string import (ascii_letters, digits)
 class Sanitation:
 
     @staticmethod
-    def no_quotes(text):
+    def strip_quotes(text):
         removed_chars = ['"', "'"]
 
         text = str(text)
@@ -27,14 +27,14 @@ class Sanitation:
     def strip_spaces_from_list(lst: list) -> list:
         removed_chars = ' '
 
-        new = list()
+        new_list = list()
 
         for item in lst:
             item = str(item)
             item = item.strip(removed_chars)
-            new.append(item)
+            new_list.append(item)
 
-        return new
+        return new_list
 
     @staticmethod
     def safe_string(text):
@@ -62,3 +62,29 @@ class Sanitation:
                 new_list.append(item)
 
         return new_list
+
+    @staticmethod
+    def list_from_string(string: str) -> list:
+        if not string:
+            return list()
+
+        new_lst = list()
+
+        if ',' in string:
+            new_lst = string.split(',')
+        elif ' ' in string:
+            new_lst = string.split(' ')
+        else:
+            string = Sanitation.strip_quotes(string)
+            string = Sanitation.strip_spaces(string)
+            new_lst.append(string)
+            return new_lst
+
+        # TODO: clean list before returning it
+
+        for item in new_lst:
+            item = Sanitation.strip_quotes(item)
+            item = Sanitation.strip_spaces(item)
+            new_lst.append(item)
+
+        return Sanitation.strip_spaces_from_list(new_lst)

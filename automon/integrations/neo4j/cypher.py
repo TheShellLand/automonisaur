@@ -20,17 +20,18 @@ class Neo4jWrapper:
 
         self.user = self.config.user
         self.password = self.config.password
-        self.servers = self.config.servers
+        self.hosts = self.config.hosts
 
-        for server in self.servers:
+        for server in self.hosts:
             try:
-                self.driver = GraphDatabase.driver(server, auth=(self.user, self.password))
+                self.neo4j = GraphDatabase.driver(server, auth=(self.user, self.password))
+                self.driver = self.neo4j
                 log.info(f'Connected to neo4j server: {server}')
             except:
-                self.driver = None
+                self.neo4j = None
                 log.error(f'Cannot connect to neo4j server: {server}')
         else:
-            self.driver = None
+            self.neo4j = None
 
     def _prepare_dict(self, blob: dict) -> dict:
         """All inputs first needs to dicts"""
@@ -48,10 +49,10 @@ class Neo4jWrapper:
         gets to this function all prior checks have passed. Also, create a last check in
         this function for general cypher query-ness"""
 
-        if self.driver is None:
+        if self.neo4j is None:
             return
 
-        with self.driver.session() as session:
+        with self.neo4j.session() as session:
             results = session.run(cypher)
 
         log.debug(f'Cypher: {cypher}')
