@@ -1,5 +1,4 @@
 import os
-import warnings
 
 from automon.logger import Logging
 from automon.helpers.sanitation import Sanitation
@@ -7,44 +6,38 @@ from automon.helpers.sanitation import Sanitation
 log = Logging('config')
 
 
-class ConfigES:
-    elasticsearch_endpoint = os.getenv('ELASTICSEARCH_ENDPOINT') or os.getenv('ELASTICSEARCH_HOSTS')
+def fix_endpoints(endpoints: str) -> list:
+    if not endpoints:
+        return
 
-    def __init__(self):
-        if not self.elasticsearch_endpoint:
-            log.error(f'elasticsearch endpoint missing: {self.elasticsearch_endpoint}')
+    if ',' in endpoints:
+        endpoints = endpoints.split(',')
+    elif ' ' in endpoints:
+        endpoints = endpoints.split(' ')
 
-
-class ConfigESSnapshotBot:
-    def __init__(self):
-        self.slack_name = 'Elasticsearch Elasticsearch Daily Monitor bot'
-        self.elasticsearch_endpoint = ConfigES.elasticsearch_endpoint
-        self.elasticsearch_repository = os.getenv('ELASTICSEARCH_REPOSITORY')
-        self.snapshots_prefix = os.getenv('SNAPSHOTS_PREFIX')
-
-
-class ConfigESJVMBot:
-    def __init__(self):
-        self.slack_name = 'Elasticsearch JVM Monitor bot'
-        self.elasticsearch_endpoint = ConfigES.elasticsearch_endpoint
+    return Sanitation.strip_spaces_from_list(endpoints)
 
 
 class ElasticsearchConfig:
+    def __init__(self, endpoints: str = None, proxy=None):
+        self.es_hosts = fix_endpoints(endpoints) if endpoints else \
+            fix_endpoints(os.getenv('ELASTICSEARCH_ENDPOINT')) or \
+            fix_endpoints(os.getenv('ELASTICSEARCH_HOSTS'))
+        self.es_proxy = proxy
 
-    def __init__(self, proxy=None):
-        self.hosts = []
-        self.proxy = proxy
+        if not self.es_hosts:
+            log.error(f'Missing {__name__} arg endpoints')
 
-        hosts = ConfigES.elasticsearch_endpoint
 
-        if hosts:
+class SnapshotBot:
+    def __init__(self):
+        self.slack_name = 'Elasticsearch Daily Monitor bot'
+        self.es_hosts = ElasticsearchConfig().es_hosts
+        self.es_repository = os.getenv('ELASTICSEARCH_REPOSITORY')
+        self.snapshots_prefix = os.getenv('SNAPSHOTS_PREFIX')
 
-            if ',' in hosts:
-                hosts = hosts.split(',')
-            elif ' ' in hosts:
-                hosts = hosts.split(' ')
 
-            for host in hosts:
-                host = Sanitation.no_spaces(host)
-                host = Sanitation.no_quotes(host)
-                self.hosts.append(host)
+class JVMBot:
+    def __init__(self):
+        self.slack_name = 'Elasticsearch JVM Monitor bot'
+        self.es_hosts = ElasticsearchConfig().es_hosts

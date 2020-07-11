@@ -15,13 +15,26 @@ class Sanitation:
         return text
 
     @staticmethod
-    def no_spaces(text):
+    def strip_spaces(text: str) -> str:
         removed_chars = ' '
 
         text = str(text)
         text = text.strip(removed_chars)
 
         return text
+
+    @staticmethod
+    def strip_spaces_from_list(lst: list) -> list:
+        removed_chars = ' '
+
+        new = list()
+
+        for item in lst:
+            item = str(item)
+            item = item.strip(removed_chars)
+            new.append(item)
+
+        return new
 
     @staticmethod
     def safe_string(text):
