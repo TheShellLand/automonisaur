@@ -1,36 +1,20 @@
-import logging
-import warnings
 import elasticsearch
-
-from logging import DEBUG, INFO, WARNING
 
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 
+from automon.logger import Logging
 
-# logging.basicConfig(level=WARNING)
+log = Logging(__name__, Logging.ERROR)
 
 
-class ElasticsearchConnect:
-    """Elasticsearch Connector
+class Cleanup:
 
-    """
-
-    def __init__(self, hosts=['elasticsearch:9200'], request_timeout=10,
-                 http_auth=None, use_ssl=True, verify_certs=True,
+    def __init__(self, hosts: list = None, request_timeout: int = 10,
+                 http_auth=None, use_ssl: bool = True, verify_certs: bool = True,
                  connection_class=RequestsHttpConnection):
-        """
 
-        :param hosts: List of host:port
-        :param request_timeout: Timeout in seconds
-        :param http_auth:
-        :param use_ssl:
-        :param verify_certs:
-        :param connection_class:
-        """
-        warnings.warn('Test fails if there are more than 2 failed hosts before a successful Elasticsearch connection')
-
-        self.eswrapper = Elasticsearch(
-            hosts=hosts,
+        self.elasticsearch = Elasticsearch(
+            hosts=hosts if hosts else ['elasticsearch:9200'],
             request_timeout=request_timeout,
             http_auth=http_auth,
             use_ssl=use_ssl,
@@ -42,17 +26,17 @@ class ElasticsearchConnect:
 
     def search_indices(self, index_pattern):
         try:
-            retrieved_indices = self.eswrapper.indices.get(index_pattern)
+            retrieved_indices = self.elasticsearch.indices.get(index_pattern)
             num_indices = len(retrieved_indices)
 
             msg = 'Search found {} indices'
             msg = msg.format(num_indices)
-            logging.info(msg)
+            log.info(msg)
             return retrieved_indices
         except elasticsearch.exceptions.NotFoundError:
             msg = '''You provided the index pattern '{}', but searches returned fruitless'''
             msg = msg.format(index_pattern)
-            logging.error(msg)
+            log.error(msg)
 
     def delete_indices(self, index_pattern):
 
@@ -61,7 +45,7 @@ class ElasticsearchConnect:
 
         msg = 'Search found {} indices'
         msg = msg.format(num_indices)
-        logging.info(msg)
+        log.info(msg)
 
         if not num_indices:
             msg = '''No indices found. exiting'''
@@ -93,17 +77,17 @@ class ElasticsearchConnect:
                 msg = msg.format(index)
                 print(msg, end='')
                 # Delete the index
-                self.eswrapper.indices.delete(index=index)
+                self.elasticsearch.indices.delete(index=index)
                 print('done')
         else:
             msg = '''Whew, you might have just blew it, if you had said yes'''
             print(msg)
 
     def get_indices(self):
-        retrieved_indices = self.eswrapper.indices.get('*')
+        retrieved_indices = self.elasticsearch.indices.get('*')
         num_indices = len(retrieved_indices)
 
         self.indices = retrieved_indices
         msg = 'Retrieved {} indices'
         msg = msg.format(num_indices)
-        logging.info(msg)
+        log.info(msg)
