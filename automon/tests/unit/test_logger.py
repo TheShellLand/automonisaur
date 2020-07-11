@@ -15,9 +15,9 @@ class LoggerTest(unittest.TestCase):
 
     def test_logstream(self):
         self.assertTrue(LogStream())
-        self.assertTrue(f'{LogStream()}')
-        self.assertTrue(LogStream().flush())
-        self.assertTrue(LogStream().write())
+        self.assertFalse(f'{LogStream()}')
+        self.assertIsNone(LogStream().flush())
+        self.assertIsNone(LogStream().write('test'))
 
 # if __name__ == '__main__':
 #     unittest.main()
