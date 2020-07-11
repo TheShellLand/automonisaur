@@ -1,8 +1,14 @@
 #!/bin/bash
 
-set -ex
+set -e
 cd $(dirname $0)
 
 # TODO: set pre-commit hook
 
-pytest --cov=automon --cov-report term automon
+if [ -z "$@" ]; then
+  pytest --cov=automon --cov-report term automon
+elif [ "$@" == "html" ]; then
+    pytest --cov=automon --cov-report html automon
+else
+  pytest --cov=automon --cov-report term "$@"
+fi
