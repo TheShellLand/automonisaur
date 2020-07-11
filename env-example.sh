@@ -15,3 +15,14 @@ export OS_REGION_NAME=""
 export OS_INTERFACE=public
 export OS_IDENTITY_API_VERSION=3
 export SWIFTCLIENT_INSECURE=True
+
+# Shodan
+export SHODAN_API=
+
+# Neo4j
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=neo4j
+
+# Elasticsearch
+NEO4J_SERVERS="bolt://neo4j:7687"
+ELASTICSEARCH_HOSTS="elasticsearch"
