@@ -9,4 +9,4 @@ DOCKERNAME=automon-core
 
 ./build.sh
 
-docker run --rm $DOCKERNAME test
+docker run --rm $DOCKERNAME test "$@"
