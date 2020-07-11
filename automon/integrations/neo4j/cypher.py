@@ -1,60 +1,61 @@
-import logging
+import neo4j
 
 from urllib.parse import urlencode
 from datetime import datetime, timezone
 from neo4j import GraphDatabase
 
+from automon.logger import Logging
+from automon.integrations.neo4j.config import Neo4jConfig
 from automon.helpers.assertions import assert_label
 
+log = Logging(__name__, Logging.DEBUG)
 
-# logging.basicConfig(level=DEBUG)
 
+class Neo4jWrapper:
+    """Neo4j wrapper"""
 
-class neo4j_wrapper:
-    """Neo4j wrapper
-    
-    """
+    def __init__(self, config: Neo4jConfig = None) -> neo4j:
 
-    def __init__(self, neo4j_config):
+        self.config = config if config else Neo4jConfig()
 
-        self.user = neo4j_config.user
-        self.password = neo4j_config.password
-        self.servers = neo4j_config.servers
+        self.user = self.config.user
+        self.password = self.config.password
+        self.servers = self.config.servers
 
         for server in self.servers:
             try:
                 self.driver = GraphDatabase.driver(server, auth=(self.user, self.password))
-                logging.info('Connected to neo4j server: {}'.format(server))
+                log.info(f'Connected to neo4j server: {server}')
             except:
                 self.driver = None
-                logging.error('Cannot connect to neo4j server: {}'.format(server))
+                log.error(f'Cannot connect to neo4j server: {server}')
+        else:
+            self.driver = None
 
-    def _prepare_dict(self, blob):
-        """All inputs first needs to dicts
-    
-        """
+    def _prepare_dict(self, blob: dict) -> dict:
+        """All inputs first needs to dicts"""
         try:
             return dict(blob)
         except:
             return dict(raw=urlencode(blob))
 
-    def _consolidate(self, query):
-        """Join cypher queries list into a string
-
-        """
+    def _consolidate(self, query: list) -> list:
+        """Join cypher queries list into a string"""
         return '\n'.join(query).strip()
 
-    def _send(self, cypher):
+    def _send(self, cypher: str) -> GraphDatabase.driver:
         """This is the query that will be run on the database. So make sure by the time it
         gets to this function all prior checks have passed. Also, create a last check in
-        this function for general cypher query-ness
+        this function for general cypher query-ness"""
 
-        """
+        if self.driver is None:
+            return
+
         with self.driver.session() as session:
             results = session.run(cypher)
 
-        logging.debug('Cypher: {}'.format(cypher))
-        logging.debug('Results: {}'.format(results))
+        log.debug(f'Cypher: {cypher}')
+        log.debug(f'Results: {results}')
 
         # TODO: print records from cypher response
         # for record in results:
@@ -65,9 +66,7 @@ class neo4j_wrapper:
         return results
 
     def send_data(self, label, data):
-        """Just take the entry and put it into the database to be parsed later
-    
-        """
+        """Just take the entry and put it into the database to be parsed later"""
 
         timestamp_date = datetime.now(tz=timezone.utc).isoformat()
         label = assert_label(label)
@@ -82,7 +81,7 @@ class neo4j_wrapper:
         # cypher_assertions.append(query)  # Pre cypher query
 
         query = list()
-        query.append('MERGE ( {} {} '.format(node, label))
+        query.append(f'MERGE ( {node} {label} ')
         query.append('{')
 
         # iterate dict keys
@@ -92,9 +91,9 @@ class neo4j_wrapper:
             value = dict_blob[key]
 
             if i < len(dict_blob.keys()):
-                query.append('`{}`: {},'.format(key, value))
+                query.append(f'`{key}`: {value},')
             else:
-                query.append('`{}`: {}'.format(key, value))
+                query.append(f'`{key}`: {value}')
 
         query.append(' } )')
 
@@ -107,13 +106,11 @@ class neo4j_wrapper:
 
         final_cypher = self._consolidate(query)  # self._consolidate sets of queries into one single related query
 
-        logging.debug(final_cypher)
+        log.debug(final_cypher)
 
         return self._send(final_cypher)
 
     def create_relationship(self, cypher):
-        """Create relationship
-
-        """
-        logging.debug(cypher)
+        """Create relationship"""
+        log.debug(cypher)
         return self._send(cypher)
