@@ -9,6 +9,5 @@ class Neo4jTest(unittest.TestCase):
     def test_Neo4jWrapper(self):
         self.assertTrue(Neo4jWrapper())
 
-
-if __name__ == '__main__':
-    unittest.main()
+# if __name__ == '__main__':
+#     unittest.main()
