@@ -7,4 +7,4 @@ class Liveliness:
 
     def check(self):
         # TODO: run liveliness tests
-        return True or False
+        return False
