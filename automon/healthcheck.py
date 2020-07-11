@@ -7,4 +7,4 @@ class Healthcheck:
 
     def check(self):
         # TODO: run healthcheck tests
-        return True or False
+        return False
