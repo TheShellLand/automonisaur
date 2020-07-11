@@ -9,7 +9,8 @@ class ElasticsearchTest(unittest.TestCase):
 
     def test_ElasticsearchConnect(self):
         self.assertFalse(
-            ElasticsearchConnect('elasticsearch.0000000', use_ssl=False, request_timeout=1).eswrapper.ping())
+            ElasticsearchConnect(
+                'elasticsearch.0000000', use_ssl=False, request_timeout=1).eswrapper.ping())
 
     def test_ConfigESSnapshotBot(self):
         self.assertTrue(ConfigESSnapshotBot())
