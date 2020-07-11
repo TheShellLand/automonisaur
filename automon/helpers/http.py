@@ -1,4 +1,4 @@
-from automon.integrations.neo4j import neo4j_wrapper
+from automon.integrations.neo4j import Neo4jWrapper
 
 
 def http_header(headers):
@@ -11,4 +11,4 @@ def http_header(headers):
         label='Headers'
     )
 
-    neo4j_wrapper._prepare_dict(**args)
+    Neo4jWrapper._prepare_dict(**args)

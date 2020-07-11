@@ -1,6 +1,10 @@
 import re
 from ast import literal_eval
 
+from automon.logger import Logging
+
+log = Logging(__name__, Logging.DEBUG)
+
 
 def make_tuple(obj):
     """Make a tuple from_this
@@ -17,11 +21,10 @@ def assert_label(label):
     label = str(label)
     if label:
         if re.search('[:]', label):
-            raise Exception('Invalid label \'{}\': Remove the colon from the label'.format(label))
+            log.error(f"Invalid label '{label}': Remove the colon from the label")
 
         if not re.search('[a-zA-Z]', label[0]):  # First letter of a label must be a letter
-            raise Exception(
-                'Invalid label \'{}\': First character of Neo4j :LABEL must be a letter'.format(label))
+            log.error(f"Invalid label '{label}': First character of Neo4j :LABEL must be a letter")
         else:
             return ':`' + label + '`'  # :`Label`
     else:
