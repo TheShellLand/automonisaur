@@ -26,7 +26,10 @@ class Chat:
 
     @staticmethod
     def multi_to_single_line(msg: str)-> str:
-        if '\n' in msg:
+        if msg is None:
+            return f''
+
+        if '\n' in msg and msg is not None:
 
             new_msg = []
             split = msg.splitlines()
