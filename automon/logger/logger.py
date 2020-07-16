@@ -5,7 +5,8 @@ from logging import DEBUG, INFO, WARN, ERROR, CRITICAL, NOTSET
 
 from automon.integrations.slack.slack_formatting import Chat, Format
 
-log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
+# log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
+log_format = '%(levelname)s\t%(module)s\t%(message)s'
 # logging.basicConfig(format=log_format)
 
 log = logging.getLogger('logger')
@@ -19,13 +20,13 @@ class LogStream(object):
     def __init__(self):
         self.logs = ''
 
-    def write(self, string: str) -> str:
+    def write(self, string):
         self.logs += string
 
     def flush(self):
         pass
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.logs
 
 
@@ -56,23 +57,23 @@ class Logging:
 
         log.debug('loaded')
 
-    def error(self, msg: str, enable_traceback: bool = True) -> logging.error:
+    def error(self, msg, enable_traceback: bool = True):
         tb = traceback.format_exc()
         # tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb and enable_traceback:
             self.logging.error(tb)
         return self.logging.error(msg)
 
-    def warning(self, msg: str) -> logging.warning:
+    def warning(self, msg):
         return self.logging.warning(msg)
 
-    def info(self, msg: str) -> logging.info:
+    def info(self, msg):
         return self.logging.info(msg)
 
-    def debug(self, msg: str) -> logging.debug:
+    def debug(self, msg):
         return self.logging.debug(msg)
 
-    def critical(self, msg: str) -> logging.critical:
+    def critical(self, msg):
         tb = traceback.format_exc()
         tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb:
