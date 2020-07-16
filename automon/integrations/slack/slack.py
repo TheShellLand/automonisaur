@@ -67,10 +67,11 @@ class Slack(ConfigSlack):
                         # if a lot in the queue, try bursting
                         await asyncio.sleep(random.choice(range(2)))
                     else:
-                        log.info(f'sleeping, queue size is {self.queue.qsize()}')
-                        await asyncio.sleep(random.choice(range(4)))
+                        sleep = random.choice(range(4))
+                        log.debug(f'sleeping {sleep}, queue size is {self.queue.qsize()}')
+                        await asyncio.sleep(sleep)
 
-                    log.info(f'Burst: {burst}, Retry: {retry}, Queue {self.queue.qsize()}')
+                    log.debug(f'Burst: {burst}, Retry: {retry}, Queue {self.queue.qsize()}')
 
                     burst += 1
                     retry = 0
