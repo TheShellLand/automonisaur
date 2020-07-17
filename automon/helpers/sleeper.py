@@ -1,9 +1,9 @@
 import time
 import random
 
-from automon.logger import Logging
+from automon.log.logger import Logging
 
-log = Logging('sleeper', level=Logging.INFO)
+log = Logging(__name__, level=Logging.INFO)
 
 
 class Sleeper:

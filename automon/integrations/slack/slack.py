@@ -3,13 +3,13 @@ import slack
 import random
 import asyncio
 
-from automon.integrations.slack.config import ConfigSlack
-from automon.logger import Logging
+from automon.log.logger import Logging
 from automon.helpers.asyncio_ import AsyncStarter
+from automon.integrations.slack.config import ConfigSlack
 
 # TODO: maybe separate class for SlackAuth
 
-log = Logging('slack', level=Logging.INFO)
+log = Logging(__name__, level=Logging.INFO)
 
 
 class Slack(ConfigSlack):
@@ -23,7 +23,7 @@ class Slack(ConfigSlack):
         self.token = token if token else ConfigSlack.slack_token
 
         if not self.token:
-            log.error(f'slack is called, but SLACK_TOKEN is not set')
+            log.error(f'Missing SLACK_TOKEN')
             self.client = None
         else:
             self.client = slack.WebClient(token=self.token)

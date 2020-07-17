@@ -8,9 +8,9 @@ import subprocess
 
 from automon.integrations.slack.slack_logger import SlackLogging
 from automon.integrations.slack.slack_formatting import Chat
-from automon.logger import Logging
+from automon.log.logger import Logging
 
-log = Logging('snmp generator', level=Logging.INFO)
+log = Logging(__name__, level=Logging.INFO)
 slacklog = SlackLogging(username='mibbot')
 
 

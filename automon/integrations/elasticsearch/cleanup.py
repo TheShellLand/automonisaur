@@ -2,31 +2,33 @@ import elasticsearch
 
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 
-from automon.logger import Logging
+from automon.log.logger import Logging
+from automon.integrations.elasticsearch.config import ElasticsearchConfig
 
 log = Logging(__name__, Logging.ERROR)
 
 
 class Cleanup:
 
-    def __init__(self, hosts: list = None, request_timeout: int = 10,
-                 http_auth=None, use_ssl: bool = True, verify_certs: bool = True,
-                 connection_class=RequestsHttpConnection):
+    def __init__(self):
 
-        self.elasticsearch = Elasticsearch(
-            hosts=hosts if hosts else ['elasticsearch:9200'],
-            request_timeout=request_timeout,
-            http_auth=http_auth,
-            use_ssl=use_ssl,
-            verify_certs=verify_certs,
-            connection_class=connection_class
-        )
+        self.ES = ElasticsearchConfig()
+        self.ES_connect = self.ES.Elasticsearch()
+
         self.cache = []
         self.indices = []
 
+    def ping(self):
+        if not self.ES_connect:
+            return False
+        return self.ES.Elasticsearch().ping()
+
     def search_indices(self, index_pattern):
+        if not self.ES_connect:
+            return False
+
         try:
-            retrieved_indices = self.elasticsearch.indices.get(index_pattern)
+            retrieved_indices = self.ES.Elasticsearch().indices.get(index_pattern)
             num_indices = len(retrieved_indices)
 
             msg = 'Search found {} indices'
@@ -39,6 +41,8 @@ class Cleanup:
             log.error(msg)
 
     def delete_indices(self, index_pattern):
+        if not self.ES_connect:
+            return False
 
         retrieved_indices = [x for x in self.search_indices(index_pattern).keys()]
         num_indices = len(retrieved_indices)
@@ -77,14 +81,16 @@ class Cleanup:
                 msg = msg.format(index)
                 print(msg, end='')
                 # Delete the index
-                self.elasticsearch.indices.delete(index=index)
+                self.ES.Elasticsearch().indices.delete(index=index)
                 print('done')
         else:
             msg = '''Whew, you might have just blew it, if you had said yes'''
             print(msg)
 
     def get_indices(self):
-        retrieved_indices = self.elasticsearch.indices.get('*')
+        if not self.ES_connect:
+            return False
+        retrieved_indices = self.ES.Elasticsearch().indices.get('*')
         num_indices = len(retrieved_indices)
 
         self.indices = retrieved_indices

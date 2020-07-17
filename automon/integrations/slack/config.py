@@ -1,8 +1,8 @@
 import os
 
-from automon.logger import Logging
+from automon.log.logger import Logging
 
-log = Logging('config')
+log = Logging(__name__)
 
 
 class ConfigSlack:
