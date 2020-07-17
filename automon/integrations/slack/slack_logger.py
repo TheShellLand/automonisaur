@@ -3,12 +3,12 @@ import traceback
 
 from json import dumps
 
-from automon.integrations.slack import Slack
+from automon.integrations.slack.slack import Slack
 from automon.helpers.asyncio_ import AsyncStarter
 from automon.integrations.slack import Emoji, Chat, Format
-from automon.logger import Logging, DEBUG, INFO, WARN, ERROR, CRITICAL
+from automon.log.logger import Logging, DEBUG, INFO, WARN, ERROR, CRITICAL
 
-log = Logging('slacklogger', level=ERROR)
+log = Logging(__name__, level=ERROR)
 
 
 class SlackLogging(Slack):

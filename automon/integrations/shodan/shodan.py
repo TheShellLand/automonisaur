@@ -1,6 +1,6 @@
 import os
 
-from automon.logger import Logging
+from automon.log.logger import Logging
 
 log = Logging(__name__, Logging.ERROR)
 
@@ -12,7 +12,7 @@ class ShodanConfig:
         self.token = os.getenv('SHODAN_API')
 
         if not self.token:
-            log.error(f'Missing Shodan api key')
+            log.error(f'Missing SHODAN_API')
 
 
 class Shodan:

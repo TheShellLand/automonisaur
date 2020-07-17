@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 from datetime import datetime, timezone
 from neo4j import GraphDatabase
 
-from automon.logger import Logging
+from automon.log.logger import Logging
 from automon.integrations.neo4j.config import Neo4jConfig
 from automon.helpers.assertions import assert_label
 

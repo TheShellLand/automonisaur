@@ -5,11 +5,9 @@ from logging import DEBUG, INFO, WARN, ERROR, CRITICAL, NOTSET
 
 from automon.integrations.slack.slack_formatting import Chat, Format
 
-# log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
-log_format = '%(levelname)s\t%(module)s\t%(message)s'
 # logging.basicConfig(format=log_format)
 
-log = logging.getLogger('logger')
+log = logging.getLogger('log')
 log.setLevel(CRITICAL)
 
 
@@ -47,7 +45,17 @@ class Logging:
         self.logging = logging.getLogger(name)
         self.logging.setLevel(level)
 
-        logging.basicConfig(level=level, format=log_format)
+        # self.log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
+
+        spacing = 4
+
+        levelname = '%(levelname)s'
+        modname = '%(name)s'
+        message = '%(message)s'
+        self.log_format = f'{levelname}\t{modname}\t{message}'
+        # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
+
+        logging.basicConfig(level=level, format=self.log_format)
 
         # TODO: need informative logging format
         # TODO: log streaming does not work

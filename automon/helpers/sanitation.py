@@ -80,8 +80,6 @@ class Sanitation:
             new_lst.append(string)
             return new_lst
 
-        # TODO: clean list before returning it
-
         for item in new_lst:
             item = Sanitation.strip_quotes(item)
             item = Sanitation.strip_spaces(item)
