@@ -48,6 +48,22 @@ class SlackTest(unittest.TestCase):
         self.assertTrue(Chat.multi_to_single_line('test\n'))
         self.assertTrue(Chat.multi_to_single_line('test\ntest'))
 
+    def test_Emoji(self):
+        self.assertTrue(Emoji.warning)
+        self.assertTrue(Emoji.information_source)
+        self.assertTrue(Emoji.magnifying_glass)
+        self.assertTrue(Emoji.sos)
+        self.assertTrue(Emoji.waiting)
+        self.assertTrue(Emoji.still_waiting)
+        self.assertTrue(Emoji.grey_question)
+        self.assertTrue(Emoji.questionbang)
+        self.assertTrue(Emoji.skull)
+        self.assertTrue(Emoji.skull_and_crossbones)
+        self.assertTrue(Emoji.file)
+        self.assertTrue(Emoji.announcement)
+        self.assertTrue(Emoji.yay)
+
+
 
 # if __name__ == '__main__':
 #     unittest.main()
