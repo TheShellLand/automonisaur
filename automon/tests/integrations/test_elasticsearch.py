@@ -6,10 +6,11 @@ from automon.integrations.elasticsearch.cleanup import Cleanup
 
 class ElasticsearchTest(unittest.TestCase):
 
-    def test_ElasticsearchConnect(self):
-        self.assertFalse(
-            Cleanup(
-                'elasticsearch.0000000', use_ssl=False, request_timeout=1).elasticsearch.ping())
+    def test_Cleanup(self):
+        self.assertFalse(Cleanup().ping())
+        self.assertFalse(Cleanup().get_indices())
+        self.assertFalse(Cleanup().search_indices(f''))
+        self.assertFalse(Cleanup().delete_indices(f''))
 
     def test_ElasticsearchConfig(self):
         self.assertTrue(ElasticsearchConfig())
@@ -19,9 +20,6 @@ class ElasticsearchTest(unittest.TestCase):
 
     def test_JVMBot(self):
         self.assertTrue(JVMBot())
-
-    def test_ElasticsearchConnect(self):
-        self.assertTrue(Cleanup())
 
 # if __name__ == '__main__':
 #     unittest.main()
