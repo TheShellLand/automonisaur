@@ -4,7 +4,7 @@ from string import (ascii_letters, digits)
 class Sanitation:
 
     @staticmethod
-    def strip_quotes(text):
+    def strip_quotes(text: str) -> str:
         removed_chars = ['"', "'"]
 
         text = str(text)
@@ -37,7 +37,7 @@ class Sanitation:
         return new_list
 
     @staticmethod
-    def safe_string(text):
+    def safe_string(text: str) -> str:
         allowed_characters = ascii_letters + digits + '-_.'
 
         text = str(text)
@@ -52,12 +52,11 @@ class Sanitation:
         return ''.join(new_text)
 
     @staticmethod
-    def dedup(object):
-        """
-        deduplicate object
-        """
+    def dedup(lst: list) -> list:
+        """deduplicate list"""
+
         new_list = []
-        for item in object:
+        for item in lst:
             if item not in new_list:
                 new_list.append(item)
 
@@ -67,6 +66,8 @@ class Sanitation:
     def list_from_string(string: str) -> list:
         if not string:
             return list()
+
+        string = Sanitation.strip_spaces(string)
 
         new_lst = list()
 
@@ -80,9 +81,7 @@ class Sanitation:
             new_lst.append(string)
             return new_lst
 
-        for item in new_lst:
-            item = Sanitation.strip_quotes(item)
-            item = Sanitation.strip_spaces(item)
-            new_lst.append(item)
+        new_lst = [Sanitation.strip_quotes(item) for item in new_lst]
+        new_lst = [Sanitation.strip_spaces(item) for item in new_lst]
 
         return Sanitation.strip_spaces_from_list(new_lst)
