@@ -13,6 +13,10 @@ class Chat:
         return f'{msg_format}{msg}{msg_format}'
 
     @staticmethod
+    def none():
+        return ''
+
+    @staticmethod
     def clean(msg: str or None) -> str or None:
         if msg is None:
             return None
@@ -21,11 +25,11 @@ class Chat:
     @staticmethod
     def string(msg: str or None) -> str or None:
         if msg is None:
-            return None
+            return ''
         return f'{msg}'
 
     @staticmethod
-    def multi_to_single_line(msg: str)-> str:
+    def multi_to_single_line(msg: str) -> str:
         if msg is None:
             return f''
 
