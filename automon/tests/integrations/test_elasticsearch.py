@@ -22,6 +22,12 @@ class ElasticsearchTest(unittest.TestCase):
     def test_JVMBot(self):
         self.assertTrue(JVMBot())
 
+    def test_Cluster(self):
+        self.assertTrue(Cluster)
+
+    def test_MetricTimestamp(self):
+        self.assertTrue(MetricTimestamp)
+
     def test_Metric(self):
         node = None
         jvm = {

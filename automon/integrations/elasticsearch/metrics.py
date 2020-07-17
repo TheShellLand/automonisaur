@@ -95,7 +95,7 @@ class Metric:
 
     """
 
-    def __init__(self, node: Cluster.nodes):
+    def __init__(self, node: Cluster):
         self._node = node
         self.node_name = self._node['name']
 
