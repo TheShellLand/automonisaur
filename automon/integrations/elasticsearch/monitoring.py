@@ -3,7 +3,7 @@ import json
 import requests
 
 from automon.integrations.elasticsearch.snapshots import Snapshot
-from automon.integrations.elasticsearch.cluster import Cluster
+from automon.integrations.elasticsearch.metrics import Cluster
 
 
 class ElasticsearchJvmMonitor:
