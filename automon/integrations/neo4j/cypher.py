@@ -33,6 +33,18 @@ class Neo4jWrapper:
         else:
             self.neo4j = None
 
+    def _http_header(self, headers) -> dict:
+        # [print(x) for x in auth.request_headers(request)]
+
+        # token = helper_brain.hash_key(sorted([x for x in headers]))
+
+        args = dict(
+            blob=sorted(headers),
+            label='Headers'
+        )
+
+        return self._prepare_dict(**args)
+
     def _prepare_dict(self, blob: dict) -> dict:
         """All inputs first needs to dicts"""
         try:
