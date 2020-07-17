@@ -3,13 +3,81 @@ import slack
 import random
 import asyncio
 
+from slack.web.slack_response import SlackResponse
+from slack.errors import SlackApiError
+
 from automon.log.logger import Logging
 from automon.helpers.asyncio_ import AsyncStarter
 from automon.integrations.slack.config import ConfigSlack
 
 # TODO: maybe separate class for SlackAuth
 
-log = Logging(__name__, level=Logging.INFO)
+log = Logging(__name__, level=Logging.ERROR)
+
+
+class SlackError:
+    def __init__(self, error: SlackApiError):
+        """The request to the Slack API failed.
+        The server responded with:
+        {
+            "ok": false,
+            "error": "missing_scope",
+            "needed": "users:read",
+            "provided": "chat:write,chat:write.customize,chat:write.public,links:write,links:read,files:read,files:write"
+        }
+        """
+
+        self._error = error
+        self._response = self._error.response
+
+        self.api_url = self._response.api_url
+
+        self.data = dict(self._response.data)
+        self.ok = self.data.get('ok')
+        self.error = self.data.get('error')
+        self.needed = self.data.get('needed')
+        self.provided = self.data.get('provided')
+
+        self.headers = self._response.headers
+        self.http_verb = self._response.http_verb
+        self.req_args = self._response.req_args
+        self.status_code = self._response.status_code
+
+    def __repr__(self):
+        return f'{self.data}'
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class BotInfo:
+    def __init__(self, response: SlackResponse):
+        """{
+            "ok": true,
+            "bot": {
+                "id": "B061F7JD2",
+                "deleted": false,
+                "name": "beforebot",
+                "updated": 1449272004,
+                "app_id": "A161CLERW",
+                "user_id": "U012ABCDEF",
+                "icons": {
+                    "image_36": "https://...",
+                    "image_48": "https://...",
+                    "image_72": "https://..."
+                }
+            }
+        }"""
+
+        self.status = response.get('ok')
+        self.bot = dict(response.get('bot'))
+        self.id = self.bot.get('id')
+        self.deleted = self.bot.get('deleted')
+        self.name = self.bot.get('name')
+        self.updated = self.bot.get('updated')
+        self.app_id = self.bot.get('app_id')
+        self.user_id = self.bot.get('user_id')
+        self.icons = self.bot.get('icons')
 
 
 class Slack(ConfigSlack):
@@ -20,7 +88,7 @@ class Slack(ConfigSlack):
     def __init__(self, token: ConfigSlack.slack_token = None, username: str = None,
                  channel: str = None, icon_emoji: str = None, icon_url: str = None):
 
-        self.token = token if token else ConfigSlack.slack_token
+        self.token = token if token else ConfigSlack().slack_token
 
         if not self.token:
             log.error(f'Missing SLACK_TOKEN')
@@ -28,7 +96,8 @@ class Slack(ConfigSlack):
         else:
             self.client = slack.WebClient(token=self.token)
 
-        self.username = username if username else ''
+        # TODO: use token to get bot info
+        self.username = username if username else self._get_bot_info()
         # automonbot-test
         self.channel = channel if channel else ''
         self.icon_emoji = icon_emoji if icon_emoji else ''
@@ -38,51 +107,24 @@ class Slack(ConfigSlack):
         self._start_loop = AsyncStarter()
         self.queue = self._start_loop.queue
         asyncio.create_task(self._consumer())
+        self._stop = False
 
         # TODO: integrate slacklog
         # self.slacklog = SlackLogging(token)
 
-    async def _consumer(self):
-
-        burst = 0
-        burst_max = 0
-        retry = 0
-        while True:
-            channel, text = await self.queue.get()
-
-            msg = f'{channel} @{self.username}: {text}'
-
-            if text is None:
-                break
-
-            while True:
-                try:
-                    log.debug(msg)
-                    response = self.client.chat_postMessage(
-                        text=text, channel=channel, username=self.username,
-                        icon_emoji=self.icon_emoji, icon_url=self.icon_url)
-                    assert response["ok"]
-
-                    if not retry and self.queue.qsize() > 10:
-                        # if a lot in the queue, try bursting
-                        await asyncio.sleep(random.choice(range(2)))
-                    else:
-                        sleep = random.choice(range(4))
-                        log.debug(f'sleeping {sleep}, queue size is {self.queue.qsize()}')
-                        await asyncio.sleep(sleep)
-
-                    log.debug(f'Burst: {burst}, Retry: {retry}, Queue {self.queue.qsize()}')
-
-                    burst += 1
-                    retry = 0
-
-                    break
-                except Exception as e:
-                    retry += 1
-                    burst_max = burst
-                    log.error(f'Burst max: {burst_max}, Retry: {retry}', enable_traceback=False)
-                    burst = 0
-                    # log.error(e)
+    def _get_bot_info(self: SlackResponse):
+        if self.client:
+            try:
+                name = BotInfo(self.client.bots_info()).name
+                log.debug(f'Bot name: {name}')
+                return name
+            except Exception as e:
+                error = SlackError(e)
+                log.error(
+                    f'''{self._get_bot_info.__name__}\tCouldn't get bot name, missing permission: {error.needed}''',
+                    enable_traceback=False)
+                return ''
+        return ''
 
     def _run_until_complete(self):
         while True:
@@ -90,11 +132,15 @@ class Slack(ConfigSlack):
                 asyncio.run(asyncio.sleep(0))
             else:
                 break
+        self._stop = True
 
     async def chat_postMessage(self, channel: str, text: str) -> slack.WebClient.chat_postMessage:
 
         if not self.client:
             return False
+
+        if not text:
+            return SyntaxError
 
         await self.queue.put((channel, text))
 
@@ -142,3 +188,47 @@ class Slack(ConfigSlack):
         log.debug(f'File uploaded: {file} ({file_size}B) ({self.username}')
 
         return response
+
+    async def _consumer(self):
+
+        burst = 0
+        burst_max = 0
+        retry = 0
+        while True:
+            channel, text = await self.queue.get()
+
+            if self._stop:
+                break
+
+            msg = f'{channel} @{self.username}: {text}'
+
+            while True:
+                try:
+                    log.debug(msg)
+                    response = self.client.chat_postMessage(
+                        text=text, channel=channel, username=self.username,
+                        icon_emoji=self.icon_emoji, icon_url=self.icon_url)
+                    assert response["ok"]
+
+                    if not retry and self.queue.qsize() > 10:
+                        # if a lot in the queue, try bursting
+                        await asyncio.sleep(random.choice(range(2)))
+                    else:
+                        sleep = random.choice(range(4))
+                        log.debug(f'sleeping {sleep}, queue size is {self.queue.qsize()}')
+                        await asyncio.sleep(sleep)
+
+                    log.debug(f'Burst: {burst}, Retry: {retry}, Queue {self.queue.qsize()}')
+
+                    burst += 1
+                    retry = 0
+
+                    break
+                except Exception as e:
+                    retry += 1
+                    burst_max = burst
+                    error = SlackError(e)
+                    log.error(
+                        f'{self._consumer.__name__}\t{error.error}\t{msg}\tRetry: {retry}, Burst max: {burst_max}',
+                        enable_traceback=False)
+                    burst = 0
