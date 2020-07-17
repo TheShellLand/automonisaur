@@ -1,6 +1,43 @@
 import unittest
 
 from automon.helpers.assertions import *
+from automon.helpers.sleeper import *
+
+
+class SleeperTest(unittest.TestCase):
+    def test_Sleeper(self):
+        self.assertTrue(Sleeper)
+        self.assertTrue(Sleeper.seconds)
+        self.assertTrue(Sleeper.minute)
+        self.assertTrue(Sleeper.within_a_minute)
+        self.assertTrue(Sleeper.minutes)
+        self.assertTrue(Sleeper.hour)
+        self.assertTrue(Sleeper.hours)
+        self.assertTrue(Sleeper.day)
+        self.assertTrue(Sleeper.daily)
+        self.assertTrue(Sleeper.time_range)
+
+        with self.assertRaises(TypeError):
+            Sleeper.seconds()
+            Sleeper.seconds('1')
+            Sleeper.minute()
+            Sleeper.within_a_minute()
+            Sleeper.minutes()
+            Sleeper.hour()
+            Sleeper.hours()
+            Sleeper.day()
+            Sleeper.daily()
+            Sleeper.time_range()
+
+        self.assertIsNone(Sleeper.seconds(SleeperTest, 0))
+        self.assertIsNone(Sleeper.minute(SleeperTest, 0))
+        self.assertIsNone(Sleeper.within_a_minute(SleeperTest, 0))
+        self.assertIsNone(Sleeper.minutes(SleeperTest, 0))
+        self.assertIsNone(Sleeper.hour(SleeperTest, 0))
+        self.assertIsNone(Sleeper.hours(SleeperTest, 0))
+        self.assertIsNone(Sleeper.day(SleeperTest, 0))
+        self.assertIsNone(Sleeper.daily(SleeperTest, 0))
+        self.assertIsNone(Sleeper.time_range(SleeperTest, 0))
 
 
 class AssertionsTest(unittest.TestCase):
