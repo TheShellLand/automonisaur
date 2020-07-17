@@ -9,6 +9,7 @@ class FlaskTest(unittest.TestCase):
     def test_new_secret_key(self):
         self.assertTrue(new_secret_key())
 
+    # TODO: add javascript_compatibility test
     # def test_javascript_compatibility(self):
     #     app = newflaskapp()
     #     self.assertTrue(javascript_compatibility(app))

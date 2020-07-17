@@ -12,7 +12,7 @@ elif [ "$@" == "-l" ]; then
 elif [ "$@" == "-ll" ]; then
     pytest automon
 elif [ "$@" == "html" ]; then
-    pytest --cov=automon -v --cov-report html automon
+    pytest --cov=automon --cov-report html automon
 else
   pytest --cov=automon -v --cov-report term "$@"
 fi
