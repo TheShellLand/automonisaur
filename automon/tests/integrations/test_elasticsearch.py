@@ -8,7 +8,6 @@ from automon.integrations.elasticsearch.metrics import Metric, MetricTimestamp, 
 class ElasticsearchTest(unittest.TestCase):
 
     def test_Cleanup(self):
-        self.assertFalse(Cleanup().ping())
         self.assertFalse(Cleanup().get_indices())
         self.assertFalse(Cleanup().search_indices(f''))
         self.assertFalse(Cleanup().delete_indices(f''))
