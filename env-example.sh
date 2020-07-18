@@ -22,10 +22,10 @@ export SHODAN_API=
 # Neo4j
 export NEO4J_USER=neo4j
 export NEO4J_PASSWORD=neo4j
+export NEO4J_SERVERS=bolt://neo4j:7687
 
 # Elasticsearch
-export NEO4J_SERVERS="bolt://neo4j:7687"
-export ELASTICSEARCH_HOSTS="elasticsearch"
+export ELASTICSEARCH_HOSTS=
 
 # Codecov
 export CODECOV_TOKEN=
