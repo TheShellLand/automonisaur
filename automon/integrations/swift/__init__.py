@@ -166,7 +166,7 @@ class SwiftList(SwiftService):
 
 class Swift:
     def __init__(self):
-        self.log = Logging(Swift.__name__, Logging.DEBUG)
+        self._log = Logging(Swift.__name__, Logging.DEBUG)
 
     @staticmethod
     def list_summary(self, files, folders):
@@ -175,7 +175,7 @@ class Swift:
     def list_container(self, container, summary=False, filter=None,
                        separate=False) -> [SwiftItem]:
 
-        self.log.info(f'listing {container} (filter: {filter})')
+        self._log.info(f'listing {container} (filter: {filter})')
         slacklog.debug(f'listing {container} (filter: {filter})')
 
         swift_objects = []
@@ -204,7 +204,7 @@ class Swift:
                     files.append(item_v1)
                     files_v2.append(item_v2)
 
-        self.log.debug(f'Listing for {container}: {len(swift_objects)} objects')
+        self._log.debug(f'Listing for {container}: {len(swift_objects)} objects')
 
         if summary:
             return len(swift_objects)
@@ -218,7 +218,7 @@ class Swift:
 
         msg = (f'Starting cleanup \n'
                f'>Retention policy: {days} days \n')
-        self.log.info(msg)
+        self._log.info(msg)
         slacklog.debug(msg)
         slacklog.info(msg)
 
@@ -255,20 +255,20 @@ class Swift:
                 regex = f'^{date}'
 
                 if re.search(regex, item_s.name):
-                    self.log.info(f"{percent}% ({progress}/{total}) cleanup retain: \'{regex}\', {name}")
+                    self._log.info(f"{percent}% ({progress}/{total}) cleanup retain: \'{regex}\', {name}")
                     found = True
                     break
 
             if not found:
                 pending_deletion.append(item)
-                self.log.info(f"{percent}% ({progress}/{total}) pending deletion: {name}")
+                self._log.info(f"{percent}% ({progress}/{total}) pending deletion: {name}")
 
         elapsed_time = time.time() - start_time
         minutes = int(elapsed_time / 60)
 
         msg = (f'>Created deletion list for past {days} days (Deleting: {len(pending_deletion)} objects)\n'
                f">Cleanup has been running for: {minutes} minutes")
-        self.log.debug(msg)
+        self._log.debug(msg)
         slacklog.debug(msg)
 
         objects = 0
@@ -291,14 +291,14 @@ class Swift:
             else:
                 objects += 1
 
-            self.log.info(f'{percent}% ({progress}/{total}) summarizing deletion: {name}')
+            self._log.info(f'{percent}% ({progress}/{total}) summarizing deletion: {name}')
 
         msg = (f'Cleaning up older than {days} days: \n'
                f'>{total} *total objects* \n'
                f'>{objects} *objects* \n'
                f'>{folders} *folders* \n'
                f'see debug messages in <#C013P1SNY3Y|{slacklog._debug_channel[1:]}>')
-        self.log.debug(msg)
+        self._log.debug(msg)
         slacklog.debug(msg)
         slacklog.info(msg)
 
@@ -315,7 +315,7 @@ class Swift:
 
             # this does the actual deletion
             self.delete_object(container, item)
-            self.log.info(f'{percent}% ({progress}/{total}) deleted: {name}')
+            self._log.info(f'{percent}% ({progress}/{total}) deleted: {name}')
 
             if progress % 10000 == 0 or progress % total == 0:
                 elapsed_time = time.time() - start_time
@@ -323,13 +323,13 @@ class Swift:
 
                 msg = (f'>Deletion is currently at `{percent}%` ({progress}/{total})\n'
                        f">Backup has been running for: {minutes} minutes")
-                self.log.debug(msg)
+                self._log.debug(msg)
                 slacklog.debug(msg)
 
         if pending_deletion:
             msg = ('Cleanup Finished\n'
                    f">It took: {minutes} minutes")
-            self.log.debug(msg)
+            self._log.debug(msg)
             slacklog.debug(msg)
 
     def backup(self, source, destination, test=None, skip_known=True):
@@ -344,7 +344,7 @@ class Swift:
         msg = (f'Backup {source} started \n'
                f'>debug: <#C013P1SNY3Y|{slacklog._debug_channel[1:]}>\n'
                f'>tests: <#C011EV8T59Q|{slacklog._test_channel[1:]}>\n')
-        self.log.debug(msg)
+        self._log.debug(msg)
         slacklog.debug(msg)
         slacklog.info(msg)
 
@@ -364,7 +364,7 @@ class Swift:
             if test:
                 regex = str(test)
                 if re.search(regex, item):
-                    self.log.debug(f'Test match: {test} \n>{item}')
+                    self._log.debug(f'Test match: {test} \n>{item}')
                     slacklog.debug(f'Test match: {test} \n>{item}')
                 else:
                     continue
@@ -377,7 +377,7 @@ class Swift:
                 for b in backups:
                     b = SwiftItem(b)
                     if f'{today}/{s_item.name}' == b.name:
-                        self.log.info(f'{percent}% ({progress}/{total}) exists, skipping {s_item.name}')
+                        self._log.info(f'{percent}% ({progress}/{total}) exists, skipping {s_item.name}')
                         exists = True
                         break
                 if exists:
@@ -388,7 +388,7 @@ class Swift:
                 minutes = int(elapsed_time / 60)
                 msg = (f'>Backup {source} is currently at `{percent}%` ({progress}/{total})\n'
                        f">Backup has been running for: {minutes} minutes")
-                self.log.debug(msg)
+                self._log.debug(msg)
                 slacklog.debug(msg)
 
                 self.stats(destination, filter=today)
@@ -409,18 +409,18 @@ class Swift:
                                 for i in swift.upload(destination, [folder], options):
 
                                     if i["success"]:
-                                        self.log.info(
+                                        self._log.info(
                                             f'{percent}% ({progress}/{total}) created directory /{destination}/{today}/{name}')
 
                                         retry = False
 
                                     if "error" in i and isinstance(i["error"], Exception):
-                                        self.log.error(f'{SwiftError(i)}')
+                                        self._log.error(f'{SwiftError(i)}')
                                         slacklog.error(f'{SwiftError(i)}')
                                         retries += 1
 
                             except:
-                                self.log.error(item)
+                                self._log.error(item)
                                 slacklog.error(item)
                                 retries += 1
 
@@ -439,11 +439,11 @@ class Swift:
 
                                 if i["success"]:
                                     if i["action"] == "copy_object":
-                                        self.log.info(
+                                        self._log.info(
                                             f'{percent}% ({progress}/{total}) copied {i["destination"]} from /{i["container"]}/{i["object"]}')
 
                                     if i["action"] == "create_container":
-                                        self.log.info(
+                                        self._log.info(
                                             f'{percent}% ({progress}/{total}) container {i["container"]} created')
 
                                     retry = False
@@ -471,7 +471,7 @@ class Swift:
                 if not retry:
                     break
 
-        self.log.info('building backup summary')
+        self._log.info('building backup summary')
 
         source_total_objects, \
         source_total_dirs, \
@@ -556,11 +556,11 @@ class Swift:
                     found = True
                     break
             if not found:
-                self.log.info(f'{percent}% ({progress}/{total}) backup missing: {a_name}')
+                self._log.info(f'{percent}% ({progress}/{total}) backup missing: {a_name}')
                 missing_objects + (tuple(f' * {a_item} \n'))
                 missing_objects_list.append(a_item)
             else:
-                self.log.info(f'{percent}% ({progress}/{total}) verified, {a_name}')
+                self._log.info(f'{percent}% ({progress}/{total}) verified, {a_name}')
 
         slacklog.debug(f'missing_objects: {len(missing_objects)}')
 
@@ -576,7 +576,7 @@ class Swift:
 
     def stats(self, container, filter=None, post_log=True, show_types=False):
 
-        self.log.info(f'stat {container} (filter: {filter})')
+        self._log.info(f'stat {container} (filter: {filter})')
         slacklog.debug(f'stat {container} (filter: {filter})')
 
         list_items = self.list_container(container, filter=filter)
@@ -628,7 +628,7 @@ class Swift:
             try:
                 for i in swift.delete(container=container, objects=[name]):
                     if i['success']:
-                        self.log.info(f'deleted: {name}')
+                        self._log.info(f'deleted: {name}')
 
             except:
                 slacklog.error()
@@ -651,7 +651,7 @@ class Swift:
                 try:
                     for i in swift.delete(container=container, objects=[name]):
                         if i['success']:
-                            self.log.info(f'{percent}% ({progress}/{deletion_count}) deleted: {name}')
+                            self._log.info(f'{percent}% ({progress}/{deletion_count}) deleted: {name}')
 
                 except:
                     slacklog.error()
@@ -665,7 +665,7 @@ class Swift:
             try:
                 slacklog.debug(f'*Deleting*: \n>{container}')
                 for i in swift.delete(container):
-                    self.log.info(f'deleting container: {container}')
+                    self._log.info(f'deleting container: {container}')
                 slacklog.info(f'*Deleted*: \n>{container}')
 
             except SwiftError as e:
