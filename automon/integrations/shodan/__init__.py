@@ -9,10 +9,11 @@ class ShodanConfig:
     token = os.getenv('SHODAN_API')
 
     def __init__(self):
+        self._log = Logging(ShodanConfig.__name__, Logging.ERROR)
         self.token = os.getenv('SHODAN_API')
 
         if not self.token:
-            log.error(f'Missing SHODAN_API')
+            self._log.error(f'Missing SHODAN_API')
 
 
 class Shodan:

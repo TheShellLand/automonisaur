@@ -15,6 +15,8 @@ class ElasticsearchConfig:
                  use_ssl: bool = True,
                  verify_certs: bool = True,
                  connection_class: RequestsHttpConnection = RequestsHttpConnection):
+        self._log = Logging(ElasticsearchConfig.__name__, Logging.DEBUG)
+
         self.es_hosts = S.list_from_string(endpoints) if endpoints else \
             S.list_from_string(os.getenv('ELASTICSEARCH_ENDPOINT')) or \
             S.list_from_string(os.getenv('ELASTICSEARCH_HOSTS'))
@@ -26,7 +28,7 @@ class ElasticsearchConfig:
         self.connection_class = connection_class
 
         if not self.es_hosts:
-            log.error('Missing endpoints')
+            self._log.error(f'Missing ELASTICSEARCH_ENDPOINT, ELASTICSEARCH_ENDPOINT')
 
     def Elasticsearch(self):
         if self.es_hosts:

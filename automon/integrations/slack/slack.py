@@ -88,10 +88,12 @@ class Slack(ConfigSlack):
     def __init__(self, token: ConfigSlack.slack_token = None, username: str = None,
                  channel: str = None, icon_emoji: str = None, icon_url: str = None):
 
+        self._log = Logging(Slack.__name__, Logging.DEBUG)
+
         self.token = token if token else ConfigSlack().slack_token
 
         if not self.token:
-            log.error(f'Missing SLACK_TOKEN')
+            self._log.error(f'Missing SLACK_TOKEN')
             self.client = None
         else:
             self.client = slack.WebClient(token=self.token)
@@ -116,11 +118,11 @@ class Slack(ConfigSlack):
         if self.client:
             try:
                 name = BotInfo(self.client.bots_info()).name
-                log.debug(f'Bot name: {name}')
+                self._log.debug(f'Bot name: {name}')
                 return name
             except Exception as e:
                 error = SlackError(e)
-                log.error(
+                self._log.error(
                     f'''{self._get_bot_info.__name__}\tCouldn't get bot name, missing permission: {error.needed}''',
                     enable_traceback=False)
                 return ''
@@ -164,8 +166,8 @@ class Slack(ConfigSlack):
 
         # check if file exists
         if not os.path.isfile(file):
-            log.error(f'File not found: {file}')
-            log.error(f'Working dir: {os.getcwd()}')
+            self._log.error(f'File not found: {file}')
+            self._log.error(f'Working dir: {os.getcwd()}')
             return False
 
         # get filename
@@ -185,7 +187,7 @@ class Slack(ConfigSlack):
 
         assert response["ok"]
 
-        log.debug(f'File uploaded: {file} ({file_size}B) ({self.username}')
+        self._log.debug(f'File uploaded: {file} ({file_size}B) ({self.username}')
 
         return response
 
@@ -204,7 +206,7 @@ class Slack(ConfigSlack):
 
             while True:
                 try:
-                    log.debug(msg)
+                    self._log.debug(msg)
                     response = self.client.chat_postMessage(
                         text=text, channel=channel, username=self.username,
                         icon_emoji=self.icon_emoji, icon_url=self.icon_url)
@@ -215,20 +217,23 @@ class Slack(ConfigSlack):
                         await asyncio.sleep(random.choice(range(2)))
                     else:
                         sleep = random.choice(range(4))
-                        log.debug(f'sleeping {sleep}, queue size is {self.queue.qsize()}')
+                        self._log.debug(f'sleeping {sleep}, queue size is {self.queue.qsize()}')
                         await asyncio.sleep(sleep)
 
-                    log.debug(f'Burst: {burst}, Retry: {retry}, Queue {self.queue.qsize()}')
+                    self._log.debug(f'Burst: {burst}, Retry: {retry}, Queue {self.queue.qsize()}')
 
                     burst += 1
                     retry = 0
 
                     break
                 except Exception as e:
+                    if retry > 5:
+                        break
+
                     retry += 1
                     burst_max = burst
                     error = SlackError(e)
-                    log.error(
+                    self._log.error(
                         f'{self._consumer.__name__}\t{error.error}\t{msg}\tRetry: {retry}, Burst max: {burst_max}',
                         enable_traceback=False)
                     burst = 0
