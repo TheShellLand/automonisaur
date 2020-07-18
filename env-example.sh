@@ -20,12 +20,12 @@ export SWIFTCLIENT_INSECURE=True
 export SHODAN_API=
 
 # Neo4j
-NEO4J_USER=neo4j
-NEO4J_PASSWORD=neo4j
+export NEO4J_USER=neo4j
+export NEO4J_PASSWORD=neo4j
 
 # Elasticsearch
-NEO4J_SERVERS="bolt://neo4j:7687"
-ELASTICSEARCH_HOSTS="elasticsearch"
+export NEO4J_SERVERS="bolt://neo4j:7687"
+export ELASTICSEARCH_HOSTS="elasticsearch"
 
 # Codecov
-CODECOV_TOKEN=
+export CODECOV_TOKEN=
