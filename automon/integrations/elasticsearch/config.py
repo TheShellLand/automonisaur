@@ -37,6 +37,7 @@ class ElasticsearchConfig:
                 connection_class=self.connection_class)
 
         else:
+            self.Elasticsearch = False
             self._log.error(f'Missing ELASTICSEARCH_ENDPOINT, ELASTICSEARCH_ENDPOINT')
 
 
@@ -46,7 +47,7 @@ class ElasticsearchClient(ElasticsearchConfig):
 
         self.config = ElasticsearchConfig()
         self.client = self.config.Elasticsearch
-        self.connected = self.client.ping()
+        self.connected = self.client.ping() if self.client else False
 
         self.indices = []
 
