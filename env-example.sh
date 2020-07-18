@@ -26,3 +26,6 @@ NEO4J_PASSWORD=neo4j
 # Elasticsearch
 NEO4J_SERVERS="bolt://neo4j:7687"
 ELASTICSEARCH_HOSTS="elasticsearch"
+
+# Codecov
+CODECOV_TOKEN=

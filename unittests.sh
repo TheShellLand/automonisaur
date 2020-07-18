@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source env.sh
+
 set -e
 cd $(dirname $0)
 
@@ -15,4 +17,9 @@ elif [ "$@" == "html" ]; then
     pytest --cov=automon --cov-report html automon
 else
   pytest --cov=automon -v --cov-report term "$@"
+fi
+
+
+if [ ! -z "$CODECOV_TOKEN" ]; then
+  bash <(curl -s https://codecov.io/bash)
 fi
