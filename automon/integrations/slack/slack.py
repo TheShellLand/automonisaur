@@ -50,8 +50,8 @@ class SlackError:
         return self.__repr__()
 
 
-class BotInfo:
-    def __init__(self, response: SlackResponse):
+class BotInfo(SlackResponse):
+    def __init__(self, response: dict):
         """{
             "ok": true,
             "bot": {
@@ -79,6 +79,16 @@ class BotInfo:
         self.app_id = self.bot.get('app_id')
         self.user_id = self.bot.get('user_id')
         self.icons = self.bot.get('icons')
+
+    def __repr__(self):
+        return f'{self.__dict__}'
+
+    def __eq__(self, other):
+        if not isinstance(other, BotInfo):
+            return NotImplemented
+
+        return self.__dict__ == other.__dict__
+
 
 
 class Slack(ConfigSlack):
