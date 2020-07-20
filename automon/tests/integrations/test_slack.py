@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.slack.slack import Slack
+from automon.integrations.slack.slack import Slack, SlackError, BotInfo
 from automon.integrations.slack.slack_logger import SlackLogging
 from automon.integrations.slack.config import ConfigSlack
 from automon.integrations.slack.slack_formatting import Format, Chat, Emoji
@@ -12,6 +12,30 @@ class SlackTest(unittest.TestCase):
 
     def test_Slack(self):
         self.assertTrue(Slack())
+
+    def test_BotInfo(self):
+        bot = {
+            "ok": True,
+            "bot": {
+                "id": "B061F7JD2",
+                "deleted": False,
+                "name": "beforebot",
+                "updated": 1449272004,
+                "app_id": "A161CLERW",
+                "user_id": "U012ABCDEF",
+                "icons": {
+                    "image_36": "https://...",
+                    "image_48": "https://...",
+                    "image_72": "https://..."
+                }
+            }
+        }
+
+        self.assertTrue(BotInfo)
+        self.assertTrue(BotInfo(bot))
+
+    def test_SlackError(self):
+        self.assertTrue(SlackError)
 
     def test_SlackLogging(self):
         test = SlackLogging(username='automonbot')
@@ -62,8 +86,6 @@ class SlackTest(unittest.TestCase):
         self.assertTrue(Emoji.file)
         self.assertTrue(Emoji.announcement)
         self.assertTrue(Emoji.yay)
-
-
 
 # if __name__ == '__main__':
 #     unittest.main()
