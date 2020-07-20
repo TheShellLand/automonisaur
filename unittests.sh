@@ -20,6 +20,6 @@ else
 fi
 
 
-if [ ! -z "$CODECOV_TOKEN" ]; then
+if [ ! -z "$CODECOV_TOKEN" ] && [[ "$@" == "html" ]]; then
   bash <(curl -s https://codecov.io/bash)
 fi
