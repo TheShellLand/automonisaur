@@ -34,6 +34,8 @@ class SlackTest(unittest.TestCase):
         self.assertTrue(BotInfo)
         self.assertTrue(BotInfo(bot))
         self.assertEqual(BotInfo(bot), BotInfo(bot))
+        self.assertNotEqual(BotInfo(bot), bot)
+        self.assertTrue(f'{BotInfo(bot)}')
 
     def test_SlackError(self):
         self.assertTrue(SlackError)
