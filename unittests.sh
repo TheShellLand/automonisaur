@@ -7,16 +7,16 @@ cd $(dirname $0)
 
 # TODO: set pre-commit hook
 
-if [ -z "$@" ]; then
+if [[ "$@" == "-v" ]]; then
   pytest --cov=automon -v --cov-report term automon
-elif [ "$@" == "-l" ]; then
+elif [[ "$@" == "-l" ]]; then
     pytest -v automon
-elif [ "$@" == "-ll" ]; then
+elif [[ "$@" == "-ll" ]]; then
     pytest automon
-elif [ "$@" == "html" ]; then
+elif [[ "$@" == "html" ]]; then
     pytest --cov=automon --cov-report html automon
 else
-  pytest --cov=automon -v --cov-report term "$@"
+  pytest --cov=automon --cov-report term "$@"
 fi
 
 
