@@ -83,12 +83,14 @@ class BotInfo(SlackResponse):
     def __repr__(self):
         return f'{self.__dict__}'
 
+    def __str__(self):
+        return f'{self.__dict__}'
+
     def __eq__(self, other):
         if not isinstance(other, BotInfo):
             return NotImplemented
 
         return self.__dict__ == other.__dict__
-
 
 
 class Slack(ConfigSlack):
