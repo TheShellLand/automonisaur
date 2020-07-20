@@ -67,7 +67,8 @@ class BotInfo:
                     "image_72": "https://..."
                 }
             }
-        }"""
+        }
+        """
 
         self.status = response.get('ok')
         self.bot = dict(response.get('bot'))
