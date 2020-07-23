@@ -5,7 +5,7 @@
 **[build](#build)** | **[unittest in docker](#unittest-in-docker')** | 
 **[unittest locally](#unittest-locally)** | **[codecov](https://codecov.io/gh/TheShellLand/automon-core)**
 
-[![codecov](https://codecov.io/gh/TheShellLand/automon-core/branch/master/graph/badge.svg)](https://codecov.io/gh/TheShellLand/automon-core) ![CI](https://github.com/TheShellLand/automon-core/workflows/CI/badge.svg?branch=master)
+[![codecov](https://codecov.io/gh/TheShellLand/automon-core/branch/master/graph/badge.svg)](https://codecov.io/gh/TheShellLand/automon-core) [![CI](https://github.com/TheShellLand/automon-core/workflows/CI/badge.svg?branch=master)](https://github.com/TheShellLand/automon-core/actions)
 
 This library hasn't been added to pypi yet
 
