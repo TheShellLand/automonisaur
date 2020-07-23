@@ -7,6 +7,8 @@ cd $(dirname $0)
 
 # TODO: set pre-commit hook
 
+rm -rf .coverage coverage.xml htmlcov
+
 if [[ "$@" == "-v" ]]; then
   pytest --cov=automon -v --cov-report term automon
 elif [[ "$@" == "-l" ]]; then
