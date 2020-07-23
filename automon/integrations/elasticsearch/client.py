@@ -15,15 +15,15 @@ class ElasticsearchClient(ElasticsearchConfig):
 
         self.indices = []
 
-    def rest(self, url):
-        if not self.connected:
+    def rest(self, url: str) -> requests:
+        try:
+            request = requests.get(url)
+            self._log.info(f'REST request status code: {request.status_code}')
+
+            return request.content
+        except Exception as e:
+            self._log.error(f'REST request failed: {e}')
             return False
-
-        request = requests.get(url)
-
-        self._log.info(f'Status code: {request.status_code}')
-
-        return request.content
 
     def ping(self):
         if not self.connected:
