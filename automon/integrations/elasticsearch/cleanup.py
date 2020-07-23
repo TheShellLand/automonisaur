@@ -1,5 +1,5 @@
 from automon.log.logger import Logging
-from automon.integrations.elasticsearch.config import ElasticsearchClient
+from automon.integrations.elasticsearch.client import ElasticsearchClient
 
 
 class Cleanup:
