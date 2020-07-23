@@ -1,11 +1,48 @@
 import unittest
 
-from automon.integrations.elasticsearch.config import ElasticsearchConfig, SnapshotBot, JVMBot
 from automon.integrations.elasticsearch.cleanup import Cleanup
 from automon.integrations.elasticsearch.metrics import Metric, MetricTimestamp, Cluster
+from automon.integrations.elasticsearch.client import ElasticsearchClient
+from automon.integrations.elasticsearch.config import ElasticsearchConfig, SnapshotBot, JVMBot
+from automon.integrations.elasticsearch.snapshots import Snapshot, SnapshotError, ElasticsearchSnapshotMonitor
 
 
 class ElasticsearchTest(unittest.TestCase):
+
+    def test_Snapshot(self):
+        self.assertTrue(Snapshot)
+        self.assertTrue(Snapshot({}))
+        self.assertEqual(Snapshot({}), Snapshot({}))
+        self.assertNotEqual(Snapshot({}), None)
+
+    def test_SnapshotError(self):
+        error = {'error': {'test': 'test'}}
+
+        self.assertTrue(SnapshotError)
+        self.assertTrue(SnapshotError({}))
+        self.assertEqual(SnapshotError({}), SnapshotError({}))
+        self.assertNotEqual(SnapshotError({}), None)
+        self.assertTrue(SnapshotError(error))
+
+    def test_ElasticsearchSnapshotMonitor(self):
+        e = ElasticsearchSnapshotMonitor('test', 'test', 'test')
+
+        self.assertTrue(ElasticsearchSnapshotMonitor)
+        self.assertTrue(e)
+        self.assertFalse(e.check_snapshots())
+
+    def test_ElasticsearchClient(self):
+        config = ElasticsearchConfig(None)
+
+        e = ElasticsearchClient(config)
+
+        self.assertTrue(ElasticsearchClient)
+        self.assertTrue(e)
+        self.assertFalse(e.ping())
+        self.assertFalse(e.delete_index(None))
+        self.assertFalse(e.delete_indices(None))
+        self.assertFalse(e.search_indices(None))
+        self.assertFalse(e.get_indices())
 
     def test_Cleanup(self):
         self.assertFalse(Cleanup().get_indices())
