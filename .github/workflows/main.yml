@@ -22,6 +22,10 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     
+    # requirements.txt
+    - name: python packages
+      run: pip3 install -r requirements.txt
+    
     # unittest
     - name: unittest
       run: /bin/bash unittests.sh
