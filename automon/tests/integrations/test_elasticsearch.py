@@ -16,7 +16,19 @@ class ElasticsearchTest(unittest.TestCase):
         self.assertNotEqual(Snapshot({}), None)
 
     def test_SnapshotError(self):
-        error = {'error': {'test': 'test'}}
+        error = {
+            'error': {
+                'test': 'test',
+                'caused_by': {
+                    'type': None,
+                    'reason': None,
+                    'caused_by': {
+                        'type': None,
+                        'reason': None
+                    }
+                }
+            }
+        }
 
         self.assertTrue(SnapshotError)
         self.assertTrue(SnapshotError({}))
