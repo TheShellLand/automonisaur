@@ -11,7 +11,7 @@ This library hasn't been added to pypi yet
 
 #### build
 ```shell script
-./biuld.sh
+./build.sh
 ```
 
 #### unittest in docker
