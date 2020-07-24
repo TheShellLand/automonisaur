@@ -1,11 +1,11 @@
 import unittest
 
+from automon.integrations.elasticsearch.jvm import ElasticsearchJvmMonitor
+from automon.integrations.elasticsearch.config import ElasticsearchConfig, SnapshotBot, JVMBot
+from automon.integrations.elasticsearch.client import ElasticsearchClient
 from automon.integrations.elasticsearch.cleanup import Cleanup
 from automon.integrations.elasticsearch.metrics import Metric, MetricTimestamp, Cluster
-from automon.integrations.elasticsearch.client import ElasticsearchClient
-from automon.integrations.elasticsearch.config import ElasticsearchConfig, SnapshotBot, JVMBot
 from automon.integrations.elasticsearch.snapshots import Snapshot, SnapshotError, ElasticsearchSnapshotMonitor
-from automon.integrations.elasticsearch.jvm import ElasticsearchJvmMonitor
 
 
 class ElasticsearchTest(unittest.TestCase):
@@ -67,6 +67,7 @@ class ElasticsearchTest(unittest.TestCase):
 
     def test_ElasticsearchConfig(self):
         self.assertTrue(ElasticsearchConfig())
+        self.assertEqual(ElasticsearchConfig(), ElasticsearchConfig())
 
     def test_SnapshotBot(self):
         self.assertTrue(SnapshotBot())
