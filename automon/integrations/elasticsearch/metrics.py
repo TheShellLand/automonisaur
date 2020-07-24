@@ -1,15 +1,13 @@
 import datetime
 
-from automon.log import Logging
 
-
-class Cluster:
+class Cluster(dict):
     def __init__(self, raw_metrics: dict):
         self._all_metrics = raw_metrics
         self._nodes = {
-            'total': self._all_metrics.get('_nodes')['total'],
-            'successful': self._all_metrics.get('_nodes')['successful'],
-            'failed': self._all_metrics.get('_nodes')['failed']
+            'total': self._all_metrics.get('_nodes').get('total'),
+            'successful': self._all_metrics.get('_nodes').get('successful'),
+            'failed': self._all_metrics.get('_nodes').get('failed')
         }
 
         self.cluster_name = self._all_metrics.get('cluster_name')
@@ -99,18 +97,19 @@ class Metric:
 
     def __init__(self, node: Cluster):
         self._node = node
-        self.node_name = self._node['name']
+        # self.node_name = self._node['name']
+        self.node_name = self._node.cluster_name
 
-        self.jvm = self._node['jvm']
-        self.heap_used_percent = self.jvm['mem']['heap_used_percent']
+        self.jvm = self._node.get('jvm')
+        self.heap_used_percent = self.jvm.get('mem').get('heap_used_percent')
 
-        self._mem = self.jvm['mem']
-        self._timestamp = self.jvm['timestamp']
-        self._uptime_in_millis = self.jvm['uptime_in_millis']
-        self._gc = self.jvm['gc']
-        self._threads = self.jvm['threading']
-        self._buffer_pools = self.jvm['buffer_pools']
-        self._classes = self.jvm['classes']
+        self._mem = self.jvm.get('mem')
+        self._timestamp = self.jvm.get('timestamp')
+        self._uptime_in_millis = self.jvm.get('uptime_in_millis')
+        self._gc = self.jvm.get('gc')
+        self._threads = self.jvm.get('threading')
+        self._buffer_pools = self.jvm.get('buffer_pools')
+        self._classes = self.jvm.get('classes')
 
     def __eq__(self, other):
         if not isinstance(other, Metric):
@@ -120,25 +119,16 @@ class Metric:
 
 
 class MetricTimestamp(Metric):
-    """Metric checking for Elastcsearch nodes
+    """Metric checking for Elastcsearch nodes"""
 
-    """
-
-    def __init__(self, metric):
-        self.metric = self._is_Metric_instance(metric)
+    def __init__(self, metric: Metric):
+        self.metric = metric if isinstance(metric, Metric) else Metric(metric)
         self.last_checked = datetime.datetime.now()
         self.node_name = self.metric.node_name
         self.heap_used_percent = self.metric.heap_used_percent
 
     def _time_now(self):
         return datetime.datetime.now()
-
-    def _is_Metric_instance(self, metric):
-
-        if not isinstance(metric, Metric):
-            metric = Metric(metric)
-
-        return metric
 
     def _is_instance(self, new_metric):
 
@@ -148,30 +138,26 @@ class MetricTimestamp(Metric):
         return new_metric
 
     def change_percent(self, new_metric):
-        new_metric = self._is_instance(new_metric)
-
-        current = new_metric.heap_used_percent * .01
+        current = self._is_instance(new_metric).heap_used_percent * .01
         previous = self.heap_used_percent * .01
 
-        change_percent = ((float(current) - previous) / previous) * 100
+        return ((float(current) - previous) / previous) * 100
 
-        return change_percent
-
-    def slope(self, new_metric):
-        new_metric = self._is_instance(new_metric)
-
-        y1 = self.metric.heap_used_percent
-        y2 = new_metric.heap_used_percent
-
-        x1 = self.last_checked.timestamp()
-        x2 = new_metric.last_checked.timestamp()
-
-        slope = (y2 - y1) / 1
-        # time is currently not taken into account
-        # time is disabled
-        # slope = (y2 - y1) / (x2 - x1)
-
-        return slope
+    # def slope(self, new_metric):
+    #     new_metric = self._is_instance(new_metric)
+    #
+    #     y1 = self.metric.heap_used_percent
+    #     y2 = new_metric.heap_used_percent
+    #
+    #     x1 = self.last_checked.timestamp()
+    #     x2 = new_metric.last_checked.timestamp()
+    #
+    #     slope = (y2 - y1) / 1
+    #     # time is currently not taken into account
+    #     # time is disabled
+    #     # slope = (y2 - y1) / (x2 - x1)
+    #
+    #     return slope
 
     def __eq__(self, other):
         if not isinstance(other, MetricTimestamp):

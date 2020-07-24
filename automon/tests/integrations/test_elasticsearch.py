@@ -79,7 +79,9 @@ class ElasticsearchTest(unittest.TestCase):
         self.assertTrue(Cluster)
 
     def test_MetricTimestamp(self):
+        # metric = Metric()
         self.assertTrue(MetricTimestamp)
+        # self.assertTrue(MetricTimestamp(metric)._time_now())
 
     def test_Metric(self):
         node = None
