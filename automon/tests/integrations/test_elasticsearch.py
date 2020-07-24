@@ -12,6 +12,9 @@ class ElasticsearchTest(unittest.TestCase):
 
     def test_ElasticsearchJvmMonitor(self):
         self.assertTrue(ElasticsearchJvmMonitor)
+        self.assertTrue(ElasticsearchJvmMonitor())
+        self.assertFalse(ElasticsearchJvmMonitor().get_metrics())
+        # self.assertFalse(ElasticsearchJvmMonitor().read_file())
 
     def test_Snapshot(self):
         self.assertTrue(Snapshot)

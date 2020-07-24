@@ -8,7 +8,7 @@ from automon.integrations.elasticsearch.config import ElasticsearchConfig
 
 class Snapshot:
     def __init__(self, snapshot: dict):
-        self._log = Logging(__name__, Logging.DEBUG)
+        self._log = Logging(Snapshot.__name__, Logging.DEBUG)
 
         self.snapshot = snapshot
         self.id = snapshot.get('id')
@@ -33,7 +33,7 @@ class Snapshot:
 
 class ElasticsearchSnapshotMonitor:
     def __init__(self, endpoint: str, elasticsearch_repository: str, snapshots_prefix: str):
-        self._log = Logging(__name__, Logging.DEBUG)
+        self._log = Logging(ElasticsearchSnapshotMonitor.__name__, Logging.DEBUG)
 
         self._config = ElasticsearchConfig(endpoint)
         self._client = ElasticsearchClient(self._config)
@@ -148,7 +148,7 @@ class ElasticsearchSnapshotMonitor:
 
 class SnapshotError:
     def __init__(self, error: dict):
-        self._log = Logging(__name__, Logging.DEBUG)
+        self._log = Logging(SnapshotError.__name__, Logging.DEBUG)
 
         self.error = error.get('error')
 
