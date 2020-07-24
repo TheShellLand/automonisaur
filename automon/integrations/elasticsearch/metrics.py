@@ -1,20 +1,22 @@
 import datetime
 
+from automon.log import Logging
+
 
 class Cluster:
-    def __init__(self, raw_metrics):
+    def __init__(self, raw_metrics: dict):
         self._all_metrics = raw_metrics
         self._nodes = {
-            'total': self._all_metrics['_nodes']['total'],
-            'successful': self._all_metrics['_nodes']['successful'],
-            'failed': self._all_metrics['_nodes']['failed']
+            'total': self._all_metrics.get('_nodes')['total'],
+            'successful': self._all_metrics.get('_nodes')['successful'],
+            'failed': self._all_metrics.get('_nodes')['failed']
         }
 
-        self.cluster_name = self._all_metrics['cluster_name']
+        self.cluster_name = self._all_metrics.get('cluster_name')
         self.nodes = []
         self.metrics = []
 
-        for node in self._all_metrics['nodes'].items():
+        for node in self._all_metrics.get('nodes').items():
             self.nodes.append(node[1])
 
         for metric in self.nodes:

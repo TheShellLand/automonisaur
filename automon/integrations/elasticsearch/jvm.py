@@ -1,35 +1,44 @@
 import json
-import requests
 
+from automon.log import Logging
 from automon.integrations.elasticsearch.metrics import Cluster
+from automon.integrations.elasticsearch.config import ElasticsearchConfig
+from automon.integrations.elasticsearch.client import ElasticsearchClient
 
 
 class ElasticsearchJvmMonitor:
-    def __init__(self, elasticsearch_endpoint):
+    def __init__(self, config: ElasticsearchConfig = None):
+        self._log = Logging(ElasticsearchJvmMonitor.__name__, Logging.DEBUG)
 
-        self.endpoint = elasticsearch_endpoint
-        self._all_stats = None
+        self._config = config if config == ElasticsearchConfig else ElasticsearchConfig()
+        self._client = ElasticsearchConfig(config) \
+            if config == ElasticsearchConfig else ElasticsearchClient()
 
-    def _get_all_stats(self, file=None):
+        self._endpoint = self._client.config.es_hosts
 
-        if file:
-            with open(file, 'rb') as stats:
-                self._all_stats = json.load(stats)
-        else:
-            url = '{endpoint}/_nodes/stats?pretty'.format(endpoint=self.endpoint)
-
-            request_json = requests.get(url).content
-            self._all_stats = json.loads(request_json)
+    def _get_all_stats(self):
+        try:
+            request_json = self._client.rest(f'{self._endpoint}/_nodes/stats?pretty')
+            return json.loads(request_json)
+        except Exception as e:
+            self._log.error(f'Failed to get all stats: {e}')
+            return False
 
     def _get_all_jvm_metrics(self):
-        metrics = self._all_stats
-        self.cluster = Cluster(metrics)
+        try:
+            return Cluster(self._get_all_stats())
+        except Exception as e:
+            self._log.error(f'Failed to get jvm metrics: {e}')
 
     def read_file(self, file):
-        self._get_all_stats(file=file)
+        try:
+            with open(file, 'rb') as stats:
+                return json.load(stats)
+        except Exception as e:
+            self._log.error(f'Failed to read file: {e}')
 
     def get_metrics(self):
-        if not self._all_stats:
-            self._get_all_stats()
-
-        self._get_all_jvm_metrics()
+        try:
+            return self._get_all_jvm_metrics()
+        except Exception as e:
+            self._log.error(f'Failed to get metrics: {e}')
