@@ -16,7 +16,7 @@ class Neo4jWrapper:
 
     def __init__(self, config: Neo4jConfig = None) -> neo4j:
 
-        self.config = config if config else Neo4jConfig()
+        self.config = config if isinstance(config, Neo4jConfig) else Neo4jConfig()
 
         self.user = self.config.user
         self.password = self.config.password
