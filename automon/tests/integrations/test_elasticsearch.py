@@ -5,9 +5,13 @@ from automon.integrations.elasticsearch.metrics import Metric, MetricTimestamp, 
 from automon.integrations.elasticsearch.client import ElasticsearchClient
 from automon.integrations.elasticsearch.config import ElasticsearchConfig, SnapshotBot, JVMBot
 from automon.integrations.elasticsearch.snapshots import Snapshot, SnapshotError, ElasticsearchSnapshotMonitor
+from automon.integrations.elasticsearch.jvm import ElasticsearchJvmMonitor
 
 
 class ElasticsearchTest(unittest.TestCase):
+
+    def test_ElasticsearchJvmMonitor(self):
+        self.assertTrue(ElasticsearchJvmMonitor)
 
     def test_Snapshot(self):
         self.assertTrue(Snapshot)
@@ -59,7 +63,7 @@ class ElasticsearchTest(unittest.TestCase):
     def test_Cleanup(self):
         self.assertFalse(Cleanup().get_indices())
         self.assertFalse(Cleanup().search_indices(f''))
-        self.assertFalse(Cleanup().delete_indices(f''))
+        # self.assertFalse(Cleanup().delete_indices(f''))
 
     def test_ElasticsearchConfig(self):
         self.assertTrue(ElasticsearchConfig())

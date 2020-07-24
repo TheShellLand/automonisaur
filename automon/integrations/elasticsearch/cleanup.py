@@ -14,5 +14,5 @@ class Cleanup:
     def search_indices(self, index_pattern):
         return self.client.search_indices(index_pattern)
 
-    def delete_indices(self, index_pattern):
-        return self.client.delete_indices(index_pattern)
+    # def delete_indices(self, index_pattern):
+    #     return self.client.delete_indices(index_pattern)

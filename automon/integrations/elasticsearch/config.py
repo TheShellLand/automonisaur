@@ -1,5 +1,4 @@
 import os
-import elasticsearch
 
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 
