@@ -17,23 +17,24 @@ class ElasticsearchClient(ElasticsearchConfig):
 
     def rest(self, url: str) -> requests:
         try:
-            request = requests.get(url)
-            self._log.info(f'REST request status code: {request.status_code}')
-
-            return request.content
+            return requests.get(url).content
         except Exception as e:
             self._log.error(f'REST request failed: {e}')
             return False
 
     def ping(self):
-        if not self.connected:
+        try:
+            return self.client.ping()
+        except Exception as e:
+            self._log.error(f'Ping failed: {e}')
             return False
-        return self.client.ping()
 
     def delete_index(self, index):
-        if not self.connected:
+        try:
+            return self.client.delete(index)
+        except Exception as e:
+            self._log.error(f'Delete index failed: {e}')
             return False
-        self.client.delete(index)
 
     def delete_indices(self, index_pattern):
         """Requires user interaction"""
