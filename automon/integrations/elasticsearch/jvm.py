@@ -10,7 +10,7 @@ class ElasticsearchJvmMonitor:
     def __init__(self, config: ElasticsearchConfig = None):
         self._log = Logging(ElasticsearchJvmMonitor.__name__, Logging.DEBUG)
 
-        self._config = config if config == ElasticsearchConfig else ElasticsearchConfig()
+        self._config = config if isinstance(config, ElasticsearchConfig) else ElasticsearchConfig()
         self._client = ElasticsearchConfig(config) \
             if config == ElasticsearchConfig else ElasticsearchClient()
 

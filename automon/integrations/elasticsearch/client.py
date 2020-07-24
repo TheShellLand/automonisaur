@@ -9,7 +9,7 @@ class ElasticsearchClient(ElasticsearchConfig):
     def __init__(self, config: ElasticsearchConfig = None):
         self._log = Logging(ElasticsearchClient.__name__, Logging.DEBUG)
 
-        self.config = config if config == ElasticsearchConfig else ElasticsearchConfig()
+        self.config = config if isinstance(config, ElasticsearchConfig) else ElasticsearchConfig()
         self.client = self.config.Elasticsearch
         self.connected = self.client.ping() if self.client else False
 
