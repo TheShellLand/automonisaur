@@ -39,8 +39,10 @@ class Chat:
             split = msg.splitlines()
 
             for line in split:
-                line = line.strip()
-                new_msg.append(line)
+                if line:
+                    line = line.strip()
+                    line = Chat.clean(line)
+                    new_msg.append(line)
 
             new_msg = ' '.join(new_msg)
 
