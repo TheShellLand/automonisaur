@@ -7,7 +7,7 @@ from automon.integrations.slack.slack_formatting import Chat, Format
 
 # logging.basicConfig(format=log_format)
 
-log = logging.getLogger('log')
+log = logging.getLogger('logger')
 log.setLevel(CRITICAL)
 
 
@@ -65,12 +65,14 @@ class Logging:
 
         log.debug('loaded')
 
-    def error(self, msg, enable_traceback: bool = True):
+    def error(self, msg: str = None, enable_traceback: bool = True):
         tb = traceback.format_exc()
         # tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb and enable_traceback:
             self.logging.error(tb)
-        return self.logging.error(msg)
+
+        if msg:
+            return self.logging.error(msg)
 
     def warning(self, msg):
         return self.logging.warning(msg)
