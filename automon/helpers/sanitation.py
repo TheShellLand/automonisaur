@@ -4,6 +4,30 @@ from string import (ascii_letters, digits)
 class Sanitation:
 
     @staticmethod
+    def hyphen_underscore(text: str) -> str:
+        allowed_chars = [x for x in ''.join([ascii_letters, digits, '-', '_'])]
+
+        text = f'{text}'
+
+        return ''.join([x for x in text if x in allowed_chars])
+
+    @staticmethod
+    def hyphens_only(text: str) -> str:
+        allowed_chars = [x for x in ''.join([ascii_letters, digits, '-'])]
+
+        text = f'{text}'
+
+        return ''.join([x for x in text if x in allowed_chars])
+
+    @staticmethod
+    def underscores_only(text: str) -> str:
+        allowed_chars = [x for x in ''.join([ascii_letters, digits, '_'])]
+
+        text = f'{text}'
+
+        return ''.join([x for x in text if x in allowed_chars])
+
+    @staticmethod
     def strip_quotes(text: str) -> str:
         removed_chars = ['"', "'"]
 
