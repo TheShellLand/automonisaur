@@ -48,6 +48,10 @@ class Sanitation:
         return text
 
     @staticmethod
+    def strip(text: str) -> str:
+        return str(text).strip()
+
+    @staticmethod
     def strip_spaces_from_list(lst: list) -> list:
         removed_chars = ' '
 
@@ -64,7 +68,52 @@ class Sanitation:
     def safe_string(text: str) -> str:
         allowed_characters = ascii_letters + digits + '-_.'
 
-        text = str(text)
+        text = str(text).strip()
+        new_text = []
+
+        for character in text:
+            if character in allowed_characters:
+                new_text.append(character)
+            else:
+                new_text.append('_')
+
+        return ''.join(new_text)
+
+    @staticmethod
+    def safe_string_allow_spaces(text: str) -> str:
+        allowed_characters = ascii_letters + digits + '-_. '
+
+        text = str(text).strip()
+        new_text = []
+
+        for character in text:
+            if character in allowed_characters:
+                new_text.append(character)
+            else:
+                new_text.append('_')
+
+        return ''.join(new_text)
+
+    @staticmethod
+    def safe_filename(text: str) -> str:
+        allowed_characters = ascii_letters + digits + '''-_.:?'" '''
+
+        text = str(text).strip()
+        new_text = []
+
+        for character in text:
+            if character in allowed_characters:
+                new_text.append(character)
+            else:
+                new_text.append('_')
+
+        return ''.join(new_text)
+
+    @staticmethod
+    def safe_foldername(text: str) -> str:
+        allowed_characters = ascii_letters + digits + '''-_. '''
+
+        text = str(text).strip()
         new_text = []
 
         for character in text:
