@@ -23,4 +23,8 @@ class PhantomCompatableImporter:
 
 
 def import_playbook(playbook: str):
+    playbook = playbook.strip()
+
+    if 'master/' in playbook:
+        playbook = playbook.replace('master/', '')
     return importlib.import_module(playbook)
