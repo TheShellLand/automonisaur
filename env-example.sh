@@ -29,3 +29,9 @@ export ELASTICSEARCH_HOSTS=
 
 # Codecov
 export CODECOV_TOKEN=
+
+# Splunk
+export SPLUNK_HOST=splunkcloud.com
+export SPLUNK_PORT=8089
+export SPLUNK_USERNAME=
+export SPLUNK_PASSWORD=
