@@ -46,7 +46,7 @@ class Logging:
     NOTSET = NOTSET
 
     def __init__(self, name: __name__ = __name__, level: logging.INFO = INFO,
-                 log_stream: LogStream = False):
+                 log_stream: LogStream = False, timestamp: bool = True):
 
         self.logging = logging.getLogger(name)
         self.logging.setLevel(level)
@@ -55,7 +55,7 @@ class Logging:
 
         spacing = 4
 
-        timestamp = '%(asctime)s'
+        time = '%(asctime)s'
         levelname = '%(levelname)s'
         logger = '%(name)s'
         # filename = '%(filename)s'
@@ -64,7 +64,12 @@ class Logging:
         # line = '%(lineno)d'
         # module = '%(module)s'
         message = '%(message)s'
-        self.log_format = f'{timestamp}\t{levelname}\t[{logger}]\t{message}'
+
+        if timestamp:
+            self.log_format = f'{time}\t{levelname}\t[{logger}]\t{message}'
+        else:
+            self.log_format = f'{levelname}\t[{logger}]\t{message}'
+
         # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
 
         logging.basicConfig(level=level, format=self.log_format)
