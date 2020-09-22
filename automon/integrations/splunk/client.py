@@ -34,6 +34,17 @@ class SplunkClient:
     def info(self):
         return f'{self}'
 
+    def get_jobs(self):
+        """get collection of search jobs"""
+        return self.service.jobs
+
+    def create_job(self, query):
+        """create search job"""
+        return self.get_jobs().create(query)
+
+    def job_summary(self):
+        return f'There are {len(self.get_jobs())} jobs available to the current user'
+
     def get_apps(self):
         return [Application(x) for x in self.service.apps]
 
@@ -53,6 +64,12 @@ class SplunkClient:
         if self.client:
             return f'connected to {self.config}'
         return f'not connected to {self.config}'
+
+
+class Job:
+    def __init__(self, job: client.Job):
+        self._job = job
+        self.sid = job.sid
 
 
 class Application:
