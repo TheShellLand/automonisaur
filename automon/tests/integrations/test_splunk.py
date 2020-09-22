@@ -57,5 +57,11 @@ class SplunkClientTest(unittest.TestCase):
     def test_init(self):
         self.assertIsNotNone(SplunkClient(self.config))
 
+    def test_jobs(self):
+        self.assertTrue(SplunkClient(self.config).get_jobs())
+        self.assertTrue(SplunkClient(self.config).job_summary())
+        self.assertTrue(SplunkClient(self.config).create_job('test'))
+
+
 # if __name__ == '__main__':
 #     unittest.main()
