@@ -69,6 +69,14 @@ class Job:
         return f'{self._search} {self._searchProviders} ({self._runDuration} s) ({self._diskUsage} B)'
 
 
+class SplunkRestClient:
+    _log = Logging('SplunkRestClient', level=Logging.DEBUG)
+
+    def __int__(self, config: SplunkConfig = SplunkConfig()):
+
+        self.config = config
+
+
 class SplunkClient:
     _log = Logging('SplunkClient', level=Logging.DEBUG)
 
