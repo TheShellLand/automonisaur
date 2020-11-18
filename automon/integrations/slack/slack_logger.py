@@ -211,7 +211,7 @@ class SlackLogging(Slack):
         tb = traceback.format_exc()
         tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb:
-            await self.slack.chat_postMessage(tb)
+            await self.slack.chat_postMessage(channel, tb)
 
         if msg:
             msg = self._msg(msg)
@@ -226,7 +226,7 @@ class SlackLogging(Slack):
         tb = traceback.format_exc()
         tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb:
-            await self.slack.chat_postMessage(tb)
+            await self.slack.chat_postMessage(channel, tb)
 
         if msg:
             msg = self._msg(msg)
