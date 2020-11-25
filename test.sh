@@ -2,8 +2,7 @@
 
 # image build script
 
-set -xe
-cd $(dirname $0)
+cd $(dirname $0) && set -xe
 
 DOCKERNAME=automon-core
 
