@@ -2,8 +2,7 @@
 
 source env.sh
 
-set -e
-cd $(dirname $0)
+cd $(dirname $0) && set -e
 
 # TODO: set pre-commit hook
 
