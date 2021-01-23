@@ -1,17 +1,79 @@
-FROM python:3
+# pypi requirements
+FROM python:3 as builder
+
+RUN python3 -m pip install --user --upgrade setuptools wheel
+RUN python3 -m pip install --user --upgrade twine
+RUN apt update && apt install -y vim
+
+FROM builder
 
 LABEL maintainer="naisanza@gmail.com"
-LABEL description="automon core library"
+LABEL description="automonisaur core library"
+
+
+# Slack Auth
+ENV SLACK_WEBHOOK $SLACK_WEBHOOK
+ENV SLACK_PROXY $SLACK_PROXY
+ENV SLACK_TOKEN $SLACK_TOKEN
+
+# Openstack Swift Auth
+ENV OS_USERNAME $OS_USERNAME
+ENV OS_PASSWORD $OS_PASSWORD
+ENV OS_AUTH_URL $OS_AUTH_URL
+ENV OS_PROJECT_ID $OS_PROJECT_ID
+ENV OS_PROJECT_NAME $OS_PROJECT_NAME
+ENV OS_USER_DOMAIN_NAME $OS_USER_DOMAIN_NAME
+ENV OS_PROJECT_DOMAIN_ID $OS_PROJECT_DOMAIN_ID
+ENV OS_REGION_NAME $OS_REGION_NAME
+ENV OS_INTERFACE $OS_INTERFACE
+ENV OS_IDENTITY_API_VERSION $OS_IDENTITY_API_VERSION
+ENV SWIFTCLIENT_INSECURE $SWIFTCLIENT_INSECURE
+
+# Shodan
+ENV SHODAN_API $SHODAN_API
+
+# Neo4j
+ENV NEO4J_USER $NEO4J_USER
+ENV NEO4J_PASSWORD $NEO4J_PASSWORD
+ENV NEO4J_SERVERS $NEO4J_SERVERS
+# Elasticsearch
+ENV ELASTICSEARCH_HOSTS $ELASTICSEARCH_HOSTS
+
+# Codecov
+ENV CODECOV_TOKEN $CODECOV_TOKEN
+
+# Splunk
+ENV SPLUNK_HOST $SPLUNK_HOST
+ENV SPLUNK_PORT $SPLUNK_PORT
+ENV SPLUNK_USERNAME $SPLUNK_USERNAME
+ENV SPLUNK_PASSWORD $SPLUNK_PASSWORD
+
+# Pypi
+ENV PKG $PKG
+ENV PYPI $PYPI
+ENV TWINE_REPOSITORY $TWINE_REPOSITORY
+ENV TWINE_REPOSITORY_URL $TWINE_REPOSITORY_URL
+ENV TWINE_USERNAME $TWINE_USERNAME
+ENV TWINE_PASSWORD $TWINE_PASSWORD
+
 
 WORKDIR /app
 
-COPY automon automon
+COPY $PKG $PKG
+COPY README.md .
+COPY LICENSE .
 COPY entry.sh .
 COPY unittests.sh .
 COPY requirements.txt .
 COPY setup.py .
 
-RUN pip install -r requirements.txt
+#RUN pip install -r requirements.txt
+
+# create pypi package
+RUN python3 setup.py sdist bdist_wheel
+
+# upload pypi package
+#RUN python3 -m twine upload --repository $PYPI --skip-existing dist/*
 
 # run app
 CMD ["/bin/bash"]
