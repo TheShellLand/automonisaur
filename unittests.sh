@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source env.sh
-
 cd $(dirname $0) && set -e
 
 # TODO: set pre-commit hook
