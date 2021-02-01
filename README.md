@@ -1,4 +1,4 @@
-![](docs/images/sauruspark.gif)
+![](https://github.com/TheShellLand/automon-core/raw/master/docs/images/sauruspark.gif)
 
 # Automonisaur: Core Libraries
 
