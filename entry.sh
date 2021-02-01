@@ -9,6 +9,7 @@ if [ "$1" == "test" ]; then
   /bin/bash unittests.sh "$2"
 else
   python3 -m twine upload --repository $PYPI --skip-existing dist/* || exec "$@"
+  exit 0
 fi
 
 exec "$@"
