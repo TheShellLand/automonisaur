@@ -4,7 +4,7 @@
 
 cd $(dirname $0) && set -xe
 
-DOCKERNAME=automon-core
+DOCKERNAME=automon
 
 # build image
 DOCKERTAG=$(git describe --tags)
