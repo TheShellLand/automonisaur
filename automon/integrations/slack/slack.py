@@ -36,7 +36,7 @@ class SlackError:
             self.errno = getattr(self._reason, 'errno', '')
             self.reason = getattr(self._reason, 'reason', '')
             self.strerror = getattr(self._reason, 'strerror', '')
-            self.verfify_code = getattr(self._reason, 'verify_code', '')
+            self.verify_code = getattr(self._reason, 'verify_code', '')
             self.verify_message = getattr(self._reason, 'verify_message', '')
 
         if self._response:
@@ -44,7 +44,7 @@ class SlackError:
 
             self.data = dict(getattr(self._response, 'data', ''))
             self.ok = self.data.get('ok', '')
-            self.error = self.data.get('error', '')
+            self.__error = self.data.get('error', '')
             self._needed = self.data.get('needed', '')
             self.provided = self.data.get('provided', '')
 
@@ -52,6 +52,16 @@ class SlackError:
             self.http_verb = getattr(self._response, 'http_verb', '')
             self.req_args = getattr(self._response, 'req_args', '')
             self.status_code = getattr(self._response, 'status_code', '')
+
+    def error(self):
+        if self._response:
+            return self.__error
+
+        if self._reason:
+            return self.strerror
+
+        log.info(f'{NotImplemented}')
+        return f'{self._error}'
 
     def needed(self):
         if self._response:
