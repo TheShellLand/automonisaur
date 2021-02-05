@@ -17,12 +17,12 @@ class SlackLogging(Slack):
     Logging to Slack
     """
 
-    def __init__(self, slack: Slack = None, username: str = None, channel: str = None,
+    def __init__(self, slack: Slack = None, username: str = '', channel: str = '',
                  change_user: bool = False, change_icon: bool = False, debug: bool = True):
 
-        self.slack = slack if slack else Slack(username=username, channel=channel)
-        self.slack.username = username if username else self.slack.username
-        self.slack.channel = channel if channel else self.slack.channel
+        self.slack = slack or Slack(username=username, channel=channel)
+        self.slack.username = self.slack.username or username
+        self.slack.channel = self.slack.channel or channel
         self.slack_username = self.slack.username
         self.slack_channel = self.slack.channel
 
@@ -36,43 +36,43 @@ class SlackLogging(Slack):
 
         self._icon = Emoji.yay
         self._url = ''
-        self._channel = f'#{self.slack_username}'
+        self._channel = self.slack.SLACK_DEFAULT_CHANNEL or '' if not self.slack_username else f'#{self.slack_username}'
         self._format = Format.blockquote
         self._suffix = ''
 
         self._warn_icon = Emoji.warning
         self._warn_url = ''
-        self._warn_channel = f'#{self.slack_username}-warn'
+        self._warn_channel = self.slack.SLACK_WARN_CHANNEL or '' if not self.slack_username else f'#{self.slack_username}-warn'
         self._warn_format = Format.blockquote
         self._warn_suffix = ' warn'
 
         self._info_icon = Emoji.information_source
         self._info_url = ''
-        self._info_channel = f'#{self.slack_username}-info'
+        self._info_channel = self.slack.SLACK_INFO_CHANNEL or '' if not self.slack_username else f'#{self.slack_username}-info'
         self._info_format = Format.blockquote
         self._info_suffix = ' info'
 
         self._debug_icon = Emoji.magnifying_glass
         self._debug_url = ''
-        self._debug_channel = f'#{self.slack_username}-debug'
+        self._debug_channel = self.slack.SLACK_DEBUG_CHANNEL or '#' if not self.slack_username else f'#{self.slack_username}-debug'
         self._debug_format = Format.blockquote
         self._debug_suffix = ' debugger'
 
         self._error_icon = Emoji.sos
         self._error_url = ''
-        self._error_channel = f'#{self.slack_username}-error'
+        self._error_channel = self.slack.SLACK_ERROR_CHANNEL or '' if not self.slack_username else f'#{self.slack_username}-error'
         self._error_format = Format.blockquote
         self._error_suffix = ' error'
 
         self._critical_icon = Emoji.sos
         self._critical_url = ''
-        self._critical_channel = f'#{self.slack_username}-critical'
+        self._critical_channel = self.slack.SLACK_CRITICAL_CHANNEL or '' if not self.slack_username else f'#{self.slack_username}-critical'
         self._critical_format = Format.blockquote
         self._critical_suffix = ' critical'
 
         self._test_icon = Emoji.yay
         self._test_url = ''
-        self._test_channel = f'#{self.slack_username}-test'
+        self._test_channel = self.slack.SLACK_TEST_CHANNEL or f'#{self.slack_username}-test'
         self._test_format = Format.blockquote
         self._test_suffix = ' tester'
 
@@ -170,6 +170,9 @@ class SlackLogging(Slack):
 
     def close(self):
         self.run_until_complete()
+
+    def default(self, msg: str) -> asyncio.tasks:
+        asyncio.run(self._put_queue(WARN, self._channel, msg))
 
     def warn(self, msg: str) -> asyncio.tasks:
         asyncio.run(self._put_queue(WARN, self._warn_channel, msg))
