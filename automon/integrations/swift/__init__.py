@@ -84,7 +84,7 @@ class SwiftError(object):
 
 class SwiftPage(SwiftService):
     def __init__(self, page: dict) -> SwiftService.list:
-        self._log = Logging(SwiftPage.__name__, Logging.DEBUG)
+        self._log = Logging(SwiftPage.__name__, Logging.ERROR)
 
         self._page = page
 
@@ -145,23 +145,19 @@ class SwiftList(SwiftService):
 
         self.container = container
 
+    def list_gen(self) -> object or SwiftPage:
         with SwiftService() as swift:
             try:
-                # TODO: if swift auth fails, this won't complete
-                self.list_parts_gen = swift.list(container=container)
-                self.success = True
-                self.log.debug(f'succeeded, container: {container}')
-            except Exception as e:
-                self.success = False
-                self.log.error(f'failed, container: {container}, {e}')
+                list_parts_gen = swift.list(container=self.container)
 
-    def list_gen(self) -> object or SwiftPage:
-        try:
-            if self.success:
-                for page in self.list_parts_gen:
-                    yield SwiftPage(page)
-        except Exception as e:
-            self.log.error(f'page failed, {e}')
+                for page in list_parts_gen:
+                    if page["success"]:
+                        yield SwiftPage(page)
+                    else:
+                        self.log.error(f'{page}')
+
+            except Exception as e:
+                self.log.error(f'page failed, {e}')
 
 
 class Swift:
@@ -172,7 +168,7 @@ class Swift:
     def list_summary(self, files, folders):
         return files, folders
 
-    def list_container(self, container, summary=False, filter=None,
+    def list_container(self, container, summary=False, filter='',
                        separate=False) -> [SwiftItem]:
 
         self._log.info(f'listing {container} (filter: {filter})')
@@ -191,8 +187,9 @@ class Swift:
                 item_v1 = item.data()
                 item_v2 = item
 
-                if not item.filter(filter):
-                    continue
+                if filter:
+                    if not item.filter(filter):
+                        continue
 
                 swift_objects.append(item_v1)
                 swift_objects_v2.append(item_v2)
@@ -574,7 +571,7 @@ class Swift:
 
         return missing_objects_list
 
-    def stats(self, container, filter=None, post_log=True, show_types=False):
+    def stats(self, container, filter='', post_log=True, show_types=False):
 
         self._log.info(f'stat {container} (filter: {filter})')
         slacklog.debug(f'stat {container} (filter: {filter})')
@@ -602,15 +599,15 @@ class Swift:
         objects = total_objects - total_dirs
 
         msg = ((f'Stats for {container}: \n'
-                f'>{total_objects} *total objects* \n'
-                f'>{objects} *objects* \n'
-                f'>{total_dirs} *dirs* \n'))
+                f'>{total_objects}*total objects* \n'
+                f'>{objects}*objects* \n'
+                f'>{total_dirs}*dirs* \n'))
 
         if filter:
             msg = ((f'Stats for {container} ({filter}): \n'
-                    f'>{total_objects} *total objects* \n'
-                    f'>{objects} *objects* \n'
-                    f'>{total_dirs} *dirs* \n'))
+                    f'>{total_objects}*total objects* \n'
+                    f'>{objects}*objects* \n'
+                    f'>{total_dirs}*dirs* \n'))
 
         if show_types:
             msg = msg + f'>*types:* `{list_types}` \n'
