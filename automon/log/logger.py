@@ -49,10 +49,11 @@ class Logging:
 
         spacing = 4
 
+        timestamp = '%(asctime)s'
         levelname = '%(levelname)s'
-        modname = '%(name)s'
+        modname = '[%(name)s]'
         message = '%(message)s'
-        self.log_format = f'{levelname}\t{modname}\t{message}'
+        self.log_format = f'{timestamp}\t{levelname}\t{modname}\t{message}'
         # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
 
         logging.basicConfig(level=level, format=self.log_format)
