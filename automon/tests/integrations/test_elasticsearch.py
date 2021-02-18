@@ -51,17 +51,21 @@ class ElasticsearchTest(unittest.TestCase):
         self.assertFalse(e.check_snapshots())
 
     def test_ElasticsearchClient(self):
-        config = ElasticsearchConfig(None)
+        endpoints = None
+        config = ElasticsearchConfig(endpoints=endpoints)
 
         e = ElasticsearchClient(config)
 
-        self.assertTrue(ElasticsearchClient)
         self.assertTrue(e)
-        self.assertFalse(e.ping())
-        self.assertFalse(e.delete_index(None))
-        # self.assertFalse(e.delete_indices(None))
-        self.assertFalse(e.search_indices(None))
-        self.assertFalse(e.get_indices())
+
+        if not endpoints:
+            self.assertTrue(ElasticsearchClient)
+            self.assertFalse(e.ping())
+            self.assertFalse(e.delete_index(None))
+            # self.assertFalse(e.delete_indices(None))
+            self.assertFalse(e.search_indices(None))
+            self.assertFalse(e.get_indices())
+
 
     def test_Cleanup(self):
         self.assertFalse(Cleanup().get_indices())
