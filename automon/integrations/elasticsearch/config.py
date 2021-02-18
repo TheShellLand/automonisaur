@@ -1,6 +1,6 @@
 import os
 
-from elasticsearch import Elasticsearch, RequestsHttpConnection
+from elasticsearch import RequestsHttpConnection
 
 from automon.log.logger import Logging
 from automon.helpers.sanitation import Sanitation as S
@@ -15,7 +15,7 @@ class ElasticsearchConfig:
                  connection_class: RequestsHttpConnection = RequestsHttpConnection):
         self._log = Logging(ElasticsearchConfig.__name__, Logging.DEBUG)
 
-        self.es_hosts = S.list_from_string(endpoints) if endpoints else \
+        self.es_hosts = S.list_from_string(endpoints) or \
             S.list_from_string(os.getenv('ELASTICSEARCH_ENDPOINT')) or \
             S.list_from_string(os.getenv('ELASTICSEARCH_HOSTS')) or None
 
@@ -26,18 +26,8 @@ class ElasticsearchConfig:
         self.verify_certs = verify_certs
         self.connection_class = connection_class
 
-        if self.es_hosts:
-            self.Elasticsearch = Elasticsearch(
-                hosts=self.es_hosts,
-                request_timeout=self.request_timeout,
-                http_auth=self.http_auth,
-                use_ssl=self.use_ssl,
-                verify_certs=self.verify_certs,
-                connection_class=self.connection_class)
-
-        else:
-            self.Elasticsearch = False
-            self._log.error(f'Missing ELASTICSEARCH_ENDPOINT, ELASTICSEARCH_ENDPOINT')
+        if not self.es_hosts:
+            self._log.error(f'Missing ELASTICSEARCH_ENDPOINT')
 
     def __eq__(self, other):
         if not isinstance(other, ElasticsearchConfig):
