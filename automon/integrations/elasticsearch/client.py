@@ -1,16 +1,23 @@
 import requests
 import elasticsearch
 
+from elasticsearch import Elasticsearch
+
 from automon.log.logger import Logging
 from automon.integrations.elasticsearch.config import ElasticsearchConfig
 
 
 class ElasticsearchClient(ElasticsearchConfig):
-    def __init__(self, config: ElasticsearchConfig = None):
+    def __init__(self, config: ElasticsearchConfig = ElasticsearchConfig()):
         self._log = Logging(ElasticsearchClient.__name__, Logging.DEBUG)
 
-        self.config = config if isinstance(config, ElasticsearchConfig) else ElasticsearchConfig()
-        self.client = self.config.Elasticsearch
+        self.config = config
+        self.client = Elasticsearch(hosts=self.config.es_hosts,
+                                    request_timeout=self.config.request_timeout,
+                                    http_auth=self.config.http_auth,
+                                    use_ssl=self.config.use_ssl,
+                                    verify_certs=self.config.verify_certs,
+                                    connection_class=self.config.connection_class)
         self.connected = self.client.ping() if self.client else False
 
         self.indices = []
@@ -23,6 +30,9 @@ class ElasticsearchClient(ElasticsearchConfig):
             return False
 
     def ping(self):
+        if not self.connected:
+            return False
+
         try:
             return self.client.ping()
         except Exception as e:
@@ -30,6 +40,9 @@ class ElasticsearchClient(ElasticsearchConfig):
             return False
 
     def delete_index(self, index):
+        if not self.connected:
+            return False
+
         try:
             return self.client.delete(index)
         except Exception as e:
@@ -80,6 +93,9 @@ class ElasticsearchClient(ElasticsearchConfig):
     #         print('Whew, you might have just blew it, if you had said yes')
 
     def search_indices(self, index_pattern):
+        if not self.connected:
+            return False
+
         try:
             retrieved_indices = self.client.indices.get(index_pattern)
             num_indices = len(retrieved_indices)
@@ -92,6 +108,9 @@ class ElasticsearchClient(ElasticsearchConfig):
             self._log.error(f'Failed to search indices: {e}')
 
     def get_indices(self):
+        if not self.connected:
+            return False
+
         try:
             retrieved_indices = self.client.indices.get('*')
             self.indices.extend(retrieved_indices)
