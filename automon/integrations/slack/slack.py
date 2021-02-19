@@ -135,12 +135,12 @@ class Slack(ConfigSlack):
     All Slack interactions
     """
 
-    def __init__(self, token: ConfigSlack.slack_token = None, username: str = None,
+    def __init__(self, token: object = ConfigSlack.slack_token, username: str = None,
                  channel: str = None, icon_emoji: str = None, icon_url: str = None):
 
         self._log = Logging(Slack.__name__, Logging.ERROR)
 
-        self.token = ConfigSlack().slack_token or token
+        self.token = ConfigSlack.slack_token or token
 
         if not self.token:
             self._log.error(f'Missing SLACK_TOKEN')
@@ -149,11 +149,10 @@ class Slack(ConfigSlack):
             self.client = slack.WebClient(token=self.token)
 
         # TODO: use token to get bot info
-        self.username = ConfigSlack().slack_name or username or self._get_bot_info() or ''
-        # automonbot-test
+        self.username = ConfigSlack.slack_name or username or self._get_bot_info() or ''
         self.channel = ConfigSlack.SLACK_DEFAULT_CHANNEL or channel or ''
-        self.icon_emoji = icon_emoji if icon_emoji else ''
-        self.icon_url = icon_url if icon_url else ''
+        self.icon_emoji = icon_emoji or ''
+        self.icon_url = icon_url or ''
 
         # start consumer
         self._start_loop = AsyncStarter()
