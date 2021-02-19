@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="automonisaur", # Replace with your own username
+    name="automonisaur",
     version="0.0.7",
     author="naisanza",
     author_email="naisanza@gmail.com",
@@ -18,24 +18,24 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     install_requires=[
-        'requests>=2.22.0',
-        'Flask>=1.1.1',
-        'Flask-Login>=0.4.1',
-        'Flask-WTF>=0.14.2',
-        'bcrypt>=3.1.7',
-        'elasticsearch>=7.10.0',
-        'neo4j-driver>=1.7.4',
-        'slackclient>=2.2.1',
-        'python-swiftclient>=3.9.0',
-        'python-keystoneclient>=3.22.0',
-        'splunk-sdk>=1.6.13',
-        'pytz>=2020.1',
-        'nest-asyncio>=1.3.3',
-        'xmltodict>=0.12.0',
-        'pytest>=5.4.3',
-        'coverage>=5.2',
-        'pytest-cov>=2.10.0',
+        'Flask-Login>=0.5.0',
+        'Flask-WTF>=0.14.3',
+        'Flask>=1.1.2',
+        'bcrypt>3.1.7',
+        'coverage>=5.4',
+        'elasticsearch>=7.11.0',
+        'neo4j-driver>=4.2.1',
+        'nest-asyncio>=1.5.1',
+        'pytest-cov>=2.11.1',
+        'pytest>=6.2.2',
+        'python-keystoneclient>=4.2.0',
+        'python-swiftclient>=3.11.0',
+        'pytz>=2021.1',
+        'requests>=2.25.1',
+        'slackclient>=2.9.3',
+        'splunk-sdk>=1.6.15',
+        'xmltodict>=0.12.0'
     ]
 )
