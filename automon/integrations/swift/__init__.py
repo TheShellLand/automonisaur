@@ -410,7 +410,8 @@ class Swift:
 
                                     if i["success"]:
                                         self._log.info(
-                                            f'{percent}% ({progress}/{total}) created directory /{destination}/{today}/{name}')
+                                            f'{percent}% ({progress}/{total}) '
+                                            f'created directory /{destination}/{today}/{name}')
 
                                         retry = False
 
@@ -419,7 +420,7 @@ class Swift:
                                         slacklog.error(f'{SwiftError(i)}')
                                         retries += 1
 
-                            except:
+                            except Exception as e:
                                 self._log.error(item)
                                 slacklog.error(item)
                                 retries += 1
@@ -440,11 +441,13 @@ class Swift:
                                 if i["success"]:
                                     if i["action"] == "copy_object":
                                         self._log.info(
-                                            f'{percent}% ({progress}/{total}) copied {i["destination"]} from /{i["container"]}/{i["object"]}')
+                                            f'{percent}% ({progress}/{total}) '
+                                            f'copied {i["destination"]} from /{i["container"]}/{i["object"]}')
 
                                     if i["action"] == "create_container":
                                         self._log.info(
-                                            f'{percent}% ({progress}/{total}) container {i["container"]} created')
+                                            f'{percent}% ({progress}/{total}) '
+                                            f'container {i["container"]} created')
 
                                     retry = False
 
@@ -463,7 +466,7 @@ class Swift:
                                         slacklog.error(error)
                                         retries += 1
 
-                    except:
+                    except Exception as e:
                         slacklog.error(item)
                         slacklog.error()
                         retries += 1
@@ -474,16 +477,16 @@ class Swift:
         self._log.info('building backup summary')
 
         source_total_objects, \
-        source_total_dirs, \
-        source_objects, _, _ = source_stats
+            source_total_dirs, \
+            source_objects, _, _ = source_stats
 
         filter_destination_total_objects, \
-        filter_destination_total_dirs, \
-        filter_objects, _, _ = self.stats(destination, post_log=True, filter=today)
+            filter_destination_total_dirs, \
+            filter_objects, _, _ = self.stats(destination, post_log=True, filter=today)
 
         destination_total_objects, \
-        destination_total_dirs, \
-        destination_objects, _, _ = self.stats(destination, post_log=False)
+            destination_total_dirs, \
+            destination_objects, _, _ = self.stats(destination, post_log=False)
 
         elapsed_time = time.time() - start_time
         minutes = int(elapsed_time / 60)
@@ -630,7 +633,7 @@ class Swift:
                     if i['success']:
                         self._log.info(f'deleted: {name}')
 
-            except:
+            except Exception as e:
                 slacklog.error()
 
     def delete(self, container, filter):
@@ -653,7 +656,7 @@ class Swift:
                         if i['success']:
                             self._log.info(f'{percent}% ({progress}/{deletion_count}) deleted: {name}')
 
-                except:
+                except Exception as e:
                     slacklog.error()
 
         slacklog.debug(
