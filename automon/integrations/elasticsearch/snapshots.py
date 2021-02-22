@@ -32,11 +32,12 @@ class Snapshot:
 
 
 class ElasticsearchSnapshotMonitor:
-    def __init__(self, endpoint: str, elasticsearch_repository: str, snapshots_prefix: str):
+    def __init__(self, elasticsearch_repository: str, snapshots_prefix: str,
+                 config: ElasticsearchConfig = ElasticsearchConfig()):
         self._log = Logging(ElasticsearchSnapshotMonitor.__name__, Logging.DEBUG)
 
-        self._config = ElasticsearchConfig(endpoint)
-        self._client = ElasticsearchClient(self._config)
+        self._config = config if config == ElasticsearchConfig else ElasticsearchConfig()
+        self._client = ElasticsearchClient(config=self._config)
 
         self._endpoint = self._client.config.es_hosts
         self._repository = elasticsearch_repository
@@ -50,14 +51,15 @@ class ElasticsearchSnapshotMonitor:
 
     def _get_all_snapshots(self) -> bool:
         if self._client.connected:
-            url = f'{self._endpoint}/_cat/snapshots/{self._repository}?format=json&pretty'
+            for endpoint in self._endpoint:
+                url = f'{endpoint}/_cat/snapshots/{self._repository}?format=json&pretty'
 
-            self._log.info('Downloading snapshots list')
-            content = self._client.rest(url)
+                self._log.info('Downloading snapshots list')
+                content = self._client.rest(url)
 
-            if content:
-                snapshots = json.loads(content)
-                return self._process_snapshots(snapshots)
+                if content:
+                    snapshots = json.loads(content)
+                    return self._process_snapshots(snapshots)
 
         return False
 
