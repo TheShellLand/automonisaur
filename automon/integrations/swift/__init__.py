@@ -1,4 +1,3 @@
-import os
 import re
 import time
 import warnings
@@ -7,10 +6,11 @@ import datetime
 from swiftclient.service import SwiftService, SwiftError, ClientException
 
 from automon.log.logger import Logging, CRITICAL
-from automon.integrations.slack.slack_logger import SlackLogging
+from automon.integrations.swift.config import SwiftConfig
+from automon.integrations.slack.slack_logger import AsyncSlackLogging
 
 log = Logging(__name__, Logging.INFO)
-slacklog = SlackLogging(change_user=False, debug=False)
+slacklog = AsyncSlackLogging(change_user=False, debug=False)
 
 Logging('requests', CRITICAL)
 Logging('swiftclient', CRITICAL)
@@ -141,8 +141,8 @@ class SwiftList(SwiftService):
         always request a new SwiftService object
         see documentation
         """
-        self.log = Logging(SwiftList.__name__, Logging.DEBUG)
 
+        self._log = Logging(SwiftList.__name__, Logging.DEBUG)
         self.container = container
 
     def list_gen(self) -> object or SwiftPage:
@@ -150,14 +150,16 @@ class SwiftList(SwiftService):
             try:
                 list_parts_gen = swift.list(container=self.container)
 
-                for page in list_parts_gen:
-                    if page["success"]:
-                        yield SwiftPage(page)
-                    else:
-                        self.log.error(f'{page}')
+                # TODO: need to check if gi_running is True when connected, or always False
+                if list_parts_gen.gi_running:
+                    for page in list_parts_gen:
+                        if page["success"]:
+                            yield SwiftPage(page)
+                        else:
+                            self._log.error(f'{page["error"]}')
 
             except Exception as e:
-                self.log.error(f'page failed, {e}')
+                self._log.error(f'page failed, {e}')
 
 
 class Swift:

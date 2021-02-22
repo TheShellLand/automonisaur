@@ -3,9 +3,7 @@ import traceback
 
 from logging import DEBUG, INFO, WARN, ERROR, CRITICAL, NOTSET
 
-from automon.integrations.slack.slack_formatting import Chat, Format
-
-# logging.basicConfig(format=log_format)
+from automon.integrations.slack.slack_formatting import Emoji, Chat, Format
 
 log = logging.getLogger('logger')
 log.setLevel(CRITICAL)
@@ -51,9 +49,14 @@ class Logging:
 
         timestamp = '%(asctime)s'
         levelname = '%(levelname)s'
-        modname = '[%(name)s]'
+        logger = '%(name)s'
+        filename = '%(filename)s'
+        pathname = '%(pathname)s'
+        func = '%(funcName)s'
+        line = '%(lineno)d'
+        module = '%(module)s'
         message = '%(message)s'
-        self.log_format = f'{timestamp}\t{levelname}\t{modname}\t{message}'
+        self.log_format = f'{timestamp}\t{levelname}\t[{logger}]\t{message}'
         # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
 
         logging.basicConfig(level=level, format=self.log_format)
@@ -77,6 +80,9 @@ class Logging:
 
     def warning(self, msg):
         return self.logging.warning(msg)
+
+    def warn(self, msg):
+        return self.warning(msg)
 
     def info(self, msg):
         return self.logging.info(msg)
