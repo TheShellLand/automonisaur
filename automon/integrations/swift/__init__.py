@@ -168,7 +168,7 @@ class Swift:
         self._log = Logging(Swift.__name__, Logging.DEBUG)
 
     @staticmethod
-    def list_summary(self, files, folders):
+    def list_summary(files, folders):
         return files, folders
 
     def list_container(self, container, summary=False, filter='',
