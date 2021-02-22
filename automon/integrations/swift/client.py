@@ -153,7 +153,7 @@ class SwiftClient:
                f'>{total} *total objects* \n'
                f'>{objects} *objects* \n'
                f'>{folders} *folders* \n'
-               f'see debug messages in <#C013P1SNY3Y|{slacklog._debug_channel[1:]}>')
+               f'see debug messages in <#C013P1SNY3Y|{slacklog.debug_channel[1:]}>')
         self._log.debug(msg)
         slacklog.debug(msg)
         slacklog.info(msg)
@@ -198,8 +198,8 @@ class SwiftClient:
         retries = 0
 
         msg = (f'Backup {source} started \n'
-               f'>debug: <#C013P1SNY3Y|{slacklog._debug_channel[1:]}>\n'
-               f'>tests: <#C011EV8T59Q|{slacklog._test_channel[1:]}>\n')
+               f'>debug: <#C013P1SNY3Y|{slacklog.debug_channel[1:]}>\n'
+               f'>tests: <#C011EV8T59Q|{slacklog.test_channel[1:]}>\n')
         self._log.debug(msg)
         slacklog.debug(msg)
         slacklog.info(msg)

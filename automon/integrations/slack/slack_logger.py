@@ -35,53 +35,59 @@ class AsyncSlackLogging(Slack):
 
         self._icon = Emoji.yay
         self._url = ''
-        self._channel = self.slack.SLACK_DEFAULT_CHANNEL or '' if not self.slack_username else f'#{self.slack_username}'
+        self.channel = self.slack.SLACK_DEFAULT_CHANNEL or '' \
+            if not self.slack_username else f'#{self.slack_username}'
         self._format = Format.blockquote
         self._suffix = ''
 
         self._warn_icon = Emoji.warning
         self._warn_url = ''
-        self._warn_channel = self.slack.SLACK_WARN_CHANNEL or '' if not self.slack_username else f'#{self.slack_username}-warn'
+        self.warn_channel = self.slack.SLACK_WARN_CHANNEL or '' \
+            if not self.slack_username else f'#{self.slack_username}-warn'
         self._warn_format = Format.blockquote
         self._warn_suffix = ' warn'
 
         self._info_icon = Emoji.information_source
         self._info_url = ''
-        self._info_channel = self.slack.SLACK_INFO_CHANNEL or '' if not self.slack_username else f'#{self.slack_username}-info'
+        self.info_channel = self.slack.SLACK_INFO_CHANNEL or '' \
+            if not self.slack_username else f'#{self.slack_username}-info'
         self._info_format = Format.blockquote
         self._info_suffix = ' info'
 
         self._debug_icon = Emoji.magnifying_glass
         self._debug_url = ''
-        self._debug_channel = self.slack.SLACK_DEBUG_CHANNEL or '#' if not self.slack_username else f'#{self.slack_username}-debug'
+        self.debug_channel = self.slack.SLACK_DEBUG_CHANNEL or '#' \
+            if not self.slack_username else f'#{self.slack_username}-debug'
         self._debug_format = Format.blockquote
         self._debug_suffix = ' debugger'
 
         self._error_icon = Emoji.sos
         self._error_url = ''
-        self._error_channel = self.slack.SLACK_ERROR_CHANNEL or '' if not self.slack_username else f'#{self.slack_username}-error'
+        self.error_channel = self.slack.SLACK_ERROR_CHANNEL or '' \
+            if not self.slack_username else f'#{self.slack_username}-error'
         self._error_format = Format.blockquote
         self._error_suffix = ' error'
 
         self._critical_icon = Emoji.sos
         self._critical_url = ''
-        self._critical_channel = self.slack.SLACK_CRITICAL_CHANNEL or '' if not self.slack_username else f'#{self.slack_username}-critical'
+        self.critical_channel = self.slack.SLACK_CRITICAL_CHANNEL or '' \
+            if not self.slack_username else f'#{self.slack_username}-critical'
         self._critical_format = Format.blockquote
         self._critical_suffix = ' critical'
 
         self._test_icon = Emoji.yay
         self._test_url = ''
-        self._test_channel = self.slack.SLACK_TEST_CHANNEL or f'#{self.slack_username}-test'
+        self.test_channel = self.slack.SLACK_TEST_CHANNEL or f'#{self.slack_username}-test'
         self._test_format = Format.blockquote
         self._test_suffix = ' tester'
 
         if debug:
-            self._warn_channel = self._debug_channel
-            self._info_channel = self._debug_channel
-            self._debug_channel = self._debug_channel
-            self._error_channel = self._debug_channel
-            self._critical_channel = self._debug_channel
-            self._test_channel = self._debug_channel
+            self.warn_channel = self.debug_channel
+            self.info_channel = self.debug_channel
+            self.debug_channel = self.debug_channel
+            self.error_channel = self.debug_channel
+            self.critical_channel = self.debug_channel
+            self.test_channel = self.debug_channel
 
             self._warn_icon = ''
             self._info_icon = ''
@@ -125,7 +131,7 @@ class AsyncSlackLogging(Slack):
                 for m in msg:
                     new_msg += dumps(m, indent=4)
                 return new_msg
-            except:
+            except Exception as _:
                 return ''.join(str(msg))
         if msg is None:
             return Chat.none()
@@ -171,25 +177,25 @@ class AsyncSlackLogging(Slack):
         self.run_until_complete()
 
     def default(self, msg: str) -> asyncio.tasks:
-        asyncio.run(self._put_queue(WARN, self._channel, msg))
+        asyncio.run(self._put_queue(WARN, self.channel, msg))
 
     def warn(self, msg: str) -> asyncio.tasks:
-        asyncio.run(self._put_queue(WARN, self._warn_channel, msg))
+        asyncio.run(self._put_queue(WARN, self.warn_channel, msg))
 
     def info(self, msg: str) -> asyncio.tasks:
-        asyncio.run(self._put_queue(INFO, self._info_channel, msg))
+        asyncio.run(self._put_queue(INFO, self.info_channel, msg))
 
     def debug(self, msg: str) -> asyncio.tasks:
-        asyncio.run(self._put_queue(DEBUG, self._debug_channel, msg))
+        asyncio.run(self._put_queue(DEBUG, self.debug_channel, msg))
 
     def error(self, msg: str = None) -> asyncio.tasks:
-        asyncio.run(self._put_queue(ERROR, self._error_channel, msg))
+        asyncio.run(self._put_queue(ERROR, self.error_channel, msg))
 
     def critical(self, msg: str = None) -> asyncio.tasks:
-        asyncio.run(self._put_queue(CRITICAL, self._critical_channel, msg))
+        asyncio.run(self._put_queue(CRITICAL, self.critical_channel, msg))
 
     def test(self, msg: str or list or dict or tuple) -> asyncio.tasks:
-        asyncio.run(self._put_queue('test', self._test_channel, msg))
+        asyncio.run(self._put_queue('test', self.test_channel, msg))
 
     async def _warn(self, channel: str, msg: str or list or dict or tuple) -> asyncio.coroutine:
         self.set_slack_config(WARN)
@@ -250,37 +256,37 @@ class AsyncSlackLogging(Slack):
             self.slack.username = f'{self.slack.username}{self._warn_suffix}'
             self.slack.icon_emoji = self._warn_icon
             self.slack.icon_url = self._warn_url
-            self.slack.channel = self._warn_channel
+            self.slack.channel = self.warn_channel
 
         elif level is INFO:
             self.slack.username = f'{self.slack.username}{self._info_suffix}'
             self.slack.icon_emoji = self._info_icon
             self.slack.icon_url = self._info_url
-            self.slack.channel = self._info_channel
+            self.slack.channel = self.info_channel
 
         elif level is DEBUG:
             self.slack.username = f'{self.slack.username}{self._debug_suffix}'
             self.slack.icon_emoji = self._debug_icon
             self.slack.icon_url = self._debug_url
-            self.slack.channel = self._debug_channel
+            self.slack.channel = self.debug_channel
 
         elif level is ERROR:
             self.slack.username = f'{self.slack.username}{self._error_suffix}'
             self.slack.icon_emoji = self._error_icon
             self.slack.icon_url = self._error_url
-            self.slack.channel = self._error_channel
+            self.slack.channel = self.error_channel
 
         elif level is CRITICAL:
             self.slack.username = f'{self.slack.username}{self._critical_suffix}'
             self.slack.icon_emoji = self._critical_icon
             self.slack.icon_url = self._critical_url
-            self.slack.channel = self._critical_channel
+            self.slack.channel = self.critical_channel
 
         elif level == 'test':
             self.slack.username = f'{self.slack.username}{self._test_suffix}'
             self.slack.icon_emoji = self._test_icon
             self.slack.icon_url = self._test_url
-            self.slack.channel = self._test_channel
+            self.slack.channel = self.test_channel
 
         elif not level:
             self.slack.username = self.slack_username
