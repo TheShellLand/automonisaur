@@ -17,12 +17,14 @@ class ElasticsearchJvmMonitor:
 
     def _get_all_stats(self):
         if self._client.connected:
-            try:
-                request_json = self._client.rest(f'{self._endpoint}/_nodes/stats?pretty')
-                return json.loads(request_json)
-            except Exception as e:
-                self._log.error(f'Failed to get all stats: {e}')
-                return False
+            for endpoint in self._endpoint:
+                try:
+                    request = self._client.rest(f'{endpoint}/_nodes/stats?pretty')
+                    request_json = request.text
+                    return json.loads(request_json)
+                except Exception as e:
+                    self._log.error(f'Failed to get all stats: {e}')
+                    return False
 
         return False
 
