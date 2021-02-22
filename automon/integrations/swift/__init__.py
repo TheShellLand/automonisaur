@@ -7,10 +7,11 @@ import datetime
 from swiftclient.service import SwiftService, SwiftError, ClientException
 
 from automon.log.logger import Logging, CRITICAL
-from automon.integrations.slack.slack_logger import SlackLogging
+from automon.integrations.swift.config import SwiftConfig
+from automon.integrations.slack.slack_logger import AsyncSlackLogging
 
 log = Logging(__name__, Logging.INFO)
-slacklog = SlackLogging(change_user=False, debug=False)
+slacklog = AsyncSlackLogging(change_user=False, debug=False)
 
 Logging('requests', CRITICAL)
 Logging('swiftclient', CRITICAL)
@@ -157,7 +158,7 @@ class SwiftList(SwiftService):
                         self.log.error(f'{page}')
 
             except Exception as e:
-                self.log.error(f'page failed, {e}')
+                self._log.error(f'page failed, {e}')
 
 
 class Swift:

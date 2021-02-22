@@ -6,12 +6,12 @@ import yaml
 import xmltodict
 import subprocess
 
-from automon.integrations.slack.slack_logger import SlackLogging
+from automon.integrations.slack.slack_logger import AsyncSlackLogging
 from automon.integrations.slack.slack_formatting import Chat
 from automon.log.logger import Logging
 
 log = Logging(__name__, level=Logging.INFO)
-slacklog = SlackLogging(username='mibbot')
+slacklog = AsyncSlackLogging(username='mibbot')
 
 
 class SmidumpFormat:
