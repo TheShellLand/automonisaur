@@ -4,6 +4,8 @@ cd $(dirname $0) && set -e
 
 # TODO: set pre-commit hook
 
+if [ -f env.sh ]; then source env.sh; fi
+
 rm -rf .coverage coverage.xml htmlcov
 
 if [[ "$@" == "-v" ]]; then
