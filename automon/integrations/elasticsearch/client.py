@@ -38,24 +38,24 @@ class ElasticsearchClient(ElasticsearchConfig):
             return False
 
     def ping(self):
-        if not self.connected:
-            return False
+        if self.connected:
+            try:
+                return self.client.ping()
+            except Exception as e:
+                self._log.error(f'Ping failed: {e}')
+                return False
 
-        try:
-            return self.client.ping()
-        except Exception as e:
-            self._log.error(f'Ping failed: {e}')
-            return False
+        return False
 
-    def delete_index(self, index):
-        if not self.connected:
-            return False
+    def delete_index(self, index: str):
+        if self.connected and index:
+            try:
+                return self.client.delete(index=Sanitation.ascii_numeric_only(index))
+            except Exception as e:
+                self._log.error(f'Delete index failed: {e}')
+                return False
 
-        try:
-            return self.client.delete(index)
-        except Exception as e:
-            self._log.error(f'Delete index failed: {e}')
-            return False
+        return False
 
     # def delete_indices(self, index_pattern):
     #     """Requires user interaction"""
@@ -101,27 +101,33 @@ class ElasticsearchClient(ElasticsearchConfig):
     #         print('Whew, you might have just blew it, if you had said yes')
 
     def search_indices(self, index_pattern):
-        if not self.connected:
-            return False
+        if self.connected and index_pattern:
+            try:
+                retrieved_indices = self.client.indices.get(index_pattern)
+                num_indices = len(retrieved_indices)
+                self._log.info(f'Search found {num_indices} indices')
+                return retrieved_indices
+            except elasticsearch.exceptions.NotFoundError:
+                self._log.error(
+                    f"You provided the index pattern '{index_pattern}', but returned no results")
+            except Exception as e:
+                self._log.error(f'Failed to search indices: {e}')
 
-        try:
-            retrieved_indices = self.client.indices.get(index_pattern)
-            num_indices = len(retrieved_indices)
-            self._log.info(f'Search found {num_indices} indices')
-            return retrieved_indices
-        except elasticsearch.exceptions.NotFoundError:
-            self._log.error(
-                f"You provided the index pattern '{index_pattern}', but returned no results")
-        except Exception as e:
-            self._log.error(f'Failed to search indices: {e}')
+        return False
 
     def get_indices(self):
-        if not self.connected:
-            return False
+        if self.connected:
+            try:
+                retrieved_indices = self.client.indices.get('*')
+                self.indices.extend(retrieved_indices)
+                self._log.info(f'Retrieved {len(retrieved_indices)} indices')
+                for i in retrieved_indices:
+                    info = retrieved_indices.get(i)
+                    date = int(info.get('settings').get('index').get('creation_date')) / 1000.0
+                    date = datetime.fromtimestamp(date).strftime("%A, %B %d, %Y %I:%M:%S")
+                    self._log.debug(f'Index: (created: {date})\t{i}')
+                return True
+            except Exception as e:
+                self._log.error(f'Failed to get indices: {e}')
 
-        try:
-            retrieved_indices = self.client.indices.get('*')
-            self.indices.extend(retrieved_indices)
-            self._log.info(f'Retrieved {len(retrieved_indices)} indices')
-        except Exception as e:
-            self._log.error(f'Failed to get indices: {e}')
+        return False
