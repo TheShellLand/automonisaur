@@ -66,7 +66,6 @@ class ElasticsearchTest(unittest.TestCase):
             self.assertFalse(e.search_indices(None))
             self.assertFalse(e.get_indices())
 
-
     def test_Cleanup(self):
         self.assertFalse(Cleanup().get_indices())
         self.assertFalse(Cleanup().search_indices(f''))
