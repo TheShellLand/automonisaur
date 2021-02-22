@@ -420,7 +420,7 @@ class Swift:
                                         slacklog.error(f'{SwiftError(i)}')
                                         retries += 1
 
-                            except Exception as e:
+                            except Exception as _:
                                 self._log.error(item)
                                 slacklog.error(item)
                                 retries += 1
@@ -466,7 +466,7 @@ class Swift:
                                         slacklog.error(error)
                                         retries += 1
 
-                    except Exception as e:
+                    except Exception as _:
                         slacklog.error(item)
                         slacklog.error()
                         retries += 1
@@ -488,8 +488,8 @@ class Swift:
             destination_total_dirs, \
             destination_objects, _, _ = self.stats(destination, post_log=False)
 
-        elapsed_time = time.time() - start_time
-        minutes = int(elapsed_time / 60)
+        # elapsed_time = time.time() - start_time
+        # minutes = int(elapsed_time / 60)
 
         msg = (
             f'*Backup Finished* \n'
@@ -633,7 +633,7 @@ class Swift:
                     if i['success']:
                         self._log.info(f'deleted: {name}')
 
-            except Exception as e:
+            except Exception as _:
                 slacklog.error()
 
     def delete(self, container, filter):
@@ -656,7 +656,7 @@ class Swift:
                         if i['success']:
                             self._log.info(f'{percent}% ({progress}/{deletion_count}) deleted: {name}')
 
-                except Exception as e:
+                except Exception as _:
                     slacklog.error()
 
         slacklog.debug(
@@ -667,11 +667,11 @@ class Swift:
         with SwiftService() as swift:
             try:
                 slacklog.debug(f'*Deleting*: \n>{container}')
-                for i in swift.delete(container):
+                for _ in swift.delete(container):
                     self._log.info(f'deleting container: {container}')
                 slacklog.info(f'*Deleted*: \n>{container}')
 
-            except SwiftError as e:
+            except SwiftError as _:
                 slacklog.error()
 
     def restore(self):
