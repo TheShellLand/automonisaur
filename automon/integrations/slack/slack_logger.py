@@ -26,9 +26,9 @@ class AsyncSlackLogging(Slack):
         self.slack_channel = self.slack.channel
 
         # start producer
-        self._start_loop = AsyncStarter()
-        self.queue = self._start_loop.queue
-        asyncio.create_task(self._producer())
+        self._eventloop = AsyncStarter()
+        self.queue = self._eventloop.queue
+        self._task = self._eventloop.create_task(self._producer())
         self._stop = False
 
         # TODO: which takes precedent, icon or url?
