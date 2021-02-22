@@ -65,6 +65,21 @@ class Sanitation:
         return new_list
 
     @staticmethod
+    def ascii_numeric_only(text: str) -> str:
+        allowed_characters = ascii_letters + digits
+
+        text = str(text).strip()
+        new_text = []
+
+        for character in text:
+            if character in allowed_characters:
+                new_text.append(character)
+            else:
+                new_text.append('_')
+
+        return ''.join(new_text)
+
+    @staticmethod
     def safe_string(text: str) -> str:
         allowed_characters = ascii_letters + digits + '-_.'
 
