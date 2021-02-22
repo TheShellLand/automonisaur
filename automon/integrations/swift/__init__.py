@@ -458,7 +458,7 @@ class Swift:
                                         if 'Authorization Failure. Authorization failed' in str(i):
                                             error = (
                                                 f'''This error happens every once in a while. I'm not really sure why, but might be some kind of stale timeout when SwiftService() isn't doing anything \n'''
-                                                f'{SwiftError(i).str}'
+                                                f'{SwiftError(i)}'
                                             )
                                         else:
                                             error = f'{SwiftError(i)}'
