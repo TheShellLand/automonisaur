@@ -13,19 +13,19 @@ logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
 class ElasticsearchConfig:
     def __init__(self, endpoints: str = None, proxy=None,
                  request_timeout: int = 1,
-                 http_auth=None,
+                 http_auth: tuple = None,
                  use_ssl: bool = True,
                  verify_certs: bool = True,
                  connection_class: RequestsHttpConnection = RequestsHttpConnection):
         self._log = Logging(ElasticsearchConfig.__name__, Logging.DEBUG)
 
         hosts = S.list_from_string(endpoints) or \
-                S.list_from_string(os.getenv('ELASTICSEARCH_HOSTS')) or ''
+                S.list_from_string(os.getenv('ELASTICSEARCH_HOSTS')) or None
         # hosts = [{'host': x} for x in hosts]
         self.es_hosts = hosts
         self.ELASTICSEARCH_HOSTS = self.es_hosts
-        self.ELASTICSEARCH_USER = os.getenv('ELASTICSEARCH_USER')
-        self.ELASTICSEARCH_PASSWORD = os.getenv('ELASTICSEARCH_PASSWORD')
+        self.ELASTICSEARCH_USER = os.getenv('ELASTICSEARCH_USER') or ''
+        self.ELASTICSEARCH_PASSWORD = os.getenv('ELASTICSEARCH_PASSWORD') or ''
 
         self.es_proxy = proxy
         self.request_timeout = request_timeout
