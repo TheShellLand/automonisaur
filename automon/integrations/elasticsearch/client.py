@@ -1,10 +1,13 @@
 import requests
 import elasticsearch
 
+from datetime import datetime
+from requests.auth import HTTPBasicAuth
 from elasticsearch import Elasticsearch
 
 from automon.log.logger import Logging
 from automon.integrations.elasticsearch.config import ElasticsearchConfig
+from automon.helpers.sanitation import Sanitation
 
 
 class ElasticsearchClient(ElasticsearchConfig):
@@ -24,7 +27,12 @@ class ElasticsearchClient(ElasticsearchConfig):
 
     def rest(self, url: str) -> requests:
         try:
-            return requests.get(url).content
+            if self.config.ELASTICSEARCH_USER and self.config.ELASTICSEARCH_PASSWORD:
+                return requests.get(url, auth=HTTPBasicAuth(self.config.ELASTICSEARCH_USER,
+                                                            self.config.ELASTICSEARCH_PASSWORD))
+            else:
+                return requests.get(url)
+
         except Exception as e:
             self._log.error(f'REST request failed: {e}')
             return False
