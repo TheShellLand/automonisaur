@@ -1,4 +1,3 @@
-import os
 import re
 import time
 import warnings
@@ -151,11 +150,13 @@ class SwiftList(SwiftService):
             try:
                 list_parts_gen = swift.list(container=self.container)
 
-                for page in list_parts_gen:
-                    if page["success"]:
-                        yield SwiftPage(page)
-                    else:
-                        self.log.error(f'{page}')
+                # TODO: need to check if gi_running is True when connected, or always False
+                if list_parts_gen.gi_running:
+                    for page in list_parts_gen:
+                        if page["success"]:
+                            yield SwiftPage(page)
+                        else:
+                            self._log.error(f'{page["error"]}')
 
             except Exception as e:
                 self._log.error(f'page failed, {e}')
