@@ -59,21 +59,13 @@ ENV TWINE_PASSWORD $TWINE_PASSWORD
 
 WORKDIR /app
 
-COPY $PKG $PKG
+COPY automon automon
 COPY README.md .
 COPY LICENSE .
 COPY entry.sh .
 COPY unittests.sh .
 COPY requirements.txt .
 COPY setup.py .
-
-#RUN pip install -r requirements.txt
-
-# create pypi package
-RUN python3 setup.py sdist bdist_wheel
-
-# upload pypi package
-#RUN python3 -m twine upload --repository $PYPI --skip-existing dist/*
 
 # run app
 CMD ["/bin/bash"]
