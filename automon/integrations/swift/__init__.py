@@ -127,8 +127,8 @@ class SwiftPage(SwiftService):
 
     def list_gen(self) -> object or SwiftItem:
         if self.success:
-            for list in self.listing:
-                yield SwiftItem(list)
+            for LIST in self.listing:
+                yield SwiftItem(LIST)
         else:
             self._error_handler()
 
