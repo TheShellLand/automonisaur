@@ -1,8 +1,15 @@
 import unittest
 import types
 
-from automon.integrations.swift import Swift, SwiftError, SwiftItem, SwiftService, SwiftPage, SwiftList
+from automon.integrations.swift import Swift, SwiftError, SwiftItem, SwiftPage, SwiftList
 from automon.integrations.swift import ClientException
+from automon.integrations.swift.config import SwiftConfig
+
+
+class SwiftConfigTest(unittest.TestCase):
+
+    def test_config(self):
+        self.assertTrue(SwiftConfig())
 
 
 class SwiftTest(unittest.TestCase):
@@ -108,11 +115,6 @@ class SwiftItemTest(unittest.TestCase):
         self.assertTrue(SwiftItem(self.item2).filter('test'))
         self.assertFalse(SwiftItem(self.item2).filter('nottest'))
         self.assertTrue(f'{SwiftItem(self.item2)}')
-
-
-class SwiftServiceTest(unittest.TestCase):
-    def test_SwiftService(self):
-        self.assertTrue(SwiftService)
 
 
 if __name__ == '__main__':
