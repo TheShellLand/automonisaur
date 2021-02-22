@@ -86,7 +86,7 @@ class SwiftPage(SwiftService):
             'listing': self.listing
         }
 
-    def _error_handler(self) -> Exception:
+    def _error_handler(self):
         if not self.success and isinstance(self.error, Exception):
             self._log.error(f'{SwiftError(self._page)}')
             slacklog.error(f'{SwiftError(self._page)}')
