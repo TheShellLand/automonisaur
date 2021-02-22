@@ -97,8 +97,7 @@ class Metric:
 
     def __init__(self, node: Cluster):
         self._node = node
-        # self.node_name = self._node['name']
-        self.node_name = self._node.cluster_name
+        self.node_name = self._node['name']
 
         self.jvm = self._node.get('jvm')
         self.heap_used_percent = self.jvm.get('mem').get('heap_used_percent')
