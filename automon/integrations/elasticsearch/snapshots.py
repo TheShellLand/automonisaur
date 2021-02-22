@@ -10,7 +10,7 @@ class Snapshot:
     def __init__(self, snapshot: dict):
         self._log = Logging(Snapshot.__name__, Logging.DEBUG)
 
-        self.snapshot = snapshot
+        self._snapshot = snapshot
         self.id = snapshot.get('id')
         self.status = snapshot.get('status')
         self.start_epoch = snapshot.get('start_epoch')
@@ -28,11 +28,11 @@ class Snapshot:
             self._log.warning(f'{other} != Snapshot')
             return NotImplemented
 
-        return self.snapshot == other.snapshot
+        return self._snapshot == other._snapshot
 
 
 class ElasticsearchSnapshotMonitor:
-    def __init__(self, elasticsearch_repository: str, snapshots_prefix: str,
+    def __init__(self, elasticsearch_repository: str, snapshots_prefix: str = '',
                  config: ElasticsearchConfig = ElasticsearchConfig()):
         self._log = Logging(ElasticsearchSnapshotMonitor.__name__, Logging.DEBUG)
 
@@ -40,8 +40,8 @@ class ElasticsearchSnapshotMonitor:
         self._client = ElasticsearchClient(config=self._config)
 
         self._endpoint = self._client.config.es_hosts
-        self._repository = elasticsearch_repository
-        self._snapshots_prefix = snapshots_prefix
+        self.repository = elasticsearch_repository
+        self.snapshots_prefix = snapshots_prefix
 
         self.snapshots = []
         self.total_snapshots = None
@@ -52,12 +52,14 @@ class ElasticsearchSnapshotMonitor:
     def _get_all_snapshots(self) -> bool:
         if self._client.connected:
             for endpoint in self._endpoint:
-                url = f'{endpoint}/_cat/snapshots/{self._repository}?format=json&pretty'
+                url = f'{endpoint}/_cat/snapshots/{self.repository}?format=json'
+                # url = f'{endpoint}/_snapshot/{self.repository}?format=json'
 
                 self._log.info('Downloading snapshots list')
-                content = self._client.rest(url)
+                request = self._client.rest(url)
+                content = request.text
 
-                if content:
+                if request:
                     snapshots = json.loads(content)
                     return self._process_snapshots(snapshots)
 
@@ -78,7 +80,7 @@ class ElasticsearchSnapshotMonitor:
                 id = s.id
                 status = s.status
 
-                if self._snapshots_prefix in id:
+                if self.snapshots_prefix in id:
 
                     self.snapshots.append(s)
 

@@ -45,7 +45,7 @@ class ElasticsearchTest(unittest.TestCase):
         self.assertTrue(SnapshotError(error))
 
     def test_ElasticsearchSnapshotMonitor(self):
-        e = ElasticsearchSnapshotMonitor('test', 'test', 'test')
+        e = ElasticsearchSnapshotMonitor(elasticsearch_repository='found-snapshots')
 
         self.assertTrue(ElasticsearchSnapshotMonitor)
         self.assertTrue(e)
