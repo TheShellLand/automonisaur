@@ -1,11 +1,12 @@
 from automon.log.logger import Logging
 from automon.integrations.elasticsearch.client import ElasticsearchClient
 
+log = Logging(__name__, Logging.DEBUG)
+
 
 class Cleanup:
 
     def __init__(self):
-        self._log = Logging(Cleanup.__name__, Logging.DEBUG)
         self.client = ElasticsearchClient()
 
     def get_indices(self):

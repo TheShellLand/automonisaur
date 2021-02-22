@@ -141,8 +141,8 @@ class SwiftList(SwiftService):
         always request a new SwiftService object
         see documentation
         """
-        self.log = Logging(SwiftList.__name__, Logging.DEBUG)
 
+        self._log = Logging(SwiftList.__name__, Logging.DEBUG)
         self.container = container
 
     def list_gen(self) -> object or SwiftPage:

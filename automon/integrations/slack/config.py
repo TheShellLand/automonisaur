@@ -2,7 +2,7 @@ import os
 
 from automon.log.logger import Logging
 
-log = Logging(__name__)
+log = Logging(name=__name__, level=Logging.ERROR)
 
 
 class ConfigSlack:
