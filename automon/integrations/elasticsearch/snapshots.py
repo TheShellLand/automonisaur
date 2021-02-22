@@ -25,7 +25,7 @@ class Snapshot:
 
     def __eq__(self, other):
         if not isinstance(other, Snapshot):
-            self._log.error(NotImplemented)
+            self._log.warning(f'{other} != Snapshot')
             return NotImplemented
 
         return self.snapshot == other.snapshot
@@ -49,14 +49,15 @@ class ElasticsearchSnapshotMonitor:
         self.error = None
 
     def _get_all_snapshots(self) -> bool:
-        url = f'{self._endpoint}/_cat/snapshots/{self._repository}?format=json&pretty'
+        if self._client.connected:
+            url = f'{self._endpoint}/_cat/snapshots/{self._repository}?format=json&pretty'
 
-        self._log.info('Downloading snapshots list')
-        content = self._client.rest(url)
+            self._log.info('Downloading snapshots list')
+            content = self._client.rest(url)
 
-        if content:
-            snapshots = json.loads(content)
-            return self._process_snapshots(snapshots)
+            if content:
+                snapshots = json.loads(content)
+                return self._process_snapshots(snapshots)
 
         return False
 
@@ -165,6 +166,6 @@ class SnapshotError:
 
     def __eq__(self, other):
         if not isinstance(other, SnapshotError):
-            self._log.error(NotImplemented)
+            self._log.error(f'{other} != SnapshotError')
             return NotImplemented
         return self.error == other.error

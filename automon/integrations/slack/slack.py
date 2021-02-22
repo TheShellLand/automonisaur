@@ -135,18 +135,18 @@ class Slack(ConfigSlack):
     All Slack interactions
     """
 
-    def __init__(self, token: object = ConfigSlack.slack_token, username: str = None,
+    def __init__(self, token: str = ConfigSlack.slack_token, username: str = None,
                  channel: str = None, icon_emoji: str = None, icon_url: str = None):
 
         self._log = Logging(Slack.__name__, Logging.ERROR)
 
         self.token = ConfigSlack.slack_token or token
+        self.client = slack.WebClient(token=token)
 
-        if not self.token:
-            self._log.error(f'Missing SLACK_TOKEN')
-            self.client = None
-        else:
-            self.client = slack.WebClient(token=self.token)
+        try:
+            self.connected = True if self.client.auth_test() else False
+        except:
+            self.connected = False
 
         # TODO: use token to get bot info
         self.username = ConfigSlack.slack_name or username or self._get_bot_info() or ''
@@ -155,26 +155,27 @@ class Slack(ConfigSlack):
         self.icon_url = icon_url or ''
 
         # start consumer
-        self._start_loop = AsyncStarter()
-        self.queue = self._start_loop.queue
-        asyncio.create_task(self._consumer())
+        self._eventloop = AsyncStarter()
+        self.queue = self._eventloop.queue
+        self.task = self._eventloop.create_task(self._consumer())
         self._stop = False
 
         # TODO: integrate slacklog
         # self.slacklog = SlackLogging(token)
 
-    def _get_bot_info(self: SlackResponse):
-        if self.client:
-            try:
-                name = BotInfo(self.client.bots_info()).name
-                self._log.debug(f'Bot name: {name}')
-                return name
-            except Exception as e:
-                error = SlackError(e)
-                self._log.error(
-                    f'''{self._get_bot_info.__name__}\tCouldn't get bot name, missing permission: {error.needed}''',
-                    enable_traceback=False)
-                return ''
+    def _get_bot_info(self):
+        if self.connected:
+            if self.client:
+                try:
+                    name = BotInfo(self.client.bots_info()).name
+                    self._log.debug(f'Bot name: {name}')
+                    return name
+                except Exception as e:
+                    error = SlackError(e)
+                    self._log.error(
+                        f'''[{self._get_bot_info.__name__}]\tCouldn't get bot name, missing permission: {error.needed}''',
+                        enable_traceback=False)
+                    return ''
         return ''
 
     def _run_until_complete(self):
@@ -253,7 +254,7 @@ class Slack(ConfigSlack):
 
             msg = f'{channel} @{self.username}: {text}'
 
-            while True:
+            while self.connected:
                 try:
                     self._log.debug(msg)
                     response = self.client.chat_postMessage(

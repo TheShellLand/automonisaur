@@ -18,7 +18,7 @@ class ElasticsearchClient(ElasticsearchConfig):
                                     use_ssl=self.config.use_ssl,
                                     verify_certs=self.config.verify_certs,
                                     connection_class=self.config.connection_class)
-        self.connected = self.client.ping() if self.client else False
+        self.connected = self.client.ping() if self.config.es_hosts else False
 
         self.indices = []
 
