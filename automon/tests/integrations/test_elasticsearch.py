@@ -47,9 +47,14 @@ class ElasticsearchTest(unittest.TestCase):
     def test_ElasticsearchSnapshotMonitor(self):
         e = ElasticsearchSnapshotMonitor(elasticsearch_repository='found-snapshots')
 
-        self.assertTrue(ElasticsearchSnapshotMonitor)
-        self.assertTrue(e)
-        self.assertFalse(e.check_snapshots())
+        if e.connected:
+            self.assertTrue(ElasticsearchSnapshotMonitor)
+            self.assertTrue(e)
+            self.assertTrue(e.check_snapshots())
+        else:
+            self.assertTrue(ElasticsearchSnapshotMonitor)
+            self.assertTrue(e)
+            self.assertFalse(e.check_snapshots())
 
     def test_ElasticsearchClient(self):
         e = ElasticsearchClient()

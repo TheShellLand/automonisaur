@@ -38,6 +38,7 @@ class ElasticsearchSnapshotMonitor:
 
         self._config = config if config == ElasticsearchConfig else ElasticsearchConfig()
         self._client = ElasticsearchClient(config=self._config)
+        self.connected = self._client.connected
 
         self._endpoint = self._client.config.es_hosts
         self.repository = elasticsearch_repository
@@ -50,7 +51,7 @@ class ElasticsearchSnapshotMonitor:
         self.error = None
 
     def _get_all_snapshots(self) -> bool:
-        if self._client.connected:
+        if self.connected:
             for endpoint in self._endpoint:
                 url = f'{endpoint}/_cat/snapshots/{self.repository}?format=json'
                 # url = f'{endpoint}/_snapshot/{self.repository}?format=json'
