@@ -10,6 +10,7 @@ if [ "$@" == '--local' ]; then
   twine check dist/*
   python3 -m twine upload --repository $PYPI --repository-url $TWINE_REPOSITORY \
     -u $TWINE_USERNAME -p $TWINE_PASSWORD --non-interactive --skip-existing dist/*
+  python3 setup.py clean --all
 else
   ./build.sh
   docker run --rm -it --env-file env.sh automon "$@"
