@@ -9,6 +9,7 @@ from automon.integrations.elasticsearch.snapshots import Snapshot, SnapshotError
 
 
 class ElasticsearchTest(unittest.TestCase):
+    e = ElasticsearchClient()
 
     def test_ElasticsearchJvmMonitor(self):
         self.assertTrue(ElasticsearchJvmMonitor)
@@ -51,25 +52,30 @@ class ElasticsearchTest(unittest.TestCase):
         self.assertFalse(e.check_snapshots())
 
     def test_ElasticsearchClient(self):
-        endpoints = None
-        config = ElasticsearchConfig(endpoints=endpoints)
+        e = ElasticsearchClient()
 
-        e = ElasticsearchClient(config)
-
-        self.assertTrue(e)
-
-        if not endpoints:
+        if e.connected:
+            self.assertTrue(e)
             self.assertTrue(ElasticsearchClient)
+            self.assertTrue(e.ping())
+            self.assertTrue(e.get_indices())
+            self.assertFalse(e.delete_index(None))
+            self.assertFalse(e.search_indices(None))
+        else:
             self.assertFalse(e.ping())
             self.assertFalse(e.delete_index(None))
-            # self.assertFalse(e.delete_indices(None))
             self.assertFalse(e.search_indices(None))
             self.assertFalse(e.get_indices())
 
     def test_Cleanup(self):
-        self.assertFalse(Cleanup().get_indices())
-        self.assertFalse(Cleanup().search_indices(f''))
-        # self.assertFalse(Cleanup().delete_indices(f''))
+        if self.e.connected:
+            self.assertTrue(Cleanup().get_indices())
+            self.assertFalse(Cleanup().search_indices(None))
+            # self.assertFalse(Cleanup().delete_indices(None))
+        else:
+            self.assertFalse(Cleanup().get_indices())
+            self.assertFalse(Cleanup().search_indices(None))
+            # self.assertFalse(Cleanup().delete_indices(f''))
 
     def test_ElasticsearchConfig(self):
         self.assertTrue(ElasticsearchConfig())
