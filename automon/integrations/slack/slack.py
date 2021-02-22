@@ -155,9 +155,9 @@ class Slack(ConfigSlack):
         self.icon_url = icon_url or ''
 
         # start consumer
-        self._start_loop = AsyncStarter()
-        self.queue = self._start_loop.queue
-        asyncio.create_task(self._consumer())
+        self._eventloop = AsyncStarter()
+        self.queue = self._eventloop.queue
+        self.task = self._eventloop.create_task(self._consumer())
         self._stop = False
 
         # TODO: integrate slacklog
