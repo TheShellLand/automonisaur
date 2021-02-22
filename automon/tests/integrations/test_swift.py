@@ -1,7 +1,7 @@
 import unittest
 import types
 
-from automon.integrations.swift import Swift, SwiftError, SwiftItem, SwiftPage, SwiftList
+from automon.integrations.swift import SwiftClient, SwiftError_, SwiftItem, SwiftPage, SwiftList
 from automon.integrations.swift import ClientException
 from automon.integrations.swift.config import SwiftConfig
 
@@ -13,10 +13,10 @@ class SwiftConfigTest(unittest.TestCase):
 
 
 class SwiftTest(unittest.TestCase):
-    s = Swift()
+    s = SwiftClient()
 
     def test_Swift(self):
-        self.assertTrue(Swift)
+        self.assertTrue(SwiftClient)
         self.assertTrue(self.s)
 
     def test_list(self):
@@ -81,9 +81,9 @@ class SwiftErrorTest(unittest.TestCase):
     }
 
     def test_SwiftError(self):
-        self.assertTrue(SwiftError)
-        self.assertTrue(SwiftError(self.error))
-        self.assertIsInstance(f'{SwiftError(self.error)}', str)
+        self.assertTrue(SwiftError_)
+        self.assertTrue(SwiftError_(self.error))
+        self.assertIsInstance(f'{SwiftError_(self.error)}', str)
 
 
 class SwiftItemTest(unittest.TestCase):
