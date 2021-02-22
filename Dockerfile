@@ -1,8 +1,7 @@
 # pypi requirements
 FROM python:3 as builder
 
-RUN python3 -m pip install --user --upgrade setuptools wheel
-RUN python3 -m pip install --user --upgrade twine
+RUN python3 -m pip install --upgrade pip setuptools wheel twine
 RUN apt update && apt install -y vim
 
 FROM builder
@@ -66,6 +65,8 @@ COPY entry.sh .
 COPY unittests.sh .
 COPY requirements.txt .
 COPY setup.py .
+
+RUN pip install -r requirements.txt
 
 # run app
 CMD ["/bin/bash"]
