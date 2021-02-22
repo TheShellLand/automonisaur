@@ -336,7 +336,7 @@ class Swift:
 
         # TODO: for some reason it's finished time shows 3 minutes, when debug shows 90 minutes
 
-        today = datetime.date.today()
+        today = f'{datetime.date.today()}'
         start_time = time.time()
         progress = 0
         retries = 0
