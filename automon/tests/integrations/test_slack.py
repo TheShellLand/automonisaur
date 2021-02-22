@@ -47,14 +47,9 @@ class SlackTest(unittest.TestCase):
         self.assertIsNone(test.info('info'))
         self.assertIsNone(test.warn('warn'))
         self.assertIsNone(test.debug('debug'))
-        self.assertIsNone(test.debug('debug'))
-        self.assertIsNone(test.debug('debug'))
         self.assertIsNone(test.error('error'))
         self.assertIsNone(test.critical('critical'))
-        self.assertIsNone(test.test({1: 2}))
-        self.assertIsNone(test.test((1, 2)))
         self.assertIsNone(test.test('test'))
-        self.assertIsNone(test.test(None))
         self.assertIsNone(test.close())
 
     def test_Format(self):
