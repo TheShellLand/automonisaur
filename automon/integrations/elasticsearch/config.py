@@ -7,6 +7,7 @@ from automon.log.logger import Logging
 from automon.helpers.sanitation import Sanitation as S
 
 logging.getLogger('elasticsearch').setLevel(logging.ERROR)
+logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
 
 
 class ElasticsearchConfig:
@@ -20,12 +21,20 @@ class ElasticsearchConfig:
 
         hosts = S.list_from_string(endpoints) or \
                 S.list_from_string(os.getenv('ELASTICSEARCH_HOSTS')) or ''
-        hosts = [{'host': x} for x in hosts]
+        # hosts = [{'host': x} for x in hosts]
         self.es_hosts = hosts
+        self.ELASTICSEARCH_HOSTS = self.es_hosts
+        self.ELASTICSEARCH_USER = os.getenv('ELASTICSEARCH_USER')
+        self.ELASTICSEARCH_PASSWORD = os.getenv('ELASTICSEARCH_PASSWORD')
 
         self.es_proxy = proxy
         self.request_timeout = request_timeout
-        self.http_auth = http_auth
+
+        if self.ELASTICSEARCH_USER and self.ELASTICSEARCH_PASSWORD:
+            self.http_auth = (self.ELASTICSEARCH_USER, self.ELASTICSEARCH_PASSWORD)
+        else:
+            self.http_auth = http_auth
+
         self.use_ssl = use_ssl
         self.verify_certs = verify_certs
         self.connection_class = connection_class
