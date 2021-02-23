@@ -30,6 +30,7 @@ class Logging:
     """Standard logging to stdout
     """
 
+    TEST = 5
     DEBUG = DEBUG
     INFO = INFO
     WARN = WARN
