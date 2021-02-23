@@ -75,7 +75,7 @@ class Logging:
             self.stream = LogStream() if log_stream else None
             logging.basicConfig(level=level, stream=self.stream)
 
-    def error(self, msg: str = None, enable_traceback: bool = True):
+    def error(self, msg: any = None, enable_traceback: bool = True):
         tb = traceback.format_exc()
         # tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb and enable_traceback:
@@ -84,19 +84,19 @@ class Logging:
         if msg:
             return self.logging.error(msg)
 
-    def warning(self, msg):
+    def warning(self, msg: any):
         return self.logging.warning(msg)
 
-    def warn(self, msg):
+    def warn(self, msg: any):
         return self.warning(msg)
 
-    def info(self, msg):
+    def info(self, msg: any):
         return self.logging.info(msg)
 
-    def debug(self, msg):
+    def debug(self, msg: any):
         return self.logging.debug(msg)
 
-    def critical(self, msg):
+    def critical(self, msg: any):
         tb = traceback.format_exc()
         tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb:
