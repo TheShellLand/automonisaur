@@ -1,72 +1,13 @@
-import datetime
+from queue import Queue
 
 import splunklib.results
 import splunklib.client as client
 
-from queue import Queue
-
-from automon.log import Logging
+from automon.log.logger import Logging
 from automon.integrations.splunk.config import SplunkConfig
+from automon.integrations.splunk.helpers import Job, Application
 
-
-class JobError:
-    _log = Logging('JobError', level=Logging.DEBUG)
-
-    def __init__(self, job: client.Job):
-        self._job = job
-
-        self.messages = job.content['messages']
-        try:
-            self.fatal = self.messages['fatal']
-            self.error = self.messages['error']
-
-            self._log.critical(self.fatal)
-            self._log.error(self.error)
-        except:
-            pass
-
-
-class Job:
-    _log = Logging('Job', level=Logging.DEBUG)
-
-    def __init__(self, job: client.Job):
-        self._job = job
-
-        try:
-            self.sid = job['sid']
-            self.isDone = job["isDone"]
-            self.doneProgress = float(job["doneProgress"]) * 100
-            self.scanCount = int(job["scanCount"])
-            self.eventCount = int(job["eventCount"])
-            self.resultCount = int(job["resultCount"])
-            self._searchProviders = job.content['searchProviders']
-            self._search = job.content['search'] if 'search' in job.content.keys() else None
-            self._runDuration = job.content['runDuration'] if 'runDuration' in job.content.keys() else None
-            self._pid = job.content['pid'] if 'pid' in job.content.keys() else None
-            self._normalizedSearch = job.content[
-                'normalizedSearch'] if 'normalizedSearch' in job.content.keys() else None
-            self._earliestTime = job.content['earliestTime']
-            self._cursorTime = job.content['cursorTime']
-            self._diskUsage = job.content['diskUsage']
-
-            self.error = JobError(job)
-        except:
-            pass
-
-    def is_ready(self):
-        return self._job.is_ready()
-
-    def results(self):
-        return self._job.results()
-
-    def access(self):
-        return self._job.access
-
-    def content(self):
-        return self._job.content
-
-    def __str__(self):
-        return f'{self._search} {self._searchProviders} ({self._runDuration} s) ({self._diskUsage} B)'
+log = Logging(name=__name__, level=Logging.DEBUG)
 
 
 class SplunkRestClient:
@@ -173,21 +114,3 @@ class SplunkClient:
         if self.client:
             return f'connected to {self.config}'
         return f'not connected to {self.config}'
-
-
-class Application:
-    def __init__(self, object):
-        self._app = object
-
-        self.access = object['access']
-        self.content = object['content']
-        self.defaults = object['defaults']
-        self.fields = object['fields']
-        self.links = object['links']
-        self.name = object['name']
-        self.path = object['path']
-        self.service = object['service']
-        self.setupInfo = object['setupInfo']
-        self.state = object['state']
-
-        self._state = object['_state']
