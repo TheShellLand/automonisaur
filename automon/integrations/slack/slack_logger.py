@@ -200,17 +200,18 @@ class AsyncSlackLogging(SlackClient):
 
     async def _warn(self, channel: str, msg: str or list or dict or tuple):
         self.set_slack_config(WARN)
-        await self.slack.chat_postMessage(channel, self._msg(msg))
+        return await self.slack.chat_postMessage(channel, self._msg(msg))
         # self.set_slack_config()
 
     async def _info(self, channel: str, msg: str or list or dict or tuple):
         self.set_slack_config(INFO)
-        await self.slack.chat_postMessage(channel, self._msg(msg))
+        return await self.slack.chat_postMessage(channel, self._msg(msg))
+
         # self.set_slack_config()
 
     async def _debug(self, channel: str, msg: str):
         self.set_slack_config(DEBUG)
-        await self.slack.chat_postMessage(channel, Chat.clean(msg))
+        return await self.slack.chat_postMessage(channel, Chat.clean(msg))
         # self.set_slack_config()
 
     async def _error(self, channel: str, msg: str or list or dict or tuple = None,
@@ -226,7 +227,7 @@ class AsyncSlackLogging(SlackClient):
             msg = self._msg(msg)
             if msg_format:
                 msg = Chat.Format(msg, msg_format)
-            await self.slack.chat_postMessage(channel, self._msg(msg))
+            return await self.slack.chat_postMessage(channel, self._msg(msg))
         # self.set_slack_config()
 
     async def _critical(self, channel: str, msg: str or list or dict or tuple = None):
@@ -241,7 +242,7 @@ class AsyncSlackLogging(SlackClient):
             msg = self._msg(msg)
             if not isinstance(msg, str):
                 msg = Chat.wrap(msg, Format.codeblock)
-            await self.slack.chat_postMessage(channel, msg)
+            return await self.slack.chat_postMessage(channel, msg)
         # self.set_slack_config()
 
     async def _test(self, channel: str, msg: str):

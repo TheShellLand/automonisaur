@@ -1,6 +1,6 @@
 from flask import Flask
 
-from automon.log import Logging
+from automon.log.logger import Logging
 from automon.integrations.flask.config import ConfigFlask
 
 

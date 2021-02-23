@@ -1,6 +1,6 @@
 import json
 
-from automon.log import Logging
+from automon.log.logger import Logging
 from automon.integrations.elasticsearch.metrics import Cluster
 from automon.integrations.elasticsearch.config import ElasticsearchConfig
 from automon.integrations.elasticsearch.client import ElasticsearchClient
