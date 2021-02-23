@@ -5,8 +5,7 @@ from logging import DEBUG, INFO, WARN, ERROR, CRITICAL, NOTSET
 
 from automon.integrations.slack.slack_formatting import Emoji, Chat, Format
 
-log = logging.getLogger('logger')
-log.setLevel(CRITICAL)
+logging.getLogger('logger').setLevel(CRITICAL)
 
 
 class LogStream(object):
@@ -67,8 +66,6 @@ class Logging:
         if log_stream:
             self.stream = LogStream() if log_stream else None
             logging.basicConfig(level=level, stream=self.stream)
-
-        log.debug('loaded')
 
     def error(self, msg: str = None, enable_traceback: bool = True):
         tb = traceback.format_exc()
