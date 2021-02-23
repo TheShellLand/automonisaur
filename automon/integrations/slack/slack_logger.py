@@ -5,21 +5,21 @@ from json import dumps
 from asyncio import sleep
 
 from automon.helpers.asyncio_ import AsyncStarter
-from automon.integrations.slack.slack import Slack
+from automon.integrations.slack.client import SlackClient
 
 from automon.integrations.slack.slack_formatting import Emoji, Chat, Format
-from automon.log.logger import INFO, ERROR, WARN, CRITICAL, DEBUG
+from automon.log.logger import Logging, INFO, ERROR, WARN, CRITICAL, DEBUG
 
 
-class AsyncSlackLogging(Slack):
+class AsyncSlackLogging(SlackClient):
     """
     Logging to Slack
     """
 
-    def __init__(self, slack: Slack = None, username: str = '', channel: str = '',
+    def __init__(self, slack: SlackClient = None, username: str = '', channel: str = '',
                  change_user: bool = False, change_icon: bool = False, debug: bool = True):
 
-        self.slack = slack or Slack(username=username, channel=channel)
+        self.slack = slack or SlackClient(username=username, channel=channel)
         self.slack.username = self.slack.username or username
         self.slack.channel = self.slack.channel or channel
         self.slack_username = self.slack.username
@@ -56,7 +56,7 @@ class AsyncSlackLogging(Slack):
 
         self._debug_icon = Emoji.magnifying_glass
         self._debug_url = ''
-        self.debug_channel = self.slack.SLACK_DEBUG_CHANNEL or '#' \
+        self.debug_channel = self.slack.SLACK_DEBUG_CHANNEL or '' \
             if not self.slack_username else f'#{self.slack_username}-debug'
         self._debug_format = Format.blockquote
         self._debug_suffix = ' debugger'
@@ -77,7 +77,8 @@ class AsyncSlackLogging(Slack):
 
         self._test_icon = Emoji.yay
         self._test_url = ''
-        self.test_channel = self.slack.SLACK_TEST_CHANNEL or f'#{self.slack_username}-test'
+        self.test_channel = self.slack.SLACK_TEST_CHANNEL or '' \
+            if not self.slack_username else f'#{self.slack_username}-test'
         self._test_format = Format.blockquote
         self._test_suffix = ' tester'
 
@@ -152,7 +153,7 @@ class AsyncSlackLogging(Slack):
                 await self._error(channel, text)
             elif level is CRITICAL:
                 await self._critical(channel, text)
-            elif level == 'test':
+            elif level == Logging.TEST:
                 await self._test(channel, text)
 
             if self._stop:
@@ -195,26 +196,26 @@ class AsyncSlackLogging(Slack):
         asyncio.run(self._put_queue(CRITICAL, self.critical_channel, msg))
 
     def test(self, msg: str or list or dict or tuple) -> asyncio.tasks:
-        asyncio.run(self._put_queue('test', self.test_channel, msg))
+        asyncio.run(self._put_queue(Logging.TEST, self.test_channel, msg))
 
-    async def _warn(self, channel: str, msg: str or list or dict or tuple) -> asyncio.coroutine:
+    async def _warn(self, channel: str, msg: str or list or dict or tuple):
         self.set_slack_config(WARN)
         return await self.slack.chat_postMessage(channel, self._msg(msg))
         # self.set_slack_config()
 
-    async def _info(self, channel: str, msg: str or list or dict or tuple) -> asyncio.coroutine:
+    async def _info(self, channel: str, msg: str or list or dict or tuple):
         self.set_slack_config(INFO)
         return await self.slack.chat_postMessage(channel, self._msg(msg))
 
         # self.set_slack_config()
 
-    async def _debug(self, channel: str, msg: str) -> asyncio.coroutine:
+    async def _debug(self, channel: str, msg: str):
         self.set_slack_config(DEBUG)
         return await self.slack.chat_postMessage(channel, Chat.clean(msg))
         # self.set_slack_config()
 
     async def _error(self, channel: str, msg: str or list or dict or tuple = None,
-                     msg_format: Format = None) -> asyncio.coroutine:
+                     msg_format: Format = None):
         self.set_slack_config(ERROR)
 
         tb = traceback.format_exc()
@@ -229,7 +230,7 @@ class AsyncSlackLogging(Slack):
             return await self.slack.chat_postMessage(channel, self._msg(msg))
         # self.set_slack_config()
 
-    async def _critical(self, channel: str, msg: str or list or dict or tuple = None) -> asyncio.coroutine:
+    async def _critical(self, channel: str, msg: str or list or dict or tuple = None):
         self.set_slack_config(CRITICAL)
 
         tb = traceback.format_exc()
@@ -244,9 +245,9 @@ class AsyncSlackLogging(Slack):
             return await self.slack.chat_postMessage(channel, msg)
         # self.set_slack_config()
 
-    async def _test(self, channel: str, msg: str) -> asyncio.coroutine:
-        self.set_slack_config('test')
-        return await self.slack.chat_postMessage(channel, self._msg(msg))
+    async def _test(self, channel: str, msg: str):
+        self.set_slack_config(Logging.TEST)
+        await self.slack.chat_postMessage(channel, self._msg(msg))
         # self.set_slack_config()
 
     def set_slack_config(self, level=None):
@@ -283,7 +284,7 @@ class AsyncSlackLogging(Slack):
             self.slack.icon_url = self._critical_url
             self.slack.channel = self.critical_channel
 
-        elif level == 'test':
+        elif level == Logging.TEST:
             self.slack.username = f'{self.slack.username}{self._test_suffix}'
             self.slack.icon_emoji = self._test_icon
             self.slack.icon_url = self._test_url
