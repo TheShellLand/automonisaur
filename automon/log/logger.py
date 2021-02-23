@@ -7,6 +7,14 @@ from automon.integrations.slack.slack_formatting import Emoji, Chat, Format
 
 logging.getLogger('logger').setLevel(CRITICAL)
 
+TEST = 5
+DEBUG = DEBUG
+INFO = INFO
+WARN = WARN
+ERROR = ERROR
+CRITICAL = CRITICAL
+NOTSET = NOTSET
+
 
 class LogStream(object):
     """Allows logging to string
