@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.slack.slack import Slack, SlackError, BotInfo
+from automon.integrations.slack.client import SlackClient, SlackError, BotInfo
 from automon.integrations.slack.slack_logger import AsyncSlackLogging
 from automon.integrations.slack.config import ConfigSlack
 from automon.integrations.slack.slack_formatting import Format, Chat, Emoji
@@ -11,7 +11,7 @@ class SlackTest(unittest.TestCase):
         self.assertTrue(ConfigSlack())
 
     def test_Slack(self):
-        self.assertTrue(Slack())
+        self.assertTrue(SlackClient())
 
     def test_BotInfo(self):
         bot = {
