@@ -11,19 +11,18 @@ log = Logging(name=__name__, level=Logging.DEBUG)
 
 
 class SplunkRestClient:
-    _log = Logging('SplunkRestClient', level=Logging.DEBUG)
 
     def __int__(self, config: SplunkConfig = SplunkConfig()):
-
+        self._log = Logging(SplunkRestClient.__name__, level=Logging.DEBUG)
         self.config = config
 
 
 class SplunkClient:
-    _log = Logging('SplunkClient', level=Logging.DEBUG)
 
-    def __init__(self, config: SplunkConfig = SplunkConfig()):
+    def __init__(self, config: SplunkConfig = None):
+        self._log = Logging(SplunkClient.__name__, level=Logging.DEBUG)
+        self.config = config or SplunkConfig()
 
-        self.config = config
         try:
             self.client = client.connect(
                 host=self.config.host,
@@ -32,18 +31,21 @@ class SplunkClient:
                 password=self.config.password,
                 verify=self.config.verify,
                 scheme=self.config.scheme,
-                app=None,
-                owner=None,
-                token=None,
-                cookie=None
+                app=self.config.app,
+                owner=self.config.owner,
+                token=self.config.token,
+                cookie=self.config.cookie
             )
 
             # referred to as a service in docs
             self.service = self.client
+            self.connected = True
             assert isinstance(self.service, client.Service)
 
         except Exception as e:
             self.client = False
+            self.connected = False
+            self._log.error(e)
 
         self.queue = Queue()
 
