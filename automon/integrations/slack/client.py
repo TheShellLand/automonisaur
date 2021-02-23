@@ -44,18 +44,20 @@ class SlackClient(ConfigSlack):
         # self.slacklog = SlackLogging(token)
 
     def _get_bot_info(self):
-        if self.connected:
-            if self.client:
-                try:
-                    name = BotInfo(self.client.bots_info()).name
-                    self._log.debug(f'Bot name: {name}')
-                    return name
-                except Exception as e:
-                    error = SlackError(e)
-                    self._log.error(
-                        f'''[{self._get_bot_info.__name__}]\tCouldn't get bot name, missing permission: {error.needed}''',
-                        enable_traceback=False)
-                    return ''
+        if not self.connected:
+            return False
+
+        try:
+            name = BotInfo(self.client.bots_info()).name
+            self._log.debug(f'Bot name: {name}')
+            return name
+        except Exception as e:
+            error = SlackError(e)
+            self._log.error(
+                f'''[{self._get_bot_info.__name__}]\tCouldn't get bot name, missing permission: {error.needed}''',
+                enable_traceback=False)
+            return ''
+
         return ''
 
     def _run_until_complete(self):
@@ -68,7 +70,7 @@ class SlackClient(ConfigSlack):
 
     async def chat_postMessage(self, channel: str, text: str) -> slack.WebClient.chat_postMessage:
 
-        if not self.client:
+        if not self.connected:
             return False
 
         if not text:
@@ -91,7 +93,7 @@ class SlackClient(ConfigSlack):
         :return: Slack response or False
         """
 
-        if not self.client:
+        if not self.connected:
             return False
 
         # check if file exists
@@ -126,7 +128,7 @@ class SlackClient(ConfigSlack):
         burst = 0
         burst_max = 0
         retry = 0
-        while True:
+        while self.connected:
             channel, text = await self.queue.get()
 
             if self._stop:
