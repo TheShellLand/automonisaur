@@ -15,7 +15,7 @@ log = Logging(__name__, Logging.DEBUG)
 
 
 class Neo4jClient:
-    """Neo4j wrapper"""
+    """Neo4j client"""
 
     def __init__(self, config: Neo4jConfig = None) -> neo4j:
         self._log = Logging(Neo4jClient.__name__, Logging.DEBUG)
@@ -30,9 +30,8 @@ class Neo4jClient:
             try:
                 self.neo4j = GraphDatabase.driver(server, auth=(self.user, self.password))
                 self.driver = self.neo4j
-                self.connected = True
-                self._log.info(f'Connected to neo4j server: {server}')
-            except:
+                log.info(f'Connected to neo4j server: {server}')
+            except Exception as _:
                 self.connected = False
                 self._log.error(f'Cannot connect to neo4j server: {server}')
         else:
@@ -53,14 +52,16 @@ class Neo4jClient:
 
         return self._prepare_dict(**args)
 
-    def _prepare_dict(self, blob: dict) -> dict:
+    @staticmethod
+    def _prepare_dict(blob: dict) -> dict:
         """All inputs first needs to dicts"""
         try:
             return dict(blob)
-        except:
+        except Exception as _:
             return dict(raw=urlencode(blob))
 
-    def _consolidate(self, query: list) -> list:
+    @staticmethod
+    def _consolidate(query: list) -> list:
         """Join cypher queries list into a string"""
         return '\n'.join(query).strip()
 
