@@ -3,142 +3,22 @@ import slack
 import random
 import asyncio
 
-from slack.web.slack_response import SlackResponse
-from slack.errors import SlackApiError
-
 from automon.log.logger import Logging
 from automon.helpers.asyncio_ import AsyncStarter
+from automon.integrations.slack.bots import BotInfo
+from automon.integrations.slack.error import SlackError
 from automon.integrations.slack.config import ConfigSlack
 
-# TODO: maybe separate class for SlackAuth
 
-log = Logging(__name__, level=Logging.ERROR)
-
-
-class SlackError:
-    def __init__(self, error: SlackApiError):
-        """The request to the Slack API failed.
-        The server responded with:
-        {
-            "ok": false,
-            "error": "missing_scope",
-            "needed": "users:read",
-            "provided": "chat:write,chat:write.customize,chat:write.public,links:write,links:read,files:read,files:write"
-        }
-        """
-
-        self._error = error
-        self._reason = getattr(self._error, 'reason', '')
-        self._response = getattr(self._error, 'response', '')
-
-        if self._reason:
-            self.args = getattr(self._reason, 'args', '')
-            self.errno = getattr(self._reason, 'errno', '')
-            self.reason = getattr(self._reason, 'reason', '')
-            self.strerror = getattr(self._reason, 'strerror', '')
-            self.verify_code = getattr(self._reason, 'verify_code', '')
-            self.verify_message = getattr(self._reason, 'verify_message', '')
-
-        if self._response:
-            self.api_url = getattr(self._response, 'api_url' '')
-
-            self.data = dict(getattr(self._response, 'data', ''))
-            self.ok = self.data.get('ok', '')
-            self.__error = self.data.get('error', '')
-            self._needed = self.data.get('needed', '')
-            self.provided = self.data.get('provided', '')
-
-            self.headers = getattr(self._response, 'headers', '')
-            self.http_verb = getattr(self._response, 'http_verb', '')
-            self.req_args = getattr(self._response, 'req_args', '')
-            self.status_code = getattr(self._response, 'status_code', '')
-
-    def error(self):
-        if self._response:
-            return self.__error
-
-        if self._reason:
-            return self.strerror
-
-        log.info(f'{NotImplemented}')
-        return f'{self._error}'
-
-    def needed(self):
-        if self._response:
-            return self._needed
-
-        if self._reason:
-            return self.strerror
-
-        log.info(f'{NotImplemented}')
-        return f'{self._error}'
-
-    def __repr__(self):
-        if self._response:
-            return f'{self.data}'
-
-        if self._reason:
-            return f'{self.strerror}'
-
-        log.info(f'{NotImplemented}')
-        return f'{self._error}'
-
-    def __str__(self):
-        return self.__repr__()
-
-
-class BotInfo(SlackResponse):
-    def __init__(self, response: dict):
-        """{
-            "ok": true,
-            "bot": {
-                "id": "B061F7JD2",
-                "deleted": false,
-                "name": "beforebot",
-                "updated": 1449272004,
-                "app_id": "A161CLERW",
-                "user_id": "U012ABCDEF",
-                "icons": {
-                    "image_36": "https://...",
-                    "image_48": "https://...",
-                    "image_72": "https://..."
-                }
-            }
-        }
-        """
-
-        self.status = response.get('ok')
-        self.bot = dict(response.get('bot'))
-        self.id = self.bot.get('id')
-        self.deleted = self.bot.get('deleted')
-        self.name = self.bot.get('name')
-        self.updated = self.bot.get('updated')
-        self.app_id = self.bot.get('app_id')
-        self.user_id = self.bot.get('user_id')
-        self.icons = self.bot.get('icons')
-
-    def __repr__(self):
-        return f'{self.__dict__}'
-
-    def __str__(self):
-        return f'{self.__dict__}'
-
-    def __eq__(self, other):
-        if not isinstance(other, BotInfo):
-            return NotImplemented
-
-        return self.__dict__ == other.__dict__
-
-
-class Slack(ConfigSlack):
+class SlackClient(ConfigSlack):
     """
     All Slack interactions
     """
 
-    def __init__(self, token: str = ConfigSlack.slack_token, username: str = None,
-                 channel: str = None, icon_emoji: str = None, icon_url: str = None):
+    def __init__(self, token: str = ConfigSlack.slack_token, username: str = '',
+                 channel: str = '', icon_emoji: str = None, icon_url: str = None):
 
-        self._log = Logging(Slack.__name__, Logging.ERROR)
+        self._log = Logging(SlackClient.__name__, Logging.ERROR)
 
         self.token = ConfigSlack.slack_token or token
         self.client = slack.WebClient(token=token)
