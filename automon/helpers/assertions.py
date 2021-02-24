@@ -12,21 +12,6 @@ def make_tuple(obj: str) -> tuple:
     return literal_eval(obj)
 
 
-def assert_label(label: str) -> str:
-    """Make sure neo4j label is formatted correctly"""
-
-    label = str(label)
-    if label:
-        if re.search('[:]', label):
-            log.error(f"Invalid label '{label}': Remove the colon from the label")
-            label = label.replace(':', '')
-
-        if not re.search('[a-zA-Z]', label[0]):  # First letter of a label must be a letter
-            log.error(f"Invalid label '{label}': First character of Neo4j :LABEL must be a letter")
-        else:
-            return f':`{label}`'  # :`Label`
-
-
 def assert_tuple(obj: tuple or not tuple) -> bool:
     """Make sure it is a tuple"""
 
