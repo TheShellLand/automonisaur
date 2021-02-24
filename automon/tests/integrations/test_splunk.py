@@ -18,6 +18,7 @@ cloud = SplunkClient(config_cloud)
 
 
 class SplunkConfigTest(unittest.TestCase):
+    config = SplunkConfig()
 
     def test_init(self):
         self.assertIsNotNone(SplunkConfig())
@@ -36,10 +37,6 @@ class SplunkConfigTest(unittest.TestCase):
 
 class SplunkClientTest(unittest.TestCase):
 
-    def test_client_connect_fails(self):
-        config = SplunkConfig(host='localhost')
-        self.assertFalse(SplunkClient(config).client)
-
     def test_client_connect(self):
         if cloud.connected:
             self.assertIsNotNone(cloud)
@@ -48,7 +45,7 @@ class SplunkClientTest(unittest.TestCase):
             self.assertTrue([x.name for x in cloud.get_apps()])
 
     def test_init(self):
-        self.assertIsNotNone(cloud)
+        self.assertIsNotNone(SplunkClientTest())
 
     def test_jobs(self):
         if cloud.connected:
