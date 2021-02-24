@@ -5,17 +5,16 @@ from automon.integrations.splunk.client import SplunkClient
 
 config_mock = SplunkConfig(
     host='localhost',
-    port=8089,
     username='user',
-    password='pass',
-    scheme='http')
+    password='pass')
 
 config_cloud = SplunkConfig(
     host='splunkcloud.com',
-    port=8089,
     username='user',
-    password='pass',
-    scheme='http')
+    password='pass')
+
+mock = SplunkClient(config_mock)
+cloud = SplunkClient(config_cloud)
 
 
 class SplunkConfigTest(unittest.TestCase):
@@ -42,25 +41,29 @@ class SplunkClientTest(unittest.TestCase):
         self.assertFalse(SplunkClient(config).client)
 
     def test_client_connect(self):
-        client = SplunkClient(config_cloud)
-        self.assertIsNotNone(client)
-        self.assertIsNotNone(client.client)
-        self.assertTrue(client.get_apps())
-        self.assertTrue([x.name for x in client.get_apps()])
+        if cloud.connected:
+            self.assertIsNotNone(cloud)
+            self.assertIsNotNone(cloud.client)
+            self.assertTrue(cloud.get_apps())
+            self.assertTrue([x.name for x in cloud.get_apps()])
 
     def test_init(self):
-        self.assertIsNotNone(SplunkClient(config_cloud))
+        self.assertIsNotNone(cloud)
 
     def test_jobs(self):
-        self.assertTrue(SplunkClient(config_cloud).jobs())
-        self.assertTrue(SplunkClient(config_cloud).job_summary())
-        self.assertTrue(SplunkClient(config_cloud).create_job('search * '))
+        if cloud.connected:
+            self.assertTrue(cloud.jobs())
+            self.assertTrue(cloud.job_summary())
+            self.assertTrue(cloud.create_job('search * '))
 
     def test_search(self):
-        self.assertTrue(SplunkClient(config_cloud).search('search index=* | head 10'))
+        if cloud.connected:
+            self.assertTrue(cloud.search('search index=* | head 10'))
 
     def test_oneshot(self):
-        self.assertIsNotNone(SplunkClient(config_cloud).oneshot('search * | head 10'))
+        if cloud.connected:
+            self.assertIsNotNone(cloud.oneshot('search * | head 10'))
 
-# if __name__ == '__main__':
-#     unittest.main()
+
+if __name__ == '__main__':
+    unittest.main()
