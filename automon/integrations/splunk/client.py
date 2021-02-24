@@ -46,7 +46,7 @@ class SplunkClient:
         except Exception as e:
             self.client = False
             self.connected = False
-            self._log.error(e)
+            self._log.error(f'{self} {e}', enable_traceback=False)
 
         self.queue = Queue()
 
@@ -62,12 +62,15 @@ class SplunkClient:
 
     def oneshot(self, query, earliest_time: str = '-15m', latest_time: str = 'now'):
         """create oneshot search"""
+
         kwargs_oneshot = {
             "earliest_time": earliest_time,
             "latest_time": latest_time
         }
+
         searchquery_oneshot = query
         oneshotsearch_results = self.service.jobs.oneshot(searchquery_oneshot, **kwargs_oneshot)
+
         reader = splunklib.results.ResultsReader(oneshotsearch_results)
 
         return [x for x in reader]
@@ -114,6 +117,6 @@ class SplunkClient:
         return f'{self.service.apps[app_name]}'
 
     def __str__(self):
-        if self.client:
+        if self.connected:
             return f'connected to {self.config}'
         return f'not connected to {self.config}'
