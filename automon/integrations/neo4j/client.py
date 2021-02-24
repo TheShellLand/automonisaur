@@ -34,8 +34,6 @@ class Neo4jClient:
             except Exception as _:
                 self.connected = False
                 self._log.error(f'Cannot connect to neo4j server: {server}')
-        else:
-            self.neo4j = None
 
     def __str__(self):
         return f'{self.hosts}'
@@ -70,14 +68,14 @@ class Neo4jClient:
         gets to this function all prior checks have passed. Also, create a last check in
         this function for general cypher query-ness"""
 
-        if self.neo4j is None:
-            return
+        if not self.connected:
+            return False
 
         with self.neo4j.session() as session:
             results = session.run(cypher)
 
-        log.debug(f'Cypher: {cypher}')
-        log.debug(f'Results: {results}')
+        self._log.debug(f'Cypher: {cypher}')
+        self._log.debug(f'Results: {results}')
 
         # TODO: print records from cypher response
         # for record in results:
@@ -87,7 +85,7 @@ class Neo4jClient:
 
         return results
 
-    def send_data(self, label, data):
+    def send_data(self, label: str, data: dict):
         """Just take the entry and put it into the database to be parsed later"""
 
         timestamp_date = datetime.now(tz=timezone.utc).isoformat()
@@ -113,9 +111,9 @@ class Neo4jClient:
             value = dict_blob[key]
 
             if i < len(dict_blob.keys()):
-                query.append(f'`{key}`: {value},')
+                query.append(f'`{key}`: "{value}",')
             else:
-                query.append(f'`{key}`: {value}')
+                query.append(f'`{key}`: "{value}"')
 
         query.append(' } )')
 
@@ -123,16 +121,16 @@ class Neo4jClient:
         # query.append('ON CREATE SET {}.timestamp = "{}"'.format(node, timestamp_date))
 
         # timestamp of every time seen
-        query.append('SET {}.timestamp = "{}"'.format(node, timestamp_date))
+        query.append(f'SET {node}.timestamp = "{timestamp_date}"')
         query.append('RETURN *')
 
         final_cypher = self._consolidate(query)  # self._consolidate sets of queries into one single related query
 
-        log.debug(final_cypher)
+        self._log.debug(f'\n{final_cypher}')
 
         return self._send(final_cypher)
 
     def create_relationship(self, cypher):
         """Create relationship"""
-        log.debug(cypher)
+        self._log.debug(cypher)
         return self._send(cypher)
