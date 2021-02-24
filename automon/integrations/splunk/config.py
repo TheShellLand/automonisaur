@@ -1,5 +1,7 @@
 import os
 
+import splunklib.binding as binding
+
 from automon.log.logger import Logging
 
 
@@ -7,7 +9,7 @@ class SplunkConfig:
     def __init__(self, host: str = None, port: int = None, username: str = None,
                  password: str = None, verify: str = True, scheme: str = 'https',
                  app: NotImplemented = None, owner: NotImplemented = None,
-                 token: str = None, cookie: str = None):
+                 token: str = None, cookie: str = None, timeout: int = 1):
         self._log = Logging(name=SplunkConfig.__name__, level=Logging.DEBUG)
 
         self.host = host or os.getenv('SPLUNK_HOST') or 'splunkcloud.com'
@@ -20,6 +22,7 @@ class SplunkConfig:
         self.owner = owner
         self.token = token
         self.cookie = cookie
+        self.handler = binding.handler(timeout=timeout)
 
     def info(self):
         return f'{self}'
