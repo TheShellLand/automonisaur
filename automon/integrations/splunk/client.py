@@ -34,7 +34,8 @@ class SplunkClient:
                 app=self.config.app,
                 owner=self.config.owner,
                 token=self.config.token,
-                cookie=self.config.cookie
+                cookie=self.config.cookie,
+                handler=self.config.handler
             )
 
             # referred to as a service in docs
