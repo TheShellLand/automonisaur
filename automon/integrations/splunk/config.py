@@ -14,8 +14,8 @@ class SplunkConfig:
 
         self.host = host or os.getenv('SPLUNK_HOST') or 'splunkcloud.com'
         self.port = port or os.getenv('SPLUNK_PORT') or 8090
-        self.username = username or os.getenv('SPLUNK_USERNAME') or ''
-        self.password = password or os.getenv('SPLUNK_PASSWORD') or ''
+        self.username = username or os.getenv('SPLUNK_USERNAME') or 'admin'
+        self.password = password or os.getenv('SPLUNK_PASSWORD') or 'changeme'
         self.verify = verify
         self.scheme = scheme or 'https'
         self.app = app
