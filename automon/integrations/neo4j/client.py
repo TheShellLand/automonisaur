@@ -1,4 +1,5 @@
 import neo4j
+import logging
 
 from urllib.parse import urlencode
 from datetime import datetime, timezone
@@ -8,13 +9,16 @@ from automon.log.logger import Logging
 from automon.integrations.neo4j.config import Neo4jConfig
 from automon.helpers.assertions import assert_label
 
+logging.getLogger('neo4j').setLevel(logging.DEBUG)
+
 log = Logging(__name__, Logging.DEBUG)
 
 
-class Neo4jWrapper:
+class Neo4jClient:
     """Neo4j wrapper"""
 
     def __init__(self, config: Neo4jConfig = None) -> neo4j:
+        self._log = Logging(Neo4jClient.__name__, Logging.DEBUG)
 
         self.config = config if isinstance(config, Neo4jConfig) else Neo4jConfig()
 
@@ -26,12 +30,16 @@ class Neo4jWrapper:
             try:
                 self.neo4j = GraphDatabase.driver(server, auth=(self.user, self.password))
                 self.driver = self.neo4j
-                log.info(f'Connected to neo4j server: {server}')
+                self.connected = True
+                self._log.info(f'Connected to neo4j server: {server}')
             except:
-                self.neo4j = None
-                log.error(f'Cannot connect to neo4j server: {server}')
+                self.connected = False
+                self._log.error(f'Cannot connect to neo4j server: {server}')
         else:
             self.neo4j = None
+
+    def __str__(self):
+        return f'{self.hosts}'
 
     def _http_header(self, headers) -> dict:
         # [print(x) for x in auth.request_headers(request)]

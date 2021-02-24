@@ -1,6 +1,9 @@
 import os
 
 from automon.helpers.sanitation import Sanitation as S
+from automon.log.logger import Logging
+
+log = Logging(name=__name__, level=Logging.DEBUG)
 
 
 class Neo4jConfig:
