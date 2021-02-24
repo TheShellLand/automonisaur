@@ -44,9 +44,8 @@ class SplunkClient:
             assert isinstance(self.service, client.Service)
 
         except Exception as e:
-            self.client = False
             self.connected = False
-            self._log.error(f'{self} {e}', enable_traceback=False)
+            self._log.error(f'{e}\t{self.config.host}:{self.config.port}', enable_traceback=False)
 
         self.queue = Queue()
 
@@ -86,7 +85,8 @@ class SplunkClient:
         """create search job"""
         return self.service.jobs.create(query, **kwargs)
 
-    def results(self, job: client.Job):
+    @staticmethod
+    def results(job: client.Job):
         """io blocking waiting for job results"""
         j = Job(job)
         while True:
@@ -105,13 +105,13 @@ class SplunkClient:
         return [Application(x) for x in self.service.apps]
 
     def create_app(self, app_name):
-        return self.apps.create(app_name)
+        return self.service.apps.create(app_name)
 
     def get_app(self, app_name):
-        return self.apps[app_name]
+        return self.service.apps[app_name]
 
     def delete_app(self, app_name):
-        return self.apps.delete(app_name)
+        return self.service.apps.delete(app_name)
 
     def app_info(self, app_name):
         return f'{self.service.apps[app_name]}'

@@ -66,18 +66,18 @@ class Job:
 
 
 class Application:
-    def __init__(self, object: dict):
-        self._app = object
+    def __init__(self, app: dict):
+        self._app = app
 
-        self.access = object['access']
-        self.content = object['content']
-        self.defaults = object['defaults']
-        self.fields = object['fields']
-        self.links = object['links']
-        self.name = object['name']
-        self.path = object['path']
-        self.service = object['service']
-        self.setupInfo = object['setupInfo']
-        self.state = object['state']
+        self.access = app['access']
+        self.content = app['content']
+        self.defaults = app['defaults']
+        self.fields = app['fields']
+        self.links = app['links']
+        self.name = app['name']
+        self.path = app['path']
+        self.service = app['service']
+        self.setupInfo = app['setupInfo']
+        self.state = app['state']
 
-        self._state = object['_state']
+        self._state = app['_state']
