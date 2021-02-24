@@ -1,16 +1,31 @@
 import os
 
+import splunklib.binding as binding
+
+from automon.log.logger import Logging
+
 
 class SplunkConfig:
-    def __init__(self, host: str = os.getenv('SPLUNK_HOST'),
-                 port: int = os.getenv('SPLUNK_PORT'),
-                 username: str = os.getenv('SPLUNK_USERNAME'),
-                 password: str = os.getenv('SPLUNK_PASSWORD')):
+    def __init__(self, host: str = None, port: int = None, username: str = None,
+                 password: str = None, verify: str = True, scheme: str = 'https',
+                 app: NotImplemented = None, owner: NotImplemented = None,
+                 token: str = None, cookie: str = None, timeout: int = 1):
+        self._log = Logging(name=SplunkConfig.__name__, level=Logging.DEBUG)
 
-        self.host = host if host else 'splunkcloud.com'
-        self.port = port if port else 8090
-        self.username = username if username else ''
-        self.password = password if password else ''
+        self.host = host or os.getenv('SPLUNK_HOST') or 'splunkcloud.com'
+        self.port = port or os.getenv('SPLUNK_PORT') or 8090
+        self.username = username or os.getenv('SPLUNK_USERNAME') or 'admin'
+        self.password = password or os.getenv('SPLUNK_PASSWORD') or 'changeme'
+        self.verify = verify
+        self.scheme = scheme or 'https'
+        self.app = app
+        self.owner = owner
+        self.token = token
+        self.cookie = cookie
+        self.handler = binding.handler(timeout=timeout)
+
+    def info(self):
+        return f'{self}'
 
     def __str__(self):
-        return f'{self.username}@{self.host}:{self.port}'
+        return f'{self.username}@{self.scheme}://{self.host}:{self.port}'
