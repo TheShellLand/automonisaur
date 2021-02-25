@@ -83,7 +83,7 @@ class Cypher:
         self.cypher.append(f'MATCH (a{label}), (b{other_label})')
         self.cypher.append(
             f'WHERE a.{prop} = "{value}" AND b.{other_prop} = "{other_value}"')
-        self.cypher.append(f'CREATE (a)-[r{relationship}]->(b)')
+        self.cypher.append(f'MERGE (a)-[r{relationship}]->(b)')
         self.cypher.append(f'RETURN type(r)')
 
     def _end(self):
@@ -117,7 +117,7 @@ class Cypher:
     # def begin():
     #     return '{'
 
-    def dict_to_cypher(self, obj: dict) -> str:
+    def dict_to_cypher(self, obj: dict):
         """Dict to cypher
 
         must be { `key`: 'value' }
@@ -142,14 +142,16 @@ class Cypher:
         """Join cypher queries list into a string"""
         return ' '.join(self.cypher).strip()
 
-    def prepare_dict(self, blob: dict) -> dict:
+    @staticmethod
+    def prepare_dict(blob: dict) -> dict:
         """All inputs first needs to dicts"""
         try:
             return dict(blob)
         except Exception as _:
             return dict(raw=urlencode(blob))
 
-    def assert_label(self, label: str) -> str:
+    @staticmethod
+    def assert_label(label: str) -> str:
         """Make sure neo4j label is formatted correctly"""
 
         if not label:
