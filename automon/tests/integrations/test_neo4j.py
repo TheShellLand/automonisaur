@@ -13,21 +13,38 @@ class Neo4jTest(unittest.TestCase):
         self.assertIsNotNone(Neo4jClient(hosts='bolt://localhost:0', encrypted=False))
 
     def test_cypher(self):
+
         if self.client.connected:
             # self.assertTrue(self.client.delete_all())
             self.assertTrue(self.client.merge(label='human', data={'name': 'finn'}))
             self.assertTrue(self.client.merge(label='dog', data={'name': 'jake', 'magic': True}))
             self.assertTrue(self.client.merge(label='dog', data={'name': 'jake'}))
-            self.assertTrue(self.client.merge(label='dog', data={'name': 'jake', 'magic': False}))
             self.assertTrue(self.client.merge(label='math', data={'results': 1}))
             self.assertTrue(self.client.merge(label='big dict', data={'isthat': 'new', 'no': "it's not"}))
-            self.assertTrue(self.client.merge(data={'no': 'labels', 'look': 'mom'}))
             self.assertTrue(self.client.merge(data={'no': 'labels', 'look': 'mom'}))
             # self.assertTrue(self.client.delete_all())
 
     def test_relationships(self):
         if self.client.connected:
-            pass
+            self.assertTrue(self.client.merge(label='bubble tea', data={'type': 'milk tea'}))
+            self.assertTrue(self.client.merge(label='bubble tea', data={'type': 'earl grey'}))
+
+            self.assertTrue(self.client.create_relationship(
+                'bubble tea',
+                'type', 'milk tea',
+                'type', 'earl grey',
+                'better than'))
+
+    def test_delete_node(self):
+        if self.client.connected:
+            self.assertTrue(self.client.create(label='orange', data={'type': 'juice'}))
+            self.assertTrue(self.client.create(label='orange', data={'flavor': 'orange'}))
+
+            self.assertTrue(self.client.delete_node(prop='type', value='juice'))
+            self.assertTrue(self.client.delete_node(prop='flavor', value='orange'))
+
+            self.assertTrue(self.client.create(label='orange', data={'type': 'juice'}))
+            self.assertTrue(self.client.create(label='orange', data={'flavor': 'orange'}))
 
     def test_assert_label(self):
         test = Cypher()

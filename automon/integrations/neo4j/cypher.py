@@ -14,40 +14,104 @@ class Cypher:
         self.cypher = []
         self._node = 'Node'
 
-    def start(self, node: str = None, label: str = ''):
-        return self.merge(node, label)
+    def __repr__(self):
+        return self.consolidate()
 
-    def merge(self, node: str = None, label: str = ''):
-        """Default merge node"""
+    def start(self, data: dict, node: str = None, label: str = ''):
+        """alias to merge"""
+        return self.merge(node=node, label=label, data=data)
+
+    def merge(self, data: dict, node: str = None, label: str = ''):
+        """Merge a node
+
+        MERGE (Node :`human` { `name`: "finn" })
+        ON CREATE SET Node.first_seen = "2021-02-25T03:19:47.438596+00:00"
+        ON CREATE SET Node.first_seen_ts = timestamp()
+        SET Node.last_seen = "2021-02-25T03:19:47.438901+00:00"
+        SET Node.last_seen_ts = timestamp()
+        RETURN *
+
+        """
         node = node or self._node
         label = self.assert_label(label)
         self.cypher.append(f'MERGE ({node} {label} {{')
+        self.dict_to_cypher(data)
+        self._end()
+        self.first_seen()
+        self.last_seen()
+        self._return_asterisk()
 
-    def create(self, node: str = None, label: str = ''):
+    def create(self, data: dict, node: str = None, label: str = ''):
+        """Create a node"""
         node = node or self._node
         label = self.assert_label(label)
         self.cypher.append(f'CREATE ({node} {label} {{')
+        self.dict_to_cypher(data)
+        self._end()
+        self.last_seen()
+        self._return_asterisk()
 
     def unique(self, node: str = None, label: str = ''):
         node = node or self._node
         label = self.assert_label(label)
         self.cypher.append(f'UNIQUE ({node} {label} {{')
 
-    def end(self):
+    def match(self, node: str, prop: str, value: str):
+        """Match a node"""
+        node = node or self._node
+        # MATCH (n {name: 'Andy'})
+        self.cypher.append(f'MATCH ({node} {{{prop}: "{value}"}})')
+
+    def relationship(self, label: str, prop: str, value: str, other_prop: str,
+                     other_value: str, relationship: str, other_label: str = None):
+        """Create an A -> B relationship
+
+        MATCH (a:Person), (b:Person)
+        WHERE a.name = 'A' AND b.name = 'B'
+        CREATE (a)-[r:RELTYPE]->(b)
+        RETURN type(r)
+
+        """
+
+        label = self.assert_label(label)
+        other_label = self.assert_label(other_label)
+        relationship = self.assert_label(relationship)
+
+        if not other_label:
+            other_label = label
+
+        self.cypher.append(f'MATCH (a{label}), (b{other_label})')
+        self.cypher.append(
+            f'WHERE a.{prop} = "{value}" AND b.{other_prop} = "{other_value}"')
+        self.cypher.append(f'CREATE (a)-[r{relationship}]->(b)')
+        self.cypher.append(f'RETURN type(r)')
+
+    def _end(self):
+        """End of cypher"""
         self.cypher.append('})')
 
-    def return_asterisk(self):
+    def _return_asterisk(self):
         self.cypher.append('RETURN *')
 
-    def timestamp(self, node: str = None):
+    def first_seen(self, node: str = None):
+        """Node first_seen property"""
         node = node or self._node
         time = datetime.now(tz=timezone.utc).isoformat()
-        self.cypher.append(f'SET {node}.timestamp = "{time}"')
+        # ON CREATE SET keanu.created = timestamp()
+        self.cypher.append(f'ON CREATE SET {node}.first_seen = "{time}"')
+        self.cypher.append(f'ON CREATE SET {node}.first_seen_ts = timestamp()')
+
+    def last_seen(self, node: str = None):
+        """Node last_seen property"""
+        node = node or self._node
+        time = datetime.now(tz=timezone.utc).isoformat()
+        self.cypher.append(f'SET {node}.last_seen = "{time}"')
+        self.cypher.append(f'SET {node}.last_seen_ts = timestamp()')
 
     def on_create_set(self):
         # timestamp of first seen
         # query.append('ON CREATE SET {}.timestamp = "{}"'.format(node, timestamp_date))
-        pass
+        return
 
     # @staticmethod
     # def begin():
@@ -64,11 +128,12 @@ class Cypher:
         i = 1
         for key in obj.keys():
             value = obj.get(key)
+            query = f'`{key}`: "{value}"'
 
             if i < len(obj.keys()):
-                cypher.append(f'`{key}`: "{value}",')
+                cypher.append(query + ',')
             else:
-                cypher.append(f'`{key}`: "{value}"')
+                cypher.append(query)
             i += 1
 
         self.cypher.append(' '.join(cypher))
@@ -101,4 +166,13 @@ class Cypher:
 
     @staticmethod
     def delete_all():
-        return f'MATCH (n) DELETE n'
+        """Delete all nodes and relationships"""
+        return f'MATCH (n) DETACH DELETE n'
+
+    def delete_node(self, prop: str, value: str, node: str = None):
+        """Delete all matching nodes and its relationships"""
+        node = node or self._node
+        # MATCH (n {name: 'Andy'})
+        # DETACH DELETE n
+        self.match(prop=prop, value=value, node=node)
+        self.cypher.append(f'DETACH DELETE {node}')
