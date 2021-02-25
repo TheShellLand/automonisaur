@@ -11,16 +11,20 @@ class Results(Result):
     def __init__(self, results):
         self._results = results
 
-        self._summary = results._summary
-        self.counters = self._summary.counters
-        self.notifications = self._summary.notifications
-        self.query = self._summary.query
-        self.query_type = self._summary.query_type
+        try:
+            self._summary = results._summary
+            self.counters = self._summary.counters
+            self.notifications = self._summary.notifications
+            self.query = self._summary.query
+            self.query_type = self._summary.query_type
 
-        self.metadata = self._summary.metadata
-        self.stats = self.metadata.get('stats', None)
+            self.metadata = self._summary.metadata
+            self.stats = self.metadata.get('stats', None)
+        except Exception as e:
+            log.error(e, enable_traceback=False)
 
     def __str__(self):
-        if self.stats:
+        try:
             return f'{self.stats}'
-        return 'no nodes'
+        except:
+            return 'no nodes'

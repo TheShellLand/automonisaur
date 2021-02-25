@@ -41,16 +41,17 @@ class Neo4jClient:
                 self._log.error(f'Cannot connect to neo4j server: {server}\t{e}',
                                 enable_traceback=False)
 
-    def __str__(self):
+    def __repr__(self):
         return f'{self.hosts}'
 
-    def _send(self, cypher: str) -> GraphDatabase.driver:
-        """This is the query that will be run on the database. So make sure by the time it
-        gets to this function all prior checks have passed. Also, create a last check in
-        this function for general cypher query-ness"""
+    def _send(self, cypher: str or Cypher) -> GraphDatabase.driver:
+        """Send cypher to server"""
 
         if not self.connected:
             return False
+
+        if isinstance(cypher, Cypher):
+            cypher = f'{cypher}'
 
         with self.driver.session() as session:
             results = session.run(cypher)
@@ -61,13 +62,21 @@ class Neo4jClient:
         return results
 
     def cypher(self, query: str):
+        """Run a straight cypher query"""
         return self._send(S.strip(query))
 
     def delete_all(self):
+        """Delete all nodes and relationships"""
         return self._send(Cypher.delete_all())
 
+    def delete_node(self, prop: str, value: str, node: str = None):
+        """Delete all matching nodes and its relationships"""
+        cypher = Cypher()
+        cypher.delete_node(prop=prop, value=value, node=node)
+        return self._send(cypher)
+
     def merge(self, data: dict, label: str = None, node: str = None):
-        """Just take the entry and put it into the database to be parsed later"""
+        """Merge a node"""
 
         # cypher_assertions = []
         # TODO: find a way to check if assertion has already been made
@@ -76,19 +85,32 @@ class Neo4jClient:
         # cypher_assertions.append(query)  # Pre cypher query
 
         cypher = Cypher()
-        cypher.merge(node=node, label=label)
-        cypher.dict_to_cypher(data)
-        cypher.end()
-        cypher.timestamp()
-        cypher.return_asterisk()
-
-        final_cypher = cypher.consolidate()  # self._consolidate sets of queries into one single related query
+        cypher.merge(node=node, label=label, data=data)
 
         # self._log.debug(f'{final_cypher}')
 
-        return self._send(final_cypher)
+        return self._send(cypher)
 
-    def create_relationship(self, cypher):
-        """Create relationship"""
+    def create(self, data: dict, label: str = None, node: str = None):
+        """Create a node"""
+
+        cypher = Cypher()
+        cypher.create(node=node, label=label, data=data)
+
+        # self._log.debug(f'{final_cypher}')
+
+        return self._send(cypher)
+
+    def create_relationship(self, label: str, prop: str, value: str, other_prop: str,
+                            other_value: str, relationship: str, other_label: str = None):
+        """Create an A -> B relationship"""
+
+        cypher = Cypher()
+        cypher.relationship(
+            label, prop, value, other_prop, other_value, relationship, other_label)
+
         self._log.debug(cypher)
         return self._send(cypher)
+
+    def search(self, query: str):
+        return
