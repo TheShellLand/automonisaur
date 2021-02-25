@@ -1,4 +1,3 @@
-import json
 import unittest
 
 from automon.integrations.neo4j.client import Neo4jClient

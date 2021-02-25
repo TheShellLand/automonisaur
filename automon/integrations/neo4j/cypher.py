@@ -166,10 +166,9 @@ class Cypher:
         else:
             return f':`{label}`'  # :`Label`
 
-    @staticmethod
-    def delete_all():
+    def delete_all(self):
         """Delete all nodes and relationships"""
-        return f'MATCH (n) DETACH DELETE n'
+        self.cypher.append(f'MATCH (n) DETACH DELETE n')
 
     def delete_node(self, prop: str, value: str, node: str = None):
         """Delete all matching nodes and its relationships"""
