@@ -17,7 +17,7 @@ class Neo4jClient:
     """Neo4j client"""
 
     def __init__(self, config: Neo4jConfig = None, user: str = None,
-                 password: str = None, hosts: list = None,
+                 password: str = None, hosts: list or str = None,
                  encrypted: bool = None) -> neo4j:
         self._log = Logging(Neo4jClient.__name__, Logging.DEBUG)
 
@@ -40,7 +40,7 @@ class Neo4jClient:
                 self.connected = False
                 self._log.error(f'Cannot connect to neo4j server: {server}\t{e}',
                                 enable_traceback=False)
-        else:
+        if not self.hosts:
             self.connected = False
 
     def __repr__(self):
@@ -69,7 +69,9 @@ class Neo4jClient:
 
     def delete_all(self):
         """Delete all nodes and relationships"""
-        return self._send(Cypher.delete_all())
+        cypher = Cypher()
+        cypher.delete_all()
+        return self._send(cypher)
 
     def delete_node(self, prop: str, value: str, node: str = None):
         """Delete all matching nodes and its relationships"""
