@@ -40,6 +40,8 @@ class Neo4jClient:
                 self.connected = False
                 self._log.error(f'Cannot connect to neo4j server: {server}\t{e}',
                                 enable_traceback=False)
+        else:
+            self.connected = False
 
     def __repr__(self):
         return f'{self.hosts}'
