@@ -90,11 +90,6 @@ class AssertionsTest(unittest.TestCase):
         self.assertRaises(ValueError, make_tuple, 'test,')
         self.assertRaises(ValueError, make_tuple, 'test,test')
 
-    def test_assert_label(self):
-        self.assertEqual(assert_label(':test'), ':`test`')
-        self.assertIsNone(assert_label('1test'))
-        self.assertEqual(assert_label('works'), ':`works`')
-
     def test_assert_tuple(self):
         self.assertFalse(assert_tuple('test'))
         self.assertFalse(assert_tuple(1))
