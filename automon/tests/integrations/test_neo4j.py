@@ -3,6 +3,7 @@ import unittest
 
 from automon.integrations.neo4j.client import Neo4jClient
 from automon.integrations.neo4j.config import Neo4jConfig
+from automon.integrations.neo4j.cypher import Cypher
 
 
 class Neo4jTest(unittest.TestCase):
@@ -23,6 +24,17 @@ class Neo4jTest(unittest.TestCase):
             self.assertTrue(self.client.merge(data={'no': 'labels', 'look': 'mom'}))
             self.assertTrue(self.client.merge(data={'no': 'labels', 'look': 'mom'}))
             # self.assertTrue(self.client.delete_all())
+
+    def test_relationships(self):
+        if self.client.connected:
+            pass
+
+    def test_assert_label(self):
+        test = Cypher()
+
+        self.assertEqual(test.assert_label(':test'), ':`test`')
+        self.assertIsNone(test.assert_label('1test'))
+        self.assertEqual(test.assert_label('works'), ':`works`')
 
 
 if __name__ == '__main__':
