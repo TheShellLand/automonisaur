@@ -32,7 +32,7 @@ class Snapshot:
 
 
 class ElasticsearchSnapshotMonitor:
-    def __init__(self, elasticsearch_repository: str, snapshots_prefix: str = '',
+    def __init__(self, elasticsearch_repository: str = 'found-snapshots', snapshots_prefix: str = '',
                  config: ElasticsearchConfig = ElasticsearchConfig()):
         self._log = Logging(ElasticsearchSnapshotMonitor.__name__, Logging.DEBUG)
 

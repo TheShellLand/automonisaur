@@ -57,6 +57,34 @@ class ElasticsearchClient(ElasticsearchConfig):
 
         return False
 
+    def create_document(self, doc: dict, index: str = 'default', id: str = None):
+        # doc = {
+        #     'author': 'kimchy',
+        #     'text': 'Elasticsearch: cool. bonsai cool.',
+        #     'timestamp': datetime.now(),
+        # }
+
+        self.client.index(index=index, body=doc, id=id)
+        return self.client.indices.refresh(index=index)
+
+    def search(self, search: dict = None, index: str = 'default'):
+
+        if not search:
+            search = {"query": {"match_all": {}}}
+
+        return self.client.search(index=index, body=search)
+
+    def search_summary(self, **kwargs):
+
+        res = self.search(kwargs)
+
+        print(f"Got {res['hits']['total']['value']} Hits")
+
+        for hit in res['hits']['hits']:
+            print(f'{hit.get("_source")}')
+
+        return True
+
     # def delete_indices(self, index_pattern):
     #     """Requires user interaction"""
     #

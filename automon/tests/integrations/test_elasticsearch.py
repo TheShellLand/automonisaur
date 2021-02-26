@@ -44,6 +44,21 @@ class ElasticsearchTest(unittest.TestCase):
         self.assertNotEqual(SnapshotError({}), None)
         self.assertTrue(SnapshotError(error))
 
+    def test_create_document(self):
+        es = ElasticsearchClient()
+
+        from datetime import datetime
+
+        doc = {
+            'timestamp': datetime.now(),
+            'yohji': 'yamamoto'
+
+        }
+
+        if es.connected:
+            self.assertTrue(es.create_document(doc=doc))
+            self.assertTrue(es.search_summary())
+
     def test_ElasticsearchSnapshotMonitor(self):
         e = ElasticsearchSnapshotMonitor(elasticsearch_repository='found-snapshots')
 
