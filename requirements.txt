@@ -24,6 +24,9 @@ slackclient>=2.9.3
 python-keystoneclient>=4.2.0
 python-swiftclient>=3.11.0
 
+# selenium
+selenium>=3.141.0
+
 # splunk
 splunk-sdk>=1.6.15
 
