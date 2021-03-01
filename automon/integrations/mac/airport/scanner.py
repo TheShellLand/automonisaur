@@ -6,7 +6,7 @@ from subprocess import PIPE
 
 from automon.log.logger import Logging
 from automon.helpers.dates import Dates
-from automon.integrations.mac.airport.helpers import Scan
+from automon.integrations.mac.airport.scan import Scan
 
 flags = {
     '-s': 'scan for wireless networks',
@@ -142,5 +142,5 @@ class Airport:
             self.ssids.append(ssid)
 
         sorted(self.ssids)
-
+        
         return parsed
