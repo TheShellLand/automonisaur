@@ -100,7 +100,10 @@ class Airport:
         else:
             res = self.scan(args=args)
 
-        self._log.debug(f'Channel: {channel}')
+        if not channel:
+            self._log.debug(f'Channel: Any')
+        else:
+            self._log.debug(f'Channel: {channel}')
 
         if output:
             print(f"{res['output']}")
@@ -138,4 +141,6 @@ class Airport:
             self._queue.put(ssid)
             self.ssids.append(ssid)
 
+        sorted(self.ssids)
+        
         return parsed
