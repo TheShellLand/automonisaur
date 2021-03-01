@@ -1,7 +1,7 @@
 from flask import Flask
 
 from automon.log.logger import Logging
-from automon.integrations.flask.config import ConfigFlask
+from automon.integrations.flask.config import FlaskConfig
 
 
 class FlaskBoilerplate:
@@ -10,4 +10,4 @@ class FlaskBoilerplate:
         self._log = Logging(FlaskBoilerplate.__name__, Logging.DEBUG)
 
         self.app = Flask(flask_name)
-        self.app = ConfigFlask.javascript_compatibility(self.app)
+        self.app = FlaskConfig.javascript_compatibility(self.app)
