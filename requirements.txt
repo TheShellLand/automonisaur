@@ -48,3 +48,5 @@ coverage>=5.4
 setuptools
 wheel
 twine
+
+psutil>=5.8.0
