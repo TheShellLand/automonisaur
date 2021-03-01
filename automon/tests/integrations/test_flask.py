@@ -3,7 +3,7 @@ import unittest
 from flask import Flask
 
 from automon.integrations.flask.boilerplate import FlaskBoilerplate
-from automon.integrations.flask.config import ConfigFlask
+from automon.integrations.flask.config import FlaskConfig
 
 
 class FlaskTest(unittest.TestCase):
@@ -14,9 +14,9 @@ class FlaskTest(unittest.TestCase):
         self.assertTrue(FlaskBoilerplate())
 
     def test_ConfigFlask(self):
-        self.assertTrue(ConfigFlask.javascript_compatibility(self.app))
-        self.assertTrue(ConfigFlask.hash_key('blob'))
-        self.assertTrue(ConfigFlask.new_secret_key())
+        self.assertTrue(FlaskConfig.javascript_compatibility(self.app))
+        self.assertTrue(FlaskConfig.hash_key('blob'))
+        self.assertTrue(FlaskConfig.new_secret_key())
 
 # if __name__ == '__main__':
 #     unittest.main()
