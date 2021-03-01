@@ -1,3 +1,4 @@
+import sys
 import xmltodict
 import subprocess
 
@@ -61,6 +62,12 @@ class Airport:
         self.ssids = []
 
         self._queue = Queue()
+
+        if sys.platform != 'darwin':
+            self.is_mac = False
+            self._log.error(f'Platform is not a Mac! ({sys.platform})')
+        else:
+            self.is_mac = True
 
     def __repr__(self):
         return ''
@@ -142,5 +149,5 @@ class Airport:
             self.ssids.append(ssid)
 
         sorted(self.ssids)
-        
+
         return parsed
