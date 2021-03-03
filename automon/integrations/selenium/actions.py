@@ -5,7 +5,7 @@ from automon.log.logger import Logging
 log = Logging(name='selenium', level=Logging.INFO)
 
 
-class Actions:
+class SeleniumActions:
     @staticmethod
     def click(browser, xpath):
         """Given an xpath, it will click it
