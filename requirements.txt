@@ -50,3 +50,4 @@ wheel
 twine
 
 psutil>=5.8.0
+urllib3>=1.26.3
