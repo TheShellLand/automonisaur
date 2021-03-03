@@ -1,93 +1,85 @@
 import os
-import io
-import warnings
-import datetime
 
-from selenium import webdriver
+import tempfile
+
 from urllib.parse import urlparse
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from automon.log.logger import Logging
+from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
-from automon.integrations.minio import use_public_server
-from automon.integrations.selenium import options
-from automon.integrations.selenium.actions import Actions
-
-log = Logging(name='selenium', level=Logging.INFO)
+from automon.integrations.selenium.config import SeleniumConfig
 
 
-class Browser:
+class SeleniumBrowser:
 
-    def __init__(self, browser=None, webdriver=webdriver):
-        self._log = Logging(name=Browser.__name__, level=Logging.DEBUG)
+    def __init__(self, config: SeleniumConfig = None):
+        self._log = Logging(name=SeleniumBrowser.__name__, level=Logging.DEBUG)
 
-        self.webdriver = webdriver
-        self.browser = browser if browser else self.webdriver.Chrome()
-        self.minio_client = None
+        self.config = config or SeleniumConfig()
+        self.webdriver = self.config.webdriver
+        self.connected = False
 
-    def set_minio_client(self, minio_client):
-        self.minio_client = minio_client
+        try:
+            self.browser = self.webdriver.Chrome()
+            self.connected = True
+        except Exception as e:
+            self._log.error(f'Unable to spawn browser: {e}')
 
-    def save_screenshot_to_minio(self, url=None, bucket_name='screenshots', object_name=None, prefix=None):
-
-        if not self.minio_client:
-            return False
-
-        if url:
+    def get(self, url: str):
+        try:
             self.browser.get(url)
+            return True
+        except Exception as e:
+            self._log.error(f'Error getting {url}: {e}')
 
-        if not object_name:
-            object_name = screenshot_name(self.browser, prefix)
+        return False
 
-        Sleeper.seconds('Loading page', 4)
+    def get_screenshot_as_png(self):
+        return self.browser.get_screenshot_as_png()
 
-        bucket_name = bucket_name
-        object_name = object_name
-        data = io.BytesIO(self.browser.get_screenshot_as_png())
-        length = data.getvalue().__len__()
+    def get_screenshot_as_base64(self):
+        return self.browser.get_screenshot_as_base64()
 
-        private_minio = self.minio_client
-        private_minio.make_bucket(bucket_name)
+    def save_screenshot(self, filename: str = None, prefix: str = None, folder: str = None):
 
-        return private_minio.put_object(bucket_name, object_name, data, length)
+        if not filename:
+            filename = self._screenshot_name(prefix)
 
-    def save_screenshot_to_public_minio(self, url=None, bucket_name='mymymymymyscreenshots', object_name=None,
-                                        prefix=None):
+        if not folder:
+            path = os.path.abspath(tempfile.gettempdir())
+        else:
+            path = os.path.abspath(folder)
 
-        if url:
-            self.browser.get(url)
-            Sleeper.seconds('Loading page', 4)
-
-        if not object_name:
-            object_name = screenshot_name(self.browser, prefix)
-
-        png = self.browser.get_screenshot_as_png()
-
-        bucket_name = bucket_name
-        object_name = object_name
-        data = io.BytesIO(png)
-        length = data.getvalue().__len__()
-
-        public_minio = use_public_server()
-        public_minio.make_bucket(bucket_name)
-
-        return public_minio.put_object(bucket_name, object_name, data, length)
-
-    def save_screenshot_to_file(self, url=None, object_name=None, prefix=None):
-
-        if url:
-            self.browser.get(url)
-            Sleeper.seconds('Loading page', 4)
-
-        if not object_name:
-            object_name = screenshot_name(self.browser, prefix)
-
-        path = os.path.abspath('/tmp/hev')
         if not os.path.exists(path):
             os.makedirs(path)
 
-        return self.browser.save_screenshot(os.path.join(path, object_name))
+        save = os.path.join(path, filename)
+
+        self._log.info(f'Saving screenshot to: {save}')
+
+        return self.browser.save_screenshot(save)
+
+    def _screenshot_name(self, prefix=None):
+        """Generate a unique filename
+
+        :param browser:
+        :param prefix: prefix filename with a string
+        :return:
+        """
+        title = self.browser.title
+        url = self.browser.current_url
+        hostname = urlparse(url).hostname
+
+        hostname_ = Sanitation.ascii_numeric_only(hostname)
+        title_ = Sanitation.ascii_numeric_only(title)
+        timestamp = Dates.filename_timestamp
+
+        if prefix:
+            prefix = Sanitation.safe_string(prefix)
+            return f'{prefix}_{hostname_}_{title_}_{timestamp}.png'
+
+        return f'{hostname_}_{title_}_{timestamp}.png'
 
     def new_resolution(self, width=1920, height=1080, device_type='web'):
 
@@ -142,158 +134,5 @@ class Browser:
         self.browser.stop_client()
 
 
-def chrome():
-    """Chrome with no options
-
-    """
-    warnings.warn('Docker does not support sandbox option')
-    warnings.warn('Default shm size is 64m, which will cause chrome driver to crash.', Warning)
-
-    opt = options.default(webdriver.ChromeOptions())
-
-    return webdriver.Chrome(options=opt)
-
-
-def chrome_for_docker():
-    """Chrome best used with docker
-
-    """
-    opt = options.default(webdriver.ChromeOptions())
-    opt = options.nosandbox(opt)
-    opt = options.headless(opt)
-    opt = options.noinfobars(opt)
-    opt = options.noextensions(opt)
-    opt = options.nonotifications(opt)
-
-    return webdriver.Chrome(options=opt)
-
-
-def chrome_sandboxed():
-    """Chrome with sandbox enabled
-
-    """
-    warnings.warn('Docker does not support sandbox option')
-    warnings.warn('Default shm size is 64m, which will cause chrome driver to crash.', Warning)
-
-    opt = options.default(webdriver.ChromeOptions())
-
-    return webdriver.Chrome(options=opt)
-
-
-def chrome_nosandbox():
-    """Chrome with sandbox disabled
-
-    """
-    warnings.warn('Default shm size is 64m, which will cause chrome driver to crash.', Warning)
-
-    opt = options.default(webdriver.ChromeOptions())
-    opt = options.nosandbox(opt)
-
-    return webdriver.Chrome(options=opt)
-
-
-def chrome_headless_sandboxed():
-    """Headless Chrome with sandbox enabled
-
-    """
-    warnings.warn('Docker does not support sandbox option')
-    warnings.warn('Default shm size is 64m, which will cause chrome driver to crash.', Warning)
-
-    opt = options.default(webdriver.ChromeOptions())
-    opt = options.headless(opt)
-
-    return webdriver.Chrome(options=opt)
-
-
-def chrome_headless_nosandbox():
-    """Headless Chrome with sandbox disabled
-
-    """
-    warnings.warn('Default shm size is 64m, which will cause chrome driver to crash.', Warning)
-
-    opt = options.default(webdriver.ChromeOptions())
-    opt = options.headless(opt)
-    opt = options.nosandbox(opt)
-
-    return webdriver.Chrome(options=opt)
-
-
-def chrome_headless_nosandbox_unsafe():
-    """Headless Chrome with sandbox disabled with not certificate verification
-
-    """
-    warnings.warn('Default shm size is 64m, which will cause chrome driver to crash.', Warning)
-
-    opt = options.default(webdriver.ChromeOptions())
-    opt = options.headless(opt)
-    opt = options.nosandbox(opt)
-    opt = options.unsafe(opt)
-
-    return webdriver.Chrome(options=opt)
-
-
-def chrome_headless_nosandbox_noshm():
-    """Headless Chrome with sandbox disabled
-
-    """
-    opt = options.default(webdriver.ChromeOptions())
-    opt = options.headless(opt)
-    opt = options.nosandbox(opt)
-    opt = options.noshm(opt)
-
-    return webdriver.Chrome(options=opt)
-
-
-def chrome_headless_nosandbox_bigshm():
-    """Headless Chrome with sandbox disabled
-
-    """
-    warnings.warn('Larger shm option is not implemented', Warning)
-
-    opt = options.default(webdriver.ChromeOptions())
-    opt = options.headless(opt)
-    opt = options.nosandbox(opt)
-    opt = options.bigshm(opt)
-
-    return webdriver.Chrome(options=opt)
-
-
-def chrome_remote(host='127.0.0.1', port='4444', executor_path='/wd/hub'):
-    """Remote Selenium
-
-    """
-    log.info(
-        'Remote WebDriver Hub URL: http://{}:{}{}/static/resource/hub.html'.format(host, port, executor_path))
-
-    return webdriver.Remote(
-        command_executor='http://{}:{}{}'.format(host, port, executor_path),
-        desired_capabilities=DesiredCapabilities.CHROME
-    )
-
-
-def screenshot_name(browser, prefix=None):
-    """Generate a unique filename
-
-    :param browser:
-    :param prefix: prefix filename with a string
-    :return:
-    """
-    title = browser.title
-    url = browser.current_url
-    hostname = urlparse(url).hostname
-
-    hostname_ = Sanitation.ascii_numeric_only(hostname)
-    title_ = Sanitation.ascii_numeric_only(title)
-    timestamp = str(datetime.datetime.now().isoformat()).replace(':', '_')
-
-    if prefix:
-        prefix = Sanitation.safe_string(prefix)
-        return '{}_{}_{}_{}{}'.format(prefix, hostname_, title_, timestamp, '.png')
-
-    return '{}_{}_{}{}'.format(hostname_, title_, timestamp, '.png')
-
-
 if __name__ == "__main__":
-    browser = chrome()
-    browser.close()
-    browser.quit()
+    pass

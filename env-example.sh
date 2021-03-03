@@ -36,6 +36,10 @@ NEO4J_USER=neo4j
 NEO4J_PASSWORD=neo4j
 NEO4J_SERVERS=bolt://neo4j:7687
 
+# Selenium
+SELENIUM_CHROMEDRIVER_PATH=
+SELENIUM_OPT=
+
 # Elasticsearch
 ELASTICSEARCH_HOSTS=https://elastic-cloud.com:9200
 ELASTICSEARCH_USER=elastic
