@@ -1,3 +1,4 @@
+import io
 import socket
 
 from minio import Minio
@@ -38,34 +39,38 @@ class MinioClient:
             f'[downloader] Downloading: {bucket}/{file.object_name}')
         return self.client.get_object(bucket, file.object_name)
 
-    def list_all_objects(self, bucket, folder=None, recursive=True):
+    def list_all_objects(self, bucket: str, folder: str = None, recursive: bool = True):
         """ List Minio objects
         """
         self._log.logging.debug(f'[list_all_objects] bucket: {bucket}, folder: {folder}')
         return self.client.list_objects(bucket, folder, recursive=recursive)
 
-    def put_object(self, bucket_name, object_name, data, length,
+    def put_object(self, bucket_name: str, object_name: str, data: io.BytesIO, length: int = None,
                    content_type='application/octet-stream',
                    metadata=None, sse=None, progress=None,
                    part_size=None):
         """ Minio object uploader
         """
 
-        self._log.debug(f'[put_object] Uploading: {object_name}')
+        self._log.debug(f'[{self.put_object.__name__}] Uploading: {object_name}')
+
+        length = length or data.getvalue().__len__()
+
         try:
-            self.client.put_object(bucket_name, object_name, data, length,
-                                   content_type=content_type,
-                                   metadata=metadata, sse=sse, progress=progress)
+            put = self.client.put_object(bucket_name=bucket_name, object_name=object_name,
+                                         data=data, length=length,
+                                         content_type=content_type,
+                                         metadata=metadata, sse=sse, progress=progress)
             self._log.info(
                 f'[put_object] Saved to '
                 f'{self.client._endpoint_url}/{bucket_name}/{object_name}'
             )
 
-            return True
+            return put
 
         except Exception as _:
             self._log.error(
-                f'[put_object] Unable to save '
+                f'[{self.put_object.__name__}] Unable to save '
                 f'{self.client._endpoint_url}/{bucket_name}/{bucket_name}'
             )
 
