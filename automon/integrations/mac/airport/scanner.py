@@ -139,15 +139,22 @@ class Airport:
         data = [x.strip() for x in data.splitlines()]
         data = ''.join(data)
 
-        root = xmltodict.parse(data)
+        try:
+            root = xmltodict.parse(data)
+        except Exception as e:
+            self._log.error(f'Scan not parsed')
 
         parsed = Scan(scan=scan, result=root)
+
+        if not parsed:
+            self._log.error(f'root not parsed')
+
         self.parsed_scans.append(parsed)
 
         for ssid in parsed.ssids:
             self._queue.put(ssid)
             self.ssids.append(ssid)
 
-        sorted(self.ssids)
+        self.ssids.sort()
 
         return parsed
