@@ -52,6 +52,8 @@ class Airport:
 
         self._airport = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
 
+        self.is_mac = False
+
         self._connected = None
         self._channel = None
         self._network = None
@@ -63,11 +65,10 @@ class Airport:
 
         self._queue = Queue()
 
-        if sys.platform != 'darwin':
-            self.is_mac = False
-            self._log.error(f'Platform is not a Mac! ({sys.platform})')
-        else:
+        if sys.platform == 'darwin':
             self.is_mac = True
+        else:
+            self._log.error(f'Platform is not a Mac! ({sys.platform})')
 
     def __repr__(self):
         return ''
@@ -115,6 +116,7 @@ class Airport:
 
         if output:
             print(f"{res['output']}")
+            self._log.debug(f"\n{res['output']}")
 
         return res
 
@@ -131,21 +133,23 @@ class Airport:
         return self.run(args=f'-P --ssid={ssid} --password={passphrase}')['output']
 
     def scan_xml(self, channel: int = None):
-        if channel is not None:
-            scan = self.scan(args='-x', channel=channel)
-        else:
-            scan = self.scan(args='-x')
 
-        data = scan['output']
-        data = [x.strip() for x in data.splitlines()]
-        data = ''.join(data)
+        while True:
 
-        try:
-            root = xmltodict.parse(data)
-        except Exception as e:
-            # TODO: no element found: line 1, column 124523
-            self._log.error(f'Scan not parsed: {e}')
-            return False
+            if channel is not None:
+                scan = self.scan(args='-x', channel=channel)
+            else:
+                scan = self.scan(args='-x')
+
+            data = scan['output']
+            data = [x.strip() for x in data.splitlines()]
+            data = ''.join(data)
+
+            try:
+                root = xmltodict.parse(data)
+                break
+            except Exception as e:
+                self._log.error(f'Scan not parsed: {e}, {scan["cmd"]}')
 
         parsed = Scan(scan=scan, result=root)
 
