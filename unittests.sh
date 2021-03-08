@@ -4,7 +4,12 @@ cd $(dirname $0) && set -e
 
 # TODO: set pre-commit hook
 
-if [ -f env.sh ]; then source env.sh; fi
+if [ -f env.sh ]; then
+  env=$(cat env.sh | grep -v '^$' | grep -v '#')
+  for var in $env; do
+    export "$var"
+  done
+fi
 
 rm -rf .coverage coverage.xml htmlcov
 
