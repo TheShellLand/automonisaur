@@ -7,7 +7,7 @@ from subprocess import PIPE
 
 from automon.log.logger import Logging
 from automon.helpers.dates import Dates
-from automon.integrations.mac.airport.scan import Scan
+from automon.integrations.mac.airport.helpers import Scan
 
 flags = {
     '-s': 'scan for wireless networks',
@@ -72,7 +72,8 @@ class Airport:
     def __repr__(self):
         return ''
 
-    def _command(self, command: str) -> list:
+    @staticmethod
+    def _command(command: str) -> list:
         return f'{command}'.split(' ')
 
     def run(self, args=''):
@@ -123,7 +124,7 @@ class Airport:
     def getinfo(self):
         return self.run(args='-I')
 
-    def disassociate(self, network: str):
+    def disassociate(self):
         return self.run(args='-z')
 
     def create_psk(self, ssid: str, passphrase: str):
@@ -142,7 +143,9 @@ class Airport:
         try:
             root = xmltodict.parse(data)
         except Exception as e:
-            self._log.error(f'Scan not parsed')
+            # TODO: no element found: line 1, column 124523
+            self._log.error(f'Scan not parsed: {e}')
+            return False
 
         parsed = Scan(scan=scan, result=root)
 

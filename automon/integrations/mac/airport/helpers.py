@@ -1,5 +1,4 @@
 from automon.log.logger import Logging
-from automon.helpers.dates import Dates
 
 log = Logging(name=__name__, level=Logging.DEBUG)
 
@@ -9,6 +8,7 @@ class Scan:
         self._log = Logging(name=Scan.__name__, level=Logging.DEBUG)
         self._data = result
         self.scan_date = scan['scan_date']
+        self.ssids = []
 
         try:
             self._scans = result['plist']['array']['dict']
@@ -53,21 +53,18 @@ class Ssid:
 
         self.mac = ssid['string'][0]
         self.ssid = ssid['string'][1]
+        self.device_info = self._device_info(ssid) or ''
 
-        ssid_dict = ssid['dict']
+        log.debug(f'Found SSID: {self.ssid} ({self.mac}) {self.device_info}')
 
-        try:
-            for key in ssid_dict:
+    @staticmethod
+    def _device_info(ssid):
+        if 'dict' in ssid:
+            for key in ssid['dict']:
                 if isinstance(key, dict):
                     if 'string' in key.keys() and 'data' in key.keys() and 'dict' in key.keys():
                         if isinstance(key['string'], list):
-                            self.device_info = key['string']
-                    else:
-                        self.device_info = ''
-        except Exception as e:
-            self._log.error(e)
-
-        self._log.debug(f'Found SSID: {self.ssid} ({self.mac}) {self.device_info}')
+                            return key['string']
 
     def __repr__(self):
         return f'{self.ssid} {self.mac} {self.device_info}'
