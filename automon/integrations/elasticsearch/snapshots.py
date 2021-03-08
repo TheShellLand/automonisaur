@@ -92,8 +92,8 @@ class ElasticsearchSnapshotMonitor:
 
             return True
 
-        except Exception as _:
-            self._log.error('Unable to get snapshots')
+        except Exception as e:
+            self._log.error(f'Unable to get snapshots: {e}')
             self.error = SnapshotError(snapshots)
             return False
 

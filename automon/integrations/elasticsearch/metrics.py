@@ -126,10 +126,12 @@ class MetricTimestamp(Metric):
         self.node_name = self.metric.node_name
         self.heap_used_percent = self.metric.heap_used_percent
 
-    def _time_now(self):
+    @staticmethod
+    def _time_now():
         return datetime.datetime.now()
 
-    def _is_instance(self, new_metric):
+    @staticmethod
+    def _is_instance(new_metric):
 
         if not isinstance(new_metric, MetricTimestamp):
             new_metric = MetricTimestamp(new_metric)
