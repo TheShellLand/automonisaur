@@ -4,5 +4,5 @@
 
 cd $(dirname $0) && set -xe
 
-git clean -xdf $@ --exclude env.sh
+git clean -xdf $@ --exclude env.sh --exclude .idea
 
