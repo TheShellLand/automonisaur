@@ -1,5 +1,6 @@
 # automon
 #git+https://github.com/TheShellLand/automon-core#egg
+#automonisaur>=0.0.20
 
 # prerequisites
 requests>=2.25.1
