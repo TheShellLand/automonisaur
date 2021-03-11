@@ -1,3 +1,4 @@
+import os
 import sys
 import xmltodict
 import subprocess
@@ -51,6 +52,7 @@ class Airport:
         self._log = Logging(name=Airport.__name__, level=Logging.DEBUG)
 
         self._airport = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
+        self.is_ready = False
 
         self.is_mac = False
 
@@ -65,8 +67,15 @@ class Airport:
 
         self._queue = Queue()
 
+        if os.path.exists(self._airport):
+            self.is_ready = True
+            self._log.debug(f'Found airport: ({self._airport}')
+        else:
+            self._log.error(f'Missing airport program! ({self._airport})')
+
         if sys.platform == 'darwin':
             self.is_mac = True
+            self._log.info(f'Platform is mac: ({sys.platform})')
         else:
             self._log.error(f'Platform is not a Mac! ({sys.platform})')
 
@@ -78,6 +87,9 @@ class Airport:
         return f'{command}'.split(' ')
 
     def run(self, args=''):
+        if not self.is_ready:
+            return False
+
         command = self._command(f'{self._airport} {args}')
 
         call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True)
@@ -149,7 +161,7 @@ class Airport:
                 root = xmltodict.parse(data)
                 break
             except Exception as e:
-                self._log.error(f'Scan not parsed: {e}, {scan["cmd"]}')
+                self._log.error(f'Scan not parsed: {e}, {scan["cmd"]}', enable_traceback=False)
 
         parsed = Scan(scan=scan, result=root)
 
