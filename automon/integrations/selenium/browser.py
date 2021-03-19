@@ -8,12 +8,13 @@ from automon.log import Logging
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
-from automon.integrations.selenium.config import SeleniumConfig
+from automon.integrations.selenium import SeleniumActions
+from automon.integrations.selenium import SeleniumConfig
 
 
 class SeleniumBrowser:
 
-    def __init__(self, config: SeleniumConfig = None):
+    def __init__(self, config: SeleniumConfig = None, chromedriver: str = None):
         self._log = Logging(name=SeleniumBrowser.__name__, level=Logging.DEBUG)
 
         self.config = config or SeleniumConfig()
@@ -21,7 +22,10 @@ class SeleniumBrowser:
         self.connected = False
 
         try:
-            self.browser = self.webdriver.Chrome()
+            if chromedriver:
+                self.browser = self.webdriver.Chrome(chromedriver)
+            else:
+                self.browser = self.webdriver.Chrome()
             self.connected = True
         except Exception as e:
             self._log.error(f'Unable to spawn browser: {e}')
@@ -34,6 +38,12 @@ class SeleniumBrowser:
             self._log.error(f'Error getting {url}: {e}')
 
         return False
+
+    def click(self, xpath: str):
+        return SeleniumActions.click(browser=self.browser, xpath=xpath)
+
+    def type(self, keys: str):
+        return SeleniumActions.type(browser=self.browser, keys=keys)
 
     def get_screenshot_as_png(self):
         return self.browser.get_screenshot_as_png()
