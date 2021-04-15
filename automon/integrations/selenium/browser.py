@@ -3,16 +3,18 @@ import os
 import tempfile
 
 from urllib.parse import urlparse
+from selenium.webdriver.common.keys import Keys
 
 from automon.log import Logging
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
-from automon.integrations.selenium import SeleniumActions
-from automon.integrations.selenium import SeleniumConfig
+from automon.integrations.selenium.config import SeleniumConfig
+from automon.integrations.selenium.actions import SeleniumActions
 
 
 class SeleniumBrowser:
+    Keys = Keys
 
     def __init__(self, config: SeleniumConfig = None, chromedriver: str = None):
         self._log = Logging(name=SeleniumBrowser.__name__, level=Logging.DEBUG)
@@ -33,17 +35,32 @@ class SeleniumBrowser:
     def get(self, url: str):
         try:
             self.browser.get(url)
+            self._readyState()
             return True
         except Exception as e:
-            self._log.error(f'Error getting {url}: {e}')
+            self._log.error(f'Error getting {url}: {e}', enable_traceback=False)
 
         return False
 
-    def click(self, xpath: str):
-        return SeleniumActions.click(browser=self.browser, xpath=xpath)
+    def _readyState(self):
+        while True:
+            if self.execute_script('return document.readyState') == 'complete':
+                break
 
-    def type(self, keys: str):
-        return SeleniumActions.type(browser=self.browser, keys=keys)
+    def click(self, xpath: str = None, wait: bool = False):
+        SeleniumActions.click(browser=self.browser, xpath=xpath, wait=wait)
+        return True
+
+    def type(self, keys: str or Keys):
+        SeleniumActions.type(browser=self.browser, keys=keys)
+        return True
+
+    def execute_script(self, javascript: str):
+        return self.browser.execute_script(javascript)
+
+    def implicitly_wait(self, time: int):
+        self.browser.implicitly_wait(time)
+        return True
 
     def get_screenshot_as_png(self):
         return self.browser.get_screenshot_as_png()
@@ -137,11 +154,13 @@ class SeleniumBrowser:
 
     def close(self):
         self.browser.close()
+        return True
 
     def quit(self):
         self.browser.close()
         self.browser.quit()
         self.browser.stop_client()
+        return True
 
 
 if __name__ == "__main__":

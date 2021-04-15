@@ -1,21 +1,33 @@
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
-from automon.log import Logging
+from automon.log.logger import Logging
+from automon.integrations.selenium.config import SeleniumConfig
 
-log = Logging(name='selenium', level=Logging.INFO)
+log = Logging(name='actions', level=Logging.DEBUG)
 
 
 class SeleniumActions:
     @staticmethod
-    def click(browser, xpath):
+    def click(browser: SeleniumConfig().webdriver.Chrome, xpath: str, wait: bool):
         """Given an xpath, it will click it
 
         :param browser: selenium browser
         :param xpath: chrome xpath
         :return:
         """
-        element = browser.find_element_by_xpath(xpath)
-        return element.click()
+        while True:
+            try:
+                if xpath:
+                    element = browser.find_element_by_xpath(xpath)
+                element.click()
+                break
+            except:
+                log.debug(f'Waiting for element {xpath}')
+                if not wait:
+                    break
+
+        return True
 
     @staticmethod
     def type(browser, keys):
