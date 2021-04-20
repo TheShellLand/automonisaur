@@ -12,11 +12,13 @@ logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
 
 class ElasticsearchConfig:
     def __init__(self, endpoints: str = None, proxy=None,
+                 ELASTICSEARCH_USER: str = None,
+                 ELASTICSEARCH_PASSWORD: str = None,
                  request_timeout: int = 1,
                  http_auth: tuple = None,
                  use_ssl: bool = True,
                  verify_certs: bool = True,
-                 connection_class: RequestsHttpConnection = RequestsHttpConnection):
+                 connection_class: RequestsHttpConnection = None):
         self._log = Logging(ElasticsearchConfig.__name__, Logging.DEBUG)
 
         hosts = S.list_from_string(endpoints) or \
@@ -24,8 +26,8 @@ class ElasticsearchConfig:
         # hosts = [{'host': x} for x in hosts]
         self.es_hosts = hosts
         self.ELASTICSEARCH_HOSTS = self.es_hosts
-        self.ELASTICSEARCH_USER = os.getenv('ELASTICSEARCH_USER') or ''
-        self.ELASTICSEARCH_PASSWORD = os.getenv('ELASTICSEARCH_PASSWORD') or ''
+        self.ELASTICSEARCH_USER = ELASTICSEARCH_USER or os.getenv('ELASTICSEARCH_USER') or ''
+        self.ELASTICSEARCH_PASSWORD = ELASTICSEARCH_PASSWORD or os.getenv('ELASTICSEARCH_PASSWORD') or ''
 
         self.es_proxy = proxy
         self.request_timeout = request_timeout
@@ -37,7 +39,7 @@ class ElasticsearchConfig:
 
         self.use_ssl = use_ssl
         self.verify_certs = verify_certs
-        self.connection_class = connection_class
+        self.connection_class = connection_class or RequestsHttpConnection
 
         if not self.es_hosts:
             self._log.error(f'Missing ELASTICSEARCH_HOSTS')
