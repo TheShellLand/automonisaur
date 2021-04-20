@@ -11,10 +11,10 @@ from automon.helpers.sanitation import Sanitation
 
 
 class ElasticsearchClient(ElasticsearchConfig):
-    def __init__(self, config: ElasticsearchConfig = ElasticsearchConfig()):
+    def __init__(self, config: ElasticsearchConfig = None):
         self._log = Logging(ElasticsearchClient.__name__, Logging.DEBUG)
 
-        self.config = config
+        self.config = config or ElasticsearchConfig()
         self.client = Elasticsearch(hosts=self.config.es_hosts,
                                     request_timeout=self.config.request_timeout,
                                     http_auth=self.config.http_auth,
