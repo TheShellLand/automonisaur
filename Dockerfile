@@ -66,7 +66,7 @@ COPY unittests.sh .
 COPY requirements.txt .
 COPY setup.py .
 
-RUN pip install -r requirements.txt
+RUN pip install -U -r requirements.txt
 
 # run app
 CMD ["/bin/bash"]
