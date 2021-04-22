@@ -38,9 +38,9 @@ class ElasticsearchSnapshotMonitor:
 
         self._config = config if config == ElasticsearchConfig else ElasticsearchConfig()
         self._client = ElasticsearchClient(config=self._config)
-        self.connected = self._client.connected
+        self.connected = self._client.connected()
 
-        self._endpoint = self._client.config.es_hosts
+        self._endpoint = self._client._config.es_hosts
         self.repository = elasticsearch_repository
         self.snapshots_prefix = snapshots_prefix
 

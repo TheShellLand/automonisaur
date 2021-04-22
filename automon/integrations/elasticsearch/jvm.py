@@ -13,10 +13,10 @@ class ElasticsearchJvmMonitor:
         self._config = config if isinstance(config, ElasticsearchConfig) else ElasticsearchConfig()
         self._client = ElasticsearchClient(config) if isinstance(config, ElasticsearchConfig) else ElasticsearchClient()
 
-        self._endpoint = self._client.config.es_hosts
+        self._endpoint = self._client._config.es_hosts
 
     def _get_all_stats(self):
-        if self._client.connected:
+        if self._client.connected():
             for endpoint in self._endpoint:
                 try:
                     request = self._client.rest(f'{endpoint}/_nodes/stats?pretty')
@@ -29,7 +29,7 @@ class ElasticsearchJvmMonitor:
         return False
 
     def _get_all_jvm_metrics(self):
-        if self._client.connected:
+        if self._client.connected():
             try:
                 return Cluster(self._get_all_stats())
             except Exception as e:
@@ -45,7 +45,7 @@ class ElasticsearchJvmMonitor:
             self._log.error(f'Failed to read file: {e}')
 
     def get_metrics(self):
-        if self._client.connected:
+        if self._client.connected():
             try:
                 return self._get_all_jvm_metrics()
             except Exception as e:
