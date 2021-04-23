@@ -51,12 +51,22 @@ class ElasticsearchClient(ElasticsearchConfig):
 
         return False
 
-    def delete_index(self, index: str):
-        if self.connected() and index:
+    def delete_index(self, index: str, **kwargs):
+        if self.connected():
             try:
-                return self._client.delete(index=Sanitation.ascii_numeric_only(index))
+                return self._client.indices.delete(index=index, ignore=[400, 404], **kwargs)
             except Exception as e:
                 self._log.error(f'Delete index failed: {e}')
+                return False
+
+        return False
+
+    def delete_document(self, index: str, id: str = None):
+        if self.connected():
+            try:
+                return self._client.delete(index=index, id=id, ignore=[400, 404])
+            except Exception as e:
+                self._log.error(f'Delete document failed: {e}')
                 return False
 
         return False
