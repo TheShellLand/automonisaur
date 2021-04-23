@@ -41,6 +41,9 @@ class ElasticsearchConfig:
         if not self.ELASTICSEARCH_HOSTS:
             self._log.error(f'Missing ELASTICSEARCH_HOSTS')
 
+    def __repr__(self):
+        return f'{self.ELASTICSEARCH_HOSTS}'
+
     def __eq__(self, other):
         if not isinstance(other, ElasticsearchConfig):
             self._log.error(f'Not implemented')
