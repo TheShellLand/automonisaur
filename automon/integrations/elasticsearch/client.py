@@ -22,6 +22,11 @@ class ElasticsearchClient(ElasticsearchConfig):
                                      verify_certs=self._config.verify_certs,
                                      connection_class=self._config.connection_class)
         self.indices = []
+        self.success = []
+        self.errors = []
+
+    def __repr__(self):
+        return f'{self._config}, {self._client}, indices: {self.indices}, errors: {self.errors}'
 
     def connected(self):
         if self._config.es_hosts:
@@ -32,42 +37,57 @@ class ElasticsearchClient(ElasticsearchConfig):
     def rest(self, url: str) -> requests:
         try:
             if self._config.ELASTICSEARCH_USER and self._config.ELASTICSEARCH_PASSWORD:
-                return requests.get(url, auth=HTTPBasicAuth(self._config.ELASTICSEARCH_USER,
-                                                            self._config.ELASTICSEARCH_PASSWORD))
+                r = requests.get(url, auth=HTTPBasicAuth(
+                    self._config.ELASTICSEARCH_USER,
+                    self._config.ELASTICSEARCH_PASSWORD
+                ))
             else:
-                return requests.get(url)
+                r = requests.get(url)
+
+            self.success.append({'url': url, 'result': r})
+            return r
 
         except Exception as e:
             self._log.error(f'REST request failed: {e}')
-            return False
+            self.errors.append({'url': url, 'error': e})
+
+        return False
 
     def ping(self):
         if self.connected():
             try:
-                return self._client.ping()
+                self._client.ping()
+                self._log.debug(f'Ping successful')
+                return True
             except Exception as e:
+                self.errors.append({'error': e})
                 self._log.error(f'Ping failed: {e}')
-                return False
 
         return False
 
     def delete_index(self, index: str, **kwargs):
         if self.connected():
             try:
-                return self._client.indices.delete(index=index, ignore=[400, 404], **kwargs)
+                r = self._client.indices.delete(index=index, ignore=[400, 404], **kwargs)
+                self.success.append({'delete index': index, 'result': r})
+                self._log.debug(f'deleted index: {index}')
+                return True
             except Exception as e:
+                self.errors.append({'index': index, 'error': e})
                 self._log.error(f'Delete index failed: {e}')
-                return False
 
         return False
 
     def delete_document(self, index: str, id: str = None):
         if self.connected():
             try:
-                return self._client.delete(index=index, id=id, ignore=[400, 404])
+                r = self._client.delete(index=index, id=id, ignore=[400, 404])
+                self.success.append({'index': index, 'id': id, 'result': r})
+                self._log.debug(f'deleted document: {index} {id}')
+                return True
             except Exception as e:
                 self._log.error(f'Delete document failed: {e}')
-                return False
+                self.errors.append({'index': index, 'id': id, 'error': e})
 
         return False
 
@@ -78,15 +98,31 @@ class ElasticsearchClient(ElasticsearchConfig):
         #     'timestamp': datetime.now(),
         # }
 
-        self._client.index(index=index, body=doc, id=id)
-        return self._client.indices.refresh(index=index)
+        try:
+            r = self._client.index(index=index, body=doc, id=id)
+            self._client.indices.refresh(index=index)
+            self.success.append({'doc': doc, 'index': index, 'id': id, 'result': r})
+            self._log.debug(f'created document: {index} {id} {doc}')
+            return True
+        except Exception as e:
+            self._log.error(f'Create document failed: {e}')
+            self.errors.append({'index': index, 'doc': doc, 'id': id, 'error': e})
+        return False
 
     def search(self, search: dict = None, index: str = 'default'):
 
         if not search:
             search = {"query": {"match_all": {}}}
 
-        return self._client.search(index=index, body=search)
+        try:
+            r = self._client.search(index=index, body=search)
+            self.success.append({'search': search, 'index': index, 'result': r})
+            self._log.debug(f'search :{search} {index}, result {r}')
+            return True
+        except Exception as e:
+            self._log.error(f'Search failed: {e}')
+            self.errors.append({'search': search, 'index': index, 'error': e})
+        return False
 
     def search_summary(self, **kwargs):
 
@@ -96,6 +132,9 @@ class ElasticsearchClient(ElasticsearchConfig):
 
         for hit in res['hits']['hits']:
             print(f'{hit.get("_source")}')
+
+        self.success.append({'result': res})
+        self._log.debug(f'search summary {res}')
 
         return True
 
@@ -148,12 +187,16 @@ class ElasticsearchClient(ElasticsearchConfig):
                 retrieved_indices = self._client.indices.get(index_pattern)
                 num_indices = len(retrieved_indices)
                 self._log.info(f'Search found {num_indices} indices')
+                self.success.append({'index pattern': index_pattern, 'result': retrieved_indices})
+                self._log.debug(f'search indices: {index_pattern}')
                 return retrieved_indices
-            except elasticsearch.exceptions.NotFoundError:
+            except elasticsearch.exceptions.NotFoundError as e:
                 self._log.error(
                     f"You provided the index pattern '{index_pattern}', but returned no results")
+                self.errors.append({'index pattern': index_pattern, 'error': e})
             except Exception as e:
                 self._log.error(f'Failed to search indices: {e}')
+                self.errors.append({'index pattern': index_pattern, 'error': e})
 
         return False
 
@@ -168,8 +211,11 @@ class ElasticsearchClient(ElasticsearchConfig):
                     date = int(info.get('settings').get('index').get('creation_date')) / 1000.0
                     date = datetime.fromtimestamp(date).strftime("%A, %B %d, %Y %I:%M:%S")
                     self._log.debug(f'Index: (created: {date})\t{i}')
+                self.success.append({'indices': retrieved_indices})
+                self._log.debug(f'get indices: {retrieved_indices}')
                 return True
             except Exception as e:
                 self._log.error(f'Failed to get indices: {e}')
+                self.errors.append({'error': e})
 
         return False
