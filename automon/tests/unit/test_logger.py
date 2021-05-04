@@ -12,6 +12,8 @@ class LoggerTest(unittest.TestCase):
         self.assertIsNone(Logging().info('test'))
         self.assertIsNone(Logging().critical('test'))
         self.assertIsNone(Logging().warning('test'))
+        with self.assertRaises(Exception):
+            Logging().error(raise_exception=True)
 
     def test_logstream(self):
         self.assertTrue(LogStream())
