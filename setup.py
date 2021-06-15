@@ -11,7 +11,7 @@ setuptools.setup(
     description="Core libraries for automonisaur",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/TheShellLand/automon-core",
+    url="https://github.com/TheShellLand/automonisaur",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
