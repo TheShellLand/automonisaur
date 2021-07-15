@@ -17,7 +17,7 @@ class SplunkRestClient:
         self.config = config
 
 
-class SplunkClient(client):
+class SplunkClient(object):
 
     def __init__(self, config: SplunkConfig = None):
         self._log = Logging(SplunkClient.__name__, level=Logging.DEBUG)
