@@ -57,7 +57,9 @@ SPLUNK_PASSWORD=
 # VDS
 VDS_SERVER=
 VDS_PORT=
-VDS_USER=
+LDAP_PORT=
+VDS_BIND_USER=cn=automon,ou=people,dc=automon,dc=com
+VDS_BASE_DN=dc=automon,dc=com
 VDS_PASSWORD=
 
 # Pypi
