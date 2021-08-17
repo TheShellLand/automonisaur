@@ -45,8 +45,9 @@ class Logging:
     CRITICAL = CRITICAL
     NOTSET = NOTSET
 
-    def __init__(self, name: __name__ = __name__, level: logging.INFO = INFO,
-                 log_stream: LogStream = False, timestamp: bool = True):
+    def __init__(self, name: str = __name__, level: logging.INFO = INFO,
+                 file: str = None, encoding: str = 'utf-8',
+                 log_stream: LogStream = False, timestamp: bool = True, **kwargs):
 
         self.logging = logging.getLogger(name)
         self.logging.setLevel(level)
@@ -72,7 +73,10 @@ class Logging:
 
         # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
 
-        logging.basicConfig(level=level, format=self.log_format)
+        if file:
+            logging.basicConfig(filename=file, encoding=encoding, level=level, format=self.log_format, **kwargs)
+        else:
+            logging.basicConfig(level=level, format=self.log_format, **kwargs)
 
         # TODO: need informative logging format
         # TODO: log streaming does not work
