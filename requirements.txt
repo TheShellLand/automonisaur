@@ -37,6 +37,9 @@ splunk-sdk>=1.6.15
 # phantom
 pytz>=2021.1
 
+# datascience
+pandas>=1.3.2
+
 # fix nested asyncio loop
 nest-asyncio>=1.5.1
 
