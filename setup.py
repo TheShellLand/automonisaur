@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="automonisaur",
-    version="0.0.25",
+    version="0.0.26",
     author="naisanza",
     author_email="naisanza@gmail.com",
     description="Core libraries for automonisaur",
@@ -28,7 +28,7 @@ setuptools.setup(
         'elasticsearch>=7.11.0',
         'neo4j-driver>=4.2.1',
         'nest-asyncio>=1.5.1',
-        'pandas>=1.5.1',
+        'pandas>=1.3.2',
         'pytest-cov>=2.11.1',
         'pytest>=6.2.2',
         'python-keystoneclient>=4.2.0',
