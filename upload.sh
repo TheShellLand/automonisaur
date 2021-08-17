@@ -2,9 +2,10 @@
 
 # upload to pypi
 
-cd $(dirname $0) && set -xe
+cd $(dirname $0) && set -e
 
 if [ "$@" == '--local' ]; then
+  set -x
   source env.sh
   python3 setup.py sdist bdist_wheel
   twine check dist/*
@@ -12,6 +13,7 @@ if [ "$@" == '--local' ]; then
     -u $TWINE_USERNAME -p $TWINE_PASSWORD --non-interactive --skip-existing dist/*
   python3 setup.py clean --all
 else
+  set -x
   ./build.sh
   docker run --rm -it --env-file env.sh automon "$@"
 fi
