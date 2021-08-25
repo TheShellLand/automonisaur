@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from automon import Logging
 
-log = Logging(name='Networking', level=Logging.DEBUG)
+log = Logging(name='Networking', level=Logging.INFO)
 
 
 class Networking:
@@ -20,9 +20,10 @@ class Networking:
             s.settimeout(1)
             s.connect((host, port))
             s.close()
+            log.debug(f'SUCCESS {url}')
             return True
         except Exception as e:
-            log.error(e)
+            log.error(f'FAILED {url} {e}')
             return False
 
     @staticmethod
