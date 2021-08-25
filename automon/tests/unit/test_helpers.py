@@ -3,6 +3,15 @@ import unittest
 from automon.helpers.assertions import *
 from automon.helpers.sleeper import *
 from automon.helpers.sanitation import *
+from automon.helpers.networking import *
+
+
+class NetworkingTest(unittest.TestCase):
+    def test_Networking(self):
+        self.assertTrue(Networking)
+        self.assertTrue(Networking.check_connection('https://www.google.com:443'))
+        self.assertTrue(Networking.check_connection('x://www.google.com:443'))
+        self.assertTrue(Networking.urlparse('x://www.google.com:443'))
 
 
 class SanitationTest(unittest.TestCase):
@@ -121,5 +130,6 @@ class AssertionsTest(unittest.TestCase):
         self.assertRaises(TypeError, assert_string)
         self.assertTrue(assert_string('test'))
 
-# if __name__ == '__main__':
-#     unittest.main()
+
+if __name__ == '__main__':
+    unittest.main()

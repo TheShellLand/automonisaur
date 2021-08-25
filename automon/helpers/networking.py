@@ -1,6 +1,10 @@
 import socket
 from urllib.parse import urlparse
 
+from automon import Logging
+
+log = Logging(name='Networking', level=Logging.DEBUG)
+
 
 class Networking:
 
@@ -17,7 +21,8 @@ class Networking:
             s.connect((host, port))
             s.close()
             return True
-        except Exception as _:
+        except Exception as e:
+            log.error(e)
             return False
 
     @staticmethod
