@@ -12,6 +12,9 @@ class Networking:
     def check_connection(url):
         endpoint = urlparse(url)
 
+        if not endpoint.hostname:
+            endpoint = urlparse(f'x://{url}')
+
         host = endpoint.hostname
         port = endpoint.port
 
