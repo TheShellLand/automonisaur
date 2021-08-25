@@ -26,7 +26,7 @@ class Networking:
             log.debug(f'SUCCESS {url}')
             return True
         except Exception as e:
-            log.error(f'FAILED {url} {e}')
+            log.error(f'FAILED {url} {e}', enable_traceback=False)
             return False
 
     @staticmethod
