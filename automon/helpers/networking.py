@@ -9,7 +9,7 @@ log = Logging(name='Networking', level=Logging.INFO)
 class Networking:
 
     @staticmethod
-    def check_connection(url):
+    def check_connection(url, timeout: int = 1):
         endpoint = urlparse(url)
 
         if not endpoint.hostname:
@@ -20,7 +20,7 @@ class Networking:
 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(1)
+            s.settimeout(timeout)
             s.connect((host, port))
             s.close()
             log.debug(f'SUCCESS {url}')
