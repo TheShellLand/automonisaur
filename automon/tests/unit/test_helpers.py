@@ -12,6 +12,7 @@ class NetworkingTest(unittest.TestCase):
         self.assertTrue(Networking.check_connection('https://www.google.com:443'))
         self.assertTrue(Networking.check_connection('x://www.google.com:443'))
         self.assertFalse(Networking.check_connection('x://localhost:0'))
+        self.assertFalse(Networking.check_connection('localhost:0'))
         self.assertTrue(Networking.urlparse('x://localhost:0'))
 
 
