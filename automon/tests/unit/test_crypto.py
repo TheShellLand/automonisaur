@@ -19,7 +19,7 @@ class CryptoTest(unittest.TestCase):
         BTC	10/13/20	201.01	10/19/20	202.47'''
 
         self.assertTrue(CryptoCSV())
-        self.assertTrue(CryptoCSV(csv=csv))
+        self.assertTrue(CryptoCSV(fake_csv=csv))
         self.assertFalse(CryptoCSV(dataframe=df).df.empty)
         self.assertEqual(type(CryptoCSV(dataframe=df).df), type(df))
         self.assertFalse(c.csv_from_string(test).empty)

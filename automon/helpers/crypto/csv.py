@@ -19,7 +19,7 @@ class CryptoCSV:
             self.df = pd.read_csv(csv, delimiter=delimiter, **kwargs)
 
         if fake_csv:
-            self.df = self.csv_from_string(csv, delimiter=delimiter, **kwargs)
+            self.df = self.csv_from_string(fake_csv, delimiter=delimiter, **kwargs)
 
         if dataframe is not None:
             self.df = dataframe
