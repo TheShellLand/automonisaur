@@ -8,6 +8,7 @@ from automon import Logging
 
 class CryptoCSV:
     def __init__(self, csv: str or open or StringIO = None,
+                 fake_csv: str = None,
                  dataframe: DataFrame = None,
                  delimiter: str = None, **kwargs):
         self._log = Logging(name=CryptoCSV.__name__, level=Logging.DEBUG)
@@ -15,10 +16,10 @@ class CryptoCSV:
         self.df = None
 
         if csv:
-            if type(csv) is str:
-                self.df = self.csv_from_string(csv, delimiter=delimiter, **kwargs)
-            else:
-                self.df = pd.read_csv(csv, delimiter=delimiter, **kwargs)
+            self.df = pd.read_csv(csv, delimiter=delimiter, **kwargs)
+
+        if fake_csv:
+            self.df = self.csv_from_string(csv, delimiter=delimiter, **kwargs)
 
         if dataframe is not None:
             self.df = dataframe
