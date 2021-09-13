@@ -14,6 +14,7 @@ class CryptoCSV:
         self._log = Logging(name=CryptoCSV.__name__, level=Logging.DEBUG)
 
         self.df = None
+        self.csv = csv
 
         if csv:
             self.df = pd.read_csv(csv, delimiter=delimiter, **kwargs)
