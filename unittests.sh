@@ -26,6 +26,8 @@ else
 fi
 
 
-if [ ! -z "$CODECOV_TOKEN" ] && [[ "$@" == "html" ]]; then
+if [[ ! "$CODECOV_TOKEN" == "" ]] && [[ "$@" == "html" ]]; then
   bash <(curl -s https://codecov.io/bash)
 fi
+
+exit 0
