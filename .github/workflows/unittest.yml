@@ -24,6 +24,7 @@ jobs:
 
 
   test:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,12 +32,13 @@ jobs:
       - run: docker run ${{ env.IMAGE_NAME }} test
 
 
-  coverage:
+  publish-coverage:
+    needs: test
     runs-on: ubuntu-latest
+    # upload coverage report
     steps:
       - uses: actions/checkout@v2
       - run: docker build . --tag ${{ env.IMAGE_NAME }}
-      - run: docker run ${{ env.IMAGE_NAME }} upload
 
       - name: Codecov
         uses: codecov/codecov-action@v1.0.12
@@ -61,8 +63,16 @@ jobs:
           fail_ci_if_error: # optional
 
 
-  publish:
+  publish-pypi:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker run ${{ env.IMAGE_NAME }} upload
 
+
+  publish-docker:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
