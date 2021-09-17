@@ -13,6 +13,13 @@ env:
   #IMAGE_NAME: ${{ github.repository }}
   IMAGE_NAME: theshellland/automonisaur
 
+  PKG: automon
+  PYPI: automonisaur
+  TWINE_REPOSITORY: https://upload.pypi.org/legacy/
+  TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
+  TWINE_USERNAME: __token__
+  TWINE_PASSWORD: ${{ env.TWINE_PASSWORD }}
+
 
 jobs:
 
