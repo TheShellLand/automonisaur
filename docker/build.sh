@@ -8,7 +8,7 @@ DOCKERNAME=automon
 
 # build image
 DOCKERTAG=$(git describe --tags)
-docker build "$@" -t $DOCKERNAME:$DOCKERTAG .
+docker build "$@" -t $DOCKERNAME:$DOCKERTAG -f ../Dockerfile ..
 docker tag $DOCKERNAME:$DOCKERTAG $DOCKERNAME:latest
 
 # list image
