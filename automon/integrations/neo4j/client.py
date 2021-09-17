@@ -14,11 +14,18 @@ log = Logging(__name__, Logging.DEBUG)
 
 
 class Neo4jClient:
-    """Neo4j client"""
 
     def __init__(self, config: Neo4jConfig = None, user: str = None,
                  password: str = None, hosts: list or str = None,
                  encrypted: bool = None) -> neo4j:
+        """Neo4j client
+
+        :param config: Neo4jConfig
+        :param user: str
+        :param password: str
+        :param hosts: list
+        :param encrypted: bool
+        """
         self._log = Logging(Neo4jClient.__name__, Logging.DEBUG)
 
         self.config = config or Neo4jConfig()
@@ -27,24 +34,25 @@ class Neo4jClient:
         self.hosts = S.list_from_string(hosts) or self.config.hosts
         self.encrypted = encrypted or self.config.encrypted
 
-        for server in self.hosts:
+        self.client = self._client(self.hosts)
+        self.driver = self.client
+        self.connected = self._check_connection()
+
+    def _client(self, hosts: list):
+        for server in hosts:
             try:
-                self.client = GraphDatabase.driver(
-                    server, auth=(self.user, self.password),
-                    encrypted=self.encrypted)
-
-                self.driver = self.client
-                self.connected = True
+                client = GraphDatabase.driver(server, auth=(self.user, self.password), encrypted=self.encrypted)
                 log.info(f'Connected to neo4j server: {server}')
-            except Exception as e:
-                self.connected = False
-                self._log.error(f'Cannot connect to neo4j server: {server}\t{e}',
-                                enable_traceback=False)
-        if not self.hosts:
-            self.connected = False
+                return client
 
-    def __repr__(self):
-        return f'{self.hosts}'
+            except Exception as e:
+                self._log.error(f'Cannot connect to neo4j server: {server}, {e}', enable_traceback=False)
+        return False
+
+    def _check_connection(self):
+        if self.client:
+            return True
+        return False
 
     def _send(self, cypher: str or Cypher) -> GraphDatabase.driver:
         """Send cypher to server"""
@@ -118,3 +126,6 @@ class Neo4jClient:
 
     def search(self, query: str):
         return
+
+    def __repr__(self):
+        return f'{self.hosts}'
