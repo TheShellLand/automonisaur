@@ -4,4 +4,4 @@
 
 cd $(dirname $0) && set -xe
 
-/bin/bash build.sh && docker run --rm automon test "$@"
+/bin/bash build.sh && docker run --rm -it automon "$@"
