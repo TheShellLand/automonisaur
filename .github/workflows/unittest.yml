@@ -1,60 +1,100 @@
-# This is a basic workflow to help you get started with Actions
+name: continuous integration
 
-name: CI
-
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches: [ '*' ]
   pull_request:
-    branches: [ master ]
+    branches: [ '*' ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  #IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: theshellland/automonisaur
+
+
 jobs:
-  # This workflow contains a single job called "build"
+
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-    
-    # python
-    - name: Setup Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
+      - uses: actions/checkout@v2
+      - run: docker build . --tag ${{ env.IMAGE_NAME }}
 
-    # requirements.txt
-    - name: python packages
-      run: pip3 install -r requirements.txt
-    
-    # unittest
-    - name: unittest
-      run: /bin/bash unittests.sh
 
-    # Code coverage 
-    - name: Codecov
-      uses: codecov/codecov-action@v1.0.12
-      with:
-        # User defined upload name. Visible in Codecov UI
-        name: # optional
-        # Repository upload token - get it from codecov.io. Required only for private repositories
-        token: # optional
-        # Path to coverage file to upload
-        file: # optional
-        # Comma-separated list of files to upload
-        files: # optional
-        # Directory to search for coverage reports.
-        directory: # optional
-        # Flag upload to group coverage metrics (e.g. unittests | integration | ui,chrome)
-        flags: # optional
-        # Write upload file to path before uploading
-        path_to_write_report: # optional
-        # Environment variables to tag the upload with (e.g. PYTHON | OS,PYTHON)
-        env_vars: # optional
-        # Specify whether or not CI build should fail if Codecov runs into an error during upload
-        fail_ci_if_error: # optional
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker build . --tag ${{ env.IMAGE_NAME }}
+      - run: docker run ${{ env.IMAGE_NAME }} test
+
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker build . --tag ${{ env.IMAGE_NAME }}
+      - run: docker run ${{ env.IMAGE_NAME }} upload
+
+      - name: Codecov
+        uses: codecov/codecov-action@v1.0.12
+        with:
+          # User defined upload name. Visible in Codecov UI
+          name: # optional
+          # Repository upload token - get it from codecov.io. Required only for private repositories
+          token: # optional
+          # Path to coverage file to upload
+          file: # optional
+          # Comma-separated list of files to upload
+          files: # optional
+          # Directory to search for coverage reports.
+          directory: # optional
+          # Flag upload to group coverage metrics (e.g. unittests | integration | ui,chrome)
+          flags: # optional
+          # Write upload file to path before uploading
+          path_to_write_report: # optional
+          # Environment variables to tag the upload with (e.g. PYTHON | OS,PYTHON)
+          env_vars: # optional
+          # Specify whether or not CI build should fail if Codecov runs into an error during upload
+          fail_ci_if_error: # optional
+
+
+  publish:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Login against a Docker registry except on PR
+      # https://github.com/docker/login-action
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
