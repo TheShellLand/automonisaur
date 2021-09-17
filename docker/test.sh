@@ -5,5 +5,5 @@
 cd $(dirname $0) && set -xe
 
 DOCKERNAME=automon
-./build.sh
+/bin/bash build.sh
 docker run --rm $DOCKERNAME test "$@"
