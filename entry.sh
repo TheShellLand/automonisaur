@@ -7,7 +7,8 @@ cd $(dirname $0)
 
 if [ "$1" == "test" ]; then
   /bin/bash unittests.sh "$2"
-else
+
+elif [ "$1" == "upload" ]; then
   python3 setup.py sdist bdist_wheel
   twine check dist/*
   python3 -m twine upload --repository $PYPI --skip-existing dist/* || exec "$@"
