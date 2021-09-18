@@ -2,7 +2,7 @@
 
 # entrypoint
 
-cd $(dirname $0) && set -e
+cd $(dirname $0) && set -ex
 
 if [ "$1" == "test" ]; then
   exec /bin/bash unittests.sh "$2"
