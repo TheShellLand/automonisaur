@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd $(dirname $0) && set -e
+cd $(dirname $0) && set -ex
 
 # TODO: set pre-commit hook
 
