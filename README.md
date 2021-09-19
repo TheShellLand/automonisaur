@@ -3,6 +3,7 @@
 # Automonisaur: Core Libraries
 
 **[about](#about)** | 
+**[pypi](https://pypi.org/project/automonisaur/)** | 
 **[integrations](#integrations)** | 
 **[install](#install)** | 
 **[build](#build)** | 
