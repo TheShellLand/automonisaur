@@ -42,20 +42,20 @@ Github issues and feature requests welcomed.
 
 #### install library
 ```shell script
-./install.sh
+/bin/bash install.sh
 ```
 
 #### build docker
 ```shell script
-./build.sh
+/bin/bash docker/build.sh
 ```
 
 #### unittest in docker
 ```shell script
-./test.sh
+/bin/bash docker/test.sh
 ```
 
 #### unittest locally
 ```shell script
-./unittests.sh
+/bin/bash unittests.sh
 ```
