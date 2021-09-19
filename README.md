@@ -2,10 +2,18 @@
 
 # Automonisaur: Core Libraries
 
-**[about](#about)** | **[integrations](#integrations)** | **[install](#install)** | **[build](#build)** | **[unittest in docker](#unittest-in-docker')** | 
-**[unittest locally](#unittest-locally)** | **[codecov](https://codecov.io/gh/TheShellLand/automon-core)**
+**[about](#about)** | 
+**[integrations](#integrations)** | 
+**[install](#install)** | 
+**[build](#build)** | 
+**[unittest in docker](#unittest-in-docker')** | 
+**[unittest locally](#unittest-locally)** | 
+**[codecov](https://codecov.io/gh/TheShellLand/automonisaur)**
 
-[![codecov](https://codecov.io/gh/TheShellLand/automon-core/branch/master/graph/badge.svg)](https://codecov.io/gh/TheShellLand/automon-core) [![CI](https://github.com/TheShellLand/automonisaur/workflows/CI/badge.svg?branch=master)](https://github.com/TheShellLand/automonisaur/actions)
+
+[![codecov](https://codecov.io/gh/TheShellLand/automon-core/branch/master/graph/badge.svg)](https://codecov.io/gh/TheShellLand/automonisaur)
+[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/main.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions)
+
 
 
 #### about
