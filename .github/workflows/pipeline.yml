@@ -23,7 +23,24 @@ env:
 
 jobs:
 
-  build:
+  unittest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install python packages
+        run: pip3 install -r requirements.txt
+      - name: Run tests
+        run: /bin/bash test.sh
+
+
+  docker-build:
+    needs: unittest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -34,8 +51,8 @@ jobs:
         run: docker build . --tag ${{ env.IMAGE_NAME }}
 
 
-  test:
-    needs: build
+  docker-test:
+    needs: docker-build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -44,19 +61,21 @@ jobs:
         uses: docker/setup-buildx-action@v1
       - name: Build docker
         run: docker build . --tag ${{ env.IMAGE_NAME }}
-      - name: Test
-        run: >
-          docker run
-          -e PKG=${{ secrets.PKG }}
-          -e PYPI=${{ secrets.PYPI }}
-          -e TWINE_REPOSITORY=${{ secrets.TWINE_REPOSITORY }}
-          -e TWINE_REPOSITORY_URL=${{ secrets.TWINE_REPOSITORY_URL }}
-          -e TWINE_USERNAME=${{ secrets.TWINE_USERNAME }}
-          -e TWINE_PASSWORD=${{ secrets.TWINE_PASSWORD }}
-          ${{ env.DOCKER_IMAGE }} test
+      - name: Run tests in docker
+        run: docker run ${{ env.IMAGE_NAME }} test
+#        run: >
+#          docker run
+#          -e PKG=${{ secrets.PKG }}
+#          -e PYPI=${{ secrets.PYPI }}
+#          -e TWINE_REPOSITORY=${{ secrets.TWINE_REPOSITORY }}
+#          -e TWINE_REPOSITORY_URL=${{ secrets.TWINE_REPOSITORY_URL }}
+#          -e TWINE_USERNAME=${{ secrets.TWINE_USERNAME }}
+#          -e TWINE_PASSWORD=${{ secrets.TWINE_PASSWORD }}
+#          ${{ env.IMAGE_NAME }} test
+
 
   publish-coverage:
-    needs: test
+    needs: unittest
     runs-on: ubuntu-latest
     # upload coverage report
     steps:
@@ -93,21 +112,17 @@ jobs:
 
 
   publish-pypi:
-    needs: test
+    needs: unittest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Build docker
-        run: docker build . --tag ${{ env.IMAGE_NAME }}
       - name: Upload to pypi
-        run: docker run ${{ env.DOCKER_IMAGE }} upload
+        run: /bin/bash upload.sh --github
 
 
   publish-docker:
-    needs: test
+    needs: docker-test
     runs-on: ubuntu-latest
     permissions:
       contents: read
