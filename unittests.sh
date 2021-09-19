@@ -2,8 +2,6 @@
 
 cd $(dirname $0) && set -e
 
-# TODO: set pre-commit hook
-
 if [ -f env.sh ]; then
   env=$(cat env.sh | grep -v '^$' | grep -v '#')
   for var in $env; do
