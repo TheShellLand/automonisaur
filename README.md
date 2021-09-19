@@ -11,7 +11,7 @@
 **[codecov](https://codecov.io/gh/TheShellLand/automonisaur)**
 
 
-[![codecov](https://codecov.io/gh/TheShellLand/automon-core/branch/master/graph/badge.svg)](https://codecov.io/gh/TheShellLand/automonisaur)
+[![codecov](https://codecov.io/gh/TheShellLand/automonisaur/branch/master/graph/badge.svg)](https://codecov.io/gh/TheShellLand/automonisaur)
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/main.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions)
 
 
