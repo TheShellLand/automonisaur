@@ -29,7 +29,7 @@ class LogStream(object):
     def flush(self):
         pass
 
-    def __str__(self):
+    def __repr__(self):
         return self.logs
 
 
