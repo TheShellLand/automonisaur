@@ -81,34 +81,23 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Build docker
-        run: docker build . --tag ${{ env.IMAGE_NAME }}
-      - name: Upload coverage
-        run: docker run ${{ env.DOCKER_IMAGE }} test html
-
-#      - name: Codecov
-#        uses: codecov/codecov-action@v1.0.12
-#        with:
-#          # User defined upload name. Visible in Codecov UI
-#          name: # optional
-#          # Repository upload token - get it from codecov.io. Required only for private repositories
-#          token: # optional
-#          # Path to coverage file to upload
-#          file: # optional
-#          # Comma-separated list of files to upload
-#          files: # optional
-#          # Directory to search for coverage reports.
-#          directory: # optional
-#          # Flag upload to group coverage metrics (e.g. unittests | integration | ui,chrome)
-#          flags: # optional
-#          # Write upload file to path before uploading
-#          path_to_write_report: # optional
-#          # Environment variables to tag the upload with (e.g. PYTHON | OS,PYTHON)
-#          env_vars: # optional
-#          # Specify whether or not CI build should fail if Codecov runs into an error during upload
-#          fail_ci_if_error: # optional
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install python packages
+        run: pip3 install -r requirements.txt
+      - name: Create coverage report
+        run: /bin/bash unittests.sh html
+      - name: Upload coverage to codecov
+        uses: codecov/codecov-action@v2
+        with:
+#          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+#          files: ./coverage.xml,./coverage2.xml # optional
+          flags: unittests # optional
+          name: codecov-umbrella # optional
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
 
 
   publish-pypi:

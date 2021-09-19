@@ -2,13 +2,6 @@
 
 cd $(dirname $0) && set -e
 
-if [ -f env.sh ]; then
-  env=$(cat env.sh | grep -v '^$' | grep -v '#')
-  for var in $env; do
-    export "$var"
-  done
-fi
-
 rm -rf .coverage coverage.xml htmlcov
 
 if [[ "$@" == "-v" ]]; then
@@ -22,10 +15,3 @@ elif [[ "$@" == "html" ]]; then
 else
   pytest --cov-report term "$@"
 fi
-
-
-if [[ ! "$CODECOV_TOKEN" == "" ]] && [[ "$@" == "html" ]]; then
-  bash <(curl -s https://codecov.io/bash)
-fi
-
-exit 0
