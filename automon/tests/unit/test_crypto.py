@@ -29,6 +29,12 @@ class CryptoAccountingTest(unittest.TestCase):
     def test_walk(self):
         self.assertTrue(CryptoAccounting('.'))
 
+    def test_robinhood(self):
+        self.assertTrue(CryptoAccounting().robinhood('robinhood.csv'))
+
+    def test_other(self):
+        self.assertTrue(CryptoAccounting().other('empty.csv'))
+
 
 class RobinhoodTest(unittest.TestCase):
     def test_Robinhood(self):
