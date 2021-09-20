@@ -27,14 +27,22 @@ class CryptoAccounting:
                         self.auto_detect(file_path)
 
     def auto_detect(self, csv):
+        self._log.debug(f'supported exchanges: {self.supported_exchanges}')
         for exchange in self.supported_exchanges:
+            self._log.debug(f'reading exchange: {exchange}')
             x = exchange(csv)
             if x.is_match:
-                self.accounts.append(x)
-                return True
-
-        self.accounts.append(Other(csv))
+                self._log.debug(f'exchange matched: {exchange}')
+                if x not in self.accounts:
+                    self._log.info(f'added {x}')
+                    self.accounts.append(x)
+                    return True
+                self._log.debug(f'already added: {x}')
+        else:
+            o = Other(csv)
+            if o not in self.accounts:
+                self.accounts.append(o)
         return False
 
     def __repr__(self):
-        return CryptoAccounting.__name__
+        return f'accounts: {len(self.accounts)}'
