@@ -8,49 +8,45 @@ from pandas import DataFrame, Series
 from automon import Logging
 
 
-class CryptoCSV:
-    def __init__(self, csv: str or open or StringIO = None,
-                 fake_csv: str = None,
-                 dataframe: DataFrame = None,
-                 delimiter: str = None, **kwargs):
-        """Consolidate cryptocurrency accounting
+class Pandas:
 
-        :param csv: path to csv file
-        :param fake_csv: a csv string
-        :param dataframe: pandas dataframe
-        :param delimiter: str
-        :param kwargs: additional args for pd.read_csv()
-        """
-        self._log = Logging(name=CryptoCSV.__name__, level=Logging.DEBUG)
+    def __init__(self, dataframe: DataFrame = None):
 
-        self.df = None
-        self.csv = csv
+        self._log = Logging(name=Pandas.__name__, level=Logging.DEBUG)
 
-        if csv:
-            self.df = pd.read_csv(csv, delimiter=delimiter, **kwargs)
+        self.df = dataframe
+        self.csv_name = None
 
-        if fake_csv:
-            self.df = self.csv_from_string(fake_csv, delimiter=delimiter, **kwargs)
+    def Series(self, **kwargs):
+        return pd.Series(**kwargs)
 
-        if dataframe is not None:
-            self.df = dataframe
+    def DataFrame(self, **kwargs):
+        return pd.DataFrame(**kwargs)
 
-    def read_csv(self, file: str, delimiter: str = None, **kwargs) -> pd.read_csv:
-        self._log.info(f'imported {file}')
+    def read_csv(self, file: str or StringIO, delimiter: str = None, **kwargs) -> pd.read_csv:
+        """read csv"""
+
+        if type(file) == str:
+            self.csv_name = file
+
         self.df = pd.read_csv(file, delimiter=delimiter, **kwargs)
+        self._log.info(f'imported {file}')
         return self.df
 
     def csv_from_string(self, csv, delimiter: str = None, **kwargs) -> pd.read_csv:
-        self._log.info(f'imported {csv}')
+        """read csv from string"""
+
         self.df = self.read_csv(StringIO(csv), delimiter=delimiter, **kwargs)
+        self._log.info(f'imported csv string {len(csv) / 1024 / 1024} MB')
         return self.df
 
     def export_csv(self, file: str = None, overwrite: bool = False,
                    incremental: bool = False,
                    index: bool = False, **kwargs):
+        """export to csv"""
 
-        if self.csv:
-            path, filename = os.path.split(self.csv)
+        if self.csv_name:
+            path, filename = os.path.split(self.csv_name)
         else:
             path = ''
             filename = f'df.csv'
@@ -70,3 +66,8 @@ class CryptoCSV:
 
     def __repr__(self):
         return f'{self.df}'
+
+    def __eq__(self, other):
+        if self.df == other.df:
+            return True
+        return False
