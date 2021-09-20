@@ -1,23 +1,39 @@
+from automon import Logging
 from automon.helpers.datascience import Pandas
 
 
 class Other:
     def __init__(self, csv):
-        self.df = OtherCSV(csv).df
+        self._log = Logging(name=Other.__name__, level=Logging.DEBUG)
+
         self.csv = csv
+        self.df = OtherCSV(csv).df
 
     def __repr__(self):
-        return self.csv
+        return f'{self.csv}'
+
+    def __eq__(self, other):
+        if self.df.equals(other.df):
+            self._log.debug(f'same {other}')
+            return True
+        self._log.debug(f'different {other}')
+        return False
 
 
 class OtherCSV:
     def __init__(self, csv):
+        self._log = Logging(name=OtherCSV.__name__, level=Logging.DEBUG)
+
+        self.csv = csv
         self.df = Pandas().read_csv(csv)
 
     def __repr__(self):
-        return OtherCSV.__name__
+        return f'{self.df}'
 
     def __eq__(self, other):
-        if self.df == other.df:
-            return True
+        if isinstance(other, OtherCSV):
+            if self.df == other.df:
+                self._log.debug(f'same {other}')
+                return True
+            self._log.debug(f'different {other}')
         return False
