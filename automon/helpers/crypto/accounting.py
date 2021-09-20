@@ -44,5 +44,17 @@ class CryptoAccounting:
                 self.accounts.append(o)
         return False
 
+    def robinhood(self, csv):
+        r = Robinhood(csv)
+        if r not in self.accounts:
+            self.accounts.append(r)
+        return r
+
+    def other(self, csv):
+        o = Other(csv)
+        if o not in self.accounts:
+            self.accounts.append(o)
+        return o
+
     def __repr__(self):
         return f'accounts: {len(self.accounts)}'
