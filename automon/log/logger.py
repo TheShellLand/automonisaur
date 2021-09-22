@@ -3,6 +3,7 @@ import traceback
 
 from logging import DEBUG, INFO, WARN, ERROR, CRITICAL, NOTSET
 
+from automon.helpers import Dates
 from automon.integrations.slack.slack_formatting import Emoji, Chat, Format
 
 logging.getLogger('logger').setLevel(CRITICAL)
@@ -45,9 +46,15 @@ class Logging:
     CRITICAL = CRITICAL
     NOTSET = NOTSET
 
-    def __init__(self, name: str = __name__, level: logging.INFO = INFO,
-                 file: str = None, encoding: str = 'utf-8', filemode: str = 'a',
-                 log_stream: LogStream = False, timestamp: bool = True, **kwargs):
+    def __init__(self, name: str = __name__,
+                 level: int = INFO,
+                 file: str = None,
+                 encoding: str = 'utf-8',
+                 filemode: str = 'a',
+                 log_stream: LogStream = False,
+                 timestamp: bool = True, **kwargs):
+
+        self.started = Dates.now()
 
         self.logging = logging.getLogger(name)
         self.logging.setLevel(level)
@@ -115,3 +122,10 @@ class Logging:
         if 'NoneType' not in tb:
             self.logging.critical(tb)
         return self.logging.critical(msg)
+
+    @staticmethod
+    def now():
+        return Dates.now()
+
+    def uptime(self):
+        return Dates.now() - self.started

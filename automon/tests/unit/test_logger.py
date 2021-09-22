@@ -26,6 +26,12 @@ class LoggingTest(unittest.TestCase):
         with self.assertRaises(Exception):
             self.log.error(raise_exception=True)
 
+    def test_now(self):
+        self.assertTrue(self.log.now())
+
+    def test_delta(self):
+        self.assertTrue(self.log.uptime())
+
 
 class LogStreamTest(unittest.TestCase):
     stream = LogStream()
