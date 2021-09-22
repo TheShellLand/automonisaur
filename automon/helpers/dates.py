@@ -1,10 +1,23 @@
-import datetime
+from datetime import datetime, date
 
 
 class Dates:
-    today = f'{datetime.datetime.today()}'
-    now = f'{datetime.datetime.now()}'
-    iso = f'{datetime.datetime.isoformat(datetime.datetime.now())}'
-    iso_short = f'{datetime.date.today().isoformat()}'
+    @staticmethod
+    def today():
+        return datetime.today()
 
-    filename_timestamp = str(datetime.datetime.now().isoformat()).replace(':', '_')
+    @staticmethod
+    def now():
+        return datetime.now()
+
+    @staticmethod
+    def iso():
+        return datetime.isoformat(datetime.now())
+
+    @staticmethod
+    def iso_short():
+        return date.today().isoformat()
+
+    @staticmethod
+    def filename_timestamp():
+        return f'{datetime.now().isoformat()}'.replace(':', '_')
