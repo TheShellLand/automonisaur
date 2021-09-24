@@ -1,6 +1,6 @@
 # automon
 #git+https://github.com/TheShellLand/automonisaur.git
-#automonisaur>=0.0.20
+#automonisaur
 
 # prerequisites
 requests>=2.26.0
