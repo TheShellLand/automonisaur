@@ -49,7 +49,7 @@ class Run:
         stdout, stderr = call.communicate()
         # call.wait()
 
-        timestamp = Dates.iso
+        timestamp = Dates.iso()
 
         self.last_run = timestamp
         self.stdout = stdout

@@ -73,7 +73,7 @@ class SeleniumBrowser:
 
         hostname_ = Sanitation.ascii_numeric_only(hostname)
         title_ = Sanitation.ascii_numeric_only(title)
-        timestamp = Dates.filename_timestamp
+        timestamp = Dates.filename_timestamp()
 
         if prefix:
             prefix = Sanitation.safe_string(prefix)
