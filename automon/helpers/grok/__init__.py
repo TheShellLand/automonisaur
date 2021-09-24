@@ -1,4 +1,5 @@
 import os
+import warnings
 import pandas as pd
 
 from automon.log.logger import Logging
@@ -55,6 +56,7 @@ class Grok:
 
 
 class GrokLegacy:
+    warnings.warn(f'GrokLegacy will be removed by v0.2.x', DeprecationWarning)
     g = dict()
     ##########################################
     # numbers, integer
