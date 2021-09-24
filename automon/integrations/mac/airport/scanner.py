@@ -97,7 +97,7 @@ class Airport:
         call.wait()
 
         result = {
-            'scan_date': Dates.iso,
+            'scan_date': Dates.iso(),
             'cmd': command,
             'output': output,
             'errors': errors
