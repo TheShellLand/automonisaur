@@ -34,7 +34,7 @@ class LogStream(object):
         return self.logs
 
 
-class Logging:
+class Logging(object):
     """Standard logging to stdout
     """
 
