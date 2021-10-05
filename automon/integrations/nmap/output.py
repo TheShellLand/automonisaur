@@ -7,7 +7,7 @@ from automon.helpers.runner import Run
 from automon.helpers.datascience import Pandas
 
 
-class NmapResult:
+class NmapResult(object):
     def __init__(self, file: str, run: Run = None, **kwargs):
         self._log = Logging(name=NmapResult.__name__, level=Logging.INFO)
 

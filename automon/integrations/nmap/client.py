@@ -8,7 +8,7 @@ from .config import NmapConfig
 from .output import NmapResult
 
 
-class Nmap:
+class Nmap(object):
     def __init__(self, command: str = None, config: NmapConfig = None, **kwargs):
         self._log = Logging(name=Nmap.__name__, level=Logging.INFO)
         self._runner = Run()

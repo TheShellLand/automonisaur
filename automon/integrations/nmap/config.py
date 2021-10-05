@@ -2,7 +2,7 @@ from automon import Logging
 from automon.helpers.runner import Run
 
 
-class NmapConfig:
+class NmapConfig(object):
     def __init__(self, **kwargs):
         self._log = Logging(name=NmapConfig.__name__, level=Logging.ERROR)
 
