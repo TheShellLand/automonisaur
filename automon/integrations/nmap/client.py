@@ -35,6 +35,9 @@ class Nmap(object):
             return len(self.result)
         return 0
 
+    def pretty(self):
+        return print(self._runner.stdout.decode())
+
     def nmap(self, command: str, **kwargs) -> bool:
         return self.run(command=command, **kwargs)
 
