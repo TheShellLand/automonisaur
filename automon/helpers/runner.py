@@ -1,5 +1,6 @@
 import subprocess
 
+from pprint import pprint
 from subprocess import PIPE
 
 from automon import Logging
@@ -17,6 +18,12 @@ class Run:
 
         self.stdout = b''
         self.stderr = b''
+
+    def pretty(self):
+        return pprint(self.stdout.decode())
+
+    def print(self):
+        return print(self.stdout.decode())
 
     def set_command(self, command: str) -> bool:
         if command:
