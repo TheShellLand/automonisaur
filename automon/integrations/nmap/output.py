@@ -20,49 +20,60 @@ class NmapResult(object):
 
         self.df = Pandas().DataFrame(data=xml, **kwargs)
 
+        df = Pandas().DataFrame(data=xml, **kwargs)
+
+        self.host = pd.json_normalize(df.loc['host'][0])
+        self._hosthint = pd.json_normalize(df.loc['hosthint'])
+        self._runstats = pd.json_normalize(df.loc['runstats'])
+        self._scaninfo = pd.json_normalize(df.loc['scaninfo'])
+        self._verbose = pd.json_normalize(df.loc['verbose'])
+
         # normalize output data
-        for index in self.df.nmaprun.index:
-            try:
-                self.df.nmaprun[index] = pd.json_normalize(self.df.nmaprun[index])
-                self.df = self.df.combine_first(self.df.nmaprun[index])
-                self.df.nmaprun = self.df.drop(index)
-                self._log.debug(f'OK normalized {index}')
-            except Exception as e:
-                self._log.debug(f'not normalized. {index} {type(self.df.nmaprun[index])} {e}')
+        # TODO: missing both ports, only shows one port?
+        if 'ports.port' in self.host:
+            ports = self.host.loc[:, 'ports.port'].apply(
+                lambda _list: _list[0]).apply(
+                lambda _dict: pd.json_normalize(_dict).to_dict())
+            ports = pd.json_normalize(ports)
+            self.host = self.host.combine_first(ports)
+            self.host = self.host.drop(columns='ports.port')
 
-        if 'ports.port' in self.df:
-            ports = pd.json_normalize(self.df['ports.port'].dropna())
-            ports = [pd.json_normalize(ports[x]) for x in ports]
-            self.df = self.df.drop(columns='ports.port')
-            self.df = self.df.combine_first(pd.concat(ports))
-            self.ports = self.df.loc[:, ['@portid', 'state.@state', 'state.@reason', '@protocol',
-                                         'service.@name', 'status.@reason', 'status.@state']].dropna()
-        else:
-            self.ports = None
+        self.command = df.loc['@args'][0]
+        self.cmd = self.command
+        self.time_start = df.loc['@start'][0]
+        self.time_startstr = df.loc['@startstr'][0]
 
-        self.command = self.df.loc['@args'].dropna().iloc[0]
-        self.time_start = self.df.loc['@start'].dropna().iloc[0]
-        self.time_startstr = self.df.loc['@startstr'].dropna().iloc[0]
+        self.hosts_up = self._runstats.loc[:, 'hosts.@up'][0]
+        self.hosts_down = self._runstats.loc[:, 'hosts.@down'][0]
+        self.hosts_total = self._runstats.loc[:, 'hosts.@total'][0]
 
-        if 'hostnames.hostname.@name' in self.df:
-            self.hostnames = self.df['hostnames.hostname.@name'].dropna()
-        else:
-            self.hostnames = None
+        self.version = df.loc['@version'].iloc[0]
 
-        self.hosts_up = self.df['hosts.@up'].dropna().iloc[0]
-        self.hosts_down = self.df['hosts.@down'].dropna().iloc[0]
-        self.hosts_total = self.df['hosts.@total'].dropna().iloc[0]
+        self.elapsed = self._runstats.loc[:, 'finished.@elapsed'][0]
+        self.summary = self._runstats.loc[:, 'finished.@summary'][0]
+        self.time_finished = self._runstats.loc[:, 'finished.@time'][0]
 
-        self.version = self.df.loc['@version'].dropna().iloc[0]
+    def hostnames(self):
+        return self.host.loc[:, 'hostnames.hostname.@name']
 
-        self.elapsed = self.df['finished.@elapsed'].dropna().iloc[0]
-        self.summary = self.df['finished.@summary'].dropna().iloc[0]
-        self.time_finished = self.df['finished.@time'].dropna().iloc[0]
+    def ips(self):
+        return self.host.loc[:, 'address.@addr']
 
     def __repr__(self):
+        msg = f'up: {self.hosts_up} ' \
+              f'down: {self.hosts_down} ' \
+              f'total: {self.hosts_total} ' \
+              f'elapsed: {self.elapsed} ' \
+              f'summary: {self.summary} ' \
+              f'cmd: {self.command} ' \
+              f''
+
         if self.df.memory_usage().sum() / 1024 / 1024 / 1024 > 1:
-            return f'{round(self.df.memory_usage().sum() / 1024 / 1024 / 1024, 2)} Gb'
-        return f'{round(self.df.memory_usage().sum() / 1024, 2)} Kb'
+            msg += f'{round(self.df.memory_usage().sum() / 1024 / 1024 / 1024, 2)} Gb'
+        else:
+            msg += f'{round(self.df.memory_usage().sum() / 1024, 2)} Kb'
+
+        return msg
 
     def __len__(self):
         return int(self.df.memory_usage().sum())
