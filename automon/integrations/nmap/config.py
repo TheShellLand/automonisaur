@@ -9,10 +9,17 @@ class NmapConfig(object):
         self.nmap = None
         self.ready = None
 
-        self._runner = Run()
-        self._runner.run('which nmap', **kwargs)
+        check = Run()
+        check.run('which nmap', **kwargs)
 
-        if self._runner.stdout:
-            self.nmap = self._runner.stdout.decode().strip()
+        if check.stdout:
+            self.nmap = check.stdout.decode().strip()
             self.ready = True
             self._log.debug(f'nmap located, {self.nmap}')
+        else:
+            self._log.error(f'nmap not found', enable_traceback=False)
+
+    def __repr__(self):
+        if self.ready:
+            return f'{self.nmap}'
+        return f'nmap not found'
