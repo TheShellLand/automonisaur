@@ -44,6 +44,7 @@ class Nmap(object):
     def run(self, command: str, output: bool = True, cleanup: bool = True, **kwargs) -> bool:
 
         if not self.ready:
+            self._log.error(enable_traceback=False, msg=f'nmap not found')
             return False
 
         nmap_command = f'{self.config.nmap} '
