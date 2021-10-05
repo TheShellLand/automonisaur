@@ -20,6 +20,7 @@ class Nmap(object):
 
         self.result = None
         self.command = None
+        self.error = None
         if command:
             self.run(command=command)
 
@@ -65,6 +66,8 @@ class Nmap(object):
         self.command = nmap_command
         stdout = self._runner.stdout
         stderr = self._runner.stderr
+
+        self.error = stderr
 
         if output:
             self.result = NmapResult(file=self.output_file, **kwargs)
