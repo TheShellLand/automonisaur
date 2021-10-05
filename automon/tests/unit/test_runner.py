@@ -8,7 +8,7 @@ class RunTest(unittest.TestCase):
 
     def test_Run(self):
         self.assertTrue(Run)
-        self.assertTrue(Run())
+        self.assertFalse(Run())
 
     def test_set_command(self):
         self.assertTrue(self.r.set_command('which'))
