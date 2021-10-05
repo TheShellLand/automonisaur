@@ -65,7 +65,10 @@ class Run:
         return f'{command}'.split(' ')
 
     def __repr__(self) -> str:
-        return f'{self.command}'
+        return f'{self.command} stderr: ({len(self.stderr) / 1024} Kb) stdout ({len(self.stdout) / 1024} Kb)'
+
+    def __len__(self):
+        return sum([len(self.stdout), len(self.stderr)])
 
     def __eq__(self, other):
         if isinstance(other, Run):
