@@ -13,7 +13,7 @@ class Nmap(object):
         self._log = Logging(name=Nmap.__name__, level=Logging.INFO)
         self._runner = Run()
 
-        self.config = config or NmapConfig(**kwargs)
+        self.config = config or NmapConfig()
         self.ready = self.config.ready
 
         self.output_file = f'nmap-{Dates.filename_timestamp()}.xml'
@@ -22,7 +22,7 @@ class Nmap(object):
         self.command = None
         self.error = None
         if command:
-            self.run(command=command)
+            self.run(command=command, **kwargs)
 
     def __repr__(self):
         if self.result:
