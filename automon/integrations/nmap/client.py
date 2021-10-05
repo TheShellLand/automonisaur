@@ -1,3 +1,5 @@
+import os
+
 from automon import Logging
 from automon.helpers.runner import Run
 from automon.helpers.dates import Dates
@@ -27,7 +29,7 @@ class Nmap:
     def scan(self, command: str, **kwargs) -> bool:
         return self.run(command=command, **kwargs)
 
-    def run(self, command: str, output: bool = True, **kwargs) -> bool:
+    def run(self, command: str, output: bool = True, cleanup: bool = True, **kwargs) -> bool:
 
         if not self.ready:
             return False
@@ -48,9 +50,15 @@ class Nmap:
         stdout = self._runner.stdout
         stderr = self._runner.stderr
 
-        if stderr:
-            return False
-
         if output:
             self.result = NmapResult(file=self.output_file, **kwargs)
+
+            if cleanup:
+                os.remove(self.output_file)
+                self._log.info(f'deleted {self.output_file}')
+
+        if stderr:
+            self._log.error(enable_traceback=False, msg=f'{stderr.decode()}')
+            return False
+
         return True
