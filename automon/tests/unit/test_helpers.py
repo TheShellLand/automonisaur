@@ -3,7 +3,6 @@ import unittest
 from automon.helpers.assertions import *
 from automon.helpers.sleeper import *
 from automon.helpers.sanitation import *
-from automon.helpers.networking import *
 from automon.helpers.regex import *
 
 
@@ -16,17 +15,6 @@ class RegexTest(unittest.TestCase):
 
     def test_geolocation(self):
         self.assertTrue(geolocation)
-
-
-class NetworkingTest(unittest.TestCase):
-    def test_Networking(self):
-        self.assertTrue(Networking)
-        self.assertTrue(Networking.check_connection('https://www.google.com:443'))
-        self.assertTrue(Networking.check_connection('x://www.google.com:443'))
-        self.assertFalse(Networking.check_connection('x://localhost:0'))
-        self.assertFalse(Networking.check_connection('localhost:0'))
-        self.assertFalse(Networking.check_connection('localhost:0', timeout=0))
-        self.assertTrue(Networking.urlparse('x://localhost:0'))
 
 
 class SanitationTest(unittest.TestCase):
