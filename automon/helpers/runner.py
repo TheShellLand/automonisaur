@@ -13,10 +13,10 @@ class Run:
         self._log = Logging(name=Run.__name__, level=Logging.DEBUG)
 
         self.last_run = None
-        self.command = None
+        self.command = ''
 
-        self.stdout = None
-        self.stderr = None
+        self.stdout = b''
+        self.stderr = b''
 
     def set_command(self, command: str) -> bool:
         if command:
