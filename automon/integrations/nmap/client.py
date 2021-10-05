@@ -23,6 +23,18 @@ class Nmap(object):
         if command:
             self.run(command=command)
 
+    def __repr__(self):
+        if self.result:
+            return f'{self.command} ({round(len(self.result) / 1024, 2)} Kb)'
+        if self.command:
+            return f'{self.command}'
+        return f'Waiting to scan'
+
+    def __len__(self):
+        if self.result:
+            return len(self.result)
+        return 0
+
     def nmap(self, command: str, **kwargs) -> bool:
         return self.run(command=command, **kwargs)
 
