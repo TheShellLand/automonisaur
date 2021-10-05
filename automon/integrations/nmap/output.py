@@ -60,4 +60,9 @@ class NmapResult(object):
         self.time_finished = self.df['finished.@time'].dropna().iloc[0]
 
     def __repr__(self):
-        return f'{self.df}'
+        if self.df.memory_usage().sum() / 1024 / 1024 / 1024 > 1:
+            return f'{round(self.df.memory_usage().sum() / 1024 / 1024 / 1024, 2)} Gb'
+        return f'{round(self.df.memory_usage().sum() / 1024, 2)} Kb'
+
+    def __len__(self):
+        return int(self.df.memory_usage().sum())
