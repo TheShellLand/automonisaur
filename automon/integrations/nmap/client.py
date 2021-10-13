@@ -19,8 +19,8 @@ class Nmap(object):
         self.output_file = f'nmap-{Dates.filename_timestamp()}.xml'
 
         self.result = None
-        self.command = None
-        self.error = None
+        self.command = str()
+        self.error = bytes()
         if command:
             self.run(command=command, **kwargs)
 
