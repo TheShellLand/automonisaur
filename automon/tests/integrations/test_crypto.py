@@ -19,7 +19,7 @@ class CryptoAccountingTest(unittest.TestCase):
     c = CryptoAccounting()
 
     def test_CryptoAccounting(self):
-        self.assertTrue(CryptoAccounting())
+        self.assertTrue(self.c)
 
     def test_auto_detect(self):
         self.assertTrue(self.c.auto_detect('robinhood.csv'))
@@ -29,10 +29,10 @@ class CryptoAccountingTest(unittest.TestCase):
         self.assertTrue(CryptoAccounting('.'))
 
     def test_robinhood(self):
-        self.assertTrue(CryptoAccounting().robinhood('robinhood.csv'))
+        self.assertTrue(self.c.robinhood('robinhood.csv'))
 
     def test_other(self):
-        self.assertTrue(CryptoAccounting().other('empty.csv'))
+        self.assertTrue(self.c.other('empty.csv'))
 
 
 class RobinhoodTest(unittest.TestCase):
