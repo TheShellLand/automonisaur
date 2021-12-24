@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# image build script
+# run tests
 
 cd $(dirname $0) && set -e
 
