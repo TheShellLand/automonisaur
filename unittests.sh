@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# unittests
+
 cd $(dirname $0) && set -e
 
 rm -rf .coverage coverage.xml htmlcov
