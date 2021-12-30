@@ -9,7 +9,7 @@ from automon.helpers import Dates
 
 class Run:
 
-    def __init__(self):
+    def __init__(self, command: str = None, *args, **kwargs):
         """Run shell"""
         self._log = Logging(name=Run.__name__, level=Logging.DEBUG)
 
@@ -18,6 +18,17 @@ class Run:
 
         self.stdout = b''
         self.stderr = b''
+
+        self.call = None
+        self.returncode = None
+
+        if command:
+            self.run(command=command, *args, **kwargs)
+
+    def rc(self):
+        if self.call:
+            self.returncode = self.call.returncode
+            return self.returncode
 
     def pretty(self):
         return pprint(self.stdout.decode())
@@ -72,8 +83,8 @@ class Run:
             self.stderr = stderr
             self.returncode = self.call.returncode
 
-        if stdout:
-            return True
+            if self.returncode == 0:
+                return True
 
         return False
 
