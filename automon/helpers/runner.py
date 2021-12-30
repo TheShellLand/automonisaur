@@ -45,22 +45,32 @@ class Run:
         """alias to run"""
         return self.run(command=command, **kwargs)
 
-    def run(self, command: str = None, text: bool = False, **kwargs) -> bool:
+    def run(self, command: str = None,
+            text: bool = False,
+            inBackground: bool = False,
+            inShell: bool = False,
+            **kwargs) -> bool:
+
         if command:
             command = self._command(f'{command}')
 
         elif self.command:
             command = self._command(self.command)
 
-        call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=text, **kwargs)
-        stdout, stderr = call.communicate()
-        # call.wait()
+        if inBackground or inShell:
+            self.call = subprocess.Popen(command, text=text, **kwargs)
+            return True
+        else:
+            self.call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=text, **kwargs)
+            stdout, stderr = self.call.communicate()
+            # call.wait()
 
-        timestamp = Dates.iso()
+            timestamp = Dates.iso()
 
-        self.last_run = timestamp
-        self.stdout = stdout
-        self.stderr = stderr
+            self.last_run = timestamp
+            self.stdout = stdout
+            self.stderr = stderr
+            self.returncode = self.call.returncode
 
         if stdout:
             return True
