@@ -14,8 +14,6 @@ class Nmap(object):
         self._runner = Run()
 
         self.config = config or NmapConfig()
-        self.ready = self.config.ready
-
         self.output_file = f'nmap-{Dates.filename_timestamp()}.xml'
 
         self.result = None
@@ -29,12 +27,17 @@ class Nmap(object):
             return f'{self.command} ({round(len(self.result) / 1024, 2)} Kb)'
         if self.command:
             return f'{self.command}'
-        return f'Waiting to scan'
+        if self.isReady():
+            return f'Ready to scan'
+        return f'Not able to scan'
 
     def __len__(self):
         if self.result:
             return len(self.result)
         return 0
+
+    def isReady(self):
+        return self.config.isReady()
 
     def pretty(self):
         return print(self._runner.stdout.decode())
@@ -47,7 +50,7 @@ class Nmap(object):
 
     def run(self, command: str, output: bool = True, cleanup: bool = True, **kwargs) -> bool:
 
-        if not self.ready:
+        if not self.isReady():
             self._log.error(enable_traceback=False, msg=f'nmap not found')
             return False
 
