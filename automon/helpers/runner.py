@@ -31,14 +31,14 @@ class Run:
             return True
         return False
 
-    def which(self, program: str) -> bool:
+    def which(self, program: str, *args, **kwargs) -> bool:
         """runs which
 
         :param program:
         :return:
         """
         if program:
-            return self.run(command=f'which {program}')
+            return self.run(command=f'which {program}', *args, **kwargs)
         return False
 
     def run_command(self, command: str, **kwargs) -> bool:
