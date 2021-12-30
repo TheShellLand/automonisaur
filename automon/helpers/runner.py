@@ -72,7 +72,7 @@ class Run:
         return f'{command}'.split(' ')
 
     def __repr__(self) -> str:
-        return f'{self.command} stderr: ({len(self.stderr) / 1024} Kb) stdout ({len(self.stdout) / 1024} Kb)'
+        return f'{self.command} stderr: ({len(self.stderr) / 1024} Kb) stdout: ({round(len(self.stdout) / 1024, 2)} Kb)'
 
     def __len__(self):
         return sum([len(self.stdout), len(self.stderr)])
