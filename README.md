@@ -33,6 +33,7 @@ Github issues and feature requests welcomed.
 - flask
 - minio
 - neo4j
+- requests
 - selenium
 - slack
 - snmp
