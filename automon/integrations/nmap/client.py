@@ -9,7 +9,7 @@ from .output import NmapResult
 
 
 class Nmap(object):
-    def __init__(self, command: str = None, config: NmapConfig = None, **kwargs):
+    def __init__(self, command: str = None, config: NmapConfig = None, *args, **kwargs):
         self._log = Logging(name=Nmap.__name__, level=Logging.INFO)
         self._runner = Run()
 
@@ -20,7 +20,7 @@ class Nmap(object):
         self.command = str()
         self.error = bytes()
         if command:
-            self.run(command=command, **kwargs)
+            self.run(command=command, *args, **kwargs)
 
     def __repr__(self):
         if self.result:
