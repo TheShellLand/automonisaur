@@ -1,2 +1,2 @@
-from .client import RequestsClient
+from .client import RequestsClient, Requests
 from .config import RequestsConfig
