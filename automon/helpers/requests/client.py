@@ -1,12 +1,14 @@
 import requests
 
 from automon import Logging
-from automon.helpers.requests.config import RequestsConfig
+from .config import RequestsConfig
 
 
 class RequestsClient(object):
     def __init__(self, url: str = None, data: dict = None, headers: dict = None,
                  config: RequestsConfig = None):
+        """Wrapper for requests library"""
+
         self._log = Logging(name=RequestsClient.__name__, level=Logging.DEBUG)
 
         self.config = config or RequestsConfig()
@@ -25,6 +27,8 @@ class RequestsClient(object):
             url: str = None,
             data: dict = None,
             headers: dict = None, **kwargs) -> bool:
+        """requests.get"""
+
         try:
             self.results = requests.get(url=url, data=data, headers=headers, **kwargs)
             self._log.debug(f'{self.results.status_code} '
@@ -39,6 +43,8 @@ class RequestsClient(object):
              url: str = None,
              data: dict = None,
              headers: dict = None, **kwargs) -> bool:
+        """requests.post"""
+
         try:
             self.results = requests.post(url=url, data=data, headers=headers, **kwargs)
             self._log.debug(f'{self.results.status_code} '
@@ -48,3 +54,7 @@ class RequestsClient(object):
         except Exception as e:
             self._log.error(f'{self.results.status_code} post failed. {e}', raise_exception=False)
         return False
+
+
+class Requests(RequestsClient):
+    pass
