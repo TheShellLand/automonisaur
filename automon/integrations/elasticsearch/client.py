@@ -6,21 +6,45 @@ from requests.auth import HTTPBasicAuth
 from elasticsearch import Elasticsearch
 
 from automon.log.logger import Logging
-from automon.integrations.elasticsearch.config import ElasticsearchConfig
+from .config import ElasticsearchConfig
 from automon.helpers.sanitation import Sanitation
 
 
 class ElasticsearchClient(ElasticsearchConfig):
-    def __init__(self, config: ElasticsearchConfig = None):
+    def __init__(self, hosts: str = None,
+                 cloud_id: str = None,
+                 user: str = None,
+                 password: str = None,
+                 api_key: tuple = None,
+                 api_key_id: str = None,
+                 api_key_secret: str = None,
+                 config: ElasticsearchConfig = None):
+        """elasticsearch wrapper"""
+
         self._log = Logging(ElasticsearchClient.__name__, Logging.DEBUG)
 
-        self._config = config or ElasticsearchConfig()
-        self._client = Elasticsearch(hosts=self._config.es_hosts,
-                                     request_timeout=self._config.request_timeout,
-                                     http_auth=self._config.http_auth,
-                                     use_ssl=self._config.use_ssl,
-                                     verify_certs=self._config.verify_certs,
-                                     connection_class=self._config.connection_class)
+        self._config = config or ElasticsearchConfig(
+            hosts=hosts,
+            cloud_id=cloud_id,
+            user=user,
+            password=password,
+            api_key=api_key,
+            api_key_id=api_key_id,
+            api_key_secret=api_key_secret)
+
+        self._client = Elasticsearch(
+            hosts=self._config.ELASTICSEARCH_HOSTS,
+            cloud_id=self._config.ELASTICSEARCH_CLOUD_ID,
+            api_key=self._config.ELASTICSEARCH_API_KEY,
+            request_timeout=self._config.ELASTICSEARCH_REQUEST_TIMEOUT,
+            http_auth=self._config.http_auth,
+            use_ssl=self._config.use_ssl,
+            verify_certs=self._config.verify_certs,
+            connection_class=self._config.connection_class)
+        self._elasticsearch = self._client
+
+        self._connected = self.connected()
+
         self.indices = []
         self.success = []
         self.errors = []
