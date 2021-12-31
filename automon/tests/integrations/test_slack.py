@@ -40,18 +40,6 @@ class SlackTest(unittest.TestCase):
     def test_SlackError(self):
         self.assertTrue(SlackError)
 
-    def test_SlackLogging(self):
-        test = AsyncSlackLogging(username='automonbot')
-
-        self.assertTrue(test)
-        self.assertIsNone(test.info('info'))
-        self.assertIsNone(test.warn('warn'))
-        self.assertIsNone(test.debug('debug'))
-        self.assertIsNone(test.error('error'))
-        self.assertIsNone(test.critical('critical'))
-        self.assertIsNone(test.test('test'))
-        self.assertIsNone(test.close())
-
     def test_Format(self):
         self.assertTrue(Format.blockquote)
         self.assertTrue(Format.codeblock)
