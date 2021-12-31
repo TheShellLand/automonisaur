@@ -10,9 +10,12 @@ from automon.integrations.minio.config import MinioConfig
 log = Logging(name='minio', level=Logging.INFO)
 
 
-class MinioClient:
+class MinioClient(object):
 
     def __init__(self, config: MinioConfig = None):
+        """Minio client
+        """
+
         self._log = Logging(name=MinioClient.__name__, level=Logging.DEBUG)
 
         self.config = config or MinioConfig()
