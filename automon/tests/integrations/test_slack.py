@@ -73,5 +73,5 @@ class SlackTest(unittest.TestCase):
         self.assertTrue(Emoji.announcement)
         self.assertTrue(Emoji.yay)
 
-# if __name__ == '__main__':
-#     unittest.main()
+if __name__ == '__main__':
+    unittest.main()
