@@ -1,48 +1,13 @@
 import unittest
 
-from automon.integrations.elasticsearch.jvm import ElasticsearchJvmMonitor
 from automon.integrations.elasticsearch.config import ElasticsearchConfig, SnapshotBot, JVMBot
 from automon.integrations.elasticsearch.client import ElasticsearchClient
 from automon.integrations.elasticsearch.cleanup import Cleanup
 from automon.integrations.elasticsearch.metrics import Metric, MetricTimestamp, Cluster
-from automon.integrations.elasticsearch.snapshots import Snapshot, SnapshotError, ElasticsearchSnapshotMonitor
 
 
-class ElasticsearchTest(unittest.TestCase):
+class Elasticsearch(unittest.TestCase):
     e = ElasticsearchClient()
-
-    def test_ElasticsearchJvmMonitor(self):
-        self.assertTrue(ElasticsearchJvmMonitor)
-        self.assertTrue(ElasticsearchJvmMonitor())
-        self.assertFalse(ElasticsearchJvmMonitor().get_metrics())
-        # self.assertFalse(ElasticsearchJvmMonitor().read_file())
-
-    def test_Snapshot(self):
-        self.assertTrue(Snapshot)
-        self.assertTrue(Snapshot({}))
-        self.assertEqual(Snapshot({}), Snapshot({}))
-        self.assertNotEqual(Snapshot({}), None)
-
-    def test_SnapshotError(self):
-        error = {
-            'error': {
-                'test': 'test',
-                'caused_by': {
-                    'type': None,
-                    'reason': None,
-                    'caused_by': {
-                        'type': None,
-                        'reason': None
-                    }
-                }
-            }
-        }
-
-        self.assertTrue(SnapshotError)
-        self.assertTrue(SnapshotError({}))
-        self.assertEqual(SnapshotError({}), SnapshotError({}))
-        self.assertNotEqual(SnapshotError({}), None)
-        self.assertTrue(SnapshotError(error))
 
     def test_create_document(self):
         es = ElasticsearchClient()
@@ -58,18 +23,6 @@ class ElasticsearchTest(unittest.TestCase):
         if self.e.connected():
             self.assertTrue(es.create_document(doc=doc))
             self.assertTrue(es.search_summary())
-
-    def test_ElasticsearchSnapshotMonitor(self):
-        e = ElasticsearchSnapshotMonitor(elasticsearch_repository='found-snapshots')
-
-        if e.connected:
-            self.assertTrue(ElasticsearchSnapshotMonitor)
-            self.assertTrue(e)
-            self.assertTrue(e.check_snapshots())
-        else:
-            self.assertTrue(ElasticsearchSnapshotMonitor)
-            self.assertTrue(e)
-            self.assertFalse(e.check_snapshots())
 
     def test_ElasticsearchClient(self):
         e = ElasticsearchClient()
@@ -185,5 +138,6 @@ class ElasticsearchTest(unittest.TestCase):
         self.assertTrue(Metric)
         self.assertRaises(TypeError, Metric)
 
-# if __name__ == '__main__':
-#     unittest.main()
+
+if __name__ == '__main__':
+    unittest.main()
