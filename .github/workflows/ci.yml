@@ -19,6 +19,7 @@ env:
   TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
   TWINE_USERNAME: __token__
   TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
 
 jobs:
@@ -37,6 +38,8 @@ jobs:
         run: pip3 install -r requirements.txt
       - name: Run tests
         run: /bin/bash test.sh
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
 
   docker-build:
