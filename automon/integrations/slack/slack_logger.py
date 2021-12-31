@@ -8,7 +8,7 @@ from automon.helpers.asyncio_ import AsyncStarter
 from automon.integrations.slack.client import SlackClient
 
 from automon.integrations.slack.slack_formatting import Emoji, Chat, Format
-from automon.log.logger import Logging, INFO, ERROR, WARN, CRITICAL, DEBUG
+from automon.log import Logging, INFO, ERROR, WARN, CRITICAL, DEBUG
 
 
 class AsyncSlackLogging(SlackClient):

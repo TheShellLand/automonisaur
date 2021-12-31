@@ -1,7 +1,7 @@
 import socket
 from urllib.parse import urlparse
 
-from automon import Logging
+from automon.log import Logging
 
 log = Logging(name='Networking', level=Logging.INFO)
 

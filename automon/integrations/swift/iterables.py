@@ -2,7 +2,7 @@ import re
 
 from swiftclient.service import SwiftService, SwiftError, ClientException
 
-from automon.log.logger import Logging
+from automon.log import Logging
 from automon.integrations.slack.slack_logger import AsyncSlackLogging
 
 slacklog = AsyncSlackLogging(change_user=False, debug=False)

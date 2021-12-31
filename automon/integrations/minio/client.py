@@ -4,7 +4,7 @@ import socket
 from minio import Minio
 from urllib.parse import urlparse
 
-from automon.log.logger import Logging
+from automon.log import Logging
 from automon.integrations.minio.config import MinioConfig
 
 log = Logging(name='minio', level=Logging.INFO)

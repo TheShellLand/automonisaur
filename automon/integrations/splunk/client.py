@@ -3,7 +3,7 @@ from queue import Queue
 import splunklib.results
 import splunklib.client as client
 
-from automon.log.logger import Logging
+from automon.log import Logging
 from automon.integrations.splunk.config import SplunkConfig
 from automon.integrations.splunk.helpers import Job, Application
 

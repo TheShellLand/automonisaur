@@ -2,7 +2,7 @@ import re
 
 from neo4j.work.result import Result
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 log = Logging(name=__name__, level=Logging.DEBUG)
 

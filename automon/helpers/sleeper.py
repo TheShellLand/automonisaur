@@ -1,7 +1,7 @@
 import time
 import random
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 log = Logging(__name__, level=Logging.INFO)
 

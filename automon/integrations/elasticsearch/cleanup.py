@@ -1,4 +1,4 @@
-from automon.log.logger import Logging
+from automon.log import Logging
 from automon.integrations.elasticsearch.client import ElasticsearchClient
 
 log = Logging(__name__, Logging.DEBUG)

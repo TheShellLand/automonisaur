@@ -3,7 +3,7 @@ import subprocess
 from pprint import pprint
 from subprocess import PIPE
 
-from automon import Logging
+from automon.log import Logging
 from automon.helpers import Dates
 
 

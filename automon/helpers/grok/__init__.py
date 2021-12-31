@@ -2,7 +2,7 @@ import os
 import warnings
 import pandas as pd
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 
 class Grok:

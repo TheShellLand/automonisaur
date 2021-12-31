@@ -1,6 +1,6 @@
 from selenium.webdriver.common.action_chains import ActionChains
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 log = Logging(name='selenium', level=Logging.INFO)
 

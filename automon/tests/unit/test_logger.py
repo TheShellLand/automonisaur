@@ -1,6 +1,6 @@
 import unittest
 
-from automon.log.logger import Logging, LogStream
+from automon.log import Logging, LogStream
 
 
 class LoggingTest(unittest.TestCase):

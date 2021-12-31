@@ -8,7 +8,7 @@ import subprocess
 
 from automon.integrations.slack.slack_logger import AsyncSlackLogging
 from automon.integrations.slack.slack_formatting import Chat
-from automon.log.logger import Logging
+from automon.log import Logging
 
 log = Logging(__name__, level=Logging.INFO)
 slacklog = AsyncSlackLogging(username='mibbot')

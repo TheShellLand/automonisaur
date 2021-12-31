@@ -3,7 +3,7 @@ import logging
 
 from elasticsearch import RequestsHttpConnection
 
-from automon.log.logger import Logging
+from automon.log import Logging
 from automon.helpers.sanitation import Sanitation as S
 
 logging.getLogger('elasticsearch').setLevel(logging.ERROR)

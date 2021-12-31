@@ -1,6 +1,6 @@
 import os
 
-from automon import Logging
+from automon.log import Logging
 from automon.helpers.crypto.robinhood import Robinhood
 from automon.helpers.crypto.coinbase import Coinbase
 from automon.helpers.crypto.other import Other

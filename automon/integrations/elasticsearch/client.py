@@ -5,7 +5,7 @@ from datetime import datetime
 from requests.auth import HTTPBasicAuth
 from elasticsearch import Elasticsearch
 
-from automon.log.logger import Logging
+from automon.log import Logging
 from .config import ElasticsearchConfig
 from automon.helpers.sanitation import Sanitation
 

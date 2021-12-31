@@ -4,7 +4,7 @@ import tempfile
 
 from urllib.parse import urlparse
 
-from automon.log.logger import Logging
+from automon.log import Logging
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation

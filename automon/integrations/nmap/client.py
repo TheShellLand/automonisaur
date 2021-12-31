@@ -1,6 +1,6 @@
 import os
 
-from automon import Logging
+from automon.log import Logging
 from automon.helpers.runner import Run
 from automon.helpers.dates import Dates
 

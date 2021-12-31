@@ -3,7 +3,7 @@ import re
 from urllib.parse import urlencode
 from datetime import datetime, timezone
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 log = Logging(__name__, Logging.DEBUG)
 

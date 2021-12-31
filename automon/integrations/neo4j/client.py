@@ -3,7 +3,7 @@ import logging
 
 from neo4j import GraphDatabase
 
-from automon.log.logger import Logging
+from automon.log import Logging
 from automon.integrations.neo4j.cypher import Cypher
 from automon.integrations.neo4j.config import Neo4jConfig
 from automon.integrations.neo4j.helpers import Results

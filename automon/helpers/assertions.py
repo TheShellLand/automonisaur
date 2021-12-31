@@ -1,7 +1,7 @@
 import re
 from ast import literal_eval
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 log = Logging(__name__, Logging.DEBUG)
 

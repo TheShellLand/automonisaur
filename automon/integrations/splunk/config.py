@@ -2,7 +2,7 @@ import os
 
 import splunklib.binding as binding
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 
 class SplunkConfig:

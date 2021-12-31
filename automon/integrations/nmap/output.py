@@ -2,7 +2,7 @@ import mmap
 import xmltodict
 import pandas as pd
 
-from automon import Logging
+from automon.log import Logging
 from pandas import DataFrame, Series
 from automon.helpers.runner import Run
 from automon.helpers.datascience import Pandas

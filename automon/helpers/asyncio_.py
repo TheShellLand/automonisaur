@@ -2,7 +2,7 @@ import asyncio
 import logging
 import nest_asyncio
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 logging.getLogger("asyncio").setLevel(Logging.ERROR)
 

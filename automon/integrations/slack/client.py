@@ -3,7 +3,7 @@ import slack
 import random
 import asyncio
 
-from automon.log.logger import Logging
+from automon.log import Logging
 from automon.helpers.asyncio_ import AsyncStarter
 from automon.integrations.slack.bots import BotInfo
 from automon.integrations.slack.error import SlackError

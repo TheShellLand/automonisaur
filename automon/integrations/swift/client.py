@@ -6,7 +6,7 @@ import datetime
 
 from swiftclient.service import SwiftService
 
-from automon.log.logger import Logging, CRITICAL
+from automon.log import Logging, CRITICAL
 from automon.integrations.swift.error import SwiftError_
 # from automon.integrations.swift.config import SwiftConfig
 from automon.integrations.swift.iterables import SwiftList, SwiftItem
