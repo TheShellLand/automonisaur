@@ -5,7 +5,7 @@
 cd $(dirname $0) && set -e
 
 if [ -z "$@" ]; then
-  echo "Usage: $0 --local --docker --github0"
+  echo "Usage: $0 --local --docker --github"
   exit 1
 fi
 
