@@ -19,6 +19,11 @@ class Nmap(object):
         self.result = None
         self.command = str()
         self.error = bytes()
+
+        self._stdout = None
+        self._stderr = None
+        self._returncode = None
+
         if command:
             self.run(command=command, *args, **kwargs)
 
@@ -67,10 +72,11 @@ class Nmap(object):
         self._log.debug(f'finished')
 
         self.command = nmap_command
-        stdout = self._runner.stdout
-        stderr = self._runner.stderr
+        self._stdout = self._runner.stdout
+        self._stderr = self._runner.stderr
+        self._returncode = self._runner.returncode
 
-        self.error = stderr
+        self.error = self._stderr
 
         if output:
             self.result = NmapResult(file=self.output_file, **kwargs)
@@ -79,8 +85,8 @@ class Nmap(object):
                 os.remove(self.output_file)
                 self._log.info(f'deleted {self.output_file}')
 
-        if stderr:
-            self._log.error(enable_traceback=False, msg=f'{stderr.decode()}')
+        if self._stderr:
+            self._log.error(enable_traceback=False, msg=f'{self._stderr.decode()}')
             return False
 
         return True
