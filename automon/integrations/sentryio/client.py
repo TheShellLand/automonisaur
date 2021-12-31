@@ -41,17 +41,25 @@ class SentryClient(object):
     def __repr__(self):
         return f'{self.__dict__}'
 
+    def isConnected(self):
+        if self.config.dsn:
+            return True
+        return False
+
     def setLevel(self, level):
         return self.config.setLevel(level)
 
     def capture_exception(self, exception):
-        return _capture_exception(exception)
+        if self.isConnected():
+            return _capture_exception(exception)
 
     def capture_event(self, message: str, level):
-        return _capture_event(dict(
-            message=message,
-            level=level
-        ))
+        if self.isConnected():
+            return _capture_event(dict(
+                message=message,
+                level=level
+            ))
 
     def capture_message(self, message):
-        return _capture_message(message)
+        if self.isConnected():
+            return _capture_message(message)
