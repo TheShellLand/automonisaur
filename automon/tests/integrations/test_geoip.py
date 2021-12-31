@@ -8,5 +8,6 @@ class GeoipTest(unittest.TestCase):
         self.assertTrue(Geoip('10.0.0.1'))
         self.assertIsNone(Geoip('10.0.0.1').geoiptool())
 
-# if __name__ == '__main__':
-#     unittest.main()
+
+if __name__ == '__main__':
+    unittest.main()
