@@ -1,6 +1,6 @@
 import os
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 
 class SwiftConfig:

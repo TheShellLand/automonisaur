@@ -1,6 +1,6 @@
 import splunklib.client as client
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 log = Logging(name=__name__, level=Logging.DEBUG)
 

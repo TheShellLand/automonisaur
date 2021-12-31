@@ -5,7 +5,7 @@ from datetime import datetime
 from automon.integrations import SentryClient
 from automon.integrations.geoip import Geoip
 
-from automon import Logging
+from automon.log import Logging
 
 
 class SentryClientTest(unittest.TestCase):

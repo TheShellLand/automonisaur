@@ -1,6 +1,6 @@
 import os
 
-from automon.log.logger import Logging
+from automon.log import Logging
 from automon.helpers.sanitation import Sanitation as S
 
 log = Logging(name=__name__, level=Logging.DEBUG)

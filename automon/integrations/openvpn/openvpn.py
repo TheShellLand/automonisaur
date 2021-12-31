@@ -2,7 +2,7 @@ import os
 import io
 
 from automon.integrations.minio import MinioClient, MinioConfig
-from automon.log.logger import Logging
+from automon.log import Logging
 from automon.helpers.sleeper import Sleeper
 
 log = Logging(name='openvpn', level='info')

@@ -5,7 +5,7 @@ from io import StringIO
 from time import time as epoch_time
 from pandas import DataFrame, Series
 
-from automon import Logging
+from automon.log import Logging
 
 
 class Pandas:

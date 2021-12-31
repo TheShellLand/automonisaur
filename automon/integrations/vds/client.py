@@ -9,7 +9,7 @@ from .config import VdsConfig
 
 from queue import Queue
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 # disable insecure ssl warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

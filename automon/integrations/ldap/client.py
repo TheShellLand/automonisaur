@@ -5,7 +5,7 @@ from queue import Queue
 from pandas import DataFrame
 from subprocess import Popen, PIPE
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 
 class LdapResult(object):

@@ -1,6 +1,6 @@
 import psutil
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 log = Logging('cpu', level=Logging.DEBUG)
 

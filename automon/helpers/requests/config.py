@@ -1,6 +1,6 @@
 import requests
 
-from automon import Logging
+from automon.log import Logging
 
 
 class RequestsConfig(object):

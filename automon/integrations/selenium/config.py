@@ -4,7 +4,7 @@ import selenium
 
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-from automon.log.logger import Logging
+from automon.log import Logging
 
 log = Logging(name='selenium', level=Logging.INFO)
 
