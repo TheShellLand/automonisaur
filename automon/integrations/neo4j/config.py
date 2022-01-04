@@ -18,10 +18,10 @@ class Neo4jConfig:
         self.encrypted = encrypted
 
         if not self.user:
-            self._log.error(f'NEO4J_USER not set')
+            self._log.warn(f'missing NEO4J_USER')
 
         if not self.password:
-            self._log.error(f'NEO4J_PASSWORD not set')
+            self._log.warn(f'missing NEO4J_PASSWORD')
 
         if not self.hosts:
-            self._log.error(f'NEO4J_SERVERS not set')
+            self._log.warn(f'missing NEO4J_SERVERS')
