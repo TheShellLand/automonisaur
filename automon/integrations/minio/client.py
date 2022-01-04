@@ -78,6 +78,20 @@ class MinioClient(object):
         self._log.logging.debug(f'[list_all_objects] bucket: {bucket}, folder: {folder}')
         return self.client.list_objects(bucket, folder, recursive=recursive)
 
+    @isConnected
+    def list_buckets(self, bucket: str = None) -> list:
+        """ List Minio buckets
+        """
+        buckets = self.client.list_buckets()
+
+        if bucket:
+            self._log.debug(f'[list_buckets] name: {bucket}')
+            return [x for x in buckets if x == bucket]
+
+        self._log.logging.debug(f'[list_buckets] buckets: {len(buckets)} {[x.name for x in buckets]}')
+        return buckets
+
+    @isConnected
     def put_object(self, bucket_name: str, object_name: str, data: io.BytesIO, length: int = None,
                    content_type='application/octet-stream',
                    metadata=None, sse=None, progress=None,
@@ -111,7 +125,7 @@ class MinioClient(object):
 
     @isConnected
     def clear_bucket(self, bucket_name, folder=None):
-        objects = self.list_all_objects(bucket_name, folder)
+        objects = self.list_objects(bucket_name, folder)
         for a in objects:
             print(a)
         return self.client.remove_objects(bucket_name, objects)
