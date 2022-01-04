@@ -15,7 +15,6 @@ class MinioConfig(object):
                  http_client: urllib3.PoolManager = None):
         """Minio config
         """
-
         self._log = Logging(name=MinioConfig.__name__, level=Logging.ERROR)
 
         self.endpoint = endpoint or os.getenv('MINIO_ENDPOINT') or 'localhost'
@@ -35,12 +34,10 @@ class MinioConfig(object):
         if not self.secret_key:
             self._log.warn(f'missing MINIO_SECRET_KEY')
 
+    def isConfigured(self):
+        if self.endpoint and self.access_key and self.secret_key:
+            return True
+        return False
+
     def __repr__(self):
         return f'{self.endpoint} {self.region}'
-
-
-def use_public_server():
-    return MinioConfig(
-        endpoint='play.minio.io:9000',
-        access_key='Q3AM3UQ867SPQQA43P2F',
-        secret_key='zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG')
