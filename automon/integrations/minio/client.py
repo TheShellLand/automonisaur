@@ -67,8 +67,7 @@ class MinioClient(object):
     def download_object(self, bucket, file):
         """ Minio object downloader
         """
-        self._log.logging.debug(
-            f'[downloader] Downloading: {bucket}/{file.object_name}')
+        self._log.logging.debug(f'[downloader] Downloading: {bucket}/{file.object_name}')
         return self.client.get_object(bucket, file.object_name)
 
     @isConnected
@@ -133,12 +132,12 @@ class MinioClient(object):
     @isConnected
     def make_bucket(self, bucket_name) -> bool:
         try:
+            self._log.debug(f'Created bucket: {bucket_name}')
             self.client.make_bucket(bucket_name)
-            self._log.debug(f'[make_bucket] Created bucket: {bucket_name}')
             return True
 
-        except Exception as _:
-            self._log.debug(f'[make_bucket] Bucket exists: {bucket_name}')
+        except Exception as e:
+            self._log.error(f'Bucket exists: {bucket_name} {e}', enable_traceback=False)
             return False
 
     @isConnected
@@ -160,5 +159,6 @@ def check_connection(host, port):
         s.connect((host, port))
         s.close()
         return True
-    except Exception as _:
+    except Exception as e:
+        log.error(e, enable_traceback=False)
         return False
