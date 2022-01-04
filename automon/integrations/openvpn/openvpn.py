@@ -121,7 +121,7 @@ def collector(minio_client, bucket, folder):
     key = []
     ta = None
 
-    for file in minio_client.list_all_objects(bucket, folder):
+    for file in minio_client.list_objects(bucket, folder):
 
         file_path, file_name = os.path.split(file.object_name)
         folder = os.path.split(file_path)[-1]
