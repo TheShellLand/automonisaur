@@ -127,6 +127,17 @@ class MinioClient(object):
             self._log.debug(f'[make_bucket] Bucket exists: {bucket_name}')
             return False
 
+    @isConnected
+    def remove_bucket(self, bucket_name) -> bool:
+        try:
+            self._log.debug(f'Removed bucket: {bucket_name}')
+            self.client.remove_bucket(bucket_name)
+            return True
+
+        except Exception as e:
+            self._log.error(f'Bucket does not exist: {bucket_name} {e}', enable_traceback=False)
+            return False
+
 
 def check_connection(host, port):
     try:
