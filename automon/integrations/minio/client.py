@@ -84,10 +84,10 @@ class MinioClient(object):
         buckets = self.client.list_buckets()
 
         if bucket:
-            self._log.debug(f'[list_buckets] name: {bucket}')
+            self._log.debug(f'bucket name: {bucket}')
             return [x for x in buckets if x == bucket]
 
-        self._log.logging.debug(f'[list_buckets] buckets: {len(buckets)} {[x.name for x in buckets]}')
+        self._log.logging.debug(f'buckets: {len(buckets)} {[x.name for x in buckets]}')
         return buckets
 
     @isConnected
