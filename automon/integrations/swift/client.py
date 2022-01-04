@@ -6,7 +6,7 @@ import datetime
 
 from swiftclient.service import SwiftService
 
-from automon.log import Logging, CRITICAL
+from automon.log import Logging
 from automon.integrations.swift.error import SwiftError_
 # from automon.integrations.swift.config import SwiftConfig
 from automon.integrations.swift.iterables import SwiftList, SwiftItem
@@ -15,8 +15,8 @@ from automon.integrations.slack.slack_logger import AsyncSlackLogging
 log = Logging(__name__, Logging.INFO)
 slacklog = AsyncSlackLogging(change_user=False, debug=False)
 
-Logging('requests', CRITICAL)
-Logging('swiftclient', CRITICAL)
+Logging('requests', Logging.CRITICAL)
+Logging('swiftclient', Logging.CRITICAL)
 
 
 class SwiftClient:
