@@ -1,8 +1,9 @@
 import io
 import socket
+import datetime
+import functools
 
 from minio import Minio
-from urllib.parse import urlparse
 
 from automon.log import Logging
 from automon.integrations.minio.config import MinioConfig
@@ -46,6 +47,23 @@ class MinioClient(object):
             self._lastClientCheck = datetime.datetime.now()
             return True
 
+        isExpired = self._lastClientCheck + datetime.timedelta(minutes=5)
+        if self._lastClientCheck > isExpired:
+            return True
+        return False
+
+    def isConnected(func):
+        """Decorator that checks if MinioClient is connected
+        """
+
+        @functools.wraps(func)
+        def _wrapper(self, *args, **kwargs):
+            if not self._sessionExpired() or self.client.list_buckets():
+                return func(self, *args, **kwargs)
+
+        return _wrapper
+
+    @isConnected
     def download_object(self, bucket, file):
         """ Minio object downloader
         """
@@ -53,7 +71,8 @@ class MinioClient(object):
             f'[downloader] Downloading: {bucket}/{file.object_name}')
         return self.client.get_object(bucket, file.object_name)
 
-    def list_all_objects(self, bucket: str, folder: str = None, recursive: bool = True):
+    @isConnected
+    def list_objects(self, bucket: str, folder: str = None, recursive: bool = True):
         """ List Minio objects
         """
         self._log.logging.debug(f'[list_all_objects] bucket: {bucket}, folder: {folder}')
@@ -90,13 +109,15 @@ class MinioClient(object):
 
             return False
 
+    @isConnected
     def clear_bucket(self, bucket_name, folder=None):
         objects = self.list_all_objects(bucket_name, folder)
         for a in objects:
             print(a)
         return self.client.remove_objects(bucket_name, objects)
 
-    def make_bucket(self, bucket_name):
+    @isConnected
+    def make_bucket(self, bucket_name) -> bool:
         try:
             self.client.make_bucket(bucket_name)
             self._log.debug(f'[make_bucket] Created bucket: {bucket_name}')
