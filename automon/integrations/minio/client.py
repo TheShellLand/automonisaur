@@ -12,28 +12,39 @@ log = Logging(name='minio', level=Logging.INFO)
 
 class MinioClient(object):
 
-    def __init__(self, config: MinioConfig = None):
+    def __init__(self, endpoint: str = None,
+                 access_key: str = None,
+                 secret_key: str = None,
+                 config: MinioConfig = None):
         """Minio client
         """
 
         self._log = Logging(name=MinioClient.__name__, level=Logging.DEBUG)
 
-        self.config = config or MinioConfig()
+        self.config = config or MinioConfig(endpoint=endpoint, access_key=access_key, secret_key=secret_key)
 
-        check = urlparse(self.config.endpoint)
-        if check_connection(check.hostname, check.port):
-            self.client = Minio(
-                endpoint=self.config.endpoint,
-                access_key=self.config.access_key,
-                secret_key=self.config.secret_key,
-                session_token=self.config.session_token,
-                secure=self.config.secure,
-                region=self.config.region,
-                http_client=self.config.http_client
-            )
-            self.connected = True
-        else:
-            self.connected = False
+        self.client = self._client()
+        self._lastClientCheck = None
+
+    def __repr__(self):
+        return f'endpoint: {self.config.endpoint} connected: {self.isConnected()}'
+
+    def _client(self):
+        client = Minio(
+            endpoint=self.config.endpoint,
+            access_key=self.config.access_key,
+            secret_key=self.config.secret_key,
+            session_token=self.config.session_token,
+            secure=self.config.secure,
+            region=self.config.region,
+            http_client=self.config.http_client
+        )
+        return client
+
+    def _sessionExpired(self):
+        if not self._lastClientCheck:
+            self._lastClientCheck = datetime.datetime.now()
+            return True
 
     def download_object(self, bucket, file):
         """ Minio object downloader
