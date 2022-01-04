@@ -18,7 +18,7 @@ class MinioConfig(object):
 
         self._log = Logging(name=MinioConfig.__name__, level=Logging.ERROR)
 
-        self.endpoint = endpoint or os.getenv('MINIO_ENDPOINT')
+        self.endpoint = endpoint or os.getenv('MINIO_ENDPOINT') or 'localhost'
         self.access_key = access_key or os.getenv('MINIO_ACCESS_KEY')
         self.secret_key = secret_key or os.getenv('MINIO_SECRET_KEY')
         self.session_token = session_token or os.getenv('MINIO_SESSION_TOKEN')
