@@ -1,8 +1,9 @@
 import unittest
 import types
 
+from swiftclient.service import ClientException
+
 from automon.integrations.swift import SwiftClient, SwiftError_, SwiftItem, SwiftPage, SwiftList
-from automon.integrations.swift import ClientException
 from automon.integrations.swift.config import SwiftConfig
 
 
