@@ -101,8 +101,7 @@ class Logging(object):
         if 'NoneType' not in tb and enable_traceback:
             self.logging.error(tb)
 
-        self.sentry.setLevel('error')
-        self.sentry.capture_message(msg)
+        self.sentry.error(msg)
 
         if msg and not raise_exception:
             return self.logging.error(msg)
@@ -112,29 +111,22 @@ class Logging(object):
             raise Exception(msg)
 
     def warning(self, msg: any):
-        self.sentry.setLevel('warning')
-        self.sentry.capture_message(msg)
-
+        self.sentry.warning(msg)
         return self.logging.warning(msg)
 
     def warn(self, msg: any):
         return self.warning(msg)
 
     def info(self, msg: any):
-        self.sentry.setLevel('info')
-        self.sentry.capture_message(msg)
-
+        self.sentry.info(msg)
         return self.logging.info(msg)
 
     def debug(self, msg: any):
-        self.sentry.setLevel('debug')
-        self.sentry.capture_message(msg)
-
+        self.sentry.debug(msg)
         return self.logging.debug(msg)
 
     def critical(self, msg: any):
-        self.sentry.setLevel('critical')
-        self.sentry.capture_message(msg)
+        self.sentry.critical(msg)
 
         tb = traceback.format_exc()
         tb = Chat.wrap(tb, Format.codeblock)

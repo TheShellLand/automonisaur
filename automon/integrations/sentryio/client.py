@@ -63,3 +63,23 @@ class SentryClient(object):
     def capture_message(self, message):
         if self.isConnected():
             return _capture_message(message)
+
+    def error(self, msg: str):
+        self.setLevel('error')
+        return self.capture_message(f'{msg}')
+
+    def warning(self, msg: str):
+        self.setLevel('warning')
+        return self.capture_message(f'{msg}')
+
+    def info(self, msg: str):
+        self.setLevel('info')
+        return self.capture_message(f'{msg}')
+
+    def debug(self, msg: str):
+        self.setLevel('debug')
+        return self.capture_message(f'{msg}')
+
+    def critical(self, msg: str):
+        self.setLevel('critical')
+        return self.capture_message(f'{msg}')
