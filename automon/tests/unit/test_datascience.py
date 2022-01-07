@@ -42,7 +42,9 @@ class PandasTest(unittest.TestCase):
         self.assertFalse(Pandas().csv_from_string(csv_test).empty)
 
     def test_export_csv(self):
-        self.assertTrue(Pandas(df).export_csv())
+        test = Pandas()
+        test.df = df
+        self.assertTrue(test.export_csv())
 
     def test_Series(self):
         self.assertTrue(Pandas().Series(data=data_empty).empty)
