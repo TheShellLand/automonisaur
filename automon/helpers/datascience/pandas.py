@@ -1,39 +1,51 @@
 import os
-import pandas as pd
+import pandas
 
 from io import StringIO
 from time import time as epoch_time
-from pandas import DataFrame, Series
 
 from automon.log import Logging
 
 
+def Series(*args, **kwargs) -> pandas.Series:
+    log = Logging('Series', level=Logging.ERROR)
+    s = pandas.Series(*args, **kwargs)
+    log.debug(s)
+    return s
+
+
+def DataFrame(*args, **kwargs) -> pandas.DataFrame:
+    log = Logging('DataFrame', level=Logging.ERROR)
+    df = pandas.DataFrame(*args, **kwargs)
+    log.debug(df)
+    return df
+
+
 class Pandas:
 
-    def __init__(self, dataframe: DataFrame = None):
-
+    def __init__(self):
         self._log = Logging(name=Pandas.__name__, level=Logging.DEBUG)
 
-        self.df = dataframe
+        self.df = None
         self.csv_name = None
 
-    def Series(self, **kwargs):
-        return pd.Series(**kwargs)
+    def Series(self, data, *args, **kwargs) -> Series:
+        return Series(data, *args, **kwargs)
 
-    def DataFrame(self, **kwargs):
-        return pd.DataFrame(**kwargs)
+    def DataFrame(self, *args, **kwargs) -> DataFrame:
+        return DataFrame(*args, **kwargs)
 
-    def read_csv(self, file: str or StringIO, delimiter: str = None, **kwargs) -> pd.read_csv:
+    def read_csv(self, file: str or StringIO, delimiter: str = None, **kwargs) -> pandas.read_csv:
         """read csv"""
 
         if type(file) == str:
             self.csv_name = file
 
-        self.df = pd.read_csv(file, delimiter=delimiter, **kwargs)
+        self.df = pandas.read_csv(file, delimiter=delimiter, **kwargs)
         self._log.info(f'imported {file}')
         return self.df
 
-    def csv_from_string(self, csv, delimiter: str = None, **kwargs) -> pd.read_csv:
+    def csv_from_string(self, csv, delimiter: str = None, **kwargs) -> pandas.read_csv:
         """read csv from string"""
 
         self.df = self.read_csv(StringIO(csv), delimiter=delimiter, **kwargs)
