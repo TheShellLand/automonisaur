@@ -107,7 +107,8 @@ class Logging(object):
             return self.logging.error(msg)
 
         if raise_exception:
-            self.sentry.capture_exception()
+            self.sentry.capture_exception(msg)
+            self.logging.error(msg)
             raise Exception(msg)
 
     def warning(self, msg: any):
