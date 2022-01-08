@@ -60,40 +60,39 @@ class Logging(object):
         self.logging = logging.getLogger(name)
         self.logging.setLevel(level)
 
-        # self.log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
+        self.sentry = SentryClient()
 
         spacing = 4
 
+        # logging format
         time = '%(asctime)s'
         levelname = '%(levelname)s'
         logger = '%(name)s'
-        # filename = '%(filename)s'
-        # pathname = '%(pathname)s'
-        # func = '%(funcName)s'
-        # line = '%(lineno)d'
-        # module = '%(module)s'
+        filename = '%(filename)s'
+        pathname = '%(pathname)s'
+        func = '%(funcName)s'
+        line = '%(lineno)d'
+        module = '%(module)s'
         message = '%(message)s'
+
+        self.log_format = f'{levelname}\t[{logger}]\t{message}'
+        # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
+        # self.log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
 
         if timestamp:
             self.log_format = f'{time}\t{levelname}\t[{logger}]\t{message}'
-        else:
-            self.log_format = f'{levelname}\t[{logger}]\t{message}'
 
-        # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
+        logging.basicConfig(level=level, format=self.log_format, **kwargs)
 
         if file:
             logging.basicConfig(filename=file, encoding=encoding, filemode=filemode, level=level,
                                 format=self.log_format, **kwargs)
-        else:
-            logging.basicConfig(level=level, format=self.log_format, **kwargs)
 
         # TODO: need informative logging format
         # TODO: log streaming does not work
         if log_stream:
             self.stream = LogStream() if log_stream else None
             logging.basicConfig(level=level, stream=self.stream)
-
-        self.sentry = SentryClient()
 
     def error(self, msg: any = None, enable_traceback: bool = True, raise_exception: bool = False):
         tb = traceback.format_exc()
