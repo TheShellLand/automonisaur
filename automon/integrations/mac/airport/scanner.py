@@ -71,13 +71,13 @@ class Airport:
             self.is_ready = True
             self._log.debug(f'Found airport: ({self._airport}')
         else:
-            self._log.error(f'Missing airport program! ({self._airport})')
+            self._log.warn(f'Missing airport program! ({self._airport})')
 
         if sys.platform == 'darwin':
             self.is_mac = True
             self._log.info(f'Platform is mac: ({sys.platform})')
         else:
-            self._log.error(f'Platform is not a Mac! ({sys.platform})')
+            self._log.warn(f'Platform is not a Mac! ({sys.platform})')
 
     def __repr__(self):
         return ''
