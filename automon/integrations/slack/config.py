@@ -20,7 +20,7 @@ class ConfigSlack:
     SLACK_TEST_CHANNEL = os.getenv('SLACK_TEST_CHANNEL') or ''
 
     if not slack_token:
-        log.error(f'SLACK_TOKEN not set')
+        log.warn(f'missing SLACK_TOKEN')
 
     def __init__(self, slack_name: str = ''):
         self.slack_name = os.getenv('SLACK_USER') or slack_name or ''
