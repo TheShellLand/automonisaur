@@ -170,7 +170,7 @@ class SnapshotError:
             self.status = error.get('status')
 
     def __eq__(self, other):
-        if not isinstance(other, SnapshotError):
-            self._log.error(f'{other} != SnapshotError')
-            return NotImplemented
-        return self.error == other.error
+        if isinstance(other, SnapshotError):
+            return self.error == other.error
+        self._log.warning(NotImplemented)
+        return NotImplemented
