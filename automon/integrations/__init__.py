@@ -1,1 +1,0 @@
-from .sentryio import SentryClient
