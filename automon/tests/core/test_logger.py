@@ -1,6 +1,6 @@
 import unittest
 
-from automon.log import Logging, LogStream
+from automon.log.logger import Logging, LogStream
 
 
 class LoggingTest(unittest.TestCase):
@@ -10,19 +10,19 @@ class LoggingTest(unittest.TestCase):
         self.assertTrue(self.log)
 
     def test_error(self):
-        self.assertIsNone(self.log.error('test'))
+        self.assertTrue(self.log.error('test'))
 
     def test_debug(self):
-        self.assertIsNone(self.log.debug('test'))
+        self.assertTrue(self.log.debug('test'))
 
     def test_info(self):
-        self.assertIsNone(self.log.info('test'))
+        self.assertTrue(self.log.info('test'))
 
     def test_critical(self):
-        self.assertIsNone(self.log.critical('test'))
+        self.assertTrue(self.log.critical('test'))
 
     def test_warn(self):
-        self.assertIsNone(self.log.warning('test'))
+        self.assertTrue(self.log.warning('test'))
         with self.assertRaises(Exception):
             self.log.error(raise_exception=True)
 
