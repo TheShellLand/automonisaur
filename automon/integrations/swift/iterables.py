@@ -3,9 +3,6 @@ import re
 from swiftclient.service import SwiftService, SwiftError, ClientException
 
 from automon.log import Logging
-from automon.integrations.slack.slack_logger import AsyncSlackLogging
-
-slacklog = AsyncSlackLogging(change_user=False, debug=False)
 
 
 class SwiftItem(object):
@@ -89,7 +86,6 @@ class SwiftPage(SwiftService):
     def _error_handler(self):
         if not self.success and isinstance(self.error, Exception):
             self._log.error(f'{SwiftError(self._page)}')
-            slacklog.error(f'{SwiftError(self._page)}')
 
     def list_gen(self) -> object or SwiftItem:
         if self.success:
