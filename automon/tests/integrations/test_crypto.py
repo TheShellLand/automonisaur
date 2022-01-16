@@ -1,7 +1,6 @@
-import os
 import unittest
 
-from automon.helpers.crypto import CryptoAccounting, Robinhood, Coinbase
+from automon.integrations.cryptocurrency import CryptoAccounting, Robinhood, Coinbase
 
 with open('empty.csv', 'w') as f:
     f.write('''ASSET NAME,RECEIVED DATE,COST BASIS(USD),DATE SOLD,PROCEEDS''')

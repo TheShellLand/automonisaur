@@ -1,8 +1,7 @@
-import os
 import unittest
 import pandas as pd
 
-from automon.helpers.datascience import Pandas
+from automon.integrations.datascience import Pandas
 
 csv_empty = '''ASSET NAME	RECEIVED DATE	COST BASIS(USD)	DATE SOLD	PROCEEDS'''
 
