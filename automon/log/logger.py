@@ -1,21 +1,68 @@
 import logging
 import traceback
 
-from logging import DEBUG, INFO, WARN, ERROR, CRITICAL, NOTSET
-
 from automon.helpers import Dates
-from automon.integrations import SentryClient
 from automon.integrations.slack.slack_formatting import Emoji, Chat, Format
+
+TEST = 5
+DEBUG = logging.DEBUG
+INFO = logging.INFO
+WARN = logging.WARN
+ERROR = logging.ERROR
+CRITICAL = logging.CRITICAL
+NOTSET = logging.NOTSET
 
 logging.getLogger('logger').setLevel(CRITICAL)
 
-TEST = 5
-DEBUG = DEBUG
-INFO = INFO
-WARN = WARN
-ERROR = ERROR
-CRITICAL = CRITICAL
-NOTSET = NOTSET
+
+class Callback(object):
+
+    def __init__(self, callbacks: list):
+        """Log to callbacks
+        """
+
+        self.log = Logging(name=Callback.__name__, level=Logging.DEBUG)
+        self.callbacks = callbacks
+
+    def call(self, type: str, msg: str, *args, **kwargs) -> True:
+        for call in self.callbacks:
+            if type == 'info':
+                call.info(msg, *args, **kwargs)
+
+            elif type == 'debug':
+                call.debug(msg, *args, **kwargs)
+
+            elif type == 'error':
+                call.error(msg, *args, **kwargs)
+
+            elif type == 'warn' or type == 'warning':
+                call.warn(msg, *args, **kwargs)
+
+            elif type == 'critical':
+                call.critical(msg, *args, **kwargs)
+
+            else:
+                call.warn(f'{NotImplemented} {type} {msg}')
+
+        return True
+
+    def info(self, msg: str, *args, **kwargs):
+        return self.call(type='info', msg=msg, *args, **kwargs)
+
+    def debug(self, msg: str, *args, **kwargs):
+        return self.call(type='debug', msg=msg, *args, **kwargs)
+
+    def error(self, msg: str, *args, **kwargs):
+        return self.call(type='error', msg=msg, *args, **kwargs)
+
+    def warn(self, msg: str, *args, **kwargs):
+        return self.call(type='warn', msg=msg, *args, **kwargs)
+
+    def warning(self, msg: str, *args, **kwargs):
+        return self.call(type='warning', msg=msg, *args, **kwargs)
+
+    def critical(self, msg: str, *args, **kwargs):
+        return self.call(type='critical', msg=msg, *args, **kwargs)
 
 
 class LogStream(object):
@@ -36,7 +83,7 @@ class LogStream(object):
 
 
 class Logging(object):
-    """Standard logging to stdout
+    """Standard logging
     """
 
     TEST = 5
@@ -53,14 +100,15 @@ class Logging(object):
                  encoding: str = 'utf-8',
                  filemode: str = 'a',
                  log_stream: LogStream = False,
-                 timestamp: bool = True, **kwargs):
+                 callbacks: list = None,
+                 timestamp: bool = True, *args, **kwargs):
 
         self.started = Dates.now()
 
         self.logging = logging.getLogger(name)
         self.logging.setLevel(level)
 
-        self.sentry = SentryClient()
+        self.callbacks = callbacks or []
 
         spacing = 4
 
@@ -75,12 +123,13 @@ class Logging(object):
         module = '%(module)s'
         message = '%(message)s'
 
-        self.log_format = f'{levelname}\t[{logger}]\t{message}'
+        # self.log_format = f'{levelname}\t[{logger}]\t{message}'
+        self.log_format = f'{levelname}\t[{logger}]\t[{filename} {func}:L{line}]\t{message}'
         # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
         # self.log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
 
         if timestamp:
-            self.log_format = f'{time}\t{levelname}\t[{logger}]\t{message}'
+            self.log_format = f'{time}\t{self.log_format}'
 
         logging.basicConfig(level=level, format=self.log_format, **kwargs)
 
@@ -94,47 +143,57 @@ class Logging(object):
             self.stream = LogStream() if log_stream else None
             logging.basicConfig(level=level, stream=self.stream)
 
-    def error(self, msg: any = None, enable_traceback: bool = True, raise_exception: bool = False):
+    def error(self, msg: any = None,
+              enable_traceback: bool = True,
+              raise_exception: bool = False,
+              *args, **kwargs):
         tb = traceback.format_exc()
         # tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb and enable_traceback:
             self.logging.error(tb)
 
-        self.sentry.error(msg)
-
         if msg and not raise_exception:
-            return self.logging.error(msg)
+            self.logging.error(msg, *args, **kwargs)
+            Callback(self.callbacks).error(msg, *args, **kwargs)
+            return True
 
         if raise_exception:
-            self.sentry.capture_exception(msg)
-            self.logging.error(msg)
-            raise Exception(msg)
+            self.logging.error(msg, *args, **kwargs)
+            Callback(self.callbacks).error(msg, *args, **kwargs)
+            raise Exception(msg, *args, **kwargs)
+            return True
 
-    def warning(self, msg: any):
-        self.sentry.warning(msg)
-        return self.logging.warning(msg)
+    def warning(self, msg: any, *args, **kwargs):
+        self.logging.warning(msg, *args, **kwargs)
+        Callback(self.callbacks).warning(msg, *args, **kwargs)
+        return True
 
-    def warn(self, msg: any):
-        return self.warning(msg)
+    def warn(self, msg: any, *args, **kwargs):
+        self.warning(msg, *args, **kwargs)
+        Callback(self.callbacks).warn(msg, *args, **kwargs)
+        return True
 
-    def info(self, msg: any):
-        self.sentry.info(msg)
-        return self.logging.info(msg)
+    def info(self, msg: any, *args, **kwargs):
+        self.logging.info(msg, *args, **kwargs)
+        Callback(self.callbacks).info(msg, *args, **kwargs)
+        return True
 
-    def debug(self, msg: any):
-        self.sentry.debug(msg)
-        return self.logging.debug(msg)
+    def debug(self, msg: any, *args, **kwargs):
+        self.logging.debug(msg, *args, **kwargs)
+        Callback(self.callbacks).debug(msg, *args, **kwargs)
+        return True
 
-    def critical(self, msg: any):
-        self.sentry.critical(msg)
+    def critical(self, msg: any, *args, **kwargs):
 
         tb = traceback.format_exc()
         tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb:
             self.logging.critical(tb)
-            self.sentry.capture_exception()
+            Callback(self.callbacks).critical(msg, *args, **kwargs)
 
-        return self.logging.critical(msg)
+        self.logging.critical(msg, *args, **kwargs)
+        Callback(self.callbacks).critical(msg, *args, **kwargs)
+        return True
 
     @staticmethod
     def now():
