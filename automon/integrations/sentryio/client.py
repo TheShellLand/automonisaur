@@ -8,7 +8,7 @@ from .config import SentryConfig
 
 
 class SentryClient(object):
-    def __init__(self, dsn: str = None, config: SentryConfig = None):
+    def __init__(self, dsn: str = None, config: SentryConfig = None, *args, **kwargs):
         self.config = config or SentryConfig(dsn=dsn)
 
         self.sentry = sentry_sdk.init(
@@ -36,6 +36,7 @@ class SentryClient(object):
             shutdown_timeout=self.config.shutdown_timeout,
             traces_sample_rate=self.config.traces_sample_rate,
             traces_sampler=self.config.traces_sampler,
+            *args, **kwargs
         )
 
     def __repr__(self):
@@ -52,6 +53,7 @@ class SentryClient(object):
     def capture_exception(self, exception):
         if self.isConnected():
             return _capture_exception(exception)
+        return False
 
     def capture_event(self, message: str, level):
         if self.isConnected():
@@ -59,10 +61,12 @@ class SentryClient(object):
                 message=message,
                 level=level
             ))
+        return False
 
     def capture_message(self, message):
         if self.isConnected():
             return _capture_message(message)
+        return False
 
     def error(self, msg: str):
         self.setLevel('error')
@@ -71,6 +75,9 @@ class SentryClient(object):
     def warning(self, msg: str):
         self.setLevel('warning')
         return self.capture_message(f'{msg}')
+
+    def warn(self, msg: str):
+        return self.warning(msg=msg)
 
     def info(self, msg: str):
         self.setLevel('info')
