@@ -1,6 +1,6 @@
 import logging
 
-from phantom.phantom_unittest import import_playbook, container, results, artifact
+from .phantom_unittest import import_playbook, container, results, artifact
 
 timestamp = '%(asctime)s'
 levelname = '%(levelname)s'
