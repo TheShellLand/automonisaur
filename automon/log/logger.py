@@ -2,7 +2,7 @@ import logging
 import traceback
 
 from automon.helpers import Dates
-from automon.integrations.slack.slack_formatting import Emoji, Chat, Format
+from automon.helpers.markdown import Chat, Format
 
 TEST = 5
 DEBUG = logging.DEBUG
