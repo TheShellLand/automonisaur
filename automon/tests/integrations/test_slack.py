@@ -1,18 +1,31 @@
 import unittest
 
-from automon.integrations.slack.client import SlackClient, SlackError, BotInfo
-from automon.integrations.slack.slack_logger import AsyncSlackLogging
-from automon.integrations.slack.config import ConfigSlack
+from automon.integrations.slack.client import SlackClient
+from automon.integrations.slack.error import SlackError
+from automon.integrations.slack.bots import BotInfo
+from automon.integrations.slack.config import SlackConfig
 from automon.integrations.slack.slack_formatting import Format, Chat, Emoji
 
 
-class SlackTest(unittest.TestCase):
-    def test_ConfigSlack(self):
-        self.assertTrue(ConfigSlack())
+class ConfigTest(unittest.TestCase):
+    def test_SlackConfig(self):
+        self.assertTrue(SlackConfig())
+
+
+class ClientTest(unittest.TestCase):
 
     def test_Slack(self):
         self.assertTrue(SlackClient())
 
+    def test_SlackError(self):
+        self.assertTrue(SlackError)
+
+    def test_Format(self):
+        self.assertTrue(Format.blockquote)
+        self.assertTrue(Format.codeblock)
+
+
+class BotTest(unittest.TestCase):
     def test_BotInfo(self):
         bot = {
             "ok": True,
@@ -37,12 +50,8 @@ class SlackTest(unittest.TestCase):
         self.assertNotEqual(BotInfo(bot), bot)
         self.assertTrue(f'{BotInfo(bot)}')
 
-    def test_SlackError(self):
-        self.assertTrue(SlackError)
 
-    def test_Format(self):
-        self.assertTrue(Format.blockquote)
-        self.assertTrue(Format.codeblock)
+class FormatTest(unittest.TestCase):
 
     def test_Chat(self):
         self.assertTrue(Chat.Format('test', Format.codeblock))
@@ -72,6 +81,7 @@ class SlackTest(unittest.TestCase):
         self.assertTrue(Emoji.file)
         self.assertTrue(Emoji.announcement)
         self.assertTrue(Emoji.yay)
+
 
 if __name__ == '__main__':
     unittest.main()
