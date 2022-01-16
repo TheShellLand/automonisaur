@@ -2,7 +2,7 @@ import unittest
 
 from datetime import datetime
 
-from automon.integrations import SentryClient
+from automon.integrations.sentryio import SentryClient
 from automon.integrations.geoip import Geoip
 
 from automon.log import Logging
