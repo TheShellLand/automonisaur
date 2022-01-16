@@ -3,9 +3,9 @@ import xmltodict
 import pandas as pd
 
 from automon.log import Logging
-from pandas import DataFrame, Series
+from pandas import DataFrame
 from automon.helpers.runner import Run
-from automon.helpers.datascience import Pandas
+from automon.integrations.datascience import Pandas
 
 
 class NmapResult(object):
