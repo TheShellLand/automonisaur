@@ -6,12 +6,10 @@ import yaml
 import xmltodict
 import subprocess
 
-from automon.integrations.slack.slack_logger import AsyncSlackLogging
 from automon.integrations.slack.slack_formatting import Chat
 from automon.log import Logging
 
 log = Logging(__name__, level=Logging.INFO)
-slacklog = AsyncSlackLogging(username='mibbot')
 
 
 class SmidumpFormat:
@@ -95,11 +93,9 @@ class MibFile:
 
         if os.path.isfile(path):
             log.debug(f'found MIB {path}')
-            # slacklog.debug(f'found MIB {mib.path}')
         else:
             msg = f'{MibFile} {path} not found'
             log.error(msg)
-            slacklog.error(msg)
             raise
 
     def __str__(self):
@@ -169,7 +165,6 @@ class RequiredSmidump:
     def check(self) -> True or False:
         if os.system(f'which {self.requires}') == 0:
             log.debug(f'{self.requires} OK')
-            # slacklog.debug(f'{self.requires} OK')
             return True
         else:
             msg = (
@@ -177,7 +172,6 @@ class RequiredSmidump:
                 f'please install {self.requires}, '
                 f'`apt install smitools`')
             log.error(msg)
-            slacklog.error(msg)
             return False
 
 
@@ -324,7 +318,6 @@ class MIBS:
                         self.mibs.append(mib)
                 else:
                     log.error(f'not found MIB {path_to_mib_file}')
-                    slacklog.error(f'not found MIB {path_to_mib_file}')
 
     def _mib_generator(self) -> MibFile:
         for mib in self.mibs:
@@ -478,7 +471,6 @@ class MIBS:
 
             if data_err:
                 log.error(f'{data_err}')
-                slacklog.error(f'```{data_err}```')
 
             map_ = MibMap(mib, data)
             self.maps.append(map_)
@@ -487,7 +479,6 @@ class MIBS:
                 with open(map_.path, 'wb') as f:
                     f.write(map_._data)
                     log.debug(f'Wrote {map_.path} ({map_.len} B)')
-                    slacklog.debug(f'Wrote {map_.path} ({map_.len} B)')
 
             return True
 
@@ -512,7 +503,7 @@ class MIBS:
                 cmd = f'smidump {opts} {preload} {mib}'
 
                 log.debug(cmd)
-                # slacklog.debug(cmd)
+                #
                 smidump_run(cmd)
 
             elif extension is None:
@@ -526,7 +517,7 @@ class MIBS:
                     # cmd = f'{self.smidump} {self.opts} {mib}'
 
                     log.debug(cmd)
-                    # slacklog.debug(cmd)
+                    #
                     smidump_run(cmd)
 
 # m = MIBS(device='opengear', path='path/to/mibs')
@@ -534,4 +525,3 @@ class MIBS:
 # yml = m.generate_prometheus_config()
 #
 # log.info('Done')
-# slacklog.close()
