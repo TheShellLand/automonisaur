@@ -36,7 +36,7 @@ class RequestsClient(object):
                             f'{round(len(self.results.content) / 1024, 2)}  KB')
             return True
         except Exception as e:
-            self._log.error(f'{self.results.status_code} get failed. {e}', raise_exception=False)
+            self._log.error(f'{self.results.status_code} get failed. {e}', enable_traceback=False)
         return False
 
     def post(self,
