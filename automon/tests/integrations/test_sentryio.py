@@ -17,11 +17,11 @@ class SentryClientTest(unittest.TestCase):
             self.assertTrue(s.capture_exception(Exception(f'test capture_exception')))
             self.assertTrue(s.capture_message(f'test capture_message'))
             # self.assertTrue(s.capture_event('test capture_event', 'warning'))
-            self.assertIsNone(l.info(f'test log info'))
-            self.assertIsNone(l.debug(f'test log debug'))
-            self.assertIsNone(l.warning(f'test log warning'))
-            self.assertIsNone(l.error(f'test log error'))
-            self.assertIsNone(l.critical(f'test log critical'))
+            self.assertTrue(l.info(f'test log info'))
+            self.assertTrue(l.debug(f'test log debug'))
+            self.assertTrue(l.warning(f'test log warning'))
+            self.assertTrue(l.error(f'test log error'))
+            self.assertTrue(l.critical(f'test log critical'))
 
 
 if __name__ == '__main__':
