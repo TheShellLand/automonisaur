@@ -18,11 +18,13 @@
 
 
 
-#### about
+### About
 
-This library adds some easier-to-use wrappers around common services used in cyber security and threat intelligence.
+This library adds some easier-to-use wrappers around common services for data
+science and threat intelligence.
 
-Provides easier clients and configuration options, as well as any additional helpers to get things up and running.
+Provides easier clients and configuration options, as well as any additional
+helpers to get things up and running.
 
 Github issues and feature requests welcomed.
 
@@ -36,11 +38,11 @@ Github issues and feature requests welcomed.
 - neo4j
 - requests
 - selenium
+- sentryio
 - slack
 - snmp
 - splunk
 - swift
-- vds
 
 
 #### install library
