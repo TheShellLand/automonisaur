@@ -12,12 +12,15 @@ from automon.log import Logging, INFO, ERROR, WARN, CRITICAL, DEBUG
 
 
 class AsyncSlackLogging(SlackClient):
-    """
-    Logging to Slack
-    """
 
-    def __init__(self, slack: SlackClient = None, username: str = '', channel: str = '',
-                 change_user: bool = False, change_icon: bool = False, debug: bool = True):
+    def __init__(self, slack: SlackClient = None,
+                 username: str = '',
+                 channel: str = '',
+                 change_user: bool = False,
+                 change_icon: bool = False,
+                 debug: bool = True):
+        """Logging to Slack
+        """
 
         self.slack = slack or SlackClient(username=username, channel=channel)
         self.slack.username = self.slack.username or username
