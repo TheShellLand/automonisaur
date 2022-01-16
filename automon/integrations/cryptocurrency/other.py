@@ -1,5 +1,5 @@
 from automon.log import Logging
-from automon.helpers.datascience import Pandas
+from automon.integrations.datascience import Pandas
 
 
 class Other:
