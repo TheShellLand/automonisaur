@@ -10,10 +10,8 @@ from automon.log import Logging
 from automon.integrations.swift.error import SwiftError_
 # from automon.integrations.swift.config import SwiftConfig
 from automon.integrations.swift.iterables import SwiftList, SwiftItem
-from automon.integrations.slack.slack_logger import AsyncSlackLogging
 
 log = Logging(__name__, Logging.INFO)
-slacklog = AsyncSlackLogging(change_user=False, debug=False)
 
 Logging('requests', Logging.CRITICAL)
 Logging('swiftclient', Logging.CRITICAL)
@@ -31,7 +29,6 @@ class SwiftClient:
                        separate=False) -> [SwiftItem]:
 
         self._log.info(f'listing {container} (filter: {filter})')
-        slacklog.debug(f'listing {container} (filter: {filter})')
 
         swift_objects = []
         swift_objects_v2 = []
@@ -75,8 +72,6 @@ class SwiftClient:
         msg = (f'Starting cleanup \n'
                f'>Retention policy: {days} days \n')
         self._log.info(msg)
-        slacklog.debug(msg)
-        slacklog.info(msg)
 
         today = datetime.date.today()
         start_time = time.time()
@@ -125,7 +120,6 @@ class SwiftClient:
         msg = (f'>Created deletion list for past {days} days (Deleting: {len(pending_deletion)} objects)\n'
                f">Cleanup has been running for: {minutes} minutes")
         self._log.debug(msg)
-        slacklog.debug(msg)
 
         objects = 0
         folders = 0
@@ -153,10 +147,8 @@ class SwiftClient:
                f'>{total} *total objects* \n'
                f'>{objects} *objects* \n'
                f'>{folders} *folders* \n'
-               f'see debug messages in <#C013P1SNY3Y|{slacklog.debug_channel[1:]}>')
+               f'see debug messages')
         self._log.debug(msg)
-        slacklog.debug(msg)
-        slacklog.info(msg)
 
         progress = 0
 
@@ -180,13 +172,11 @@ class SwiftClient:
                 msg = (f'>Deletion is currently at `{percent}%` ({progress}/{total})\n'
                        f">Backup has been running for: {minutes} minutes")
                 self._log.debug(msg)
-                slacklog.debug(msg)
 
         if pending_deletion:
             msg = ('Cleanup Finished\n'
                    f">It took: {minutes} minutes")
             self._log.debug(msg)
-            slacklog.debug(msg)
 
     def backup(self, source, destination, test=None, skip_known=True):
 
@@ -197,12 +187,8 @@ class SwiftClient:
         progress = 0
         retries = 0
 
-        msg = (f'Backup {source} started \n'
-               f'>debug: <#C013P1SNY3Y|{slacklog.debug_channel[1:]}>\n'
-               f'>tests: <#C011EV8T59Q|{slacklog.test_channel[1:]}>\n')
+        msg = f'Backup {source} started'
         self._log.debug(msg)
-        slacklog.debug(msg)
-        slacklog.info(msg)
 
         items = self.list_container(source)
         backups = self.list_container(destination, filter=today)
@@ -221,7 +207,7 @@ class SwiftClient:
                 regex = str(test)
                 if re.search(regex, item):
                     self._log.debug(f'Test match: {test} \n>{item}')
-                    slacklog.debug(f'Test match: {test} \n>{item}')
+
                 else:
                     continue
 
@@ -245,7 +231,6 @@ class SwiftClient:
                 msg = (f'>Backup {source} is currently at `{percent}%` ({progress}/{total})\n'
                        f">Backup has been running for: {minutes} minutes")
                 self._log.debug(msg)
-                slacklog.debug(msg)
 
                 self.stats(destination, filter=today)
 
@@ -273,12 +258,12 @@ class SwiftClient:
 
                                     if "error" in i and isinstance(i["error"], Exception):
                                         self._log.error(f'{SwiftError_(i)}')
-                                        slacklog.error(f'{SwiftError_(i)}')
+
                                         retries += 1
 
                             except Exception as _:
                                 self._log.error(item)
-                                slacklog.error(item)
+
                                 retries += 1
 
                             # TODO: find a thread-safe method to delete folders
@@ -291,7 +276,6 @@ class SwiftClient:
                             for i in swift.copy(source, [name], options):
 
                                 if test:
-                                    slacklog.debug(f'Response: \n`{i}`')
                                     retry = False
 
                                 if i["success"]:
@@ -309,22 +293,22 @@ class SwiftClient:
 
                                 else:
                                     if "error" in i and isinstance(i["error"], Exception):
-                                        # slacklog.error(f'>Original error: \n```{i}```')
 
                                         if 'Authorization Failure. Authorization failed' in str(i):
                                             error = (
-                                                f'''This error happens every once in a while. I'm not really sure why, but might be some kind of stale timeout when SwiftService() isn't doing anything \n'''
+                                                f'''This error happens every once in a while. I'm not really sure why, 
+                                                but might be some kind of stale timeout when SwiftService() isn't doing 
+                                                anything \n'''
                                                 f'{SwiftError_(i)}'
                                             )
                                         else:
                                             error = f'{SwiftError_(i)}'
 
-                                        slacklog.error(error)
+                                        log.error(error)
                                         retries += 1
 
                     except Exception as _:
-                        slacklog.error(item)
-                        slacklog.error()
+                        log.error(item)
                         retries += 1
 
                 if not retry:
@@ -361,8 +345,7 @@ class SwiftClient:
             f'>{destination_total_objects} *total objects* \n'
             f'>{destination_objects} *objects* \n'
             f'>{destination_total_dirs} *dirs* \n')
-        slacklog.debug(msg)
-        slacklog.info(msg)
+        log.debug(msg)
 
         # TODO: new files may be added during the backup, so need verify only the initial files being backed up
 
@@ -387,7 +370,6 @@ class SwiftClient:
     def find_missing(self, source, destination, filter, post_log=True):
 
         msg = f'Verifying backup {destination} {filter} \n'
-        slacklog.debug(msg)
 
         missing_objects = ()
         missing_objects_list = []
@@ -421,22 +403,18 @@ class SwiftClient:
             else:
                 self._log.info(f'{percent}% ({progress}/{total}) verified, {a_name}')
 
-        slacklog.debug(f'missing_objects: {len(missing_objects)}')
+        log.debug(f'missing_objects: {len(missing_objects)}')
 
         if missing_objects:
             msg = (f'Missing {len(missing_objects)} objects: \n'
                    '>List of missing: \n'
                    ''.join(missing_objects))
 
-            if post_log:
-                slacklog.debug(msg)
-
         return missing_objects_list
 
     def stats(self, container, filter='', post_log=True, show_types=False):
 
         self._log.info(f'stat {container} (filter: {filter})')
-        slacklog.debug(f'stat {container} (filter: {filter})')
 
         list_items = self.list_container(container, filter=filter)
         total_dirs = 0
@@ -474,9 +452,6 @@ class SwiftClient:
         if show_types:
             msg = msg + f'>*types:* `{list_types}` \n'
 
-        if post_log:
-            slacklog.debug(msg)
-
         return total_objects, total_dirs, objects, list_items, list_types
 
     def delete_object(self, container, item):
@@ -489,8 +464,8 @@ class SwiftClient:
                     if i['success']:
                         self._log.info(f'deleted: {name}')
 
-            except Exception as _:
-                slacklog.error()
+            except Exception as e:
+                log.error(f'{e}')
 
     def delete(self, container, filter):
 
@@ -512,23 +487,22 @@ class SwiftClient:
                         if i['success']:
                             self._log.info(f'{percent}% ({progress}/{deletion_count}) deleted: {name}')
 
-                except Exception as _:
-                    slacklog.error()
+                except Exception as e:
+                    log.error(f'{e}')
 
-        slacklog.debug(
+        log.debug(
             f'Deletion summary: \n>container: {container} \n>filter: {filter} \n>{deletion_count} objects deleted')
 
     def delete_container(self, container):
 
         with SwiftService() as swift:
             try:
-                slacklog.debug(f'*Deleting*: \n>{container}')
+
                 for _ in swift.delete(container):
                     self._log.info(f'deleting container: {container}')
-                slacklog.info(f'*Deleted*: \n>{container}')
 
-            except Exception as _:
-                slacklog.error()
+            except Exception as e:
+                log.error(f'{e}')
 
     def restore(self):
         return warnings.warn(NotImplemented)
