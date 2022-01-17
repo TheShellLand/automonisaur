@@ -1,0 +1,55 @@
+name: code coverage
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+env:
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+
+jobs:
+
+  unittest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install python packages
+        run: pip3 install -r requirements.txt
+      - name: Run tests
+        run: /bin/bash test.sh
+
+
+  publish-coverage:
+    needs: unittest
+    runs-on: ubuntu-latest
+    # upload coverage report
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install python packages
+        run: pip3 install -r requirements.txt
+      - name: Create coverage report
+        run: /bin/bash unittests.sh html
+      - name: Upload coverage to codecov
+        uses: codecov/codecov-action@v2
+        with:
+#          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+#          files: ./coverage.xml,./coverage2.xml # optional
+#          flags: unittests # optional
+#          name: automonisaur # optional
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+
