@@ -20,11 +20,9 @@
 
 ### About
 
-This library adds some easier-to-use wrappers around common services for data
-science and threat intelligence.
+This library adds some easier-to-use wrappers around common services for data science and threat intelligence.
 
-Provides easier clients and configuration options, as well as any additional
-helpers to get things up and running.
+Provides easier clients and configuration options, as well as any additional helpers to get things up and running.
 
 Github issues and feature requests welcomed.
 
@@ -58,11 +56,14 @@ _Note: install requirements.txt to use all integrations_
 #### install integration libraries
 
 ```shell script
+# shell script
 /bin/bash requirements.sh
 
-or 
-
+# pip
 python3 -m pip install -U -r requirements.txt
+
+# pip 
+python3 -m pip install -U -r https://raw.githubusercontent.com/TheShellLand/automonisaur/master/requirements.txt
 ```
 
 #### unittest locally
