@@ -2,15 +2,14 @@
 
 # Automonisaur: Core Libraries
 
-**[about](#about)** | 
-**[pypi](https://pypi.org/project/automonisaur/)** | 
-**[integrations](#integrations)** | 
-**[install](#install)** | 
-**[build](#build)** | 
-**[unittest in docker](#unittest-in-docker')** | 
-**[unittest locally](#unittest-locally)** | 
+**[about](#about)** |
+**[pypi](https://pypi.org/project/automonisaur/)** |
+**[integrations](#integrations)** |
+**[install](#install)** |
+**[build](#build)** |
+**[unittest in docker](#unittest-in-docker')** |
+**[unittest locally](#unittest-locally)** |
 **[codecov](https://codecov.io/gh/TheShellLand/automonisaur)**
-
 
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/ci.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/ci.yml)
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml)
@@ -19,8 +18,6 @@
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python36.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python36.yml)
 
 [//]: # ([![codecov]&#40;https://codecov.io/gh/TheShellLand/automonisaur/branch/master/graph/badge.svg&#41;]&#40;https://codecov.io/gh/TheShellLand/automonisaur&#41;)
-
-
 
 ### About
 
@@ -32,8 +29,7 @@ helpers to get things up and running.
 
 Github issues and feature requests welcomed.
 
-
-###### integrations
+### integrations
 
 - airport
 - elasticsearch
@@ -48,23 +44,30 @@ Github issues and feature requests welcomed.
 - splunk
 - swift
 
+#### Requires
+
+- python >= 3.7
 
 #### install library
+
 ```shell script
 /bin/bash install.sh
 ```
 
 #### build docker
+
 ```shell script
 /bin/bash docker/build.sh
 ```
 
 #### unittest in docker
+
 ```shell script
 /bin/bash docker/test.sh
 ```
 
 #### unittest locally
+
 ```shell script
 /bin/bash unittests.sh
 ```
