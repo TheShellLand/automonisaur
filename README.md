@@ -3,13 +3,12 @@
 # Automonisaur: Core Libraries
 
 **[about](#about)** |
-**[pypi](https://pypi.org/project/automonisaur/)** |
 **[integrations](#integrations)** |
 **[install](#install)** |
-**[build](#build)** |
-**[unittest in docker](#unittest-in-docker')** |
+**[docker](docker)** |
 **[unittest locally](#unittest-locally)** |
-**[codecov](https://codecov.io/gh/TheShellLand/automonisaur)**
+**[codecov](https://codecov.io/gh/TheShellLand/automonisaur)** |
+**[pypi](https://pypi.org/project/automonisaur/)**
 
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/ci.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/ci.yml)
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml)
@@ -29,7 +28,7 @@ helpers to get things up and running.
 
 Github issues and feature requests welcomed.
 
-### integrations
+### Integrations
 
 - airport
 - elasticsearch
@@ -48,22 +47,22 @@ Github issues and feature requests welcomed.
 
 - python >= 3.7
 
-#### install library
+_Note: install requirements.txt to use all integrations_
+
+#### install core library
 
 ```shell script
 /bin/bash install.sh
 ```
 
-#### build docker
+#### install integration libraries
 
 ```shell script
-/bin/bash docker/build.sh
-```
+/bin/bash requirements.sh
 
-#### unittest in docker
+or 
 
-```shell script
-/bin/bash docker/test.sh
+python3 -m pip install -U -r requirements.txt
 ```
 
 #### unittest locally
