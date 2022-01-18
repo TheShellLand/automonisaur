@@ -1,6 +1,8 @@
 name: 3.6
 
 on:
+  push:
+    branches: [ 3.6 ]
 
 env:
   # Use docker.io for Docker Hub if empty
