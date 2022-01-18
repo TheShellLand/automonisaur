@@ -12,7 +12,11 @@
 **[codecov](https://codecov.io/gh/TheShellLand/automonisaur)**
 
 
-[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/main.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions)
+[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/ci.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/ci.yml)
+[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml)
+[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python38.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python38.yml)
+[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python37.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python37.yml)
+[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python36.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python36.yml)
 
 [//]: # ([![codecov]&#40;https://codecov.io/gh/TheShellLand/automonisaur/branch/master/graph/badge.svg&#41;]&#40;https://codecov.io/gh/TheShellLand/automonisaur&#41;)
 
