@@ -1,10 +1,10 @@
 import io
-
 import flask
+
 from flask.wrappers import Request
 
 from automon import Logging
-from automon.helpers.datascience import Pandas
+from automon.integrations.datascience import Pandas
 
 
 class Requests(object):
@@ -24,14 +24,14 @@ class Requests(object):
         csv = self.toCsv()
         df = self._pandas.read_csv(csv)
 
-        Json = df.to_json(orient='records')
-        Json = f'{Json}'.encode()
+        json_ = df.to_json(orient='records')
+        json_ = f'{json_}'.encode()
 
-        self.log.info(f'JSON size: {len(Json)} B')
-        self.log.debug(Json)
-        return Json
+        self.log.info(f'JSON size: {len(json_)} B')
+        self.log.debug(json_)
+        return json_
 
-    def toCsv(self) -> str:
+    def toCsv(self) -> io.StringIO:
         df = self.request2df()
         csv = df.to_csv(index=False)
         csv_s = io.StringIO(csv)
