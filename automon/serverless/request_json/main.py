@@ -7,5 +7,5 @@ log = Logging(__name__, level=Logging.DEBUG)
 
 def request_json(requests: Flask) -> bytes:
     r = Requests(requests)
-    log.info(r)
+    log.debug(r)
     return r.toJson()
