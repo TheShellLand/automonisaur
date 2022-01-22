@@ -13,7 +13,7 @@ class ElasticsearchJvmMonitor:
         self._config = config if isinstance(config, ElasticsearchConfig) else ElasticsearchConfig()
         self._client = ElasticsearchClient(config) if isinstance(config, ElasticsearchConfig) else ElasticsearchClient()
 
-        self._endpoint = self._client._config.es_hosts
+        self._endpoint = self._client.config.ELASTICSEARCH_HOSTS
 
     def _get_all_stats(self):
         if self._client.connected():
