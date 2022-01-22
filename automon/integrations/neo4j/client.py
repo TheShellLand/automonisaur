@@ -15,9 +15,11 @@ log = Logging(__name__, Logging.DEBUG)
 
 class Neo4jClient:
 
-    def __init__(self, config: Neo4jConfig = None, user: str = None,
-                 password: str = None, hosts: list or str = None,
-                 encrypted: bool = None) -> neo4j:
+    def __init__(self,
+                 user: str = None,
+                 password: str = None,
+                 hosts: list or str = None,
+                 config: Neo4jConfig = None) -> neo4j:
         """Neo4j client
 
         :param config: Neo4jConfig
@@ -28,30 +30,35 @@ class Neo4jClient:
         """
         self._log = Logging(Neo4jClient.__name__, Logging.DEBUG)
 
-        self.config = config or Neo4jConfig()
-        self.user = user or self.config.user
-        self.password = password or self.config.password
-        self.hosts = S.list_from_string(hosts) or self.config.hosts
-        self.encrypted = encrypted or self.config.encrypted
+        self.config = config or Neo4jConfig(
+            user=user,
+            password=password,
+            hosts=hosts
+        )
 
-        self.client = self._client(self.hosts)
-        self.driver = self.client
-        self.connected = self._check_connection()
+        self.client = self._client()
+        self.connected = self.isConnected()
 
-    def _client(self, hosts: list):
-        for server in hosts:
-            try:
-                client = GraphDatabase.driver(server, auth=(self.user, self.password), encrypted=self.encrypted)
-                log.info(f'Connected to neo4j server: {server}')
-                return client
-
-            except Exception as e:
-                self._log.error(f'Cannot connect to neo4j server: {server}, {e}', enable_traceback=False)
-        return False
+    def __repr__(self):
+        return f'{self.__dict__}'
 
     def _check_connection(self):
         if self.client:
             return True
+        return False
+
+    def _client(self):
+        try:
+            client = GraphDatabase.driver(
+                uri=self.config.NEO4J_HOST,
+                auth=(self.config.NEO4J_USER, self.config.NEO4J_PASSWORD))
+            log.info(f'Connected to neo4j server: {self.config.NEO4J_HOST}')
+            return client
+
+        except Exception as e:
+            self._log.error(f'Cannot connect to neo4j server: {self.config.NEO4J_HOST}, {e}',
+                            enable_traceback=False, raise_exception=True)
+
         return False
 
     def _send(self, cypher: str or Cypher) -> GraphDatabase.driver:
@@ -63,7 +70,7 @@ class Neo4jClient:
         if isinstance(cypher, Cypher):
             cypher = f'{cypher}'
 
-        with self.driver.session() as session:
+        with self.client.session() as session:
             results = session.run(cypher)
 
         self._log.debug(f'{cypher}')
@@ -71,9 +78,33 @@ class Neo4jClient:
 
         return results
 
+    def isConnected(self):
+        return self._check_connection()
+
     def cypher(self, query: str):
         """Run a straight cypher query"""
         return self._send(S.strip(query))
+
+    def create(self, data: dict, label: str = None, node: str = None):
+        """Create a node"""
+
+        cypher = Cypher()
+        cypher.create(node=node, label=label, data=data)
+
+        # self._log.debug(f'{final_cypher}')
+
+        return self._send(cypher)
+
+    def create_relationship(self, label: str, prop: str, value: str, other_prop: str,
+                            other_value: str, relationship: str, other_label: str = None):
+        """Create an A -> B relationship"""
+
+        cypher = Cypher()
+        cypher.relationship(
+            label, prop, value, other_prop, other_value, relationship, other_label)
+
+        self._log.debug(cypher)
+        return self._send(cypher)
 
     def delete_all(self):
         """Delete all nodes and relationships"""
@@ -103,29 +134,5 @@ class Neo4jClient:
 
         return self._send(cypher)
 
-    def create(self, data: dict, label: str = None, node: str = None):
-        """Create a node"""
-
-        cypher = Cypher()
-        cypher.create(node=node, label=label, data=data)
-
-        # self._log.debug(f'{final_cypher}')
-
-        return self._send(cypher)
-
-    def create_relationship(self, label: str, prop: str, value: str, other_prop: str,
-                            other_value: str, relationship: str, other_label: str = None):
-        """Create an A -> B relationship"""
-
-        cypher = Cypher()
-        cypher.relationship(
-            label, prop, value, other_prop, other_value, relationship, other_label)
-
-        self._log.debug(cypher)
-        return self._send(cypher)
-
     def search(self, query: str):
         return
-
-    def __repr__(self):
-        return f'{self.hosts}'
