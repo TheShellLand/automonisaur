@@ -7,21 +7,26 @@ log = Logging(name=__name__, level=Logging.DEBUG)
 
 
 class Neo4jConfig:
-    def __init__(self, user: str = None, password: str = None,
-                 hosts: list = None, encrypted: bool = True):
+    def __init__(self, user: str = None,
+                 password: str = None,
+                 hosts: str = None,
+                 encrypted: bool = None,
+                 trust: bool = None):
+        """Neo4j config
+        """
+
         self._log = Logging(name=Neo4jConfig.__name__, level=Logging.ERROR)
 
-        self.user = user or os.getenv('NEO4J_USER') or ''
-        self.password = password or os.getenv('NEO4J_PASSWORD') or ''
-        self.hosts = S.list_from_string(hosts) or \
-                     S.list_from_string(os.getenv('NEO4J_SERVERS')) or []
+        self.NEO4J_USER = user or os.getenv('NEO4J_USER') or ''
+        self.NEO4J_PASSWORD = password or os.getenv('NEO4J_PASSWORD') or ''
+        self.NEO4J_HOST = hosts or os.getenv('NEO4J_HOST') or ''
+
         self.encrypted = encrypted
+        self.trust = trust
 
-        if not self.user:
-            self._log.warn(f'missing NEO4J_USER')
+        if not self.NEO4J_USER: self._log.warn(f'missing NEO4J_USER')
+        if not self.NEO4J_PASSWORD: self._log.warn(f'missing NEO4J_PASSWORD')
+        if not self.NEO4J_HOST: self._log.warn(f'missing NEO4J_HOST')
 
-        if not self.password:
-            self._log.warn(f'missing NEO4J_PASSWORD')
-
-        if not self.hosts:
-            self._log.warn(f'missing NEO4J_SERVERS')
+    def __repr__(self):
+        return f'{self.__dict__}'
