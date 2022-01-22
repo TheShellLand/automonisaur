@@ -10,7 +10,7 @@ from .config import ElasticsearchConfig
 from automon.helpers.sanitation import Sanitation
 
 
-class ElasticsearchClient(ElasticsearchConfig):
+class ElasticsearchClient(Elasticsearch):
     def __init__(self, hosts: str = None,
                  cloud_id: str = None,
                  user: str = None,
@@ -33,7 +33,7 @@ class ElasticsearchClient(ElasticsearchConfig):
 
         self._log = Logging(ElasticsearchClient.__name__, Logging.DEBUG)
 
-        self._config = config or ElasticsearchConfig(
+        self.config = config or ElasticsearchConfig(
             hosts=hosts,
             cloud_id=cloud_id,
             user=user,
@@ -42,18 +42,7 @@ class ElasticsearchClient(ElasticsearchConfig):
             api_key_id=api_key_id,
             api_key_secret=api_key_secret)
 
-        self._client = Elasticsearch(
-            hosts=self._config.ELASTICSEARCH_HOSTS,
-            cloud_id=self._config.ELASTICSEARCH_CLOUD_ID,
-            api_key=self._config.ELASTICSEARCH_API_KEY,
-            request_timeout=self._config.ELASTICSEARCH_REQUEST_TIMEOUT,
-            http_auth=self._config.http_auth,
-            use_ssl=self._config.use_ssl,
-            verify_certs=self._config.verify_certs,
-            connection_class=self._config.connection_class)
-        self._elasticsearch = self._client
-
-        self._connected = self.connected()
+        self.client = self._client()
 
         self.indices = []
         self.success = []
@@ -61,20 +50,45 @@ class ElasticsearchClient(ElasticsearchConfig):
         self.results = None
 
     def __repr__(self):
-        return f'{self._config}, {self._client}, indices: {self.indices}, errors: {self.errors}'
+        return f'{self.client}, indices: {self.indices}, errors: {self.errors}, {self.config}'
+
+    def _client(self):
+        try:
+            client = Elasticsearch(
+                hosts=self.config.ELASTICSEARCH_HOSTS,
+                cloud_id=self.config.ELASTICSEARCH_CLOUD_ID,
+                api_key=self.config.ELASTICSEARCH_API_KEY,
+                request_timeout=self.config.ELASTICSEARCH_REQUEST_TIMEOUT,
+                http_auth=self.config.http_auth,
+                use_ssl=self.config.use_ssl,
+                verify_certs=self.config.verify_certs,
+                connection_class=self.config.connection_class)
+            self._log.info(f'Connected to elasticsearch: {client}')
+            return client
+
+        except Exception as e:
+            self._log.error(f'Cannot connect to elasticsearch: {self.config.ELASTICSEARCH_HOSTS}, {e}')
+
+        return False
+
+    def isConnected(self):
+        return self.connected()
 
     def connected(self):
-        if self._config.es_hosts:
-            if self._client.ping():
-                return True
+        if self.client:
+            try:
+                if self.client.ping():
+                    return True
+            except Exception as e:
+                self._log.error(f'{e}', enable_traceback=False)
         return False
 
     def rest(self, url: str) -> requests:
         try:
-            if self._config.ELASTICSEARCH_USER and self._config.ELASTICSEARCH_PASSWORD:
+            if self.config.ELASTICSEARCH_USER and self.config.ELASTICSEARCH_PASSWORD:
                 self.results = requests.get(url, auth=HTTPBasicAuth(
-                    self._config.ELASTICSEARCH_USER,
-                    self._config.ELASTICSEARCH_PASSWORD
+                    self.config.ELASTICSEARCH_USER,
+                    self.config.ELASTICSEARCH_PASSWORD
                 ))
                 r = self.results
             else:
@@ -93,7 +107,7 @@ class ElasticsearchClient(ElasticsearchConfig):
     def ping(self):
         if self.connected():
             try:
-                self._client.ping()
+                self.client.ping()
                 self._log.debug(f'Ping successful')
                 return True
             except Exception as e:
@@ -105,7 +119,7 @@ class ElasticsearchClient(ElasticsearchConfig):
     def delete_index(self, index: str, **kwargs):
         if self.connected():
             try:
-                self.results = self._client.indices.delete(index=index, ignore=[400, 404], **kwargs)
+                self.results = self.client.indices.delete(index=index, ignore=[400, 404], **kwargs)
 
                 r = self.results
                 self.success.append({'delete index': index, 'result': r})
@@ -120,7 +134,7 @@ class ElasticsearchClient(ElasticsearchConfig):
     def delete_document(self, index: str, id: str = None):
         if self.connected():
             try:
-                self.results = self._client.delete(index=index, id=id, ignore=[400, 404])
+                self.results = self.client.delete(index=index, id=id, ignore=[400, 404])
 
                 r = self.results
                 self.success.append({'index': index, 'id': id, 'result': r})
@@ -147,10 +161,10 @@ class ElasticsearchClient(ElasticsearchConfig):
         # }
 
         try:
-            self.results = self._client.index(index=index, body=doc, id=id)
+            self.results = self.client.index(index=index, body=doc, id=id)
 
             r = self.results
-            self._client.indices.refresh(index=index)
+            self.client.indices.refresh(index=index)
             self.success.append({'doc': doc, 'index': index, 'id': id, 'result': r})
             self._log.debug(f'created document: {index} {id} {doc}')
             return True
@@ -165,7 +179,7 @@ class ElasticsearchClient(ElasticsearchConfig):
             search = {"query": {"match_all": {}}}
 
         try:
-            self.results = self._client.search(index=index, body=search)
+            self.results = self.client.search(index=index, body=search)
 
             r = self.results
             self.success.append({'search': search, 'index': index, 'result': r})
@@ -237,7 +251,7 @@ class ElasticsearchClient(ElasticsearchConfig):
     def search_indices(self, index_pattern):
         if self.connected() and index_pattern:
             try:
-                self.results = self._client.indices.get(index_pattern)
+                self.results = self.client.indices.get(index_pattern)
 
                 retrieved_indices = self.results
                 num_indices = len(retrieved_indices)
@@ -259,7 +273,7 @@ class ElasticsearchClient(ElasticsearchConfig):
     def get_indices(self) -> bool:
         if self.connected():
             try:
-                self.results = self._client.indices.get('*')
+                self.results = self.client.indices.get('*')
 
                 retrieved_indices = self.results
                 self.indices = retrieved_indices
@@ -283,7 +297,7 @@ class ElasticsearchClient(ElasticsearchConfig):
     def info(self) -> bool:
 
         try:
-            self.results = self._client.info()
+            self.results = self.client.info()
             return True
         except Exception as e:
             self._log.error(f'Failed to get info:{e}')
