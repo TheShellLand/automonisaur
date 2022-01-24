@@ -5,24 +5,118 @@ from datetime import datetime, timezone
 
 from automon.log import Logging
 
-log = Logging(__name__, Logging.DEBUG)
+log = Logging(name='Cypher', level=Logging.DEBUG)
 
 
 class Cypher:
 
     def __init__(self):
-        self.cypher = []
-        self._node = 'Node'
+        self.cypher = None
+        self.cypher_list = []
 
     def __repr__(self):
-        return self.consolidate()
+        return f'{self.cypher}'
 
-    def start(self, data: dict, node: str = None, label: str = ''):
-        """alias to merge"""
-        return self.merge(node=node, label=label, data=data)
+    @staticmethod
+    def assert_label(label: str) -> str:
+        """Make sure neo4j label is formatted correctly"""
 
-    def merge(self, data: dict, node: str = None, label: str = ''):
+        if not label:
+            return ''
+
+        if re.search('[:]', label):
+            log.warn(f"Invalid label '{label}': Colon is not needed here")
+            label = label.replace(':', '')
+
+        if not re.search('[a-zA-Z]', label[0]):  # First letter of a label must be a letter
+            log.error(f"Invalid label '{label}': First character of Neo4j :LABEL must be a letter")
+        else:
+            return f':`{label}`'  # :`LABEL`
+
+    @staticmethod
+    def assert_property(prop) -> str:
+        prop = f'{prop}'
+        prop = prop.strip()
+
+        i = 0
+        for char in prop:
+            if char == '`':
+                i += 1
+
+        if i == 2:
+            return prop
+
+        if i < 2:
+            prop = prop.replace('`', '')
+            prop = f'`{prop}`'
+
+        return prop
+
+    def build_cypher(self, cypher: str):
+        """Build cypher line by line"""
+        self.cypher += f'{cypher} '
+        return self.cypher
+
+    def cypher_end(self):
+        """End of cypher"""
+        return ') \n'
+
+    def return_all(self):
+        """RETURN *"""
+        return 'RETURN *'
+
+    def delete_all(self):
+        """Delete all nodes and relationships"""
+        return 'MATCH (n) DETACH DELETE n'
+
+    def delete_node(self, prop: str, value: str, node: str = None) -> str:
+        """Delete all matching nodes and its relationships"""
+        # MATCH (n {name: 'Andy'})
+        # DETACH DELETE n
+        cypher = self.match(prop=prop, value=value, node=node)
+        cypher += f'DETACH DELETE {node}'
+        return cypher
+
+    def create(self, prop: str, value: str, node: str = None, label: str = ''):
+        """Create a node
+
+        CREATE (node :`label` { `prop`: "value" })
+        """
+        prop = self.assert_property(prop)
+        label = self.assert_label(label)
+
+        return f'CREATE ({node} {label} {{ {prop}: "{value}" }})\n'
+
+    def create_dict(self, data: dict, node: str = None, label: str = ''):
+        """Create a node from a dict"""
+        label = self.assert_label(label)
+        cypher = f'CREATE ({node} {label} \n'
+        cypher += self.dict_to_cypher(data)
+        cypher += self.cypher_end()
+        cypher += self.timestamp_last_seen()
+        cypher += self.return_all()
+        return cypher
+
+    def match(self, prop: str, value: str, node: str = None):
+        """Match a node
+
+        MATCH (node {`prop`: "value"})
+        """
+        prop = self.assert_property(prop)
+        return f'MATCH ({node} {{ {prop}: "{value}" }}) \n'
+
+    def merge(self, prop: str, value: str, node: str = None, label: str = ''):
         """Merge a node
+
+        MERGE ( node :`label` { `prop`: "value" })
+        """
+        prop = self.assert_property(prop)
+        label = self.assert_label(label)
+
+        return f'MERGE ({node} {label} {{ {prop}: "{value}" }}) RETURN {node}\n'
+
+    def merge_dict(self, data: dict, node: str = None, label: str = '') -> str:
+        """Merge a node from a dict
 
         MERGE (Node :`human` { `name`: "finn" })
         ON CREATE SET Node.first_seen = "2021-02-25T03:19:47.438596+00:00"
@@ -30,37 +124,15 @@ class Cypher:
         SET Node.last_seen = "2021-02-25T03:19:47.438901+00:00"
         SET Node.last_seen_ts = timestamp()
         RETURN *
-
         """
-        node = node or self._node
         label = self.assert_label(label)
-        self.cypher.append(f'MERGE ({node} {label} {{')
-        self.dict_to_cypher(data)
-        self._end()
-        self.first_seen()
-        self.last_seen()
-        self._return_asterisk()
-
-    def create(self, data: dict, node: str = None, label: str = ''):
-        """Create a node"""
-        node = node or self._node
-        label = self.assert_label(label)
-        self.cypher.append(f'CREATE ({node} {label} {{')
-        self.dict_to_cypher(data)
-        self._end()
-        self.last_seen()
-        self._return_asterisk()
-
-    def unique(self, node: str = None, label: str = ''):
-        node = node or self._node
-        label = self.assert_label(label)
-        self.cypher.append(f'UNIQUE ({node} {label} {{')
-
-    def match(self, node: str, prop: str, value: str):
-        """Match a node"""
-        node = node or self._node
-        # MATCH (n {name: 'Andy'})
-        self.cypher.append(f'MATCH ({node} {{{prop}: "{value}"}})')
+        cypher = f'MERGE ({node} {label} \n'
+        cypher += self.dict_to_cypher(data)
+        cypher += self.cypher_end()
+        cypher += self.timestamp_first_seen()
+        cypher += self.timestamp_last_seen()
+        cypher += self.return_all()
+        return cypher
 
     def relationship(self, label: str, prop: str, value: str, other_prop: str,
                      other_value: str, relationship: str, other_label: str = None):
@@ -80,100 +152,93 @@ class Cypher:
         if not other_label:
             other_label = label
 
-        self.cypher.append(f'MATCH (a{label}), (b{other_label})')
-        self.cypher.append(
-            f'WHERE a.{prop} = "{value}" AND b.{other_prop} = "{other_value}"')
-        self.cypher.append(f'MERGE (a)-[r{relationship}]->(b)')
-        self.cypher.append(f'RETURN type(r)')
+        self.cypher_list.append(f'MATCH (a{label}), (b{other_label})')
+        self.cypher_list.append(f'WHERE a.{prop} = "{value}" AND b.{other_prop} = "{other_value}"')
+        self.cypher_list.append(f'MERGE (a)-[r{relationship}]->(b)')
+        self.cypher_list.append(f'RETURN type(r)')
 
-    def _end(self):
-        """End of cypher"""
-        self.cypher.append('})')
+    def unique(self, node: str = None, label: str = ''):
+        label = self.assert_label(label)
+        return f'UNIQUE ({node} {label} {{'
 
-    def _return_asterisk(self):
-        self.cypher.append('RETURN *')
-
-    def first_seen(self, node: str = None):
-        """Node first_seen property"""
-        node = node or self._node
-        time = datetime.now(tz=timezone.utc).isoformat()
-        # ON CREATE SET keanu.created = timestamp()
-        self.cypher.append(f'ON CREATE SET {node}.first_seen = "{time}"')
-        self.cypher.append(f'ON CREATE SET {node}.first_seen_ts = timestamp()')
-
-    def last_seen(self, node: str = None):
+    def updated(self, node: str = None):
         """Node last_seen property"""
-        node = node or self._node
+        node = node
         time = datetime.now(tz=timezone.utc).isoformat()
-        self.cypher.append(f'SET {node}.last_seen = "{time}"')
-        self.cypher.append(f'SET {node}.last_seen_ts = timestamp()')
+        self.cypher_list.append(f'SET {node}.last_seen = "{time}"')
+        self.cypher_list.append(f'SET {node}.last_seen_ts = timestamp()')
+
+    def timestamp_first_seen(self, node: str = None) -> str:
+        """Node first_seen property
+
+        ON CREATE SET Node.first_seen = "2022-01-24T03:41:31.160885+00:00"
+        ON CREATE SET Node.first_seen_ts = timestamp()
+        """
+        time = datetime.now(tz=timezone.utc).isoformat()
+
+        cypher = f'ON CREATE SET {node}.first_seen = "{time}" \n'
+        cypher += f'ON CREATE SET {node}.first_seen_ts = timestamp() \n'
+        return cypher
+
+    def timestamp_last_seen(self, node: str = None) -> str:
+        """Node last_seen property
+
+        SET Node.last_seen = "2022-01-24T03:41:31.160885+00:00"
+        SET Node.last_seen_ts = timestamp()
+        """
+        time = datetime.now(tz=timezone.utc).isoformat()
+        cypher = f'SET {node}.last_seen = "{time}" \n'
+        cypher += f'SET {node}.last_seen_ts = timestamp() \n'
+        return cypher
+
+    def timestamp_updated(self, node: str = None) -> str:
+        """Node updated property
+
+        SET Node.updated = "2022-01-24T03:41:31.160885+00:00"
+        SET Node.updated_ts = timestamp()
+        """
+        time = datetime.now(tz=timezone.utc).isoformat()
+        cypher = f'ON MERGE SET {node}.updated = "{time}" \n'
+        cypher += f'ON MERGE SET {node}.updated_ts = timestamp() \n'
+        return cypher
 
     def on_create_set(self):
         # timestamp of first seen
         # query.append('ON CREATE SET {}.timestamp = "{}"'.format(node, timestamp_date))
         return
 
-    # @staticmethod
-    # def begin():
-    #     return '{'
-
-    def dict_to_cypher(self, obj: dict):
+    def dict_to_cypher(self, data: dict) -> str:
         """Dict to cypher
 
-        must be { `key`: 'value' }
+        :return { `key`: "value" }
         """
 
-        obj = self.prepare_dict(obj)
+        data = self.prepare_dict(data)
         cypher = []
         i = 1
-        for key in obj.keys():
-            value = obj.get(key)
-            query = f'`{key}`: "{value}"'
+        for prop in data.keys():
+            value = data.get(prop)
+            prop = self.assert_property(prop)
+            query = f'{prop}: "{value}"'
 
-            if i < len(obj.keys()):
-                cypher.append(query + ',')
+            if i < len(data.keys()):
+                cypher.append(query + ',\n')
             else:
                 cypher.append(query)
             i += 1
 
-        self.cypher.append(' '.join(cypher))
+        cypher = ' '.join(cypher)
+        cypher = f'{{\n {cypher} \n}} \n'
+        return cypher
 
     def consolidate(self) -> str:
         """Join cypher queries list into a string"""
-        return ' '.join(self.cypher).strip()
+        return ' '.join(self.cypher_list).strip()
 
     @staticmethod
     def prepare_dict(blob: dict) -> dict:
-        """All inputs first needs to dicts"""
+        """All inputs first needs to be dicts"""
         try:
             return dict(blob)
         except Exception as _:
             return dict(raw=urlencode(blob))
-
-    @staticmethod
-    def assert_label(label: str) -> str:
-        """Make sure neo4j label is formatted correctly"""
-
-        if not label:
-            return ''
-
-        if re.search('[:]', label):
-            log.error(f"Invalid label '{label}': Remove the colon from the label")
-            label = label.replace(':', '')
-
-        if not re.search('[a-zA-Z]', label[0]):  # First letter of a label must be a letter
-            log.error(f"Invalid label '{label}': First character of Neo4j :LABEL must be a letter")
-        else:
-            return f':`{label}`'  # :`Label`
-
-    def delete_all(self):
-        """Delete all nodes and relationships"""
-        self.cypher.append(f'MATCH (n) DETACH DELETE n')
-
-    def delete_node(self, prop: str, value: str, node: str = None):
-        """Delete all matching nodes and its relationships"""
-        node = node or self._node
-        # MATCH (n {name: 'Andy'})
-        # DETACH DELETE n
-        self.match(prop=prop, value=value, node=node)
-        self.cypher.append(f'DETACH DELETE {node}')
