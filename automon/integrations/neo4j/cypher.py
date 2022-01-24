@@ -171,13 +171,15 @@ class Cypher:
         cypher += f'DETACH DELETE {node}'
         return cypher
 
-    def match(self, prop: str, value: str, node: str = None):
+    def match(self, prop: str, value: str, node: str = None, label: str = ''):
         """Match a node
 
-        MATCH (node {`prop`: "value"})
+        MATCH (node :label {`prop`: "value"})
         """
         prop = self.assert_property(prop)
-        return f'MATCH ({node} {{ {prop}: "{value}" }}) \n'
+        label = self.assert_label(label)
+
+        return f'MATCH ({node} {label} {{ {prop}: "{value}" }}) \n'
 
     def merge(self, prop: str, value: str, node: str = None, label: str = ''):
         """Merge a node
@@ -239,28 +241,59 @@ class Cypher:
         cypher += 'SET \n'
         return cypher
 
-    def relationship(self, label: str, prop: str, value: str, other_prop: str,
-                     other_value: str, relationship: str, other_label: str = None):
-        """Create an A -> B relationship
+    def relationship(self,
+                     A_node: str, A_label: str, A_prop: str, A_value: str,
+                     B_node: str, B_label: str, B_prop: str, B_value: str,
+                     node: str = 'r', label: str = '',
+                     direction: str = '->'):
+        """Create relationship between two existing nodes
 
-        MATCH (a:Person), (b:Person)
-        WHERE a.name = 'A' AND b.name = 'B'
-        CREATE (a)-[r:RELTYPE]->(b)
-        RETURN type(r)
+        MATCH (A_node :A_label {`A_prop`: "A_value"})
+        MATCH (B_node :B_label {`B_prop`: "B_value"})
 
+        MERGE (a)-[r :label]->(b)
+        RETURN *
         """
 
+        A_label = self.assert_label(A_label)
+        B_label = self.assert_label(B_label)
         label = self.assert_label(label)
-        other_label = self.assert_label(other_label)
-        relationship = self.assert_label(relationship)
 
-        if not other_label:
-            other_label = label
+        cypher_a = self.match(node=A_node, label=A_label, prop=A_prop, value=A_value)
+        cypher_b = self.match(node=B_node, label=B_label, prop=B_prop, value=B_value)
+        begin, end = self._relationship_direction(direction)
 
-        self.cypher_list.append(f'MATCH (a{label}), (b{other_label})')
-        self.cypher_list.append(f'WHERE a.{prop} = "{value}" AND b.{other_prop} = "{other_value}"')
-        self.cypher_list.append(f'MERGE (a)-[r{relationship}]->(b)')
-        self.cypher_list.append(f'RETURN type(r)')
+        cypher = cypher_a
+        cypher += cypher_b
+        cypher += f'MERGE ({A_node}) {begin} [{node} {label}] {end} ({B_node}) \n'
+        cypher += self.return_all()
+
+        return cypher
+
+    def _relationship_direction(self, direction: str = '->'):
+        """Sets direction of node relationship
+
+        -> or > or >>
+        <- or < or <<
+        <-> or <>
+        """
+
+        begin = '-'
+        end = '->'
+
+        if direction == '->' or direction == '>' or direction == '>>':
+            begin = '-'
+            end = '->'
+
+        if direction == '<-' or direction == '<' or direction == '<<':
+            begin = '<-'
+            end = '-'
+
+        if direction == '<->' or direction == '<>' or direction == '<<>>':
+            begin = '<-'
+            end = '->'
+
+        return begin, end
 
     def unique(self, node: str = None, label: str = ''):
         label = self.assert_label(label)
