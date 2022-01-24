@@ -20,14 +20,14 @@ class Elasticsearch(unittest.TestCase):
 
         }
 
-        if self.e.connected():
+        if self.e.isConnected():
             self.assertTrue(es.create_document(doc=doc))
             self.assertTrue(es.search_summary())
 
     def test_ElasticsearchClient(self):
         e = ElasticsearchClient()
 
-        if e.connected():
+        if e.isConnected():
             self.assertTrue(e)
             self.assertTrue(ElasticsearchClient)
             self.assertTrue(e.ping())
@@ -41,7 +41,7 @@ class Elasticsearch(unittest.TestCase):
             self.assertFalse(e.get_indices())
 
     def test_Cleanup(self):
-        if self.e.connected():
+        if self.e.isConnected():
             self.assertTrue(Cleanup().get_indices())
             self.assertFalse(Cleanup().search_indices(None))
             # self.assertFalse(Cleanup().delete_indices(None))
