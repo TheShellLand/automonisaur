@@ -87,20 +87,21 @@ class Neo4jClient:
         self.cypher = cypher
         return self.run()
 
-    def create_relationship(self, label: str,
-                            prop: str,
-                            value: str,
-                            other_prop: str,
-                            other_value: str,
-                            relationship: str,
-                            other_label: str = None):
-        """Create an A -> B relationship"""
+    def relationship(self,
+                     A_node, A_label, A_prop, A_value,
+                     B_node, B_label, B_prop, B_value,
+                     node: str = None, label: str = '',
+                     direction: str = '->'):
+        """Create relationship between two existing nodes"""
 
-        self._Cypher.relationship(
-            label, prop, value, other_prop, other_value, relationship, other_label)
+        cypher = self._Cypher.relationship(
+            A_node, A_label, A_prop, A_value,
+            B_node, B_label, B_prop, B_value,
+            node, label,
+            direction)
 
-        self._log.debug(self._Cypher)
-        return self._send(self._Cypher)
+        self.cypher = cypher
+        return self.run()
 
     def cypher_run(self, query: str):
         """Run a cypher query"""
@@ -129,9 +130,9 @@ class Neo4jClient:
         self.cypher = cypher
         return self.run()
 
-    def merge(self, prop: str, value: str):
+    def merge(self, prop: str, value: str, node: str = None, label: str = None):
         """Merge nodes"""
-        cypher = self._Cypher.merge(prop=prop, value=value)
+        cypher = self._Cypher.merge(prop=prop, value=value, node=node, label=label)
         self.cypher = cypher
         return self.run()
 
