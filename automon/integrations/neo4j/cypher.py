@@ -17,6 +17,15 @@ class Cypher:
     def __repr__(self):
         return f'{self.cypher}'
 
+    def add_property(self, prop: str, value: str, node: str = None) -> str:
+        """add property
+
+        return: Node.prop = "value"
+        """
+        prop = self.assert_property(prop)
+        cypher = f'{node}.{prop} = "{value}"'
+        return cypher
+
     @staticmethod
     def assert_label(label: str) -> str:
         """Make sure neo4j label is formatted correctly"""
