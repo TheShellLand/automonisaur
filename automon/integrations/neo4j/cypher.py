@@ -65,6 +65,10 @@ class Cypher:
         """RETURN *"""
         return 'RETURN *'
 
+    def return_node(self, node: str = None):
+        """RETURN node"""
+        return f'RETURN {node}'
+
     def delete_all(self):
         """Delete all nodes and relationships"""
         return 'MATCH (n) DETACH DELETE n'
@@ -130,7 +134,7 @@ class Cypher:
         cypher += self.dict_to_cypher(data)
         cypher += self.cypher_end()
         cypher += self.timestamp_first_seen()
-        cypher += self.timestamp_last_seen()
+        cypher += self.timestamp_updated()
         cypher += self.return_all()
         return cypher
 
