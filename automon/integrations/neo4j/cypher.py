@@ -189,23 +189,54 @@ class Cypher:
 
         return f'MERGE ({node} {label} {{ {prop}: "{value}" }}) \n'
 
-    def merge_dict(self, data: dict, node: str = None, label: str = '') -> str:
+    def merge_dict(self, prop: str, value: str, data: dict, node: str = None, label: str = '') -> str:
         """Merge a node from a dict
 
         MERGE (Node :`human` { `name`: "finn" })
-        ON CREATE SET Node.first_seen = "2021-02-25T03:19:47.438596+00:00"
-        ON CREATE SET Node.first_seen_ts = timestamp()
-        SET Node.last_seen = "2021-02-25T03:19:47.438901+00:00"
-        SET Node.last_seen_ts = timestamp()
+        ON CREATE
+        SET
+        Node.first_seen = "2021-02-25T03:19:47.438596+00:00",
+        Node.first_seen_ts = timestamp()
+        ON CREATE
+        SET
+        Node.prop = "value",
+        Node.prop = "value"
+        ON MATCH
+        SET
+        Node.last_seen = "2021-02-25T03:19:47.438901+00:00",
+        Node.last_seen_ts = timestamp()
+        ON MATCH
+        SET
+        Node.prop = "value",
+        Node.prop = "value"
         RETURN *
         """
         label = self.assert_label(label)
-        cypher = f'MERGE ({node} {label} \n'
-        cypher += self.dict_to_cypher(data)
-        cypher += self.cypher_end()
+        prop = self.assert_property(prop)
+
+        cypher = self.merge(prop=prop, value=value, node=node, label=label)
+        cypher += self.on_create()
         cypher += self.timestamp_first_seen()
+
+        cypher += self.on_create()
+        cypher += self.dict_to_property(data=data, node=node)
+
+        cypher += self.on_match()
         cypher += self.timestamp_updated()
+
+        cypher += self.on_match()
+        cypher += self.dict_to_property(data=data, node=node)
         cypher += self.return_all()
+        return cypher
+
+    def on_match(self):
+        cypher = 'ON MATCH \n'
+        cypher += 'SET \n'
+        return cypher
+
+    def on_create(self):
+        cypher = 'ON CREATE \n'
+        cypher += 'SET \n'
         return cypher
 
     def relationship(self, label: str, prop: str, value: str, other_prop: str,
@@ -245,35 +276,35 @@ class Cypher:
     def timestamp_first_seen(self, node: str = None) -> str:
         """Node first_seen property
 
-        ON CREATE SET Node.first_seen = "2022-01-24T03:41:31.160885+00:00"
-        ON CREATE SET Node.first_seen_ts = timestamp()
+        Node.first_seen = "2022-01-24T03:41:31.160885+00:00",
+        Node.first_seen_ts = timestamp()
         """
         time = datetime.now(tz=timezone.utc).isoformat()
 
-        cypher = f'ON CREATE SET {node}.first_seen = "{time}" \n'
-        cypher += f'ON CREATE SET {node}.first_seen_ts = timestamp() \n'
+        cypher = f'{node}.first_seen = "{time}", \n'
+        cypher += f'{node}.first_seen_ts = timestamp() \n'
         return cypher
 
     def timestamp_last_seen(self, node: str = None) -> str:
         """Node last_seen property
 
-        SET Node.last_seen = "2022-01-24T03:41:31.160885+00:00"
-        SET Node.last_seen_ts = timestamp()
+        Node.last_seen = "2022-01-24T03:41:31.160885+00:00",
+        Node.last_seen_ts = timestamp()
         """
         time = datetime.now(tz=timezone.utc).isoformat()
-        cypher = f'SET {node}.last_seen = "{time}" \n'
-        cypher += f'SET {node}.last_seen_ts = timestamp() \n'
+        cypher = f'{node}.last_seen = "{time}", \n'
+        cypher += f'{node}.last_seen_ts = timestamp() \n'
         return cypher
 
     def timestamp_updated(self, node: str = None) -> str:
         """Node updated property
 
-        SET Node.updated = "2022-01-24T03:41:31.160885+00:00"
-        SET Node.updated_ts = timestamp()
+        Node.updated = "2022-01-24T03:41:31.160885+00:00",
+        Node.updated_ts = timestamp()
         """
         time = datetime.now(tz=timezone.utc).isoformat()
-        cypher = f'ON MATCH SET {node}.updated = "{time}" \n'
-        cypher += f'ON MATCH SET {node}.updated_ts = timestamp() \n'
+        cypher = f'{node}.updated = "{time}", \n'
+        cypher += f'{node}.updated_ts = timestamp() \n'
         return cypher
 
     @staticmethod
