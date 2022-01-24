@@ -80,7 +80,7 @@ class Neo4jClient:
         self.cypher = cypher
         return self.run()
 
-    def create_node(self, data: dict, label: str = None, **kwargs):
+    def create_dict(self, data: dict, label: str = None, **kwargs):
         """Create a node"""
         cypher = self._Cypher.create_dict(label=label, data=data, **kwargs)
         self.cypher = cypher
