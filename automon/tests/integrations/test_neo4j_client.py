@@ -10,7 +10,8 @@ class Neo4jTest(unittest.TestCase):
     def test_cypher(self):
 
         if self.client.isConnected():
-            self.assertTrue(self.client.delete_all())
+            # self.assertTrue(self.client.delete_all())
+            self.assertTrue(self.client.create_node(label='human', data={'name': 'finn', 'friend': 'jake'}))
             self.assertTrue(self.client.create_node(label='human', data={'name': 'finn'}))
             self.assertTrue(self.client.merge_dict(label='human', data={'name': 'finn'}))
             self.assertTrue(self.client.merge_dict(label='dog', data={'name': 'jake', 'magic': True}))
@@ -36,8 +37,8 @@ class Neo4jTest(unittest.TestCase):
             self.assertTrue(self.client.create_node(label='orange', data={'type': 'juice'}))
             self.assertTrue(self.client.create_node(label='orange', data={'flavor': 'orange'}))
 
-            self.assertTrue(self.client.delete_node(prop='type', value='juice'))
-            self.assertTrue(self.client.delete_node(prop='flavor', value='orange'))
+            self.assertTrue(self.client.delete_match(prop='type', value='juice'))
+            self.assertTrue(self.client.delete_match(prop='flavor', value='orange'))
 
             self.assertTrue(self.client.create_node(label='orange', data={'type': 'juice'}))
             self.assertTrue(self.client.create_node(label='orange', data={'flavor': 'orange'}))
