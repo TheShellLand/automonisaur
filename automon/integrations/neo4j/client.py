@@ -81,9 +81,9 @@ class Neo4jClient:
         self.cypher = cypher
         return self.run()
 
-    def create_dict(self, data: dict, label: str = None, **kwargs):
+    def create_dict(self, prop: str, value: str, data: dict, label: str = None, node: str = None, **kwargs):
         """Create a node from dict"""
-        cypher = self._Cypher.create_dict(label=label, data=data, **kwargs)
+        cypher = self._Cypher.create_dict(prop=prop, value=value, label=label, node=node, data=data, **kwargs)
         self.cypher = cypher
         return self.run()
 
@@ -135,7 +135,7 @@ class Neo4jClient:
         self.cypher = cypher
         return self.run()
 
-    def merge_dict(self, data: dict, label: str = None, **kwargs):
+    def merge_dict(self, prop: str, value: str, data: dict, label: str = None, node: str = None, **kwargs):
         """Merge nodes from dict"""
 
         # cypher_assertions = []
@@ -144,7 +144,7 @@ class Neo4jClient:
         # query = query.format(node=node, label=label)
         # cypher_assertions.append(query)  # Pre cypher query
 
-        cypher = self._Cypher.merge_dict(label=label, data=data)
+        cypher = self._Cypher.merge_dict(prop=prop, value=value, label=label, data=data, node=node, **kwargs)
         self.cypher = cypher
         return self.run()
 
