@@ -76,12 +76,13 @@ class Neo4jClient:
         self.cypher += query
 
     def create(self, prop: str, value: str):
+        """Create a node"""
         cypher = self._Cypher.create(prop=prop, value=value)
         self.cypher = cypher
         return self.run()
 
     def create_dict(self, data: dict, label: str = None, **kwargs):
-        """Create a node"""
+        """Create a node from dict"""
         cypher = self._Cypher.create_dict(label=label, data=data, **kwargs)
         self.cypher = cypher
         return self.run()
@@ -102,7 +103,7 @@ class Neo4jClient:
         return self._send(self._Cypher)
 
     def cypher_run(self, query: str):
-        """Run a straight cypher query"""
+        """Run a cypher query"""
         self.cypher = query
         return self.run()
 
@@ -118,17 +119,24 @@ class Neo4jClient:
         return self.run()
 
     def isConnected(self):
+        """Check if client is connected to server"""
         if self._client:
             return True
         return False
 
+    def match(self, prop: str, value: str, node: str = None):
+        cypher = self._Cypher.match(prop=prop, value=value, node=node)
+        self.cypher = cypher
+        return self.run()
+
     def merge(self, prop: str, value: str):
+        """Merge nodes"""
         cypher = self._Cypher.merge(prop=prop, value=value)
         self.cypher = cypher
         return self.run()
 
     def merge_dict(self, data: dict, label: str = None, **kwargs):
-        """Merge a node"""
+        """Merge nodes from dict"""
 
         # cypher_assertions = []
         # TODO: find a way to check if assertion has already been made
@@ -171,5 +179,8 @@ class Neo4jClient:
 
         return False
 
-    def search(self, query: str):
-        return NotImplemented
+    def search(self, prop: str, value: str, node: str = None):
+        cypher = self._Cypher.match(prop=prop, value=value, node=node)
+        cypher += self._Cypher.return_all()
+        self.cypher = cypher
+        return self.run()
