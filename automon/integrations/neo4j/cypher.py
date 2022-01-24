@@ -202,8 +202,8 @@ class Cypher:
         SET Node.updated_ts = timestamp()
         """
         time = datetime.now(tz=timezone.utc).isoformat()
-        cypher = f'ON MERGE SET {node}.updated = "{time}" \n'
-        cypher += f'ON MERGE SET {node}.updated_ts = timestamp() \n'
+        cypher = f'ON MATCH SET {node}.updated = "{time}" \n'
+        cypher += f'ON MATCH SET {node}.updated_ts = timestamp() \n'
         return cypher
 
     def on_create_set(self):
