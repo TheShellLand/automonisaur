@@ -163,8 +163,11 @@ class Neo4jClient:
 
         return self._send(cypher)
 
-    def run(self, cypher=None):
-        """Send cypher"""
+    def run(self, cypher=None) -> bool:
+        """Send the cypher query to the server"""
+        if not self.isConnected():
+            return False
+
         try:
             cypher = self.cypher
             response = self._session.run(cypher)
