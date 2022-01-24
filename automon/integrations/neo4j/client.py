@@ -8,7 +8,7 @@ from automon.log import Logging
 from automon.integrations.neo4j.cypher import Cypher
 
 from .config import Neo4jConfig
-from .helpers import Results
+from .results import Results
 
 logging.getLogger('neo4j').setLevel(logging.ERROR)
 
