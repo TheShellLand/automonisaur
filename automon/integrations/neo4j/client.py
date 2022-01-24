@@ -2,15 +2,15 @@ import neo4j
 import logging
 
 from neo4j import GraphDatabase
+from queue import Queue
 
 from automon.log import Logging
 from automon.integrations.neo4j.cypher import Cypher
-from automon.integrations.neo4j.config import Neo4jConfig
-from automon.integrations.neo4j.helpers import Results
-from automon.helpers.sanitation import Sanitation as S
+
+from .config import Neo4jConfig
+from .helpers import Results
 
 logging.getLogger('neo4j').setLevel(logging.ERROR)
-log = Logging(__name__, Logging.DEBUG)
 
 
 class Neo4jClient:
@@ -20,105 +20,114 @@ class Neo4jClient:
                  password: str = None,
                  hosts: list or str = None,
                  config: Neo4jConfig = None) -> neo4j:
-        """Neo4j client
-
-        :param config: Neo4jConfig
-        :param user: str
-        :param password: str
-        :param hosts: list
-        :param encrypted: bool
-        """
+        """Neo4j client"""
         self._log = Logging(Neo4jClient.__name__, Logging.DEBUG)
 
-        self.config = config or Neo4jConfig(
+        self._config = config or Neo4jConfig(
             user=user,
             password=password,
             hosts=hosts
         )
 
-        self.client = self._client()
-        self.connected = self.isConnected()
+        self._client = self._client()
+
+        if self._client:
+            self._driver = self._client
+            self._session = self._client.session()
+
+        self._Cypher = Cypher()
+
+        self.queue = Queue()
+        self.cypher = None
+        self.results = None
 
     def __repr__(self):
         return f'{self.__dict__}'
 
-    def _check_connection(self):
-        if self.client:
-            return True
-        return False
-
     def _client(self):
         try:
             client = GraphDatabase.driver(
-                uri=self.config.NEO4J_HOST,
-                auth=(self.config.NEO4J_USER, self.config.NEO4J_PASSWORD))
-            log.info(f'Connected to neo4j server: {self.config.NEO4J_HOST}')
+                uri=self._config.NEO4J_HOST,
+                auth=(self._config.NEO4J_USER, self._config.NEO4J_PASSWORD))
+            self._log.info(f'Connected to neo4j server: {self._config.NEO4J_HOST}')
             return client
 
         except Exception as e:
-            self._log.error(f'Cannot connect to neo4j server: {self.config.NEO4J_HOST}, {e}',
-                            enable_traceback=False, raise_exception=True)
+            self._log.error(f'Cannot connect to neo4j server: {self._config.NEO4J_HOST}, {e}',
+                            enable_traceback=False, raise_exception=False)
 
         return False
 
     def _send(self, cypher: str or Cypher) -> GraphDatabase.driver:
         """Send cypher to server"""
 
-        if not self.connected:
+        if not self.isConnected():
             return False
 
         if isinstance(cypher, Cypher):
-            cypher = f'{cypher}'
+            cypher = self._Cypher.consolidate()
 
-        with self.client.session() as session:
-            results = session.run(cypher)
+        self.cypher = cypher
 
-        self._log.debug(f'{cypher}')
-        self._log.debug(f'Results: {Results(results)}')
+        return self.run()
 
-        return results
+    def build_cypher(self, query: str):
+        """Build a cypher"""
+        self.cypher += query
 
-    def isConnected(self):
-        return self._check_connection()
+    def create(self, prop: str, value: str):
+        cypher = self._Cypher.create(prop=prop, value=value)
+        self.cypher = cypher
+        return self.run()
 
-    def cypher(self, query: str):
-        """Run a straight cypher query"""
-        return self._send(S.strip(query))
-
-    def create(self, data: dict, label: str = None, node: str = None):
+    def create_node(self, data: dict, label: str = None, **kwargs):
         """Create a node"""
+        cypher = self._Cypher.create_dict(label=label, data=data, **kwargs)
+        self.cypher = cypher
+        return self.run()
 
-        cypher = Cypher()
-        cypher.create(node=node, label=label, data=data)
-
-        # self._log.debug(f'{final_cypher}')
-
-        return self._send(cypher)
-
-    def create_relationship(self, label: str, prop: str, value: str, other_prop: str,
-                            other_value: str, relationship: str, other_label: str = None):
+    def create_relationship(self, label: str,
+                            prop: str,
+                            value: str,
+                            other_prop: str,
+                            other_value: str,
+                            relationship: str,
+                            other_label: str = None):
         """Create an A -> B relationship"""
 
-        cypher = Cypher()
-        cypher.relationship(
+        self._Cypher.relationship(
             label, prop, value, other_prop, other_value, relationship, other_label)
 
-        self._log.debug(cypher)
-        return self._send(cypher)
+        self._log.debug(self._Cypher)
+        return self._send(self._Cypher)
+
+    def cypher_run(self, query: str):
+        """Run a straight cypher query"""
+        self.cypher = query
+        return self.run()
 
     def delete_all(self):
         """Delete all nodes and relationships"""
-        cypher = Cypher()
-        cypher.delete_all()
-        return self._send(cypher)
+        self.cypher = self._Cypher.delete_all()
+        return self.run()
 
-    def delete_node(self, prop: str, value: str, node: str = None):
+    def delete_match(self, prop: str, value: str, node: str = None):
         """Delete all matching nodes and its relationships"""
-        cypher = Cypher()
-        cypher.delete_node(prop=prop, value=value, node=node)
-        return self._send(cypher)
+        cypher = self._Cypher.delete_node(prop=prop, value=value, node=node)
+        self.cypher = cypher
+        return self.run()
 
-    def merge(self, data: dict, label: str = None, node: str = None):
+    def isConnected(self):
+        if self._client:
+            return True
+        return False
+
+    def merge(self, prop: str, value: str):
+        cypher = self._Cypher.merge(prop=prop, value=value)
+        self.cypher = cypher
+        return self.run()
+
+    def merge_dict(self, data: dict, label: str = None, **kwargs):
         """Merge a node"""
 
         # cypher_assertions = []
@@ -127,12 +136,40 @@ class Neo4jClient:
         # query = query.format(node=node, label=label)
         # cypher_assertions.append(query)  # Pre cypher query
 
-        cypher = Cypher()
-        cypher.merge(node=node, label=label, data=data)
+        cypher = self._Cypher.merge_dict(label=label, data=data)
+        self.cypher = cypher
+        return self.run()
+
+    def merge_node(self, data: dict, label: str = None, **kwargs):
+        """Merge a node"""
+
+        # cypher_assertions = []
+        # TODO: find a way to check if assertion has already been made
+        # query = 'CREATE CONSTRAINT ON ( {node} {label} ) ASSERT {node}.raw IS UNIQUE'
+        # query = query.format(node=node, label=label)
+        # cypher_assertions.append(query)  # Pre cypher query
+
+        cypher = self._Cypher.merge_dict(label=label, data=data)
 
         # self._log.debug(f'{final_cypher}')
 
         return self._send(cypher)
 
+    def run(self, cypher=None):
+        """Send cypher"""
+        try:
+            cypher = self.cypher
+            response = self._session.run(cypher)
+            self.results = Results(response)
+
+            self._log.info(f'cypher: {cypher}')
+            self._log.debug(f'Results: {self.results}')
+
+            return True
+        except Exception as e:
+            self._log.error(f"{e}", enable_traceback=False, raise_exception=True)
+
+        return False
+
     def search(self, query: str):
-        return
+        return NotImplemented
