@@ -244,7 +244,7 @@ class Cypher:
     def relationship(self,
                      A_node: str, A_label: str, A_prop: str, A_value: str,
                      B_node: str, B_label: str, B_prop: str, B_value: str,
-                     node: str = 'r', label: str = '',
+                     label, node: str = 'r',
                      direction: str = '->'):
         """Create relationship between two existing nodes
 
