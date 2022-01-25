@@ -7,41 +7,58 @@ from automon.integrations.neo4j.cypher import Cypher
 class Neo4jTest(unittest.TestCase):
     client = Neo4jClient()
 
-    def test_cypher(self):
+    def test_build_cypher(self):
+        c = Neo4jClient()
+        c.build_cypher('AAAA')
+        self.assertTrue(c.cypher)
+        self.assertEqual(c.cypher, 'AAAA')
+
+    def test_create_dict(self):
 
         if self.client.isConnected():
-            # self.assertTrue(self.client.delete_all())
-            self.assertTrue(self.client.create_dict(label='human', data={'name': 'finn', 'friend': 'jake'}))
-            self.assertTrue(self.client.create_dict(label='human', data={'name': 'finn'}))
-            self.assertTrue(self.client.merge_dict(label='human', data={'name': 'finn'}))
-            self.assertTrue(self.client.merge_dict(label='dog', data={'name': 'jake', 'magic': True}))
-            self.assertTrue(self.client.merge_dict(label='dog', data={'name': 'jake'}))
-            self.assertTrue(self.client.merge_dict(label='math', data={'results': 1}))
-            self.assertTrue(self.client.merge_dict(label='big dict', data={'isthat': 'new', 'no': "it's not"}))
-            self.assertTrue(self.client.merge_dict(data={'no': 'labels', 'look': 'mom'}))
-            # self.assertTrue(self.client.delete_all())
+            self.assertTrue(self.client.create_dict(prop='name', value='finn', label='human', data={'powers': 'no'}))
+            self.assertTrue(self.client.create_dict(prop='name', value='jake', label='dog', data={'powers': True}))
+
+    def test_merge(self):
+
+        if self.client.isConnected():
+            self.assertTrue(self.client.merge(label='dog'))
+
+    def test_merge_dict(self):
+
+        if self.client.isConnected():
+            self.assertTrue(self.client.merge_dict(
+                prop='name', value='lsp', label='lumpy', data={'powers': 'princess'}))
+            self.assertTrue(self.client.merge_dict(
+                prop='name', value='bubble gum', label='bubble',
+                data={'powers': 'princess', 'specialty': 'science'}))
+            self.assertTrue(self.client.merge_dict(
+                prop='name', value='BMO', label='gameboy',
+                data={'powers': 'buttons', 'specialty': ['green', 'box']}))
 
     def test_relationships(self):
         if self.client.isConnected():
-            self.assertTrue(self.client.merge_dict(label='bubble tea', data={'type': 'milk tea'}))
-            self.assertTrue(self.client.merge_dict(label='bubble tea', data={'type': 'earl grey'}))
+            self.assertTrue(self.client.merge_dict(
+                prop='name', value='lsp', label='lumpy', data={'powers': 'princess'}))
+            self.assertTrue(self.client.merge_dict(
+                prop='name', value='bubble gum', label='bubble',
+                data={'powers': 'princess', 'specialty': 'science'}))
+            self.assertTrue(self.client.merge_dict(
+                prop='name', value='BMO', label='gameboy',
+                data={'powers': 'buttons', 'specialty': ['green', 'box']}))
 
-            self.assertTrue(self.client.create_relationship(
-                'bubble tea',
-                'type', 'milk tea',
-                'type', 'earl grey',
-                'better than'))
+            self.assertTrue(self.client.relationship(
+                A_prop='powers', A_value='princess',
+                B_prop='type', B_value='princess', B_label='princess',
+                label='is',
+                direction='->'
+            ))
 
     def test_delete_node(self):
         if self.client.isConnected():
-            self.assertTrue(self.client.create_dict(label='orange', data={'type': 'juice'}))
-            self.assertTrue(self.client.create_dict(label='orange', data={'flavor': 'orange'}))
-
-            self.assertTrue(self.client.delete_match(prop='type', value='juice'))
-            self.assertTrue(self.client.delete_match(prop='flavor', value='orange'))
-
-            self.assertTrue(self.client.create_dict(label='orange', data={'type': 'juice'}))
-            self.assertTrue(self.client.create_dict(label='orange', data={'flavor': 'orange'}))
+            self.assertTrue(self.client.merge_dict(
+                prop='name', value='Marceline', label='vampire', data={'age': '1000'}))
+            self.assertTrue(self.client.delete_match(prop='name', value='Marceline'))
 
     def test_assert_label(self):
         test = Cypher()
