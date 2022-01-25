@@ -29,7 +29,7 @@ class Cypher:
             label = label.replace(':', '')
 
         if not re.search('[a-zA-Z]', label[0]):  # First letter of a label must be a letter
-            log.error(f"Invalid label '{label}': First character of Neo4j :LABEL must be a letter")
+            log.warn(f"Invalid label '{label}': First character of Neo4j :LABEL must be a letter")
         else:
             return f':`{label}`'  # :`LABEL`
 
