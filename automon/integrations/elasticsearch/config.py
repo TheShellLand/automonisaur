@@ -12,7 +12,7 @@ logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
 
 class ElasticsearchConfig:
 
-    def __init__(self, hosts: str = None,
+    def __init__(self, host: str = None,
                  cloud_id: str = None,
                  user: str = '',
                  password: str = '',
@@ -30,8 +30,7 @@ class ElasticsearchConfig:
         self._log = Logging(ElasticsearchConfig.__name__, Logging.DEBUG)
 
         # hosts
-        self.ELASTICSEARCH_HOSTS = hosts or os.getenv('ELASTICSEARCH_HOSTS')
-        self.ELASTICSEARCH_HOSTS = S.list_from_string(self.ELASTICSEARCH_HOSTS)
+        self.ELASTICSEARCH_HOST = host or os.getenv('ELASTICSEARCH_HOSTS')
         self.ELASTICSEARCH_CLOUD_ID = cloud_id or os.getenv('ELASTICSEARCH_CLOUD_ID')
 
         # auth
@@ -66,13 +65,13 @@ class ElasticsearchConfig:
             self._log.warn(f'Not implemented')
             return NotImplemented
 
-        return self.ELASTICSEARCH_HOSTS == other.ELASTICSEARCH_HOSTS
+        return self.ELASTICSEARCH_HOST == other.ELASTICSEARCH_HOST
 
 
 class SnapshotBot:
     def __init__(self):
         self.slack_name = 'Elasticsearch Daily Monitor bot'
-        self.es_hosts = ElasticsearchConfig().ELASTICSEARCH_HOSTS
+        self.es_hosts = ElasticsearchConfig().ELASTICSEARCH_HOST
         self.es_repository = os.getenv('ELASTICSEARCH_REPOSITORY')
         self.snapshots_prefix = os.getenv('SNAPSHOTS_PREFIX')
 
@@ -80,4 +79,4 @@ class SnapshotBot:
 class JVMBot:
     def __init__(self):
         self.slack_name = 'Elasticsearch JVM Monitor bot'
-        self.es_hosts = ElasticsearchConfig().ELASTICSEARCH_HOSTS
+        self.es_hosts = ElasticsearchConfig().ELASTICSEARCH_HOST
