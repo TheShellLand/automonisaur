@@ -137,7 +137,7 @@ class Neo4jClient:
         self.cypher = cypher
         return self.run()
 
-    def merge(self, prop: str, value: str, node: str = None, label: str = None):
+    def merge(self, prop: str = None, value: str = None, node: str = None, label: str = ''):
         """Merge nodes"""
         cypher = self._Cypher.merge(prop=prop, value=value, node=node, label=label)
         self.cypher = cypher
