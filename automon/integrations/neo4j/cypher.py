@@ -57,25 +57,9 @@ class Cypher:
         self.cypher += f'{cypher} '
         return self.cypher
 
-    def cypher_end(self):
-        """End of cypher"""
-        return ') \n'
-
-    def return_all(self):
-        """RETURN *"""
-        return 'RETURN *'
-
-    def delete_all(self):
-        """Delete all nodes and relationships"""
-        return 'MATCH (n) DETACH DELETE n'
-
-    def delete_node(self, prop: str, value: str, node: str = None) -> str:
-        """Delete all matching nodes and its relationships"""
-        # MATCH (n {name: 'Andy'})
-        # DETACH DELETE n
-        cypher = self.match(prop=prop, value=value, node=node)
-        cypher += f'DETACH DELETE {node}'
-        return cypher
+    def consolidate(self) -> str:
+        """Join cypher queries list into a string"""
+        return ' '.join(self.cypher_list).strip()
 
     def create(self, prop: str, value: str, node: str = None, label: str = ''):
         """Create a node
@@ -95,6 +79,46 @@ class Cypher:
         cypher += self.cypher_end()
         cypher += self.timestamp_last_seen()
         cypher += self.return_all()
+        return cypher
+
+    def cypher_end(self):
+        """End of cypher"""
+        return ') \n'
+
+    def delete_all(self):
+        """Delete all nodes and relationships"""
+        return 'MATCH (n) DETACH DELETE n'
+
+    def delete_node(self, prop: str, value: str, node: str = None) -> str:
+        """Delete all matching nodes and its relationships"""
+        # MATCH (n {name: 'Andy'})
+        # DETACH DELETE n
+        cypher = self.match(prop=prop, value=value, node=node)
+        cypher += f'DETACH DELETE {node}'
+        return cypher
+
+    def dict_to_cypher(self, data: dict) -> str:
+        """Dict to cypher
+
+        :return { `key`: "value" }
+        """
+
+        data = self.prepare_dict(data)
+        cypher = []
+        i = 1
+        for prop in data.keys():
+            value = data.get(prop)
+            prop = self.assert_property(prop)
+            query = f'{prop}: "{value}"'
+
+            if i < len(data.keys()):
+                cypher.append(query + ',\n')
+            else:
+                cypher.append(query)
+            i += 1
+
+        cypher = ' '.join(cypher)
+        cypher = f'{{\n {cypher} \n}} \n'
         return cypher
 
     def match(self, prop: str, value: str, node: str = None):
@@ -134,6 +158,14 @@ class Cypher:
         cypher += self.return_all()
         return cypher
 
+    @staticmethod
+    def prepare_dict(blob: dict) -> dict:
+        """All inputs first needs to be dicts"""
+        try:
+            return dict(blob)
+        except Exception as _:
+            return dict(raw=urlencode(blob))
+
     def relationship(self, label: str, prop: str, value: str, other_prop: str,
                      other_value: str, relationship: str, other_label: str = None):
         """Create an A -> B relationship
@@ -157,16 +189,9 @@ class Cypher:
         self.cypher_list.append(f'MERGE (a)-[r{relationship}]->(b)')
         self.cypher_list.append(f'RETURN type(r)')
 
-    def unique(self, node: str = None, label: str = ''):
-        label = self.assert_label(label)
-        return f'UNIQUE ({node} {label} {{'
-
-    def updated(self, node: str = None):
-        """Node last_seen property"""
-        node = node
-        time = datetime.now(tz=timezone.utc).isoformat()
-        self.cypher_list.append(f'SET {node}.last_seen = "{time}"')
-        self.cypher_list.append(f'SET {node}.last_seen_ts = timestamp()')
+    def return_all(self):
+        """RETURN *"""
+        return 'RETURN *'
 
     def timestamp_first_seen(self, node: str = None) -> str:
         """Node first_seen property
@@ -202,43 +227,13 @@ class Cypher:
         cypher += f'ON MERGE SET {node}.updated_ts = timestamp() \n'
         return cypher
 
-    def on_create_set(self):
-        # timestamp of first seen
-        # query.append('ON CREATE SET {}.timestamp = "{}"'.format(node, timestamp_date))
-        return
+    def unique(self, node: str = None, label: str = ''):
+        label = self.assert_label(label)
+        return f'UNIQUE ({node} {label} {{'
 
-    def dict_to_cypher(self, data: dict) -> str:
-        """Dict to cypher
-
-        :return { `key`: "value" }
-        """
-
-        data = self.prepare_dict(data)
-        cypher = []
-        i = 1
-        for prop in data.keys():
-            value = data.get(prop)
-            prop = self.assert_property(prop)
-            query = f'{prop}: "{value}"'
-
-            if i < len(data.keys()):
-                cypher.append(query + ',\n')
-            else:
-                cypher.append(query)
-            i += 1
-
-        cypher = ' '.join(cypher)
-        cypher = f'{{\n {cypher} \n}} \n'
-        return cypher
-
-    def consolidate(self) -> str:
-        """Join cypher queries list into a string"""
-        return ' '.join(self.cypher_list).strip()
-
-    @staticmethod
-    def prepare_dict(blob: dict) -> dict:
-        """All inputs first needs to be dicts"""
-        try:
-            return dict(blob)
-        except Exception as _:
-            return dict(raw=urlencode(blob))
+    def updated(self, node: str = None):
+        """Node last_seen property"""
+        node = node
+        time = datetime.now(tz=timezone.utc).isoformat()
+        self.cypher_list.append(f'SET {node}.last_seen = "{time}"')
+        self.cypher_list.append(f'SET {node}.last_seen_ts = timestamp()')
