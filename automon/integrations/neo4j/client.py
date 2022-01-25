@@ -95,9 +95,9 @@ class Neo4jClient:
         return self.run()
 
     def relationship(self,
-                     A_node, A_label, A_prop, A_value,
-                     B_node, B_label, B_prop, B_value,
-                     label, node: str = None,
+                     A_node: str = 'A', A_label: str = None, A_prop: str = None, A_value: str = None,
+                     B_node: str = 'B', B_label: str = None, B_prop: str = None, B_value: str = None,
+                     label: str = None, node: str = 'r',
                      direction: str = '->'):
         """Create relationship between two existing nodes"""
 
