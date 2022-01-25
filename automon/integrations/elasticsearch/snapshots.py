@@ -40,7 +40,7 @@ class ElasticsearchSnapshotMonitor:
         self._client = ElasticsearchClient(config=self._config)
         self.connected = self._client.connected()
 
-        self._endpoint = self._client.config.ELASTICSEARCH_HOSTS
+        self._endpoint = self._client.config.ELASTICSEARCH_HOST
         self.repository = elasticsearch_repository
         self.snapshots_prefix = snapshots_prefix
 
