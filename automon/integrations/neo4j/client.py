@@ -75,13 +75,20 @@ class Neo4jClient:
         """Build a cypher"""
         self.cypher += query
 
-    def create(self, prop: str, value: str):
+    def create(self, prop: str,
+               value: str,
+               label: str = None,
+               node: str = None, **kwargs):
         """Create a node"""
-        cypher = self._Cypher.create(prop=prop, value=value)
+        cypher = self._Cypher.create(prop=prop, value=value, node=node, label=label, **kwargs)
         self.cypher = cypher
         return self.run()
 
-    def create_dict(self, prop: str, value: str, data: dict, label: str = None, node: str = None, **kwargs):
+    def create_dict(self, prop: str,
+                    value: str,
+                    data: dict,
+                    label: str = None,
+                    node: str = None, **kwargs):
         """Create a node from dict"""
         cypher = self._Cypher.create_dict(prop=prop, value=value, label=label, node=node, data=data, **kwargs)
         self.cypher = cypher
@@ -90,15 +97,15 @@ class Neo4jClient:
     def relationship(self,
                      A_node, A_label, A_prop, A_value,
                      B_node, B_label, B_prop, B_value,
-                     node: str = None, label: str = '',
+                     label, node: str = None,
                      direction: str = '->'):
         """Create relationship between two existing nodes"""
 
         cypher = self._Cypher.relationship(
-            A_node, A_label, A_prop, A_value,
-            B_node, B_label, B_prop, B_value,
-            node, label,
-            direction)
+            A_node=A_node, A_label=A_label, A_prop=A_prop, A_value=A_value,
+            B_node=B_node, B_label=B_label, B_prop=B_prop, B_value=B_value,
+            label=label, node=node,
+            direction=direction)
 
         self.cypher = cypher
         return self.run()
