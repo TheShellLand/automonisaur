@@ -8,6 +8,33 @@ from automon.log import Logging
 log = Logging(name='Cypher', level=Logging.DEBUG)
 
 
+class Node:
+
+    def __init__(self,
+                 node: str = None,
+                 label: str = None,
+                 prop: str = None,
+                 value: str = None):
+        """Basic Node
+
+        ( node :`label` { `prop`: "value" } )
+        """
+        self.node = node
+        self.label = Cypher.assert_label(label)
+        self.prop = Cypher.assert_property(prop)
+        self.value = value
+
+        if self.prop and self.value:
+            prop_val = f'{self.prop}: "{self.value}"'
+        else:
+            prop_val = ''
+
+        self.cypher = f'( {self.node} {self.label} {{ {prop_val} }} )'
+
+    def __repr__(self):
+        return self.cypher
+
+
 class Cypher:
 
     def __init__(self):
