@@ -69,18 +69,6 @@ class Cypher:
         self.cypher += f'{cypher} '
         return self.cypher
 
-    def cypher_end(self):
-        """End of cypher"""
-        return ') \n'
-
-    def return_all(self):
-        """RETURN *"""
-        return 'RETURN *'
-
-    def return_node(self, node: str = None):
-        """RETURN node"""
-        return f'RETURN {node}'
-
     def consolidate(self) -> str:
         """Join cypher queries list into a string"""
         return ' '.join(self.cypher_list).strip()
@@ -131,6 +119,22 @@ class Cypher:
         cypher += self.return_all()
         return cypher
 
+    def cypher_end(self):
+        """End of cypher"""
+        return ') \n'
+
+    def delete_all(self):
+        """Delete all nodes and relationships"""
+        return 'MATCH (n) DETACH DELETE n'
+
+    def delete_node(self, prop: str, value: str, node: str = None) -> str:
+        """Delete all matching nodes and its relationships"""
+        # MATCH (n {name: 'Andy'})
+        # DETACH DELETE n
+        cypher = self.match(prop=prop, value=value, node=node)
+        cypher += f'DETACH DELETE {node}'
+        return cypher
+
     def dict_to_property(self, data: dict, node: str = None) -> str:
         """Dict to cypher
 
@@ -156,18 +160,6 @@ class Cypher:
 
         cypher = ''.join(cypher)
         cypher = f'{cypher} \n'
-        return cypher
-
-    def delete_all(self):
-        """Delete all nodes and relationships"""
-        return 'MATCH (n) DETACH DELETE n'
-
-    def delete_node(self, prop: str, value: str, node: str = None) -> str:
-        """Delete all matching nodes and its relationships"""
-        # MATCH (n {name: 'Andy'})
-        # DETACH DELETE n
-        cypher = self.match(prop=prop, value=value, node=node)
-        cypher += f'DETACH DELETE {node}'
         return cypher
 
     def match(self, prop: str, value: str, node: str = None, label: str = ''):
@@ -240,6 +232,22 @@ class Cypher:
         cypher += self.set()
         return cypher
 
+    @staticmethod
+    def prepare_dict(blob: dict) -> dict:
+        """All inputs first needs to be dicts"""
+        try:
+            return dict(blob)
+        except Exception as _:
+            return dict(raw=urlencode(blob))
+
+    def return_all(self):
+        """RETURN *"""
+        return 'RETURN *'
+
+    def return_node(self, node: str = None):
+        """RETURN node"""
+        return f'RETURN {node}'
+
     def relationship(self,
                      A_node: str, A_label: str, A_prop: str, A_value: str,
                      B_node: str, B_label: str, B_prop: str, B_value: str,
@@ -305,6 +313,10 @@ class Cypher:
         self.cypher_list.append(f'SET {node}.last_seen = "{time}"')
         self.cypher_list.append(f'SET {node}.last_seen_ts = timestamp()')
 
+    @staticmethod
+    def set():
+        return 'SET \n'
+
     def timestamp_first_seen(self, node: str = None) -> str:
         """Node first_seen property
 
@@ -338,15 +350,3 @@ class Cypher:
         cypher = f'{node}.updated = "{time}", \n'
         cypher += f'{node}.updated_ts = timestamp() \n'
         return cypher
-
-    @staticmethod
-    def prepare_dict(blob: dict) -> dict:
-        """All inputs first needs to be dicts"""
-        try:
-            return dict(blob)
-        except Exception as _:
-            return dict(raw=urlencode(blob))
-
-    @staticmethod
-    def set():
-        return 'SET \n'
