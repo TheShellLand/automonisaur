@@ -38,7 +38,7 @@ class Neo4jClient:
         self._Cypher = Cypher()
 
         self.queue = Queue()
-        self.cypher = None
+        self.cypher = ''
         self.results = None
 
     def __repr__(self):
