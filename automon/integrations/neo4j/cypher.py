@@ -103,12 +103,11 @@ class Cypher:
     def create(self, prop: str, value: str, node: str = None, label: str = ''):
         """Create a node
 
-        CREATE (node :`label` { `prop`: "value" })
+        CREATE ( node :`label` { `prop`: "value" } )
         """
-        prop = self.assert_property(prop)
-        label = self.assert_label(label)
-
-        return f'CREATE ({node} {label} {{ {prop}: "{value}" }})\n'
+        n = Node(prop=prop, value=value, node=node, label=label)
+        cypher = f'CREATE {n} \n'
+        return cypher
 
     def create_dict(self, prop: str, value: str, data: dict, node: str = None, label: str = ''):
         """Create a node from dict
@@ -124,13 +123,9 @@ class Cypher:
         Node.last_seen = "2021-02-25T03:19:47.438901+00:00",
         Node.last_seen_ts = timestamp()
         SET
-        Node.prop = "value",
         Node.prop = "value"
         RETURN *
         """
-        label = self.assert_label(label)
-        prop = self.assert_property(prop)
-
         cypher = self.create(node=node, label=label, prop=prop, value=value)
         cypher += self.set()
         cypher += self.timestamp_first_seen()
@@ -169,7 +164,7 @@ class Cypher:
         """
 
         if not data:
-            return f'{node} = {node} \n'
+            return f'{{}} \n'
 
         data = self.prepare_dict(data)
         cypher = []
@@ -199,15 +194,14 @@ class Cypher:
 
         return f'MATCH ({node} {label} {{ {prop}: "{value}" }}) \n'
 
-    def merge(self, prop: str, value: str, node: str = None, label: str = ''):
+    def merge(self, prop: str = None, value: str = None, node: str = None, label: str = ''):
         """Merge a node
 
-        MERGE ( node :`label` { `prop`: "value" })
+        MERGE ( node :`label` { `prop`: "value" } )
         """
-        prop = self.assert_property(prop)
-        label = self.assert_label(label)
-
-        return f'MERGE ({node} {label} {{ {prop}: "{value}" }}) \n'
+        n = Node(prop=prop, value=value, node=node, label=label)
+        cypher = f'MERGE {n} \n'
+        return cypher
 
     def merge_dict(self, prop: str, value: str, data: dict, node: str = None, label: str = '') -> str:
         """Merge a node from a dict
@@ -231,9 +225,6 @@ class Cypher:
         Node.prop = "value"
         RETURN *
         """
-        label = self.assert_label(label)
-        prop = self.assert_property(prop)
-
         cypher = self.merge(prop=prop, value=value, node=node, label=label)
         cypher += self.on_create()
         cypher += self.timestamp_first_seen()
@@ -276,9 +267,9 @@ class Cypher:
         return f'RETURN {node}'
 
     def relationship(self,
-                     A_node: str, A_label: str, A_prop: str, A_value: str,
-                     B_node: str, B_label: str, B_prop: str, B_value: str,
-                     label, node: str = 'r',
+                     A_node: str = 'A', A_label: str = None, A_prop: str = None, A_value: str = None,
+                     B_node: str = 'B', B_label: str = None, B_prop: str = None, B_value: str = None,
+                     label: str = None, node: str = 'r',
                      direction: str = '->'):
         """Create relationship between two existing nodes
 
