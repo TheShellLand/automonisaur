@@ -75,34 +75,43 @@ class Neo4jClient:
         """Build a cypher"""
         self.cypher += query
 
-    def create(self, prop: str, value: str):
-        cypher = self._Cypher.create(prop=prop, value=value)
-        self.cypher = cypher
-        return self.run()
-
-    def create_node(self, data: dict, label: str = None, **kwargs):
+    def create(self, prop: str,
+               value: str,
+               label: str = None,
+               node: str = None, **kwargs):
         """Create a node"""
-        cypher = self._Cypher.create_dict(label=label, data=data, **kwargs)
+        cypher = self._Cypher.create(prop=prop, value=value, node=node, label=label, **kwargs)
         self.cypher = cypher
         return self.run()
 
-    def create_relationship(self, label: str,
-                            prop: str,
-                            value: str,
-                            other_prop: str,
-                            other_value: str,
-                            relationship: str,
-                            other_label: str = None):
-        """Create an A -> B relationship"""
+    def create_dict(self, prop: str,
+                    value: str,
+                    data: dict,
+                    label: str = None,
+                    node: str = None, **kwargs):
+        """Create a node from dict"""
+        cypher = self._Cypher.create_dict(prop=prop, value=value, label=label, node=node, data=data, **kwargs)
+        self.cypher = cypher
+        return self.run()
 
-        self._Cypher.relationship(
-            label, prop, value, other_prop, other_value, relationship, other_label)
+    def relationship(self,
+                     A_node, A_label, A_prop, A_value,
+                     B_node, B_label, B_prop, B_value,
+                     label, node: str = None,
+                     direction: str = '->'):
+        """Create relationship between two existing nodes"""
 
-        self._log.debug(self._Cypher)
-        return self._send(self._Cypher)
+        cypher = self._Cypher.relationship(
+            A_node=A_node, A_label=A_label, A_prop=A_prop, A_value=A_value,
+            B_node=B_node, B_label=B_label, B_prop=B_prop, B_value=B_value,
+            label=label, node=node,
+            direction=direction)
+
+        self.cypher = cypher
+        return self.run()
 
     def cypher_run(self, query: str):
-        """Run a straight cypher query"""
+        """Run a cypher query"""
         self.cypher = query
         return self.run()
 
@@ -118,17 +127,24 @@ class Neo4jClient:
         return self.run()
 
     def isConnected(self):
+        """Check if client is connected to server"""
         if self._client:
             return True
         return False
 
-    def merge(self, prop: str, value: str):
-        cypher = self._Cypher.merge(prop=prop, value=value)
+    def match(self, prop: str, value: str, node: str = None):
+        cypher = self._Cypher.match(prop=prop, value=value, node=node)
         self.cypher = cypher
         return self.run()
 
-    def merge_dict(self, data: dict, label: str = None, **kwargs):
-        """Merge a node"""
+    def merge(self, prop: str, value: str, node: str = None, label: str = None):
+        """Merge nodes"""
+        cypher = self._Cypher.merge(prop=prop, value=value, node=node, label=label)
+        self.cypher = cypher
+        return self.run()
+
+    def merge_dict(self, prop: str, value: str, data: dict, label: str = None, node: str = None, **kwargs):
+        """Merge nodes from dict"""
 
         # cypher_assertions = []
         # TODO: find a way to check if assertion has already been made
@@ -136,7 +152,7 @@ class Neo4jClient:
         # query = query.format(node=node, label=label)
         # cypher_assertions.append(query)  # Pre cypher query
 
-        cypher = self._Cypher.merge_dict(label=label, data=data)
+        cypher = self._Cypher.merge_dict(prop=prop, value=value, label=label, data=data, node=node, **kwargs)
         self.cypher = cypher
         return self.run()
 
@@ -155,8 +171,11 @@ class Neo4jClient:
 
         return self._send(cypher)
 
-    def run(self, cypher=None):
-        """Send cypher"""
+    def run(self, cypher=None) -> bool:
+        """Send the cypher query to the server"""
+        if not self.isConnected():
+            return False
+
         try:
             cypher = self.cypher
             response = self._session.run(cypher)
@@ -171,5 +190,8 @@ class Neo4jClient:
 
         return False
 
-    def search(self, query: str):
-        return NotImplemented
+    def search(self, prop: str, value: str, node: str = None):
+        cypher = self._Cypher.match(prop=prop, value=value, node=node)
+        cypher += self._Cypher.return_all()
+        self.cypher = cypher
+        return self.run()
