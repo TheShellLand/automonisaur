@@ -99,19 +99,15 @@ class Cypher:
         """Create a node from dict
 
         CREATE (Node :`human` { `name`: "finn" })
-        ON CREATE
         SET
         Node.first_seen = "2021-02-25T03:19:47.438596+00:00",
         Node.first_seen_ts = timestamp()
-        ON CREATE
         SET
         Node.prop = "value",
         Node.prop = "value"
-        ON MATCH
         SET
         Node.last_seen = "2021-02-25T03:19:47.438901+00:00",
         Node.last_seen_ts = timestamp()
-        ON MATCH
         SET
         Node.prop = "value",
         Node.prop = "value"
@@ -121,16 +117,16 @@ class Cypher:
         prop = self.assert_property(prop)
 
         cypher = self.create(node=node, label=label, prop=prop, value=value)
-        cypher += self.on_create()
+        cypher += self.set()
         cypher += self.timestamp_first_seen()
 
-        cypher += self.on_create()
+        cypher += self.set()
         cypher += self.dict_to_property(data=data, node=node)
 
-        cypher += self.on_match()
+        cypher += self.set()
         cypher += self.timestamp_last_seen(node=node)
 
-        cypher += self.on_match()
+        cypher += self.set()
         cypher += self.dict_to_property(data=data, node=node)
         cypher += self.return_all()
         return cypher
@@ -140,6 +136,9 @@ class Cypher:
 
         return: node.`key` = "value"
         """
+
+        if not data:
+            return f'{node} = {node} \n'
 
         data = self.prepare_dict(data)
         cypher = []
@@ -233,12 +232,12 @@ class Cypher:
 
     def on_match(self):
         cypher = 'ON MATCH \n'
-        cypher += 'SET \n'
+        cypher += self.set()
         return cypher
 
     def on_create(self):
         cypher = 'ON CREATE \n'
-        cypher += 'SET \n'
+        cypher += self.set()
         return cypher
 
     def relationship(self,
@@ -347,3 +346,7 @@ class Cypher:
             return dict(blob)
         except Exception as _:
             return dict(raw=urlencode(blob))
+
+    @staticmethod
+    def set():
+        return 'SET \n'
