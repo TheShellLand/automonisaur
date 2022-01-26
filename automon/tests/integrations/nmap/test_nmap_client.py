@@ -1,15 +1,9 @@
 import unittest
 
-from automon.integrations.nmap import Nmap, NmapConfig
-
-
-class NmapConfigTest(unittest.TestCase):
-    def test_config(self):
-        self.assertTrue(NmapConfig())
+from automon.integrations.nmap import Nmap
 
 
 class NmapTest(unittest.TestCase):
-    
     n = Nmap()
 
     def test_run(self):
