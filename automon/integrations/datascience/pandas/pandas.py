@@ -4,21 +4,10 @@ import pandas
 from io import StringIO
 from time import time as epoch_time
 
-from automon.log import Logging
+from automon import Logging
 
-
-def Series(*args, **kwargs) -> pandas.Series:
-    log = Logging('Series', level=Logging.ERROR)
-    s = pandas.Series(*args, **kwargs)
-    log.debug(s)
-    return s
-
-
-def DataFrame(*args, **kwargs) -> pandas.DataFrame:
-    log = Logging('DataFrame', level=Logging.ERROR)
-    df = pandas.DataFrame(*args, **kwargs)
-    log.debug(df)
-    return df
+from .series import Series
+from .dataframe import DataFrame
 
 
 class Pandas:
