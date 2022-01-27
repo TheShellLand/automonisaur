@@ -21,7 +21,7 @@ class RequestsClient(object):
 
         if url:
             self.url = url
-            self.results = self.get(url=self.url, data=self.data, headers=self.headers)
+            self.get(url=self.url, data=self.data, headers=self.headers)
 
     def delete(self,
                url: str = None,
