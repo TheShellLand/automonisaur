@@ -87,15 +87,19 @@ class Airport:
         return f'{command}'.split(' ')
 
     def create_psk(self, ssid: str, passphrase: str):
+        """Create PSK from specified pass phrase and SSID."""
         return self.run(args=f'-P --ssid={ssid} --password={passphrase}')['output']
 
     def disassociate(self):
+        """Disassociate from any network."""
         return self.run(args='-z')
 
     def getinfo(self):
+        """Print current wireless status, e.g. signal info, BSSID, port type etc."""
         return self.run(args='-I')
 
     def run(self, args=''):
+        """Run airport"""
         if not self.is_ready:
             return False
 
@@ -115,9 +119,11 @@ class Airport:
         return result
 
     def set_channel(self, channel: int):
+        """Set arbitrary channel on the card."""
         return self.run(args=f'-c{channel}')
 
     def scan(self, channel: int = None, args: str = ''):
+        """Perform a wireless broadcast scan."""
         if channel:
             result = self.run(args=f'-s{channel} {args}')
         else:
@@ -145,6 +151,7 @@ class Airport:
         return res
 
     def scan_xml(self, channel: int = None):
+        """Run scan and process xml output. Print info as XML."""
 
         while True:
 
