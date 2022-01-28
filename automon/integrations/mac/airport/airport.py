@@ -6,9 +6,10 @@ import subprocess
 from queue import Queue
 from subprocess import PIPE
 
-from automon.log import Logging
-from automon.helpers.dates import Dates
-from automon.integrations.mac.airport.helpers import Scan
+from automon import Logging
+from automon.helpers import Dates
+
+from .scan import Scan
 
 flags = {
     '-s': 'scan for wireless networks',
@@ -104,6 +105,7 @@ class Airport:
             return False
 
         command = self._command(f'{self._airport} {args}')
+        self._log.info(command)
 
         call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True)
         output, errors = call.communicate()
@@ -140,13 +142,12 @@ class Airport:
             res = self.scan(args=args)
 
         if not channel:
-            self._log.debug(f'Channel: Any')
+            self._log.info(f'Channel: Any')
         else:
-            self._log.debug(f'Channel: {channel}')
+            self._log.info(f'Channel: {channel}')
 
         if output:
-            print(f"{res['output']}")
-            self._log.debug(f"\n{res['output']}")
+            self._log.info(f"\n{res['output']}")
 
         return res
 

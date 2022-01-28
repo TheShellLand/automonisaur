@@ -1,1 +1,1 @@
-from .scanner import Airport
+from .airport import Airport
