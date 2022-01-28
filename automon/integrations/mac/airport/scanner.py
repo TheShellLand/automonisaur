@@ -86,6 +86,15 @@ class Airport:
     def _command(command: str) -> list:
         return f'{command}'.split(' ')
 
+    def create_psk(self, ssid: str, passphrase: str):
+        return self.run(args=f'-P --ssid={ssid} --password={passphrase}')['output']
+
+    def disassociate(self):
+        return self.run(args='-z')
+
+    def getinfo(self):
+        return self.run(args='-I')
+
     def run(self, args=''):
         if not self.is_ready:
             return False
@@ -104,6 +113,9 @@ class Airport:
         }
 
         return result
+
+    def set_channel(self, channel: int):
+        return self.run(args=f'-c{channel}')
 
     def scan(self, channel: int = None, args: str = ''):
         if channel:
@@ -131,18 +143,6 @@ class Airport:
             self._log.debug(f"\n{res['output']}")
 
         return res
-
-    def set_channel(self, channel: int):
-        return self.run(args=f'-c{channel}')
-
-    def getinfo(self):
-        return self.run(args='-I')
-
-    def disassociate(self):
-        return self.run(args='-z')
-
-    def create_psk(self, ssid: str, passphrase: str):
-        return self.run(args=f'-P --ssid={ssid} --password={passphrase}')['output']
 
     def scan_xml(self, channel: int = None):
 
