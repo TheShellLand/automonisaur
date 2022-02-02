@@ -1,13 +1,21 @@
 import os
 import sys
+import json
 import xmltodict
 import subprocess
 
+from lxml import etree
+from io import StringIO
+from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ET
+
+import pandas as pd
 from queue import Queue
 from subprocess import PIPE
 
 from automon import Logging
 from automon.helpers import Dates
+from automon.integrations.datascience import DataFrame, Series
 
 from .scan import Scan
 
@@ -35,7 +43,7 @@ class Airport:
           - Apple M1
 
 
-        # makbuk: eric$ /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport  -h
+        # makbuk: eric$ /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -h
         # Supported arguments:
         #  -c[<arg>] --channel=[<arg>]    Set arbitrary channel on the card
         #  -z        --disassociate       Disassociate from any network
@@ -62,11 +70,11 @@ class Airport:
         self._network = None
         self._info = None
 
+        self._queue = Queue()
+
         self.scans = []
         self.parsed_scans = []
         self.ssids = []
-
-        self._queue = Queue()
 
         if os.path.exists(self._airport):
             self.is_ready = True
@@ -105,11 +113,14 @@ class Airport:
             return False
 
         command = self._command(f'{self._airport} {args}')
-        self._log.info(command)
+        self._log.info(' '.join(command))
 
-        call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True)
-        output, errors = call.communicate()
-        call.wait()
+        try:
+            call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True)
+            output, errors = call.communicate()
+            call.wait()
+        except Exception as e:
+            self._log.error(e, raise_exception=True)
 
         result = {
             'scan_date': Dates.iso(),
@@ -124,13 +135,14 @@ class Airport:
         """Set arbitrary channel on the card."""
         return self.run(args=f'-c{channel}')
 
-    def scan(self, channel: int = None, args: str = ''):
+    def scan(self, channel: int = None, args: str = None, ssid: str = None):
         """Perform a wireless broadcast scan."""
-        if channel:
-            result = self.run(args=f'-s{channel} {args}')
-        else:
-            result = self.run(args=f'-s {args}')
 
+        channel = f'-c {channel}' if channel else ''
+        args = args or ''
+        ssid = ssid or ''
+
+        result = self.run(args=f'-s {ssid} {channel} {args}')
         self.scans.append(result)
 
         return result
@@ -151,22 +163,28 @@ class Airport:
 
         return res
 
-    def scan_xml(self, channel: int = None):
-        """Run scan and process xml output. Print info as XML."""
+    def scan_xml(self, ssid: str = None, channel: int = None):
+        """Run scan and process xml output."""
 
         while True:
 
             if channel is not None:
-                scan = self.scan(args='-x', channel=channel)
+                scan = self.scan(ssid=ssid, args='-x', channel=channel)
             else:
-                scan = self.scan(args='-x')
+                scan = self.scan(ssid=ssid, args='-x')
 
             data = scan['output']
             data = [x.strip() for x in data.splitlines()]
             data = ''.join(data)
+            series = []
+
+            # root = xmltodict.parse(data)
+            # root = pd.read_xml(data)
+            # root = ET.fromstring(data)
+            # root = etree.fromstring(data.encode())
 
             try:
-                root = xmltodict.parse(data)
+                root = BeautifulSoup(data, "xml")
                 break
             except Exception as e:
                 self._log.error(f'Scan not parsed: {e}, {scan["cmd"]}', enable_traceback=False)
