@@ -1,6 +1,8 @@
+from automon import Logging
 from ..config import PhantomConfig
 
 config = PhantomConfig()
+log = Logging(name='Urls', level=Logging.DEBUG)
 
 
 class Urls:
@@ -13,10 +15,10 @@ class Urls:
 
     # type
     ACTION_RUN = f'{REST}/action_run'
-    ARTIFACT = f'{REST}/artifact'
-    ASSET = f'{REST}/asset'
     APP = f'{REST}/app'
     APP_RUN = f'{REST}/app_run'
+    ARTIFACT = f'{REST}/artifact'
+    ASSET = f'{REST}/asset'
     CLUSTER_NODE = f'{REST}/cluster_node'
     CONTAINER = f'{REST}/container'
     PLAYBOOK_RUN = f'{REST}/playbook_run'
