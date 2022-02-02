@@ -31,12 +31,10 @@ class RequestsClient(object):
 
         try:
             self.results = requests.delete(url=url, data=data, headers=headers, **kwargs)
-            self._log.debug(f'{self.results.status_code} '
-                            f'{self.results.url} '
-                            f'{round(len(self.results.content) / 1024, 2)}  KB')
+            self._log.debug(self._log_result())
             return True
         except Exception as e:
-            self._log.error(f'{self.results.status_code} get failed. {e}', enable_traceback=False)
+            self._log.error(f'delete failed. {e}', enable_traceback=False)
         return False
 
     def get(self,
@@ -47,12 +45,10 @@ class RequestsClient(object):
 
         try:
             self.results = requests.get(url=url, data=data, headers=headers, **kwargs)
-            self._log.debug(f'{self.results.status_code} '
-                            f'{self.results.url} '
-                            f'{round(len(self.results.content) / 1024, 2)} KB')
+            self._log.debug(self._log_result())
             return True
         except Exception as e:
-            self._log.error(f'{self.results.status_code} get failed. {e}', enable_traceback=False)
+            self._log.error(f'get failed. {e}', enable_traceback=False)
         return False
 
     def patch(self,
@@ -63,12 +59,10 @@ class RequestsClient(object):
 
         try:
             self.results = requests.patch(url=url, data=data, headers=headers, **kwargs)
-            self._log.debug(f'{self.results.status_code} '
-                            f'{self.results.url} '
-                            f'{round(len(self.results.content) / 1024, 2)} KB')
+            self._log.debug(self._log_result())
             return True
         except Exception as e:
-            self._log.error(f'{self.results.status_code} post failed. {e}', raise_exception=False)
+            self._log.error(f'patch failed. {e}', enable_traceback=False)
         return False
 
     def post(self,
@@ -79,12 +73,10 @@ class RequestsClient(object):
 
         try:
             self.results = requests.post(url=url, data=data, headers=headers, **kwargs)
-            self._log.debug(f'{self.results.status_code} '
-                            f'{self.results.url} '
-                            f'{round(len(self.results.content) / 1024, 2)} KB')
+            self._log.debug(self._log_result())
             return True
         except Exception as e:
-            self._log.error(f'{self.results.status_code} post failed. {e}', raise_exception=False)
+            self._log.error(f'post failed. {e}', enable_traceback=False)
         return False
 
     def put(self,
@@ -95,13 +87,16 @@ class RequestsClient(object):
 
         try:
             self.results = requests.put(url=url, data=data, headers=headers, **kwargs)
-            self._log.debug(f'{self.results.status_code} '
-                            f'{self.results.url} '
-                            f'{round(len(self.results.content) / 1024, 2)} KB')
+            self._log.debug(self._log_result())
             return True
         except Exception as e:
-            self._log.error(f'{self.results.status_code} post failed. {e}', raise_exception=False)
+            self._log.error(f'put failed. {e}', enable_traceback=False)
         return False
+
+    def _log_result(self):
+        return f'{self.results.status_code} ' \
+               f'{self.results.url} ' \
+               f'{round(len(self.results.content) / 1024, 2)} KB'
 
 
 class Requests(RequestsClient):
