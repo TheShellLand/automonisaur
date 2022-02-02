@@ -49,7 +49,7 @@ class RequestsClient(object):
             self.results = requests.get(url=url, data=data, headers=headers, **kwargs)
             self._log.debug(f'{self.results.status_code} '
                             f'{self.results.url} '
-                            f'{round(len(self.results.content) / 1024, 2)}  KB')
+                            f'{round(len(self.results.content) / 1024, 2)} KB')
             return True
         except Exception as e:
             self._log.error(f'{self.results.status_code} get failed. {e}', enable_traceback=False)
@@ -65,7 +65,7 @@ class RequestsClient(object):
             self.results = requests.patch(url=url, data=data, headers=headers, **kwargs)
             self._log.debug(f'{self.results.status_code} '
                             f'{self.results.url} '
-                            f'{round(len(self.results.content) / 1024, 2)}  KB')
+                            f'{round(len(self.results.content) / 1024, 2)} KB')
             return True
         except Exception as e:
             self._log.error(f'{self.results.status_code} post failed. {e}', raise_exception=False)
@@ -81,7 +81,7 @@ class RequestsClient(object):
             self.results = requests.post(url=url, data=data, headers=headers, **kwargs)
             self._log.debug(f'{self.results.status_code} '
                             f'{self.results.url} '
-                            f'{round(len(self.results.content) / 1024, 2)}  KB')
+                            f'{round(len(self.results.content) / 1024, 2)} KB')
             return True
         except Exception as e:
             self._log.error(f'{self.results.status_code} post failed. {e}', raise_exception=False)
@@ -97,7 +97,7 @@ class RequestsClient(object):
             self.results = requests.put(url=url, data=data, headers=headers, **kwargs)
             self._log.debug(f'{self.results.status_code} '
                             f'{self.results.url} '
-                            f'{round(len(self.results.content) / 1024, 2)}  KB')
+                            f'{round(len(self.results.content) / 1024, 2)} KB')
             return True
         except Exception as e:
             self._log.error(f'{self.results.status_code} post failed. {e}', raise_exception=False)
