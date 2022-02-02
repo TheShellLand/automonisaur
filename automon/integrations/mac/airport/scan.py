@@ -1,3 +1,5 @@
+from bs4 import BeautifulSoup
+
 from automon.log import Logging
 
 from .ssid import Ssid
@@ -6,42 +8,70 @@ from .ssid import Ssid
 class Scan:
     def __init__(self, scan: dict, result: dict):
         self._log = Logging(name=Scan.__name__, level=Logging.DEBUG)
-        self._data = result
+        self._result = result
+        self._scan = scan
+        self._scan_cmd = ' '.join(scan['cmd'])
+        self._scans = [self._bs2dict(x) for x in result.contents[1].contents[0].contents]
 
-        self.scan_date = scan['scan_date']
-        self.ssids = []
+        self.scan_date = self._scan['scan_date']
+        self.cmd = self._scan_cmd
+        self.ssids = sorted([Ssid(_ssid) for _ssid in self._scans], reverse=True)
+        self.summary = {
+            'Total SSID': len(self.ssids),
+            'SSID': {}
+        }
 
-        try:
-            self._scans = result['plist']['array']['dict']
-        except Exception as e:
-            self.ssids = []
-            self._log.debug(f'No ssids found, {" ".join(scan["cmd"])}')
+        for _ssid in self.ssids:
+            i = self.summary['SSID'].get(_ssid.ssid, 0) + 1
+            self.summary['SSID'][_ssid.ssid] = i
+        self.summary['SSID'] = {k: v for k, v in sorted(self.summary['SSID'].items())}
 
-        self.ssids = [Ssid(ssid) for ssid in self._scans]
-
-        self.summary = {}
-
-        for ssid in self.ssids:
-            s_ssid = ssid.ssid
-            self.summary[s_ssid] = 0
-
-        for ssid in self.ssids:
-            s_ssid = ssid.ssid
-            s_mac = ssid.mac
-            s_device = ssid.device_info
-
-            self.summary[s_ssid] += 1
-
-        sort = sorted(self.summary.items(), key=lambda kv: kv[1], reverse=True)
-
-        [self._log.debug(f'{k}: {v}')
-         for k, v in sort]
-
-        self._log.debug(f'Total SSID: {len(self.ssids)}')
+        self._log.info(f'Total SSID: {self.summary["Total SSID"]}')
+        self._log.debug(f'Command: {self._scan_cmd}')
 
     def __repr__(self):
-        return f'{[[x.ssid for x in self.ssids]]}'
+        return f'{self.summary}'
 
     def __eq__(self, other):
         if isinstance(other, Scan):
             return self.ssids == other.ssids
+
+    def _bs2dict(self, bs: BeautifulSoup, **kwargs):
+        d = {}
+
+        key = None
+        value = None
+
+        if 'key' in kwargs:
+            key = kwargs['key']
+
+        if 'value' in kwargs:
+            value = kwargs['value']
+
+        if hasattr(bs, 'contents'):
+            d.update(self._bs2dict(bs.contents, key=key, value=bs.contents))
+
+        elif isinstance(bs, list):
+            for tag in bs:
+                if tag.name == 'key':
+                    key = tag.text
+                d.update(self._bs2dict(tag, key=key, value=tag))
+
+        elif key and value:
+            d.update({key: value})
+
+        else:
+            if '_missed' in d.keys():
+                d['_missed'].append({key: value})
+            else:
+                d['_missed'] = [{key: value}]
+
+        return d
+
+    def byDistance(self):
+        self.ssids = sorted(self.ssids, key=(lambda x: x.rssi), reverse=True)
+        return self.ssids
+
+    def bySsid(self):
+        self.ssids = sorted(self.ssids, key=(lambda x: x.ssid))
+        return self.ssids
