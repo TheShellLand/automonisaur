@@ -44,7 +44,7 @@ class NmapResult(object):
             self.command = df.loc['@args'][0]
             self.cmd = self.command
             self.time_start = df.loc['@start'][0]
-            self.time_startstr = df.loc['@startstr'][0]
+            self.time_start_str = df.loc['@startstr'][0]
 
             self.hosts_up = self._runstats.loc[:, 'hosts.@up'][0]
             self.hosts_down = self._runstats.loc[:, 'hosts.@down'][0]
@@ -60,7 +60,7 @@ class NmapResult(object):
             self._log.info(f'hosts down: {self.hosts_down}')
             # self._log.info(f'hosts total: {self.hosts_total}')
             self._log.info(f'{self.summary}')
-            self._log.info(f'finished processing output ({round(df.memory_usage().sum() / 1024, 2)} Kb)')
+            self._log.info(f'finished {self.file} ({round(df.memory_usage().sum() / 1024, 2)} Kb)')
 
     def ports(self, df: DataFrame = None):
         if df:
