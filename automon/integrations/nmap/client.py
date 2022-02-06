@@ -44,14 +44,11 @@ class Nmap(object):
     def isReady(self):
         return self.config.isReady()
 
-    def pretty(self):
-        return print(self._runner.stdout.decode())
-
     def nmap(self, command: str, **kwargs) -> bool:
         return self.run(command=command, **kwargs)
 
-    def scan(self, command: str, **kwargs) -> bool:
-        return self.run(command=command, **kwargs)
+    def pretty(self):
+        return print(self._runner.stdout.decode())
 
     def run(self, command: str, output: bool = True, cleanup: bool = True, **kwargs) -> bool:
 
@@ -90,3 +87,6 @@ class Nmap(object):
             return False
 
         return True
+
+    def scan(self, command: str, **kwargs) -> bool:
+        return self.run(command=command, **kwargs)
