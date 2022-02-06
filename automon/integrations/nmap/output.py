@@ -62,10 +62,18 @@ class NmapResult(object):
             self._log.info(f'{self.summary}')
             self._log.info(f'finished {self.file} ({round(df.memory_usage().sum() / 1024, 2)} Kb)')
 
-    def ports(self, df: DataFrame = None):
-        if df:
-            return self._get_ports(df)
-        return self._get_ports()
+    def __repr__(self):
+        msg = f'{self.summary} '
+
+        if self.df.memory_usage().sum() / 1024 / 1024 / 1024 > 1:
+            msg += f'({round(self.df.memory_usage().sum() / 1024 / 1024 / 1024, 2)} Gb)'
+        else:
+            msg += f'({round(self.df.memory_usage().sum() / 1024, 2)} Kb)'
+
+        return msg
+
+    def __len__(self):
+        return int(self.df.memory_usage().sum())
 
     def _get_ports(self, df: DataFrame = None) -> DataFrame or False:
 
@@ -124,15 +132,7 @@ class NmapResult(object):
             return self.host.loc[:, 'address.@addr']
         return False
 
-    def __repr__(self):
-        msg = f'{self.summary} '
-
-        if self.df.memory_usage().sum() / 1024 / 1024 / 1024 > 1:
-            msg += f'({round(self.df.memory_usage().sum() / 1024 / 1024 / 1024, 2)} Gb)'
-        else:
-            msg += f'({round(self.df.memory_usage().sum() / 1024, 2)} Kb)'
-
-        return msg
-
-    def __len__(self):
-        return int(self.df.memory_usage().sum())
+    def ports(self, df: DataFrame = None):
+        if df:
+            return self._get_ports(df)
+        return self._get_ports()
