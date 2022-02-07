@@ -1,39 +1,42 @@
 from bs4 import BeautifulSoup
 
-from automon.log import Logging
+from automon import Logging
 
 from .ssid import Ssid
 
 
-class Scan:
-    def __init__(self, scan: dict, result: dict):
-        self._log = Logging(name=Scan.__name__, level=Logging.DEBUG)
+class ScanXml:
+    def __init__(self, result: BeautifulSoup):
+        self._log = Logging(name=ScanXml.__name__, level=Logging.DEBUG)
         self._result = result
-        self._scan = scan
-        self._scan_cmd = ' '.join(scan['cmd'])
-        self._scans = [self._bs2dict(x) for x in result.contents[1].contents[0].contents]
+        self._scans = []
 
-        self.scan_date = self._scan['scan_date']
-        self.cmd = self._scan_cmd
+        self.ssids = []
+        self.summary = {}
+
+        try:
+            _bssids = result.contents[1].contents[0].contents
+            self._scans = [self._bs2dict(x) for x in _bssids]
+        except Exception as e:
+            self._log.error(f'No BSSIDs', enable_traceback=False)
+
         self.ssids = sorted([Ssid(_ssid) for _ssid in self._scans], reverse=True)
-        self.summary = {
-            'Total SSID': len(self.ssids),
-            'SSID': {}
-        }
+        self.summary['Total SSID'] = len(self.ssids)
+        self.summary['SSID'] = {}
 
         for _ssid in self.ssids:
-            i = self.summary['SSID'].get(_ssid.ssid, 0) + 1
-            self.summary['SSID'][_ssid.ssid] = i
+            count = self.summary['SSID'].get(_ssid.ssid, 0) + 1
+            self.summary['SSID'][_ssid.ssid] = count
         self.summary['SSID'] = {k: v for k, v in sorted(self.summary['SSID'].items())}
 
         self._log.info(f'Total SSID: {self.summary["Total SSID"]}')
-        self._log.debug(f'Command: {self._scan_cmd}')
+        # self._log.debug(f'Command: {self._scan_cmd}')
 
     def __repr__(self):
         return f'{self.summary}'
 
     def __eq__(self, other):
-        if isinstance(other, Scan):
+        if isinstance(other, ScanXml):
             return self.ssids == other.ssids
 
     def _bs2dict(self, bs: BeautifulSoup, **kwargs):
@@ -67,6 +70,10 @@ class Scan:
                 d['_missed'] = [{key: value}]
 
         return d
+
+    def byAge(self):
+        self.ssids = sorted(self.ssids, key=(lambda x: x.age))
+        return self.ssids
 
     def byDistance(self):
         self.ssids = sorted(self.ssids, key=(lambda x: x.rssi), reverse=True)
