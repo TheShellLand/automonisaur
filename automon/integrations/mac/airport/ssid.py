@@ -10,7 +10,7 @@ class Ssid:
 
         self.AGE = int(self._ssid.get('AGE', 0))
         self.AP_MODE = self._ssid.get('AP_MODE', None)
-        self.BSSID = self._ssid.get('BSSID', None)
+        self.BSSID = f"{self._ssid.get('BSSID', None)}".upper()
         self.CHANNEL = self._ssid.get('CHANNEL', None)
         self.HT_SECONDARY_CHAN_OFFSET = self._ssid.get('HT_SECONDARY_CHAN_OFFSET', None)
         self.INFO = self._ssid.get('INFO', None)
@@ -29,6 +29,7 @@ class Ssid:
         self.bssid = self.BSSID
         self.channel = self.CHANNEL
         self.channel_offset = self.HT_SECONDARY_CHAN_OFFSET
+        self.channel_offset_full = f'{self.channel},+{self.channel_offset}'
         self.channels = self.IE_KEY_80211D_NUM_CHANNELS
         self.country = self.IE_KEY_80211D_COUNTRY_CODE
         self.device_info = self.INFO
@@ -42,11 +43,12 @@ class Ssid:
         self.ssid = self.SSID_STR
         self.wps_state = self.IE_KEY_WPS_SC_STATE
 
-        self.summary = f'{self.ssid} ' \
-                       f'[rssi: {self.distance}] ' \
-                       f'[ch: {self.channel},+{self.channel_offset}] ' \
-                       f'[noise: {self.noise}] ({self.mac}) ' \
-                       f'[age: {self.age}]'
+        self.summary = f'[rssi: {self.distance}] ' \
+                       f'[ch: {self.channel}] ' \
+                       f'{self.ssid} ' \
+                       f'[bssid: {self.mac}] ' \
+                       f'[noise: {self.noise}] ' \
+                       f'[age: {self.age}] '
 
         self._log.debug(f'{self.summary}')
 

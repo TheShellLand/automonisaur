@@ -1,23 +1,13 @@
 import os
 import sys
-import json
-import xmltodict
-import subprocess
 
-from lxml import etree
-from io import StringIO
 from bs4 import BeautifulSoup
-import xml.etree.ElementTree as ET
-
-import pandas as pd
-from queue import Queue
-from subprocess import PIPE
 
 from automon import Logging
+from automon.helpers import Run
 from automon.helpers import Dates
-from automon.integrations.datascience import DataFrame, Series
 
-from .scan import Scan
+from .scan import ScanXml
 
 flags = {
     '-s': 'scan for wireless networks',
@@ -61,19 +51,23 @@ class Airport:
         self._log = Logging(name=Airport.__name__, level=Logging.DEBUG)
 
         self._airport = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
-        self.is_ready = False
-
-        self.is_mac = False
 
         self._connected = None
         self._channel = None
         self._network = None
         self._info = None
 
-        self._queue = Queue()
+        self._runner = Run()
 
-        self.scans = []
-        self.parsed_scans = []
+        self.is_mac = False
+        self.is_ready = False
+
+        self.scan_cmd = None
+        self.scan_date = None
+        self.scan_error = None
+        self.scan_output = None
+        self.scan_result = None
+
         self.ssids = []
 
         if os.path.exists(self._airport):
@@ -97,7 +91,9 @@ class Airport:
 
     def create_psk(self, ssid: str, passphrase: str):
         """Create PSK from specified pass phrase and SSID."""
-        return self.run(args=f'-P --ssid={ssid} --password={passphrase}')['output']
+        if self.run(args=f'-P --ssid={ssid} --password={passphrase}'):
+            return f'{self.scan_output}'.strip()
+        return False
 
     def disassociate(self):
         """Disassociate from any network."""
@@ -107,99 +103,85 @@ class Airport:
         """Print current wireless status, e.g. signal info, BSSID, port type etc."""
         return self.run(args='-I')
 
-    def run(self, args=''):
+    def run(self, args: str = None):
         """Run airport"""
         if not self.is_ready:
             return False
 
-        command = self._command(f'{self._airport} {args}')
-        self._log.info(' '.join(command))
+        command = f'{self._airport}'
+
+        if args:
+            command = f'{self._airport} {args}'
+
+        self.scan_cmd = command
+        self.scan_date = Dates.iso()
 
         try:
-            call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True)
-            output, errors = call.communicate()
-            call.wait()
+            self._log.info(command)
+            if self._runner.Popen(command=command, text=True):
+                self.scan_output = self._runner.stdout
+                return True
         except Exception as e:
             self._log.error(e, raise_exception=True)
 
-        result = {
-            'scan_date': Dates.iso(),
-            'cmd': command,
-            'output': output,
-            'errors': errors
-        }
-
-        return result
+        return False
 
     def set_channel(self, channel: int):
         """Set arbitrary channel on the card."""
-        return self.run(args=f'-c{channel}')
+        return self.run(args=f'-c {channel}')
 
     def scan(self, channel: int = None, args: str = None, ssid: str = None):
         """Perform a wireless broadcast scan."""
 
-        channel = f'-c {channel}' if channel else ''
-        args = args or ''
-        ssid = ssid or ''
+        cmd = f'-s'
 
-        result = self.run(args=f'-s {ssid} {channel} {args}')
-        self.scans.append(result)
-
-        return result
-
-    def scan_summary(self, channel: int = None, args: str = '', output: bool = True):
         if channel is not None:
-            res = self.scan(channel=channel, args=args)
-        else:
-            res = self.scan(args=args)
+            cmd = f'{cmd} -c {channel}'
 
-        if not channel:
-            self._log.info(f'Channel: Any')
-        else:
-            self._log.info(f'Channel: {channel}')
+        if ssid is not None:
+            cmd = f'{cmd} {ssid}'
 
-        if output:
-            self._log.info(f"\n{res['output']}")
+        if args:
+            cmd = f'{cmd} {args}'
 
-        return res
+        if self.run(args=cmd):
+            self.scan_output = self._runner.stdout
+            self.scan_error = self._runner.stderr
+            return True
+
+        return False
+
+    def scan_channel(self, channel: int = None):
+        return self.scan(channel=channel)
+
+    def scan_summary(self, channel: int = None, args: str = None, output: bool = True):
+        if self.scan(channel=channel, args=args):
+            if output:
+                self._log.info(f'{self.scan_output}')
+            return True
+        return False
 
     def scan_xml(self, ssid: str = None, channel: int = None):
         """Run scan and process xml output."""
 
-        while True:
+        self.scan(ssid=ssid, args='-x', channel=channel)
 
-            if channel is not None:
-                scan = self.scan(ssid=ssid, args='-x', channel=channel)
-            else:
-                scan = self.scan(ssid=ssid, args='-x')
+        data = self.scan_output
+        data = [x.strip() for x in data.splitlines()]
+        data = ''.join(data)
 
-            data = scan['output']
-            data = [x.strip() for x in data.splitlines()]
-            data = ''.join(data)
-            series = []
-
+        try:
             # root = xmltodict.parse(data)
             # root = pd.read_xml(data)
             # root = ET.fromstring(data)
             # root = etree.fromstring(data.encode())
+            root = BeautifulSoup(data, "xml")
 
-            try:
-                root = BeautifulSoup(data, "xml")
-                break
-            except Exception as e:
-                self._log.error(f'Scan not parsed: {e}, {scan["cmd"]}', enable_traceback=False)
+            self.scan_result = ScanXml(root)
+            self.ssids = self.scan_result.ssids
 
-        parsed = Scan(scan=scan, result=root)
+            return True
+        except Exception as e:
+            self._log.error(f'Scan not parsed: {e}, {self.scan["cmd"]}', enable_traceback=False)
 
-        if not parsed:
-            self._log.error(f'root not parsed')
-
-        self.parsed_scans.append(parsed)
-
-        for ssid in parsed.ssids:
-            self._queue.put(ssid)
-            self.ssids.append(ssid)
-
-        self.ssids.sort()
-
-        return parsed
+        return False
