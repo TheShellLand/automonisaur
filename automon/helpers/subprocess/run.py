@@ -3,7 +3,8 @@ import subprocess
 from pprint import pprint
 from subprocess import PIPE
 
-from automon.log import Logging
+import automon
+
 from automon.helpers import Dates
 
 
@@ -11,7 +12,7 @@ class Run:
 
     def __init__(self, command: str = None, *args, **kwargs):
         """Run shell"""
-        self._log = Logging(name=Run.__name__, level=Logging.DEBUG)
+        self._log = automon.Logging(name=Run.__name__, level=automon.Logging.DEBUG)
 
         self.last_run = None
         self.command = ''
@@ -29,6 +30,9 @@ class Run:
         if self.call:
             self.returncode = self.call.returncode
             return self.returncode
+
+    def Popen(self, *args, **kwargs):
+        return self.run(*args, **kwargs)
 
     def pretty(self):
         return pprint(self.stdout.decode())
@@ -52,9 +56,9 @@ class Run:
             return self.run(command=f'which {program}', *args, **kwargs)
         return False
 
-    def run_command(self, command: str, **kwargs) -> bool:
+    def run_command(self, *args, **kwargs) -> bool:
         """alias to run"""
-        return self.run(command=command, **kwargs)
+        return self.run(*args, **kwargs)
 
     def run(self, command: str = None,
             text: bool = False,
@@ -63,7 +67,7 @@ class Run:
             **kwargs) -> bool:
 
         if command:
-            command = self._command(f'{command}')
+            command = self._command(command)
 
         elif self.command:
             command = self._command(self.command)
@@ -89,8 +93,10 @@ class Run:
         return False
 
     def _command(self, command: str) -> list:
+        if isinstance(command, str):
+            command = f'{command}'.split(' ')
         self.command = command
-        return f'{command}'.split(' ')
+        return self.command
 
     def __repr__(self) -> str:
         return f'{self.command} stderr: ({len(self.stderr) / 1024} Kb) stdout: ({round(len(self.stdout) / 1024, 2)} Kb)'
