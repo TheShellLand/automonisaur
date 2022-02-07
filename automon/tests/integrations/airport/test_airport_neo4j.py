@@ -13,6 +13,7 @@ class AirportToNeo4jTest(unittest.TestCase):
     def test_scan_xml(self):
         if self.a.is_mac:
             self.assertTrue(self.a.scan_xml())
+            pass
 
 
 if __name__ == '__main__':

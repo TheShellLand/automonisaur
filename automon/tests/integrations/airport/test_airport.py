@@ -1,7 +1,7 @@
 import sys
 import unittest
 
-from automon.integrations.mac.airport.scanner import Airport
+from automon.integrations.mac.airport import Airport
 
 
 class AirportTest(unittest.TestCase):
@@ -30,6 +30,10 @@ class AirportTest(unittest.TestCase):
         if self.a.is_mac:
             pass
             # self.assertTrue(self.a.set_channel(10))
+
+    def test_disassociate(self):
+        if self.a.is_mac:
+            pass
             # self.assertTrue(self.a.disassociate())
 
     def test_getinto(self):
