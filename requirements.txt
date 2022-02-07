@@ -2,40 +2,12 @@
 #git+https://github.com/TheShellLand/automonisaur.git
 #automonisaur
 
-# prerequisites
+# base
 requests>=2.26.0
 xmltodict>=0.12.0
 
-# flask
-Flask>=2.0.1
-Flask-Login>=0.5.0
-Flask-WTF>=0.15.1
-bcrypt>3.1.7
-
-# elasticsearch
-elasticsearch>=7.14.0
-
-# neo4j
-neo4j-driver>=4.3.4
-
-# minio
-minio>=7.1.0
-
-# slack
-slackclient>=2.9.3
-
-# openstack swift
-python-keystoneclient>=4.2.0
-python-swiftclient>=3.12.0
-
-# selenium
-selenium>=3.141.0
-
-# splunk
-splunk-sdk>=1.6.16
-
-# phantom
-pytz>=2021.1
+# airport
+beautifulsoup4>=4.10.0
 
 # datascience
 pandas>=1.1.5
@@ -43,16 +15,44 @@ jupyterlab>=3.1.9
 numpy>=1.19.5
 swifter>=1.0.9
 
-# fix nested asyncio loop
-nest-asyncio>=1.5.1
+# elasticsearch
+elasticsearch>=7.14.0
+
+# flask
+Flask>=2.0.1
+Flask-Login>=0.5.0
+Flask-WTF>=0.15.1
+bcrypt>3.1.7
+
+# minio
+minio>=7.1.0
+
+# neo4j
+neo4j-driver>=4.3.4
+
+# openstack swift
+python-keystoneclient>=4.2.0
+python-swiftclient>=3.12.0
+
+# phantom
+pytz>=2021.1
+
+# selenium
+selenium>=3.141.0
+
+# sentry.io
+sentry-sdk>=1.5.1
+
+# slack
+slackclient>=2.9.3
+
+# splunk
+splunk-sdk>=1.6.16
 
 # unit testing
 pytest>=6.2.4
 pytest-cov>=2.12.1
 coverage>=5.4
-
-# sentry.io
-sentry-sdk>=1.5.1
 
 # pypi
 setuptools
@@ -61,3 +61,6 @@ twine
 
 psutil>=5.8.0
 urllib3>=1.26.6
+
+# fix nested asyncio loop
+nest-asyncio>=1.5.1
