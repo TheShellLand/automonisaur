@@ -43,11 +43,11 @@ class Ssid:
         self.ssid = self.SSID_STR
         self.wps_state = self.IE_KEY_WPS_SC_STATE
 
-        self.summary = f'[rssi: {self.distance}] ' \
+        self.summary = f'[rssi: {self.distance} dBm] ' \
                        f'[ch: {self.channel}] ' \
                        f'{self.ssid} ' \
                        f'[bssid: {self.mac}] ' \
-                       f'[noise: {self.noise}] ' \
+                       f'[noise: {self.noise} dBm] ' \
                        f'[age: {self.age}] '
 
         self._log.debug(f'{self.summary}')
