@@ -269,8 +269,7 @@ class Cypher:
     def relationship(self,
                      A_node: str = 'A', A_label: str = None, A_prop: str = None, A_value: str = None,
                      B_node: str = 'B', B_label: str = None, B_prop: str = None, B_value: str = None,
-                     label: str = None, node: str = 'r',
-                     direction: str = '->'):
+                     WHERE: str = None, label: str = None, node: str = 'r', direction: str = '->'):
         """Create relationship between two existing nodes
 
         MATCH (A_node :A_label {`A_prop`: "A_value"})
@@ -286,10 +285,13 @@ class Cypher:
 
         cypher_a = self.match(node=A_node, label=A_label, prop=A_prop, value=A_value)
         cypher_b = self.match(node=B_node, label=B_label, prop=B_prop, value=B_value)
+        cypher_where = f'WHERE {WHERE} \n'
         begin, end = self._relationship_direction(direction)
 
         cypher = cypher_a
         cypher += cypher_b
+        if cypher_where:
+            cypher += cypher_where
         cypher += f'MERGE ({A_node}) {begin} [{node} {label}] {end} ({B_node}) \n'
         cypher += self.return_all()
 

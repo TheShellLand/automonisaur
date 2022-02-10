@@ -97,15 +97,13 @@ class Neo4jClient:
     def relationship(self,
                      A_node: str = 'A', A_label: str = None, A_prop: str = None, A_value: str = None,
                      B_node: str = 'B', B_label: str = None, B_prop: str = None, B_value: str = None,
-                     label: str = None, node: str = 'r',
-                     direction: str = '->'):
+                     WHERE: str = None, label: str = None, node: str = 'r', direction: str = '->'):
         """Create relationship between two existing nodes"""
 
         cypher = self._Cypher.relationship(
             A_node=A_node, A_label=A_label, A_prop=A_prop, A_value=A_value,
             B_node=B_node, B_label=B_label, B_prop=B_prop, B_value=B_value,
-            label=label, node=node,
-            direction=direction)
+            WHERE=WHERE, label=label, node=node, direction=direction)
 
         self.cypher = cypher
         return self.run()
