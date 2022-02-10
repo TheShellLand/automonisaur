@@ -4,40 +4,19 @@ from automon import Logging
 
 from .ssid import Ssid
 
+log = Logging(name='ScanXml', level=Logging.DEBUG)
+
 
 class ScanXml:
-    def __init__(self, result: BeautifulSoup):
-        self._log = Logging(name=ScanXml.__name__, level=Logging.DEBUG)
-        self._result = result
-        self._scans = []
-
-        self.ssids = []
-        self.summary = {}
-
-        try:
-            _bssids = result.contents[1].contents[0].contents
-            self._scans = [self._bs2dict(x) for x in _bssids]
-        except Exception as e:
-            self._log.error(f'No BSSIDs', enable_traceback=False)
-
-        self.ssids = sorted([Ssid(_ssid) for _ssid in self._scans], reverse=True)
-        self.summary['Total SSID'] = len(self.ssids)
-        self.summary['SSID'] = {}
-
-        for _ssid in self.ssids:
-            count = self.summary['SSID'].get(_ssid.ssid, 0) + 1
-            self.summary['SSID'][_ssid.ssid] = count
-        self.summary['SSID'] = {k: v for k, v in sorted(self.summary['SSID'].items())}
-
-        self._log.info(f'Total SSID: {self.summary["Total SSID"]}')
-        # self._log.debug(f'Command: {self._scan_cmd}')
+    def __init__(self, xml: BeautifulSoup = None):
+        self._xml = xml
 
     def __repr__(self):
         return f'{self.summary}'
 
     def __eq__(self, other):
         if isinstance(other, ScanXml):
-            return self.ssids == other.ssids
+            return self._xml == other._xml
 
     def _bs2dict(self, bs: BeautifulSoup, **kwargs):
         d = {}
@@ -72,13 +51,56 @@ class ScanXml:
         return d
 
     def byAge(self):
-        self.ssids = sorted(self.ssids, key=(lambda x: x.age))
-        return self.ssids
+        return sorted(self.ssids, key=(lambda x: x.AGE))
 
     def byDistance(self):
-        self.ssids = sorted(self.ssids, key=(lambda x: x.rssi), reverse=True)
-        return self.ssids
+        return sorted(self.ssids, key=(lambda x: x.RSSI), reverse=True)
 
     def bySsid(self):
-        self.ssids = sorted(self.ssids, key=(lambda x: x.ssid))
-        return self.ssids
+        return sorted(self.ssids, key=(lambda x: x.SSID))
+
+    def load_xml(self, xml: BeautifulSoup):
+        self._xml = xml
+
+    @property
+    def ssids(self) -> [Ssid]:
+        """list of Ssid sorted by closest distance"""
+
+        xml = self._xml
+        scan = None
+        ssids = None
+
+        try:
+            bssids = xml.contents[1].contents[0].contents
+            scan = [self._bs2dict(x) for x in bssids]
+        except:
+            log.error(f'No BSSIDs', enable_traceback=False)
+
+        if scan:
+            ssids = [Ssid(ssid) for ssid in scan]
+            ssids = sorted(ssids, reverse=True)
+
+        return ssids
+
+    @property
+    def summary(self) -> dict:
+        summary = {}
+
+        if not self.ssids:
+            return f'no ssids'
+
+        ssids = self.ssids
+        summary['Total SSID'] = len(ssids)
+
+        if len(ssids) < 0:
+            return summary
+
+        summary['SSID'] = {}
+
+        for ssid in ssids:
+            count = summary['SSID'].get(ssid.SSID, 0) + 1
+            summary['SSID'][ssid.SSID] = count
+        summary['SSID'] = {k: v for k, v in sorted(summary['SSID'].items())}
+
+        log.info(f'Total SSID: {summary["Total SSID"]}')
+        return summary

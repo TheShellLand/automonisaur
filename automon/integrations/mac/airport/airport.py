@@ -7,6 +7,7 @@ from automon import Logging
 from automon.helpers import Run
 from automon.helpers import Dates
 
+from .ssid import Ssid
 from .scan import ScanXml
 
 flags = {
@@ -19,6 +20,8 @@ flags = {
     '-P': '--psk                Create PSK from specified pass phrase and SSID.',
 
 }
+
+log = Logging(name='Airport', level=Logging.DEBUG)
 
 
 class Airport:
@@ -47,9 +50,6 @@ class Airport:
         #                                   --ssid=<arg>      Specify SSID when creating a PSK
         #  -h        --help               Show this help
          """
-
-        self._log = Logging(name=Airport.__name__, level=Logging.DEBUG)
-
         self._airport = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
 
         self._connected = None
@@ -59,28 +59,12 @@ class Airport:
 
         self._runner = Run()
 
-        self.is_mac = False
-        self.is_ready = False
-
         self.scan_cmd = None
         self.scan_date = None
-        self.scan_error = None
-        self.scan_output = None
-        self.scan_result = None
+        self._scan_error = None
+        self._scan_output = None
 
-        self.ssids = []
-
-        if os.path.exists(self._airport):
-            self.is_ready = True
-            self._log.debug(f'Found airport: ({self._airport}')
-        else:
-            self._log.warn(f'Missing airport program! ({self._airport})')
-
-        if sys.platform == 'darwin':
-            self.is_mac = True
-            self._log.info(f'Platform is mac: ({sys.platform})')
-        else:
-            self._log.warn(f'Platform is not a Mac! ({sys.platform})')
+        self.scan_result = ScanXml()
 
     def __repr__(self):
         return ''
@@ -92,7 +76,7 @@ class Airport:
     def create_psk(self, ssid: str, passphrase: str):
         """Create PSK from specified pass phrase and SSID."""
         if self.run(args=f'-P --ssid={ssid} --password={passphrase}'):
-            return f'{self.scan_output}'.strip()
+            return f'{self._scan_output}'.strip()
         return False
 
     def disassociate(self):
@@ -103,9 +87,17 @@ class Airport:
         """Print current wireless status, e.g. signal info, BSSID, port type etc."""
         return self.run(args='-I')
 
+    def isReady(self):
+        if sys.platform == 'darwin':
+            if os.path.exists(self._airport):
+                return True
+            else:
+                log.warn(f'Airport not found! {self._airport}')
+        return False
+
     def run(self, args: str = None):
         """Run airport"""
-        if not self.is_ready:
+        if not self.isReady():
             return False
 
         command = f'{self._airport}'
@@ -117,12 +109,12 @@ class Airport:
         self.scan_date = Dates.iso()
 
         try:
-            self._log.info(command)
+            log.info(command)
             if self._runner.Popen(command=command, text=True):
-                self.scan_output = self._runner.stdout
+                self._scan_output = self._runner.stdout
                 return True
         except Exception as e:
-            self._log.error(e, raise_exception=True)
+            log.error(e, raise_exception=True)
 
         return False
 
@@ -145,8 +137,8 @@ class Airport:
             cmd = f'{cmd} {args}'
 
         if self.run(args=cmd):
-            self.scan_output = self._runner.stdout
-            self.scan_error = self._runner.stderr
+            self._scan_output = self._runner.stdout
+            self._scan_error = self._runner.stderr
             return True
 
         return False
@@ -157,16 +149,20 @@ class Airport:
     def scan_summary(self, channel: int = None, args: str = None, output: bool = True):
         if self.scan(channel=channel, args=args):
             if output:
-                self._log.info(f'{self.scan_output}')
+                log.info(f'{self._scan_output}')
             return True
         return False
 
-    def scan_xml(self, ssid: str = None, channel: int = None):
+    @property
+    def ssids(self):
+        return self.scan_result.ssids
+
+    def scan_xml(self, ssid: str = None, channel: int = None) -> [Ssid]:
         """Run scan and process xml output."""
 
         self.scan(ssid=ssid, args='-x', channel=channel)
 
-        data = self.scan_output
+        data = self._scan_output
         data = [x.strip() for x in data.splitlines()]
         data = ''.join(data)
 
@@ -177,11 +173,12 @@ class Airport:
             # root = etree.fromstring(data.encode())
             root = BeautifulSoup(data, "xml")
 
-            self.scan_result = ScanXml(root)
-            self.ssids = self.scan_result.ssids
+            self.scan_result.load_xml(root)
 
-            return True
+            if self.scan_result.ssids:
+                return True
+
         except Exception as e:
-            self._log.error(f'Scan not parsed: {e}, {self.scan_cmd}', enable_traceback=False)
+            log.error(f'Scan not parsed: {e}, {self.scan_cmd}', enable_traceback=False)
 
         return False
