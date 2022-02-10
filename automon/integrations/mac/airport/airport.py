@@ -182,6 +182,6 @@ class Airport:
 
             return True
         except Exception as e:
-            self._log.error(f'Scan not parsed: {e}, {self.scan["cmd"]}', enable_traceback=False)
+            self._log.error(f'Scan not parsed: {e}, {self.scan_cmd}', enable_traceback=False)
 
         return False
