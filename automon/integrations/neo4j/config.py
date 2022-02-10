@@ -15,7 +15,7 @@ class Neo4jConfig:
         """Neo4j config
         """
 
-        self._log = Logging(name=Neo4jConfig.__name__, level=Logging.ERROR)
+        self._log = Logging(name=Neo4jConfig.__name__, level=Logging.INFO)
 
         self.NEO4J_USER = user or os.getenv('NEO4J_USER') or ''
         self.NEO4J_PASSWORD = password or os.getenv('NEO4J_PASSWORD') or ''
