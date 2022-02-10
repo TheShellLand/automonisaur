@@ -15,7 +15,7 @@ class AirportToNeo4jTest(unittest.TestCase):
             self.assertTrue(self.a.scan_xml())
 
         if self.n.isConnected():
-            self.n.delete_all()
+            # self.n.delete_all()
             for bssid in self.a.ssids:
                 flatten = bssid._ssid
                 flatten.update(bssid.__dict__)
