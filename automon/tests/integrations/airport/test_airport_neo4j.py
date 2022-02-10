@@ -11,9 +11,28 @@ class AirportToNeo4jTest(unittest.TestCase):
     n = Neo4jClient()
 
     def test_scan_xml(self):
-        if self.a.is_mac:
+        if self.a.isReady():
             self.assertTrue(self.a.scan_xml())
-            pass
+
+        if self.n.isConnected():
+            self.n.delete_all()
+            for bssid in self.a.ssids:
+                flatten = bssid._ssid
+                flatten.update(bssid.__dict__)
+                flatten.pop('_ssid')
+
+                self.assertTrue(self.n.merge_dict(
+                    prop='BSSID',
+                    value=bssid.BSSID,
+                    data=flatten,
+                    label='BSSID',
+                ))
+
+                self.assertTrue(self.n.relationship(
+                    A_prop='SSID', A_value=bssid.SSID,
+                    B_prop='SSID', B_value=bssid.SSID,
+                    WHERE=f'A.BSSID <> B.BSSID', label='EXTENDS'
+                ))
 
 
 if __name__ == '__main__':
