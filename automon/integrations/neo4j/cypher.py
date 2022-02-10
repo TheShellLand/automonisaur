@@ -217,8 +217,8 @@ class Cypher:
         Node.prop = "value"
         ON MATCH
         SET
-        Node.last_seen = "2021-02-25T03:19:47.438901+00:00",
-        Node.last_seen_ts = timestamp()
+        Node.updated = "2022-01-24T03:41:31.160885+00:00",
+        Node.updated_ts = timestamp()
         ON MATCH
         SET
         Node.prop = "value",
