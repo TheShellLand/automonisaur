@@ -8,6 +8,7 @@ xmltodict>=0.12.0
 
 # airport
 beautifulsoup4>=4.10.0
+lxml>=4.7.1
 
 # datascience
 pandas>=1.1.5
