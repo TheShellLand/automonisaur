@@ -11,6 +11,7 @@ from .config import Neo4jConfig
 from .results import Results
 
 logging.getLogger('neo4j').setLevel(logging.ERROR)
+log = Logging('Neo4jClient', Logging.DEBUG)
 
 
 class Neo4jClient:
@@ -21,7 +22,6 @@ class Neo4jClient:
                  hosts: list or str = None,
                  config: Neo4jConfig = None) -> neo4j:
         """Neo4j client"""
-        self._log = Logging(Neo4jClient.__name__, Logging.DEBUG)
 
         self._config = config or Neo4jConfig(
             user=user,
@@ -49,12 +49,12 @@ class Neo4jClient:
             client = GraphDatabase.driver(
                 uri=self._config.NEO4J_HOST,
                 auth=(self._config.NEO4J_USER, self._config.NEO4J_PASSWORD))
-            self._log.info(f'Connected to neo4j server: {self._config.NEO4J_HOST}')
+            log.info(f'Connected to neo4j server: {self._config.NEO4J_HOST}')
             return client
 
         except Exception as e:
-            self._log.error(f'Cannot connect to neo4j server: {self._config.NEO4J_HOST}, {e}',
-                            enable_traceback=False, raise_exception=False)
+            log.error(f'Cannot connect to neo4j server: {self._config.NEO4J_HOST}, {e}',
+                      enable_traceback=False, raise_exception=False)
 
         return False
 
@@ -165,7 +165,7 @@ class Neo4jClient:
 
         cypher = self._Cypher.merge_dict(label=label, data=data)
 
-        # self._log.debug(f'{final_cypher}')
+        # log.debug(f'{final_cypher}')
 
         return self._send(cypher)
 
@@ -179,12 +179,12 @@ class Neo4jClient:
             response = self._session.run(cypher)
             self.results = Results(response)
 
-            self._log.info(f'cypher: {cypher}')
-            self._log.debug(f'Results: {self.results}')
+            log.info(f'cypher: {cypher}')
+            log.debug(f'Results: {self.results}')
 
             return True
         except Exception as e:
-            self._log.error(f"{e}", enable_traceback=False, raise_exception=True)
+            log.error(f"{e}", enable_traceback=False, raise_exception=True)
 
         return False
 
