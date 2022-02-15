@@ -24,7 +24,7 @@ class AirportTest(unittest.TestCase):
     def test_xml(self):
         if self.a.isReady():
             self.assertTrue(self.a.scan_xml())
-            self.assertTrue(self.a.scan_xml(0))
+            self.assertFalse(self.a.scan_xml(0))
 
     def test_set_channel(self):
         if self.a.isReady():
