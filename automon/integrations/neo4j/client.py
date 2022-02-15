@@ -174,8 +174,9 @@ class Neo4jClient:
         if not self.isConnected():
             return False
 
+        cypher = self.cypher
+
         try:
-            cypher = self.cypher
             response = self._session.run(cypher)
             self.results = Results(response)
 
