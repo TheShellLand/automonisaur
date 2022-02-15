@@ -1,8 +1,6 @@
 import os
 import logging
 
-from elasticsearch import RequestsHttpConnection
-
 from automon.log import Logging
 from automon.helpers.sanitation import Sanitation as S
 
@@ -23,7 +21,7 @@ class ElasticsearchConfig:
                  http_auth: tuple = None,
                  use_ssl: bool = True,
                  verify_certs: bool = True,
-                 connection_class: RequestsHttpConnection = None,
+                 connection_class: object = None,
                  proxy=None):
         """elasticsearch config"""
 
@@ -50,7 +48,7 @@ class ElasticsearchConfig:
         self.request_timeout = self.ELASTICSEARCH_REQUEST_TIMEOUT
         self.use_ssl = use_ssl
         self.verify_certs = verify_certs
-        self.connection_class = connection_class or RequestsHttpConnection
+        self.connection_class = connection_class
 
         if self.ELASTICSEARCH_USER and self.ELASTICSEARCH_PASSWORD:
             self.http_auth = (self.ELASTICSEARCH_USER, self.ELASTICSEARCH_PASSWORD)
