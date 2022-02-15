@@ -52,8 +52,8 @@ class Ssid:
     @property
     def summary(self):
         return f'[rssi: {self.DISTANCE} dBm] ' \
-               f'[ch: {self.CHANNEL}] ' \
                f'{self.SSID} ' \
+               f'[ch: {self.CHANNEL}] ' \
                f'[bssid: {self.MAC}] ' \
-               f'[noise: {self.NOISE} dBm] ' \
+               f'[noise: {self.NOISE}] ' \
                f'[age: {self.AGE}] '
