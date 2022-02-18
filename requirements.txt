@@ -25,6 +25,11 @@ Flask-Login>=0.5.0
 Flask-WTF>=0.15.1
 bcrypt>3.1.7
 
+# google
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+
 # minio
 minio>=7.1.0
 
