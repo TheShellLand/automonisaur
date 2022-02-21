@@ -2,6 +2,11 @@ import os
 
 
 def environ(env_var: str, default: any = None):
-    if os.getenv(env_var):
-        return os.getenv(env_var)
+    env = os.getenv(env_var)
+    if env:
+        if f'{env}'.lower() == 'true':
+            return True
+        if f'{env}'.lower() == 'false':
+            return False
+        return env
     return default
