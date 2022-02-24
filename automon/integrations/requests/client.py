@@ -1,15 +1,16 @@
+import json
 import requests
 
 from automon.log import Logging
 from .config import RequestsConfig
+
+log = Logging(name='RequestsClient', level=Logging.DEBUG)
 
 
 class RequestsClient(object):
     def __init__(self, url: str = None, data: dict = None, headers: dict = None,
                  config: RequestsConfig = None):
         """Wrapper for requests library"""
-
-        self._log = Logging(name=RequestsClient.__name__, level=Logging.DEBUG)
 
         self.config = config or RequestsConfig()
 
@@ -23,18 +24,35 @@ class RequestsClient(object):
             self.url = url
             self.get(url=self.url, data=self.data, headers=self.headers)
 
+    def __repr__(self):
+        return f'{self.__dict__}'
+
+    def _params(self, url, data, headers):
+        if url is None:
+            url = self.url
+
+        if data is None:
+            data = self.data
+
+        if headers is None:
+            headers = self.headers
+
+        return url, data, headers
+
     def delete(self,
                url: str = None,
                data: dict = None,
                headers: dict = None, **kwargs) -> bool:
         """requests.delete"""
 
+        url, data, headers = self._params(url, data, headers)
+
         try:
             self.results = requests.delete(url=url, data=data, headers=headers, **kwargs)
-            self._log.debug(self._log_result())
+            self._log_result()
             return True
         except Exception as e:
-            self._log.error(f'delete failed. {e}', enable_traceback=False)
+            log.error(f'delete failed. {e}', enable_traceback=False)
         return False
 
     def get(self,
@@ -43,12 +61,14 @@ class RequestsClient(object):
             headers: dict = None, **kwargs) -> bool:
         """requests.get"""
 
+        url, data, headers = self._params(url, data, headers)
+
         try:
             self.results = requests.get(url=url, data=data, headers=headers, **kwargs)
-            self._log.debug(self._log_result())
+            self._log_result()
             return True
         except Exception as e:
-            self._log.error(f'get failed. {e}', enable_traceback=False)
+            log.error(f'get failed. {e}', enable_traceback=False)
         return False
 
     def patch(self,
@@ -57,12 +77,14 @@ class RequestsClient(object):
               headers: dict = None, **kwargs) -> bool:
         """requests.patch"""
 
+        url, data, headers = self._params(url, data, headers)
+
         try:
             self.results = requests.patch(url=url, data=data, headers=headers, **kwargs)
-            self._log.debug(self._log_result())
+            self._log_result()
             return True
         except Exception as e:
-            self._log.error(f'patch failed. {e}', enable_traceback=False)
+            log.error(f'patch failed. {e}', enable_traceback=False)
         return False
 
     def post(self,
@@ -71,12 +93,14 @@ class RequestsClient(object):
              headers: dict = None, **kwargs) -> bool:
         """requests.post"""
 
+        url, data, headers = self._params(url, data, headers)
+
         try:
             self.results = requests.post(url=url, data=data, headers=headers, **kwargs)
-            self._log.debug(self._log_result())
+            self._log_result()
             return True
         except Exception as e:
-            self._log.error(f'post failed. {e}', enable_traceback=False)
+            log.error(f'post failed. {e}', enable_traceback=False)
         return False
 
     def put(self,
@@ -85,18 +109,32 @@ class RequestsClient(object):
             headers: dict = None, **kwargs) -> bool:
         """requests.put"""
 
+        url, data, headers = self._params(url, data, headers)
+
         try:
             self.results = requests.put(url=url, data=data, headers=headers, **kwargs)
-            self._log.debug(self._log_result())
+            self._log_result()
             return True
         except Exception as e:
-            self._log.error(f'put failed. {e}', enable_traceback=False)
+            log.error(f'put failed. {e}', enable_traceback=False)
         return False
 
+    def to_dict(self):
+        if self.results is not None:
+            return json.loads(self.results.content)
+
     def _log_result(self):
-        return f'{self.results.status_code} ' \
-               f'{self.results.url} ' \
-               f'{round(len(self.results.content) / 1024, 2)} KB'
+        if self.results.status_code == 200:
+            msg = f'{self.results.status_code} ' \
+                  f'{self.results.url} ' \
+                  f'{round(len(self.results.content) / 1024, 2)} KB'
+            return log.debug(msg)
+
+        msg = f'{self.results.status_code} ' \
+              f'{self.results.url} ' \
+              f'{round(len(self.results.content) / 1024, 2)} KB ' \
+              f'{self.results.content}'
+        return log.error(msg, raise_exception=False)
 
 
 class Requests(RequestsClient):
