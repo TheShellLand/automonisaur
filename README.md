@@ -35,9 +35,10 @@ Github issues and feature requests welcomed.
 - airport
 - elasticsearch
 - flask
+- logging
 - minio
 - neo4j
-- nmap 
+- nmap
 - requests
 - selenium
 - sentryio
