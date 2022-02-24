@@ -23,9 +23,6 @@ class Urls:
     CONTAINER = f'{REST}/container'
     PLAYBOOK_RUN = f'{REST}/playbook_run'
 
-    def __init__(self):
-        None
-
     def action_run(self, identifier: int = None, detail: str = None, *args, **kwargs):
         return f'{self.ACTION_RUN}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
@@ -173,10 +170,10 @@ class Urls:
             query += f'/{detail}'
 
         if page:
-            query += f'?{page}'
+            query += f'?page={page}'
 
         if page_size:
-            query += f'?{page_size}'
+            query += f'?page_size={page_size}'
 
         if pretty:
             query += f'?pretty'
