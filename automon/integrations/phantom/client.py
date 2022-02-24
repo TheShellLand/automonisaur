@@ -99,10 +99,12 @@ class PhantomClient:
             return True
         return False
 
-    def list_containers(self, page=None, page_size=10, *args, **kwargs) -> [Container]:
+    def list_containers(self, identifier=None, page=None, page_size=10, *args, **kwargs) -> [Container]:
         """list containers"""
-        if self._get(Urls().container(page=page, page_size=page_size, *args, **kwargs)):
+        if self._get(Urls().container(identifier=identifier, page=page, page_size=page_size, *args, **kwargs)):
             request = self._content_dict()
+            if identifier:
+                return Container(request)
             containers = [Container(c) for c in request['data']]
             return containers
         return []
@@ -137,11 +139,38 @@ class PhantomClient:
             authorized_users=None,
             *args, **kwargs):
         """list containers"""
-        data = json.dumps(container)
+        container = Container(
+            dict(label=label,
+                 name=name,
+                 artifacts=artifacts,
+                 asset_id=asset_id,
+                 close_time=close_time,
+                 custom_fields=custom_fields,
+                 data=data,
+                 description=description,
+                 due_time=due_time,
+                 end_time=end_time,
+                 ingest_app_id=ingest_app_id,
+                 kill_chain=kill_chain,
+                 owner_id=owner_id,
+                 role_id=role_id,
+                 run_automation=run_automation,
+                 sensitivity=sensitivity,
+                 severity=severity,
+                 source_data_identifier=source_data_identifier,
+                 start_time=start_time,
+                 open_time=open_time,
+                 status=status,
+                 tags=tags,
+                 tenant_id=tenant_id,
+                 container_type=container_type,
+                 template_id=template_id,
+                 authorized_users=authorized_users)
+        )
 
-        if self._post(Urls().container(*args, **kwargs), data=data):
+        if self._post(Urls().container(*args, **kwargs), data=container.to_json()):
             if self.client.results.status_code == 200:
-                log.info(f'container created')
+                log.info(f'container created. {container} {self.client.to_dict()}')
                 return True
         log.error(f'create container. {self.client.to_dict()}', enable_traceback=False)
         return False
