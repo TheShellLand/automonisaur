@@ -4,6 +4,7 @@ from automon import Logging
 from automon.integrations.requests import Requests
 
 from .config import PhantomConfig
+from .artifact import Artifact
 from .container import Container
 from .rest import Urls
 
@@ -52,13 +53,15 @@ class PhantomClient:
         """send post request"""
         return self.client.post(url=url, headers=self.client.headers, data=data)
 
-    def isConnected(self) -> bool:
-        """check if client can connect"""
-        if self._get(Urls().container()):
-            log.info(f'Phantom client connected. '
-                     f'[{self.client.results.status_code}] '
-                     f'{self.config.host}')
-            return True
+    def create_artifact(self, *args, **kwargs):
+        artifact = Artifact(**kwargs)
+
+        if self._post(Urls().container(*args, **kwargs), data=artifact.to_json()):
+            if self.client.results.status_code == 200:
+                log.info(f'artifact created. {artifact} {self.client.to_dict()}')
+                return True
+        log.error(f'create artifact. {self.client.to_dict()}', enable_traceback=False)
+        return False
 
         else:
             log.error(f'Phantom client failed.')
