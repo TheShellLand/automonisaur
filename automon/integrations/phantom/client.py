@@ -4,6 +4,7 @@ from automon import Logging
 from automon.integrations.requests import Requests
 
 from .config import PhantomConfig
+from .container import Container
 from .rest import Urls
 
 log = Logging(name='PhantomClient', level=Logging.DEBUG)
@@ -42,6 +43,10 @@ class PhantomClient:
     def _get(self, url: str) -> bool:
         """send get request"""
         return self.client.get(url=url, headers=self.client.headers)
+
+    def _delete(self, url: str) -> bool:
+        """send get request"""
+        return self.client.delete(url=url, headers=self.client.headers)
 
     def _post(self, url: str, data: dict) -> bool:
         """send post request"""
@@ -94,11 +99,62 @@ class PhantomClient:
             return True
         return False
 
-    def list_containers(self, **kwargs) -> bool:
+    def list_containers(self, page=None, page_size=10, *args, **kwargs) -> [Container]:
         """list containers"""
-        if self._get(Urls().container(**kwargs)):
-            self.containers = self._content_dict()
-            return True
+        if self._get(Urls().container(page=page, page_size=page_size, *args, **kwargs)):
+            request = self._content_dict()
+            containers = [Container(c) for c in request['data']]
+            return containers
+        return []
+
+    def create_container(
+            self,
+            label,
+            name,
+            artifacts=None,
+            asset_id=None,
+            close_time=None,
+            custom_fields=None,
+            data=None,
+            description=None,
+            due_time=None,
+            end_time=None,
+            ingest_app_id=None,
+            kill_chain=None,
+            owner_id=None,
+            role_id=None,
+            run_automation=None,
+            sensitivity=None,
+            severity=None,
+            source_data_identifier=None,
+            start_time=None,
+            open_time=None,
+            status=None,
+            tags=None,
+            tenant_id=None,
+            container_type=None,
+            template_id=None,
+            authorized_users=None,
+            *args, **kwargs):
+        """list containers"""
+        data = json.dumps(container)
+
+        if self._post(Urls().container(*args, **kwargs), data=data):
+            if self.client.results.status_code == 200:
+                log.info(f'container created')
+                return True
+        log.error(f'create container. {self.client.to_dict()}', enable_traceback=False)
+        return False
+
+    def delete_containers(self, identifier, *args, **kwargs):
+        """list containers"""
+        assert isinstance(identifier, int)
+
+        if self._delete(Urls().container(identifier=identifier, *args, **kwargs)):
+            if self.client.results.status_code == 200:
+                log.info(f'container deleted: {identifier}')
+                return True
+        log.error(f'delete container: {identifier}. {self.client.to_dict()}', enable_traceback=False)
         return False
 
     def list_cluster_node(self, **kwargs) -> bool:
