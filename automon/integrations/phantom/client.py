@@ -63,55 +63,6 @@ class PhantomClient:
         log.error(f'create artifact. {self.client.to_dict()}', enable_traceback=False)
         return False
 
-        else:
-            log.error(f'Phantom client failed.')
-        return False
-
-    def list_action_run(self, **kwargs) -> bool:
-        """list action run"""
-        if self._get(Urls().action_run(**kwargs)):
-            self.containers = self._content_dict()
-            return True
-        return False
-
-    def list_app(self, **kwargs) -> bool:
-        """list app"""
-        if self._get(Urls().app(**kwargs)):
-            self.app = self._content_dict()
-            return True
-        return False
-
-    def list_app_run(self, **kwargs) -> bool:
-        """list app run"""
-        if self._get(Urls().app_run(**kwargs)):
-            self.app_run = self._content_dict()
-            return True
-        return False
-
-    def list_artifacts(self, **kwargs) -> bool:
-        """list artifacts"""
-        if self._get(Urls().artifact(**kwargs)):
-            self.artifacts = self._content_dict()
-            return True
-        return False
-
-    def list_asset(self, **kwargs) -> bool:
-        """list asset"""
-        if self._get(Urls().asset(**kwargs)):
-            self.asset = self._content_dict()
-            return True
-        return False
-
-    def list_containers(self, identifier=None, page=None, page_size=10, *args, **kwargs) -> [Container]:
-        """list containers"""
-        if self._get(Urls().container(identifier=identifier, page=page, page_size=page_size, *args, **kwargs)):
-            request = self._content_dict()
-            if identifier:
-                return Container(request)
-            containers = [Container(c) for c in request['data']]
-            return containers
-        return []
-
     def create_container(
             self,
             label,
@@ -189,6 +140,63 @@ class PhantomClient:
         log.error(f'delete container: {identifier}. {self.client.to_dict()}', enable_traceback=False)
         return False
 
+    def isConnected(self) -> bool:
+        """check if client can connect"""
+        if self._get(Urls().container()):
+            log.info(f'Phantom client connected. '
+                     f'[{self.client.results.status_code}] '
+                     f'{self.config.host}')
+            return True
+
+        else:
+            log.error(f'Phantom client failed.')
+        return False
+
+    def list_action_run(self, **kwargs) -> bool:
+        """list action run"""
+        if self._get(Urls().action_run(**kwargs)):
+            self.containers = self._content_dict()
+            return True
+        return False
+
+    def list_app(self, **kwargs) -> bool:
+        """list app"""
+        if self._get(Urls().app(**kwargs)):
+            self.app = self._content_dict()
+            return True
+        return False
+
+    def list_app_run(self, **kwargs) -> bool:
+        """list app run"""
+        if self._get(Urls().app_run(**kwargs)):
+            self.app_run = self._content_dict()
+            return True
+        return False
+
+    def list_artifacts(self, **kwargs) -> bool:
+        """list artifacts"""
+        if self._get(Urls().artifact(**kwargs)):
+            self.artifacts = self._content_dict()
+            return True
+        return False
+
+    def list_asset(self, **kwargs) -> bool:
+        """list asset"""
+        if self._get(Urls().asset(**kwargs)):
+            self.asset = self._content_dict()
+            return True
+        return False
+
+    def list_containers(self, identifier=None, page=None, page_size=10, *args, **kwargs) -> [Container]:
+        """list containers"""
+        if self._get(Urls().container(identifier=identifier, page=page, page_size=page_size, *args, **kwargs)):
+            request = self._content_dict()
+            if identifier:
+                return Container(request)
+            containers = [Container(c) for c in request['data']]
+            return containers
+        return []
+
     def list_cluster_node(self, **kwargs) -> bool:
         """list cluster node"""
         if self._get(Urls().cluster_node(**kwargs)):
@@ -199,6 +207,13 @@ class PhantomClient:
     def list_playbook_run(self, **kwargs) -> bool:
         """list cluster node"""
         if self._get(Urls().playbook_run(**kwargs)):
+            self.playbook_run = self._content_dict()
+            return True
+        return False
+
+    def list_vault(self, identifier=None, **kwargs) -> bool:
+        """list cluster node"""
+        if self._get(Urls().vault(identifier=identifier, **kwargs)):
             self.playbook_run = self._content_dict()
             return True
         return False
