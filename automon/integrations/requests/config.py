@@ -6,4 +6,5 @@ log = Logging(name='RequestsConfig', level=Logging.DEBUG)
 
 
 class RequestsConfig(object):
-    pass
+    def __repr__(self):
+        return f'{NotImplemented}'
