@@ -54,7 +54,7 @@ class RequestsClient(object):
 
     @property
     def content(self):
-        if self.results:
+        if self.results is not None:
             return self.results.content
 
     def delete(self,
