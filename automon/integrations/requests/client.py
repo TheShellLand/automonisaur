@@ -27,6 +27,19 @@ class RequestsClient(object):
     def __repr__(self):
         return f'{self.__dict__}'
 
+    def _log_result(self):
+        if self.results.status_code == 200:
+            msg = f'{self.results.status_code} ' \
+                  f'{self.results.url} ' \
+                  f'{round(len(self.results.content) / 1024, 2)} KB'
+            return log.debug(msg)
+
+        msg = f'{self.results.status_code} ' \
+              f'{self.results.url} ' \
+              f'{round(len(self.results.content) / 1024, 2)} KB ' \
+              f'{self.results.content}'
+        return log.error(msg, raise_exception=False)
+
     def _params(self, url, data, headers):
         if url is None:
             url = self.url
@@ -38,6 +51,11 @@ class RequestsClient(object):
             headers = self.headers
 
         return url, data, headers
+
+    @property
+    def content(self):
+        if self.results:
+            return self.results.content
 
     def delete(self,
                url: str = None,
@@ -122,19 +140,6 @@ class RequestsClient(object):
     def to_dict(self):
         if self.results is not None:
             return json.loads(self.results.content)
-
-    def _log_result(self):
-        if self.results.status_code == 200:
-            msg = f'{self.results.status_code} ' \
-                  f'{self.results.url} ' \
-                  f'{round(len(self.results.content) / 1024, 2)} KB'
-            return log.debug(msg)
-
-        msg = f'{self.results.status_code} ' \
-              f'{self.results.url} ' \
-              f'{round(len(self.results.content) / 1024, 2)} KB ' \
-              f'{self.results.content}'
-        return log.error(msg, raise_exception=False)
 
 
 class Requests(RequestsClient):
