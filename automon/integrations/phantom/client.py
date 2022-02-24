@@ -38,7 +38,7 @@ class PhantomClient:
         return self.client.results.content
 
     def _content_dict(self) -> dict:
-        """convert request bytes to dict"""
+        """convert request.content to dict"""
         return json.loads(self._content())
 
     def _get(self, url: str) -> bool:
@@ -72,7 +72,7 @@ class PhantomClient:
             start_time=None,
             tags=None,
             type=None,
-            *args, **kwargs):
+            *args, **kwargs) -> Artifact:
         """Create artifact"""
 
         artifact = Artifact(
@@ -95,10 +95,16 @@ class PhantomClient:
                  type=type)
         )
 
-        if self._post(Urls().container(*args, **kwargs), data=artifact.to_json()):
+        if self._post(Urls().artifact(*args, **kwargs), data=artifact.to_json()):
             if self.client.results.status_code == 200:
+                id = self.client.to_dict()['id']
                 log.info(f'artifact created. {artifact} {self.client.to_dict()}')
-                return True
+                return self.list_artifact(artifact_id=id)
+            else:
+                existing_artifact_id = self.client.to_dict()['existing_artifact_id']
+                log.info(f'artifact exists. {artifact} {self.client.to_dict()}')
+                return self.list_artifact(artifact_id=existing_artifact_id)
+
         log.error(f'create artifact. {self.client.to_dict()}', enable_traceback=False)
         return False
 
@@ -130,7 +136,7 @@ class PhantomClient:
             container_type=None,
             template_id=None,
             authorized_users=None,
-            *args, **kwargs):
+            *args, **kwargs) -> Container:
         """Create container"""
 
         container = Container(
@@ -164,8 +170,9 @@ class PhantomClient:
 
         if self._post(Urls().container(*args, **kwargs), data=container.to_json()):
             if self.client.results.status_code == 200:
+                id = self.client.to_dict()['id']
                 log.info(f'container created. {container} {self.client.to_dict()}')
-                return True
+                return self.list_containers(container_id=id)
         log.error(f'create container. {self.client.to_dict()}', enable_traceback=False)
         return False
 
@@ -183,7 +190,7 @@ class PhantomClient:
     def isConnected(self) -> bool:
         """check if client can connect"""
         if self._get(Urls().container()):
-            log.info(f'Phantom client connected. '
+            log.info(f'Phantom client check. '
                      f'[{self.client.results.status_code}] '
                      f'{self.config.host}')
             return True
@@ -191,6 +198,16 @@ class PhantomClient:
         else:
             log.error(f'Phantom client failed.')
         return False
+
+    def list_artifact(self, artifact_id: int = None, **kwargs) -> bool:
+        """list action run"""
+        if self._get(Urls().artifact(identifier=artifact_id, **kwargs)):
+            request = self._content_dict()
+            if artifact_id:
+                return Artifact(request)
+            artifacts = [Artifact(a) for a in request['data']]
+            return artifacts
+        return []
 
     def list_action_run(self, **kwargs) -> bool:
         """list action run"""
@@ -227,7 +244,11 @@ class PhantomClient:
             return True
         return False
 
-    def list_containers(self, container_id=None, page=None, page_size=10, *args, **kwargs) -> [Container]:
+    def list_containers(self,
+                        container_id=None,
+                        page=None,
+                        page_size=10,
+                        *args, **kwargs) -> [Container]:
         """list containers"""
         if self._get(Urls().container(identifier=container_id, page=page, page_size=page_size, *args, **kwargs)):
             request = self._content_dict()
