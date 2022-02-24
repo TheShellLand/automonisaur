@@ -53,8 +53,47 @@ class PhantomClient:
         """send post request"""
         return self.client.post(url=url, headers=self.client.headers, data=data)
 
-    def create_artifact(self, *args, **kwargs):
-        artifact = Artifact(**kwargs)
+    def create_artifact(
+            self,
+            container_id,
+            cef=None,
+            cef_types=None,
+            data=None,
+            description=None,
+            end_time=None,
+            ingest_app_id=None,
+            kill_chain=None,
+            label=None,
+            name=None,
+            owner_id=None,
+            run_automation=None,
+            severity=None,
+            source_data_identifier=None,
+            start_time=None,
+            tags=None,
+            type=None,
+            *args, **kwargs):
+        """Create artifact"""
+
+        artifact = Artifact(
+            dict(cef=cef,
+                 cef_types=cef_types,
+                 container_id=container_id,
+                 data=data,
+                 description=description,
+                 end_time=end_time,
+                 ingest_app_id=ingest_app_id,
+                 kill_chain=kill_chain,
+                 label=label,
+                 name=name,
+                 owner_id=owner_id,
+                 run_automation=run_automation,
+                 severity=severity,
+                 source_data_identifier=source_data_identifier,
+                 start_time=start_time,
+                 tags=tags,
+                 type=type)
+        )
 
         if self._post(Urls().container(*args, **kwargs), data=artifact.to_json()):
             if self.client.results.status_code == 200:
@@ -92,7 +131,8 @@ class PhantomClient:
             template_id=None,
             authorized_users=None,
             *args, **kwargs):
-        """list containers"""
+        """Create container"""
+
         container = Container(
             dict(label=label,
                  name=name,
@@ -129,15 +169,15 @@ class PhantomClient:
         log.error(f'create container. {self.client.to_dict()}', enable_traceback=False)
         return False
 
-    def delete_containers(self, identifier, *args, **kwargs):
-        """list containers"""
-        assert isinstance(identifier, int)
+    def delete_container(self, container_id, *args, **kwargs):
+        """Delete containers"""
+        assert isinstance(container_id, int)
 
-        if self._delete(Urls().container(identifier=identifier, *args, **kwargs)):
+        if self._delete(Urls().container(identifier=container_id, *args, **kwargs)):
             if self.client.results.status_code == 200:
-                log.info(f'container deleted: {identifier}')
+                log.info(f'container deleted: {container_id}')
                 return True
-        log.error(f'delete container: {identifier}. {self.client.to_dict()}', enable_traceback=False)
+        log.error(f'delete container: {container_id}. {self.client.to_dict()}', enable_traceback=False)
         return False
 
     def isConnected(self) -> bool:
@@ -187,11 +227,11 @@ class PhantomClient:
             return True
         return False
 
-    def list_containers(self, identifier=None, page=None, page_size=10, *args, **kwargs) -> [Container]:
+    def list_containers(self, container_id=None, page=None, page_size=10, *args, **kwargs) -> [Container]:
         """list containers"""
-        if self._get(Urls().container(identifier=identifier, page=page, page_size=page_size, *args, **kwargs)):
+        if self._get(Urls().container(identifier=container_id, page=page, page_size=page_size, *args, **kwargs)):
             request = self._content_dict()
-            if identifier:
+            if container_id:
                 return Container(request)
             containers = [Container(c) for c in request['data']]
             return containers

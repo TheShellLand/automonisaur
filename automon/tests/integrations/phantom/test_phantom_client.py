@@ -13,6 +13,12 @@ class TestPhantomClient(unittest.TestCase):
         else:
             self.assertFalse(c.isConnected())
 
+    def test_create_artifact(self):
+        if c.isConnected():
+            self.assertTrue(c.create_artifact(container_id=0))
+        else:
+            self.assertFalse(c.create_artifact(container_id=0))
+
     def test_list_containers(self):
         if c.isConnected():
             self.assertTrue(c.list_containers())
@@ -23,9 +29,9 @@ class TestPhantomClient(unittest.TestCase):
         container = 0
 
         if c.isConnected():
-            self.assertTrue(c.delete_containers(identifier=container))
+            self.assertTrue(c.delete_container(container_id=container))
         else:
-            self.assertFalse(c.delete_containers(identifier=container))
+            self.assertFalse(c.delete_container(container_id=container))
 
     def test_create_container(self):
 
