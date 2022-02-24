@@ -22,6 +22,7 @@ class Urls:
     CLUSTER_NODE = f'{REST}/cluster_node'
     CONTAINER = f'{REST}/container'
     PLAYBOOK_RUN = f'{REST}/playbook_run'
+    VAULT = f'{REST}/vault_document'
 
     def action_run(self, identifier: int = None, detail: str = None, *args, **kwargs):
         return f'{self.ACTION_RUN}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
@@ -197,3 +198,6 @@ class Urls:
             query += f'?{order}'
 
         return query
+
+    def vault(self, identifier: int = None, *args, **kwargs):
+        return f'{self.VAULT}{self.query(identifier=identifier, *args, **kwargs)}'
