@@ -1,24 +1,25 @@
 import json
+import functools
 
 from automon import Logging
 from automon.integrations.requests import Requests
 
-from .config import PhantomConfig
+from .config import SplunkSoarConfig
 from .artifact import Artifact
 from .container import Container
 from .rest import Urls
 
-log = Logging(name='PhantomClient', level=Logging.DEBUG)
+log = Logging(name='SplunkSoarClient', level=Logging.DEBUG)
 
 
-class PhantomClient:
+class SplunkSoarClient:
     def __init__(self, host: str = None,
                  user: str = None,
                  password: str = None,
-                 config: PhantomConfig = None):
+                 config: SplunkSoarConfig = None):
         """Phantom Client"""
 
-        self.config = config or PhantomConfig(host=host, user=user, password=password)
+        self.config = config or SplunkSoarConfig(host=host, user=user, password=password)
         self.client = Requests(headers=self.config.headers)
 
         self.action_run = None
@@ -45,6 +46,15 @@ class PhantomClient:
         """send get request"""
         return self.client.get(url=url, headers=self.client.headers)
 
+    def _isConnected(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if self.config.isReady():
+                return func(self, *args, **kwargs)
+            return False
+
+        return wrapper
+
     def _delete(self, url: str) -> bool:
         """send get request"""
         return self.client.delete(url=url, headers=self.client.headers)
@@ -53,6 +63,7 @@ class PhantomClient:
         """send post request"""
         return self.client.post(url=url, headers=self.client.headers, data=data)
 
+    @_isConnected
     def create_artifact(
             self,
             container_id,
@@ -108,6 +119,7 @@ class PhantomClient:
         log.error(f'create artifact. {self.client.to_dict()}', enable_traceback=False)
         return False
 
+    @_isConnected
     def create_container(
             self,
             label,
@@ -176,6 +188,7 @@ class PhantomClient:
         log.error(f'create container. {self.client.to_dict()}', enable_traceback=False)
         return False
 
+    @_isConnected
     def delete_container(self, container_id, *args, **kwargs):
         """Delete containers"""
         assert isinstance(container_id, int)
@@ -189,16 +202,18 @@ class PhantomClient:
 
     def isConnected(self) -> bool:
         """check if client can connect"""
-        if self._get(Urls().container()):
-            log.info(f'Phantom client check. '
-                     f'[{self.client.results.status_code}] '
-                     f'{self.config.host}')
-            return True
+        if self.config.isReady():
+            if self._get(Urls().container()):
+                log.info(f'client connected'
+                         f'[{self.client.results.status_code}] '
+                         f'{self.config.host}')
+                return True
 
         else:
-            log.error(f'Phantom client failed.')
+            log.warn(f'client not connected')
         return False
 
+    @_isConnected
     def list_artifact(self, artifact_id: int = None, **kwargs) -> bool:
         """list action run"""
         if self._get(Urls().artifact(identifier=artifact_id, **kwargs)):
@@ -209,6 +224,7 @@ class PhantomClient:
             return artifacts
         return []
 
+    @_isConnected
     def list_action_run(self, **kwargs) -> bool:
         """list action run"""
         if self._get(Urls().action_run(**kwargs)):
@@ -216,6 +232,7 @@ class PhantomClient:
             return True
         return False
 
+    @_isConnected
     def list_app(self, **kwargs) -> bool:
         """list app"""
         if self._get(Urls().app(**kwargs)):
@@ -223,6 +240,7 @@ class PhantomClient:
             return True
         return False
 
+    @_isConnected
     def list_app_run(self, **kwargs) -> bool:
         """list app run"""
         if self._get(Urls().app_run(**kwargs)):
@@ -230,6 +248,7 @@ class PhantomClient:
             return True
         return False
 
+    @_isConnected
     def list_artifacts(self, **kwargs) -> bool:
         """list artifacts"""
         if self._get(Urls().artifact(**kwargs)):
@@ -237,6 +256,7 @@ class PhantomClient:
             return True
         return False
 
+    @_isConnected
     def list_asset(self, **kwargs) -> bool:
         """list asset"""
         if self._get(Urls().asset(**kwargs)):
@@ -244,6 +264,7 @@ class PhantomClient:
             return True
         return False
 
+    @_isConnected
     def list_containers(self,
                         container_id=None,
                         page=None,
@@ -258,6 +279,7 @@ class PhantomClient:
             return containers
         return []
 
+    @_isConnected
     def list_cluster_node(self, **kwargs) -> bool:
         """list cluster node"""
         if self._get(Urls().cluster_node(**kwargs)):
@@ -265,6 +287,7 @@ class PhantomClient:
             return True
         return False
 
+    @_isConnected
     def list_playbook_run(self, **kwargs) -> bool:
         """list cluster node"""
         if self._get(Urls().playbook_run(**kwargs)):
@@ -272,6 +295,7 @@ class PhantomClient:
             return True
         return False
 
+    @_isConnected
     def list_vault(self, identifier=None, **kwargs) -> bool:
         """list cluster node"""
         if self._get(Urls().vault(identifier=identifier, **kwargs)):

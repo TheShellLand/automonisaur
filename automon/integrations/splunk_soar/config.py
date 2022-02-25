@@ -1,17 +1,17 @@
 from automon import Logging
 from automon.helpers.os import environ
 
-log = Logging(name='PhantomConfig', level=Logging.DEBUG)
+log = Logging(name='SplunkSoarConfig', level=Logging.DEBUG)
 
 
-class PhantomConfig:
+class SplunkSoarConfig:
     def __init__(self, host: str = None,
                  user: str = None,
                  password: str = None,
                  auth_token: str = None):
         """Phantom Config"""
 
-        self.host = host or environ('PHANTOM_HOST') or ''
+        self.host = host or environ('PHANTOM_HOST')
         self.user = user or environ('PHANTOM_USER')
         self.password = password or environ('PHANTOM_PASSWORD')
         self.auth = (self.user, self.password)
@@ -24,3 +24,9 @@ class PhantomConfig:
 
     def __repr__(self):
         return f'{self.__dict__}'
+
+    def isReady(self):
+        if self.host:
+            return True
+        log.warn(f'bad config')
+        return False
