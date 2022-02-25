@@ -17,7 +17,7 @@ class SplunkSoarClient:
                  user: str = None,
                  password: str = None,
                  config: SplunkSoarConfig = None):
-        """Phantom Client"""
+        """Splunk SOAR Client"""
 
         self.config = config or SplunkSoarConfig(host=host, user=user, password=password)
         self.client = Requests(headers=self.config.headers)

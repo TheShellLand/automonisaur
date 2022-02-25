@@ -9,18 +9,18 @@ class SplunkSoarConfig:
                  user: str = None,
                  password: str = None,
                  auth_token: str = None):
-        """Phantom Config"""
+        """Splunk SOAR Config"""
 
-        self.host = host or environ('PHANTOM_HOST')
-        self.user = user or environ('PHANTOM_USER')
-        self.password = password or environ('PHANTOM_PASSWORD')
+        self.host = host or environ('SPLUNK_SOAR_HOST')
+        self.user = user or environ('SPLUNK_SOAR_USER')
+        self.password = password or environ('SPLUNK_SOAR_PASSWORD')
         self.auth = (self.user, self.password)
-        self.auth_token = auth_token or environ('PHANTOM_AUTH_TOKEN')
+        self.auth_token = auth_token or environ('SPLUNK_SOAR_AUTH_TOKEN')
 
         self.headers = {'ph-auth-token': self.auth_token}
 
         if not self.host:
-            log.warn(f'missing PHANTOM_HOST')
+            log.warn(f'missing SPLUNK_SOAR_HOST')
 
     def __repr__(self):
         return f'{self.__dict__}'
