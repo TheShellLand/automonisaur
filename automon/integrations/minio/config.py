@@ -2,6 +2,9 @@ import os
 import urllib3
 
 from automon.log import Logging
+from automon.helpers import environ
+
+log = Logging(name='MinioConfig', level=Logging.ERROR)
 
 
 class MinioConfig(object):
@@ -13,31 +16,29 @@ class MinioConfig(object):
                  secure: bool = None,
                  region: str = None,
                  http_client: urllib3.PoolManager = None):
-        """Minio config
-        """
-        self._log = Logging(name=MinioConfig.__name__, level=Logging.ERROR)
+        """Minio config"""
 
-        self.endpoint = endpoint or os.getenv('MINIO_ENDPOINT') or 'localhost'
-        self.access_key = access_key or os.getenv('MINIO_ACCESS_KEY')
-        self.secret_key = secret_key or os.getenv('MINIO_SECRET_KEY')
-        self.session_token = session_token or os.getenv('MINIO_SESSION_TOKEN')
-        self.secure = secure or os.getenv('MINIO_SECURE') or True
-        self.region = region or os.getenv('MINIO_REGION')
-        self.http_client = http_client or os.getenv('MINIO_HTTP_CLIENT')
+        self.endpoint = endpoint or environ('MINIO_ENDPOINT', 'localhost')
+        self.access_key = access_key or environ('MINIO_ACCESS_KEY')
+        self.secret_key = secret_key or environ('MINIO_SECRET_KEY')
+        self.session_token = session_token or environ('MINIO_SESSION_TOKEN')
+        self.secure = secure or environ('MINIO_SECURE', True)
+        self.region = region or environ('MINIO_REGION')
+        self.http_client = http_client or environ('MINIO_HTTP_CLIENT')
 
         if not self.endpoint:
-            self._log.warn(f'missing MINIO_ENDPOINT')
+            log.warn(f'missing MINIO_ENDPOINT')
 
         if not self.access_key:
-            self._log.warn(f'missing MINIO_ACCESS_KEY')
+            log.warn(f'missing MINIO_ACCESS_KEY')
 
         if not self.secret_key:
-            self._log.warn(f'missing MINIO_SECRET_KEY')
+            log.warn(f'missing MINIO_SECRET_KEY')
 
-    def isConfigured(self):
+    def isReady(self):
         if self.endpoint and self.access_key and self.secret_key:
             return True
         return False
 
     def __repr__(self):
-        return f'{self.endpoint} {self.region}'
+        return f'{self.__dict__}'

@@ -3,7 +3,7 @@ import unittest
 from automon.integrations.minio.config import MinioConfig
 
 
-class Config(unittest.TestCase):
+class ConfigTest(unittest.TestCase):
     def test_MinioConfig(self):
         self.assertTrue(MinioConfig())
 

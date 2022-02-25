@@ -3,12 +3,10 @@ import hashlib
 
 from automon.integrations.minio.client import MinioClient
 
+c = MinioClient()
 
-class Client(unittest.TestCase):
 
-    def test_MinioClient(self):
-        self.assertTrue(MinioClient())
-        self.assertTrue(MinioClient)
+class ClientTest(unittest.TestCase):
 
     def test_publicServer(self):
         MINIO_ENDPOINT = 'play.minio.io:9000'
@@ -20,7 +18,7 @@ class Client(unittest.TestCase):
 
         if m.isConnected():
 
-            self.assertTrue(len(m.list_buckets()) >= 0)   # this might fail if no buckets
+            self.assertTrue(len(m.list_buckets()) >= 0)  # this might fail if no buckets
             self.assertTrue(type(m.list_buckets()), list)
             self.assertTrue(type(m.list_buckets(bucket)), list)
 
