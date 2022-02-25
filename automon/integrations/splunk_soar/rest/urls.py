@@ -1,7 +1,7 @@
 from automon import Logging
-from ..config import PhantomConfig
+from ..config import SplunkSoarConfig
 
-config = PhantomConfig()
+config = SplunkSoarConfig()
 log = Logging(name='Urls', level=Logging.DEBUG)
 
 
@@ -21,6 +21,7 @@ class Urls:
     ASSET = f'{REST}/asset'
     CLUSTER_NODE = f'{REST}/cluster_node'
     CONTAINER = f'{REST}/container'
+    PLAYBOOK = f'{REST}/playbook'
     PLAYBOOK_RUN = f'{REST}/playbook_run'
     VAULT = f'{REST}/vault_document'
 
@@ -112,6 +113,9 @@ class Urls:
             value = new_value
 
         return f'_filter_{field_name}={value}'
+
+    def playbook(self, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{self.PLAYBOOK}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
     def playbook_run(self, identifier: int = None, detail: str = None, *args, **kwargs):
         return f'{self.PLAYBOOK_RUN}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
