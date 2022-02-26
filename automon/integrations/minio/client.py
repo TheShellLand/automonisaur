@@ -1,14 +1,14 @@
 import io
 import socket
-import datetime
 import functools
 
 from minio import Minio
 
 from automon.log import Logging
 
-from .config import MinioConfig
 from .bucket import Bucket
+from .config import MinioConfig
+from .assertions import MinioAssertions
 
 log = Logging(name='MinioClient', level=Logging.DEBUG)
 
@@ -75,11 +75,15 @@ class MinioClient(object):
         return True
 
     @_isConnected
-    def list_objects(self, bucket: str, folder: str = None, recursive: bool = True):
+    def list_objects(self,
+                     bucket: str,
+                     folder: str = None,
+                     recursive: bool = True,
+                     **kwargs) -> list:
         """ List Minio objects
         """
-        log.debug(f'[list_all_objects] bucket: {bucket}, folder: {folder}')
-        return self.client.list_objects(bucket, folder, recursive=recursive)
+        log.debug(f'Objects bucket: {bucket}, folder: {folder}')
+        return self.client.list_objects(bucket, folder, recursive=recursive, **kwargs)
 
     @_isConnected
     def list_buckets(self) -> [Bucket]:
@@ -88,7 +92,7 @@ class MinioClient(object):
         buckets = self.client.list_buckets()
         buckets = [Bucket(x) for x in buckets]
 
-        log.info(f'buckets: {len(buckets)} {[x.name for x in buckets]}')
+        log.info(f'Buckets: {len(buckets)} {[x.name for x in buckets]}')
         return buckets
 
     @_isConnected
@@ -102,19 +106,20 @@ class MinioClient(object):
                 log.info(f'buckets: {len(buckets)} {[x.name for x in buckets]}')
                 return b
 
-        log.error(msg=f'bucket does not exist {bucket}', raise_exception=False)
+        log.error(msg=f'Bucket "{bucket}" does not exist', raise_exception=False)
         return False
 
     @_isConnected
-    def make_bucket(self, bucket_name) -> bool:
+    def make_bucket(self, bucket_name: str) -> Bucket:
+        bucket_name = MinioAssertions.bucket_name(bucket_name)
         try:
-            log.debug(f'Created bucket: {bucket_name}')
             self.client.make_bucket(bucket_name)
-            return True
+            log.debug(f'Created bucket: {bucket_name}')
 
         except Exception as e:
-            log.error(f'Bucket exists: {bucket_name} {e}', enable_traceback=False)
-            return False
+            log.error(f'Bucket exists: {bucket_name}', enable_traceback=False)
+
+        return self.get_bucket(bucket_name)
 
     @_isConnected
     def put_object(self, bucket_name: str, object_name: str, data: io.BytesIO, length: int = None,

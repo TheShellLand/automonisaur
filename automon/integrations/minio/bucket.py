@@ -1,14 +1,24 @@
 import json
 
-import minio.datatypes
+from minio.datatypes import Bucket as MinioBucket
 
 
-class Bucket(minio.datatypes.Bucket):
-    def __init__(self, bucket: minio.datatypes.Bucket):
+class Bucket(MinioBucket):
+    def __init__(self, bucket: MinioBucket):
         self.__dict__.update(bucket.__dict__)
 
     def __repr__(self):
-        return f'{self.to_json}'
+        return f'{self.name}'
+
+    def __eq__(self, other):
+        if isinstance(other, Bucket):
+            return self.name == other.name
+        if isinstance(other, str):
+            return self.name == other
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(self.name)
 
     @property
     def creation_date(self):
@@ -22,4 +32,4 @@ class Bucket(minio.datatypes.Bucket):
         return self.__dict__
 
     def to_json(self):
-        return json.dumps(self.to_dict())
+        return json.dumps({k: f'{v}' for k, v in self.to_dict().items()})
