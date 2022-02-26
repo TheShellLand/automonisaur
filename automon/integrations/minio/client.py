@@ -55,17 +55,22 @@ class MinioClient(object):
 
     @_isConnected
     def clear_bucket(self, bucket_name, folder=None):
+        bucket_name = MinioAssertions.bucket_name(bucket_name)
         objects = self.list_objects(bucket_name, folder)
-        for a in objects:
-            print(a)
+
+        for object in objects:
+            log.debug(f'{object}')
+
         return self.client.remove_objects(bucket_name, objects)
 
     @_isConnected
-    def download_object(self, bucket, file):
-        """ Minio object downloader
+    def download_object(self, bucket_name, file):
+        """Minio object downloader
         """
-        log.debug(f'[downloader] Downloading: {bucket}/{file.object_name}')
-        return self.client.get_object(bucket, file.object_name)
+        bucket_name = MinioAssertions.bucket_name(bucket_name)
+
+        log.debug(f'[downloader] Downloading: {bucket_name}/{file.object_name}')
+        return self.client.get_object(bucket_name, file.object_name)
 
     @_isConnected
     def isConnected(self):
@@ -76,19 +81,19 @@ class MinioClient(object):
 
     @_isConnected
     def list_objects(self,
-                     bucket: str,
+                     bucket_name: str,
                      folder: str = None,
                      recursive: bool = True,
                      **kwargs) -> list:
-        """ List Minio objects
-        """
-        log.debug(f'Objects bucket: {bucket}, folder: {folder}')
-        return self.client.list_objects(bucket, folder, recursive=recursive, **kwargs)
+        """List Minio objects"""
+        bucket_name = MinioAssertions.bucket_name(bucket_name)
+
+        log.debug(f'Objects bucket: {bucket_name}, folder: {folder}')
+        return self.client.list_objects(bucket_name, folder, recursive=recursive, **kwargs)
 
     @_isConnected
     def list_buckets(self) -> [Bucket]:
-        """ List Minio buckets
-        """
+        """List Minio buckets"""
         buckets = self.client.list_buckets()
         buckets = [Bucket(x) for x in buckets]
 
@@ -96,21 +101,22 @@ class MinioClient(object):
         return buckets
 
     @_isConnected
-    def get_bucket(self, bucket: str) -> Bucket:
-        """ List Minio buckets
-        """
+    def get_bucket(self, bucket_name: str) -> Bucket:
+        """List Minio buckets"""
+        bucket_name = MinioAssertions.bucket_name(bucket_name)
         buckets = self.list_buckets()
 
         for b in buckets:
-            if b == bucket:
-                log.info(f'buckets: {len(buckets)} {[x.name for x in buckets]}')
+            if b == bucket_name:
+                log.info(f'Buckets: {len(buckets)} {[x.name for x in buckets]}')
                 return b
 
-        log.error(msg=f'Bucket "{bucket}" does not exist', raise_exception=False)
+        log.error(msg=f'Bucket "{bucket_name}" does not exist', raise_exception=False)
         return False
 
     @_isConnected
     def make_bucket(self, bucket_name: str) -> Bucket:
+        """Make a bucket"""
         bucket_name = MinioAssertions.bucket_name(bucket_name)
         try:
             self.client.make_bucket(bucket_name)
@@ -126,12 +132,13 @@ class MinioClient(object):
                    content_type='application/octet-stream',
                    metadata=None, sse=None, progress=None,
                    part_size=None):
-        """ Minio object uploader
+        """Minio object uploader
         """
 
-        log.debug(f'[{self.put_object.__name__}] Uploading: {object_name}')
-
+        bucket_name = MinioAssertions.bucket_name(bucket_name)
         length = length or data.getvalue().__len__()
+
+        log.debug(f'[{self.put_object.__name__}] Uploading: {object_name}')
 
         try:
             put = self.client.put_object(
@@ -141,6 +148,7 @@ class MinioClient(object):
                 content_type=content_type,
                 metadata=metadata, sse=sse,
                 progress=progress)
+
             log.info(
                 f'[put_object] Saved to '
                 f'{self.config.endpoint}/{bucket_name}/{object_name}'
@@ -148,24 +156,29 @@ class MinioClient(object):
 
             return put
 
-        except Exception as _:
+        except Exception as e:
             log.error(
                 f'[{self.put_object.__name__}] Unable to save '
-                f'{self.config.endpoint}/{bucket_name}/{bucket_name}'
+                f'{self.config.endpoint}/{bucket_name}/{bucket_name} '
+                f'{e}',
+                raise_exception=False
             )
 
             return False
 
     @_isConnected
-    def remove_bucket(self, bucket_name) -> bool:
+    def remove_bucket(self, bucket_name: str) -> bool:
+        bucket_name = MinioAssertions.bucket_name(bucket_name)
+
         try:
-            log.info(f'Removed bucket: {bucket_name}')
             self.client.remove_bucket(bucket_name)
+            log.info(f'Removed bucket: {bucket_name}')
             return True
 
         except Exception as e:
             log.error(f'Bucket does not exist: {bucket_name} {e}', enable_traceback=False)
-            return False
+
+        return False
 
 
 def check_connection(host, port):
