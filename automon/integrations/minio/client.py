@@ -192,7 +192,7 @@ class MinioClient(object):
             return True
 
         except Exception as e:
-            log.error(f'Bucket does not exist: {bucket_name} {e}', enable_traceback=False)
+            log.error(f'Remove bucket failed: {bucket_name}. {e}', enable_traceback=False)
 
         return False
 
