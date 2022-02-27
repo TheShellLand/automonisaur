@@ -7,6 +7,7 @@ from minio import Minio
 from automon.log import Logging
 
 from .bucket import Bucket
+from .object import Object
 from .config import MinioConfig
 from .assertions import MinioAssertions
 
@@ -58,10 +59,13 @@ class MinioClient(object):
         bucket_name = MinioAssertions.bucket_name(bucket_name)
         objects = self.list_objects(bucket_name, folder)
 
-        for object in objects:
-            log.debug(f'{object}')
+        if objects:
+            objects = [Object(x) for x in objects]
 
-        return self.client.remove_objects(bucket_name, objects)
+            log.debug(f'Bucket: {bucket_name} Objects: {len(objects)}')
+            return self.client.remove_objects(bucket_name, objects)
+
+        return False
 
     @_isConnected
     def download_object(self, bucket_name, file):
@@ -84,12 +88,24 @@ class MinioClient(object):
                      bucket_name: str,
                      folder: str = None,
                      recursive: bool = True,
-                     **kwargs) -> list:
+                     **kwargs) -> [Object]:
         """List Minio objects"""
         bucket_name = MinioAssertions.bucket_name(bucket_name)
 
-        log.debug(f'Objects bucket: {bucket_name}, folder: {folder}')
-        return self.client.list_objects(bucket_name, folder, recursive=recursive, **kwargs)
+        try:
+            objects = self.client.list_objects(bucket_name, folder, recursive=recursive, **kwargs)
+            objects = [Object(x) for x in objects]
+
+            if folder:
+                log.debug(f'Bucket: {bucket_name}, Folder: {folder}, Objects: {len(objects)}')
+            else:
+                log.debug(f'Bucket: {bucket_name}, Objects: {len(objects)}')
+            return objects
+
+        except Exception as e:
+            log.error(f'failed to list objects. {e}')
+
+        return False
 
     @_isConnected
     def list_buckets(self) -> [Bucket]:

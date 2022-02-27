@@ -16,8 +16,11 @@ class ClientTest(unittest.TestCase):
 
     def test_clear_bucket(self):
         if c.isConnected():
-            bucket = c.make_bucket('AAAA')
-            self.assertTrue(c.clear_bucket(bucket))
+            bucket = c.make_bucket('AAAAAA')
+            if c.list_objects(bucket):
+                self.assertTrue(c.clear_bucket(bucket))
+            else:
+                self.assertFalse(c.clear_bucket(bucket))
 
 
 if __name__ == '__main__':
