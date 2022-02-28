@@ -175,7 +175,7 @@ class MinioClient(object):
             log.info(f'Created bucket "{bucket_name}"')
 
         except Exception as e:
-            log.warn(f'Bucket "{bucket_name}" exists', enable_traceback=False)
+            log.warn(f'Bucket "{bucket_name}" exists')
 
         return self.get_bucket(bucket_name)
 

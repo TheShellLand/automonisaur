@@ -29,7 +29,7 @@ class ClientTest(unittest.TestCase):
     def test_remove_bucket(self):
         if c.isConnected():
             test = c.make_bucket('20220227')
-            self.assertTrue(c.remove_objects(test))
+            c.remove_objects(test)
             self.assertTrue(c.remove_bucket(test))
 
 
