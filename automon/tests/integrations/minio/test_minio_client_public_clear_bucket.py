@@ -14,22 +14,10 @@ bucket = hashlib.md5(f'{MINIO_ENDPOINT}'.encode()).hexdigest()
 
 class ClientTest(unittest.TestCase):
 
-    def test_list_buckets(self):
-        if c.isConnected():
-            self.assertTrue(c.list_buckets())
-            self.assertEqual(type(c.list_buckets()), list)
-
-    def test_get_bucket(self):
-        if c.isConnected():
-            test = c.make_bucket(bucket)
-
-            self.assertTrue(c.get_bucket(test))
-            self.assertTrue(type(c.get_bucket(test)), Bucket)
-
     def test_remove_bucket(self):
         if c.isConnected():
-            test = c.make_bucket('20220227')
-            self.assertTrue(c.remove_objects(test))
+            test = c.make_bucket('cptest')
+            c.remove_objects(test)
             self.assertTrue(c.remove_bucket(test))
 
 
