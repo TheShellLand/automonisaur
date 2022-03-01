@@ -35,6 +35,7 @@ Github issues and feature requests welcomed.
 - airport
 - elasticsearch
 - flask
+- google people api
 - logging
 - minio
 - neo4j
