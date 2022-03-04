@@ -1,4 +1,5 @@
 import json
+import datetime
 
 from automon import Logging
 
@@ -8,6 +9,10 @@ log = Logging('Container', level=Logging.CRITICAL)
 
 
 class Container(Scaffolding):
+    artifact_count: int
+    start_time: datetime
+    id: int
+
     def __init__(self, container: dict):
         self.artifact_count = None
         self.start_time = None
