@@ -4,12 +4,14 @@ import functools
 from automon import Logging
 from automon.integrations.requests import Requests
 
-from .config import SplunkSoarConfig
+from .rest import Urls
 from .artifact import Artifact
 from .container import Container
-from .rest import Urls
+from .config import SplunkSoarConfig
+from .results import ResultsContainer
 
 log = Logging(name='SplunkSoarClient', level=Logging.DEBUG)
+Logging(name='RequestsClient', level=Logging.DEBUG)
 
 
 class SplunkSoarClient:
@@ -184,7 +186,7 @@ class SplunkSoarClient:
             if self.client.results.status_code == 200:
                 id = self.client.to_dict()['id']
                 log.info(f'container created. {container} {self.client.to_dict()}')
-                return self.list_containers(container_id=id)
+                return self.get_container(container_id=id)
         log.error(f'create container. {self.client.to_dict()}', enable_traceback=False)
         return False
 
@@ -204,9 +206,9 @@ class SplunkSoarClient:
         """check if client can connect"""
         if self.config.isReady():
             if self._get(Urls().container()):
-                log.info(f'client connected'
-                         f'[{self.client.results.status_code}] '
-                         f'{self.config.host}')
+                log.info(f'client connected '
+                         f'{self.config.host} '
+                         f'[{self.client.results.status_code}] ')
                 return True
 
         else:
@@ -265,19 +267,55 @@ class SplunkSoarClient:
         return False
 
     @_isConnected
-    def list_containers(self,
-                        container_id=None,
-                        page=None,
-                        page_size=10,
-                        *args, **kwargs) -> [Container]:
-        """list containers"""
-        if self._get(Urls().container(identifier=container_id, page=page, page_size=page_size, *args, **kwargs)):
+    def get_container(self, container_id: int = None, **kwargs) -> Container:
+        if self._get(Urls().container(identifier=container_id, **kwargs)):
             request = self._content_dict()
-            if container_id:
-                return Container(request)
-            containers = [Container(c) for c in request['data']]
+            container = Container(request)
+            log.info(f'get container: {container}')
+            return container
+
+        log.error(f'container not found: {container_id}', enable_traceback=False)
+        return False
+
+    @_isConnected
+    def list_containers(self,
+                        page: int = None,
+                        page_size: int = 1000,
+                        *args, **kwargs) -> ResultsContainer:
+        """list containers"""
+
+        url = Urls().container(page=page, page_size=page_size, *args, **kwargs)
+        if self._get(url):
+            request = self._content_dict()
+            containers = ResultsContainer(request)
+            log.info(f'list containers: {len(containers.data)}')
             return containers
-        return []
+        log.error(f'no containers', enable_traceback=False)
+        return ResultsContainer()
+
+    @_isConnected
+    def list_containers_generator(self, page: int = 0, page_size: int = None, **kwargs) -> [Container]:
+        """Generator for paging through containers"""
+
+        page = page
+
+        while True:
+            request = self.list_containers(page=page, page_size=page_size)
+            if request.data:
+                containers = request.data
+                num_pages = request.num_pages
+                log.info(f'{page}/{num_pages} ({round(page/num_pages * 100, 2)}%)')
+                yield containers
+                page += 1
+            else:
+                log.error(f'list container failed', enable_traceback=True)
+                return False
+
+            if page > num_pages:
+                log.info(f'list container finished')
+                return True
+
+        return False
 
     @_isConnected
     def list_cluster_node(self, **kwargs) -> bool:

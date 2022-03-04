@@ -28,8 +28,8 @@ class TestClient(unittest.TestCase):
 
     def test_delete_containers(self):
         if c.isConnected():
-            id = c.create_container(label='testing', name='testing').id
-            self.assertTrue(c.delete_container(container_id=id))
+            container = c.create_container(label='testing', name='testing')
+            self.assertTrue(c.delete_container(container_id=container.id))
         else:
             self.assertFalse(c.delete_container(container_id=0))
 
@@ -38,6 +38,13 @@ class TestClient(unittest.TestCase):
             self.assertTrue(c.list_artifact())
         else:
             self.assertFalse(c.list_artifact())
+
+    def test_get_container(self):
+        if c.isConnected():
+            container = c.create_container(label='testing', name='testing')
+            self.assertTrue(c.get_container(container_id=container.id))
+        else:
+            self.assertFalse(c.get_container(container_id=container.id))
 
     def test_list_containers(self):
         if c.isConnected():

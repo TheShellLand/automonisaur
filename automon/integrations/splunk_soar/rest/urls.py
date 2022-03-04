@@ -120,6 +120,85 @@ class Urls:
     def playbook_run(self, identifier: int = None, detail: str = None, *args, **kwargs):
         return f'{self.PLAYBOOK_RUN}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
+    def params(self, page: int = None,
+               page_size: int = None,
+               pretty: bool = None,
+               filter: (str, str or int or list or None) = None,
+               exclude: str = None,
+               include_expensive: bool = None,
+               sort: str = None,
+               order: str = None, **kwargs):
+
+        """General Form for a Parameters
+
+        docs: https://docs.splunk.com/Documentation/SOAR/current/PlatformAPI/RESTQueryData#General_Form_for_a_Query
+
+        ?page=0&page_size=10&pretty&_filter_XXX='YYY'&_exclude_XXX='YYY'&include_expensive
+
+        Parameter	Required	Description
+        type	required	The type of data being queried. Supported types are:
+        action_run
+        artifact
+        asset
+        app
+        app_run
+        container
+        playbook_run
+        cluster_node
+        Querying for only a type will return a paginated array of objects.
+
+        identifier	optional	Adding an identifier to a URL will retrieve a single specific object. Identifiers are integers and are unique for each resource.
+        detail	optional	Adding a detail can only be done when querying a single object. The result is to return information on a single field of the object.
+        page	optional	Positive integer. Returned results are paginated. This query parameter requests a specific page.
+        page_size	optional	Positive integer. Returned results are paginated. This query parameter determines how many results returned per-page. Use "0" for all results.
+        Setting page_size to 0 will return all results. Querying a very large data set can have an adverse effect on performance.
+
+        pretty	optional	No value. Adding ?pretty (or &pretty) to your query will add related or calculated fields prefixed with _pretty_ to the response. For instance if the record you are looking for has a start_time, the response will have _pretty_start time that is a relative local version of the time. A record that has an "owner" reporting back an id will gain _pretty_owner that shows the owner's display name.
+        Requesting pretty values is a relatively expensive call since it may involve expensive calculations or additional database lookups. When querying individual records or small numbers of records, this should not cause any performance hit. However if requesting tens of thousands of records it may have an adverse impact on your system depending on your hardware.
+
+        _filter_XXX	optional	Add one or more filters to limit the results. Applies only to lists of objects. See Filtering below.
+        _exclude_XXX	optional	Exclude matching items with syntax similar to filtering. See Excluding below.
+        include_expensive	optional	No value. Adding this flag will cause the REST API to return all fields when returning a list, including large/expensive fields.
+        The include_expensive parameter will return all fields, just as if you were requesting the individual record. These expensive fields may have megabytes of data for a single record, so use this option with caution as it may have a significant performance impact if returning large amounts of data.
+
+        sort	optional	Field to sort results with. Can be any "simple" field at the top-level of record, such as a string, boolean, or integer value that is not under a hierarchy. Custom fields for events can also be sorted, using the format custom_fields.field_name.
+        order	string	Either "asc" or "desc". This is the sorting order for the results.
+        """
+
+        params = []
+
+        if page is not None:
+            params.append(f'page={page}')
+
+        if page_size is not None:
+            params.append(f'page_size={page_size}')
+
+        if pretty:
+            params.append(f'pretty')
+
+        if filter:
+            field_name, value = filter
+            params.append(f'{self.filter(field_name=field_name, value=value)}')
+
+        if exclude:
+            params.append(f'{self.exclude(exclude)}')
+
+        if include_expensive:
+            params.append(f'{include_expensive}')
+
+        if sort:
+            """field to sort by"""
+            params.append(f'{sort}')
+
+        if order:
+            """asc or desc"""
+            params.append(f'{order}')
+
+        if params:
+            params = f'?{"&".join(params)}'
+
+        return params
+
     def query(self,
               identifier: int = None,
               detail: str = None,
@@ -130,7 +209,7 @@ class Urls:
               exclude: str = None,
               include_expensive: bool = None,
               sort: str = None,
-              order: str = None):
+              order: str = None, **kwargs):
         """General Form for a Query
 
         docs: https://docs.splunk.com/Documentation/SOAR/current/PlatformAPI/RESTQueryData#General_Form_for_a_Query
@@ -167,6 +246,16 @@ class Urls:
         order	string	Either "asc" or "desc". This is the sorting order for the results.
         """
         query = ''
+        params = self.params(
+            page=page,
+            page_size=page_size,
+            pretty=pretty,
+            filter=filter,
+            exclude=exclude,
+            include_expensive=include_expensive,
+            sort=sort,
+            order=order, **kwargs
+        )
 
         if identifier:
             query += f'/{identifier}'
@@ -174,32 +263,8 @@ class Urls:
         if detail:
             query += f'/{detail}'
 
-        if page:
-            query += f'?page={page}'
-
-        if page_size:
-            query += f'?page_size={page_size}'
-
-        if pretty:
-            query += f'?pretty'
-
-        if filter:
-            field_name, value = filter
-            query += f'?{self.filter(field_name=field_name, value=value)}'
-
-        if exclude:
-            query += f'?{self.exclude(exclude)}'
-
-        if include_expensive:
-            query += f'?{include_expensive}'
-
-        if sort:
-            """field to sort by"""
-            query += f'?{sort}'
-
-        if order:
-            """asc or desc"""
-            query += f'?{order}'
+        if params:
+            query += f'{params}'
 
         return query
 
