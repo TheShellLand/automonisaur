@@ -44,7 +44,7 @@ class TestClient(unittest.TestCase):
             container = c.create_container(label='testing', name='testing')
             self.assertTrue(c.get_container(container_id=container.id))
         else:
-            self.assertFalse(c.get_container(container_id=container.id))
+            self.assertFalse(c.get_container())
 
     def test_list_containers(self):
         if c.isConnected():
