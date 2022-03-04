@@ -191,11 +191,21 @@ class PeopleConfig:
                 )
             }
 
-        log.error(f'Missing client_type', raise_exception=True)
+        log.warn(f'Missing client_type')
+        return False
 
     def from_authorized_user_file(self, file: str) -> Credentials:
         """Load token.json"""
         return self.Credentials.from_authorized_user_file(file, self.scopes)
+
+    def isReady(self):
+        if self.client_type:
+            return True
+        if self.oauth_dict():
+            return True
+
+        log.warn(f'config is not ready')
+        return False
 
     def load_oauth(self, oauth: dict) -> Credentials:
         if 'installed' in oauth.keys():

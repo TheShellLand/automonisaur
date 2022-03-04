@@ -64,6 +64,9 @@ class PeopleClient:
 
     def authenticate(self) -> bool:
         """Get Oauth"""
+        if not self.config.isReady():
+            return False
+
         creds = self.config.Credentials
         client_config = self._client_config
         scopes = self.config.scopes
