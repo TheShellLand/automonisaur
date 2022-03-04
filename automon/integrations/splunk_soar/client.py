@@ -304,15 +304,26 @@ class SplunkSoarClient:
             if request.data:
                 containers = request.data
                 num_pages = request.num_pages
-                log.info(f'{page}/{num_pages} ({round(page/num_pages * 100, 2)}%)')
+                log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
+
+                if page > num_pages:
+                    log.info(f'list container finished')
+                    return True
+
                 yield containers
                 page += 1
-            else:
+
+            elif request.data == []:
+                log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
+                log.info(f'list container finished. {request}')
+                return True
+
+            elif request.data is None:
                 log.error(f'list container failed', enable_traceback=True)
                 return False
 
-            if page > num_pages:
-                log.info(f'list container finished')
+            else:
+                log.info(f'no containers. {request}')
                 return True
 
         return False
