@@ -1,13 +1,14 @@
+import functools
 from queue import Queue
 
 import splunklib.results
-import splunklib.client as client
+import splunklib.client
 
 from automon.log import Logging
 from automon.integrations.splunk.config import SplunkConfig
 from automon.integrations.splunk.helpers import Job, Application
 
-log = Logging(name=__name__, level=Logging.DEBUG)
+log = Logging(name='SplunkClient', level=Logging.DEBUG)
 
 
 class SplunkRestClient:
@@ -22,37 +23,53 @@ class SplunkClient(object):
     def __init__(self, config: SplunkConfig = None):
         self._log = Logging(SplunkClient.__name__, level=Logging.DEBUG)
         self.config = config or SplunkConfig()
-
-        try:
-            self.client = client.connect(
-                host=self.config.host,
-                port=self.config.port,
-                username=self.config.username,
-                password=self.config.password,
-                verify=self.config.verify,
-                scheme=self.config.scheme,
-                app=self.config.app,
-                owner=self.config.owner,
-                token=self.config.token,
-                cookie=self.config.cookie,
-                handler=self.config.handler
-            )
-
-            # referred to as a service in docs
-            self.service = self.client
-            self.connected = True
-            assert isinstance(self.service, client.Service)
-
-        except Exception as e:
-            self.connected = False
-            self._log.error(f'{e}\t{self.config.host}:{self.config.port}', enable_traceback=False)
-
         self.queue = Queue()
+
+    def __str__(self):
+        if self.is_connected():
+            return f'connected to {self.config}'
+        return f'not connected to {self.config}'
+
+    @property
+    def client(self) -> splunklib.client.connect:
+        return splunklib.client.connect(
+            host=self.config.host,
+            port=self.config.port,
+            username=self.config.username,
+            password=self.config.password,
+            verify=self.config.verify,
+            scheme=self.config.scheme,
+            app=self.config.app,
+            owner=self.config.owner,
+            token=self.config.token,
+            cookie=self.config.cookie,
+            handler=self.config.handler
+        )
+
+    @property
+    def service(self) -> splunklib.client.connect:
+        return self.client()
+
+    def _is_connected(func):
+        @functools.wraps(func)
+        def wrapped(self, *args, **kwargs):
+            try:
+                self.client
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                log.error(f'not connected. {e}', enable_traceback=False)
+            return False
+
+        return wrapped
+
+    @_is_connected
+    def is_connected(self) -> bool:
+        return True
 
     def info(self):
         return f'{self}'
 
-    def search(self, query):
+    def search(self, query) -> list:
         """create normal search query"""
         kwargs_normalsearch = {"exec_mode": "normal"}
         job = self.create_job(query, **kwargs_normalsearch)
@@ -86,7 +103,7 @@ class SplunkClient(object):
         return self.service.jobs.create(query, **kwargs)
 
     @staticmethod
-    def results(job: client.Job):
+    def results(job: splunklib.client.Job) -> list:
         """io blocking waiting for job results"""
         j = Job(job)
         while True:
@@ -101,7 +118,7 @@ class SplunkClient(object):
     def job_summary(self):
         return f'There are {len(self.jobs())} jobs available to the current user'
 
-    def get_apps(self):
+    def get_apps(self) -> [Application]:
         return [Application(x) for x in self.service.apps]
 
     def create_app(self, app_name):
@@ -115,8 +132,3 @@ class SplunkClient(object):
 
     def app_info(self, app_name):
         return f'{self.service.apps[app_name]}'
-
-    def __str__(self):
-        if self.connected:
-            return f'connected to {self.config}'
-        return f'not connected to {self.config}'

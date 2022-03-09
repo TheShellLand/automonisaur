@@ -3,19 +3,28 @@ import os
 import splunklib.binding as binding
 
 from automon.log import Logging
+from automon.helpers import environ
 
 
 class SplunkConfig:
-    def __init__(self, host: str = None, port: int = None, username: str = None,
-                 password: str = None, verify: str = True, scheme: str = 'https',
-                 app: NotImplemented = None, owner: NotImplemented = None,
-                 token: str = None, cookie: str = None, timeout: int = 1):
+    def __init__(self,
+                 host: str = None,
+                 port: int = None,
+                 username: str = None,
+                 password: str = None,
+                 verify: str = True,
+                 scheme: str = 'https',
+                 app: NotImplemented = None,
+                 owner: NotImplemented = None,
+                 token: str = None,
+                 cookie: str = None,
+                 timeout: int = 1):
         self._log = Logging(name=SplunkConfig.__name__, level=Logging.DEBUG)
 
-        self.host = host or os.getenv('SPLUNK_HOST') or 'splunkcloud.com'
-        self.port = port or os.getenv('SPLUNK_PORT') or 8090
-        self.username = username or os.getenv('SPLUNK_USERNAME') or 'admin'
-        self.password = password or os.getenv('SPLUNK_PASSWORD') or 'changeme'
+        self.host = host or environ('SPLUNK_HOST', 'splunkcloud.com')
+        self.port = port or environ('SPLUNK_PORT', 8090)
+        self.username = username or environ('SPLUNK_USERNAME', 'admin')
+        self.password = password or environ('SPLUNK_PASSWORD', 'changeme')
         self.verify = verify
         self.scheme = scheme or 'https'
         self.app = app
