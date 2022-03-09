@@ -3,6 +3,7 @@ import socket
 import functools
 
 from minio import Minio
+from typing import Optional
 
 from automon.log import Logging
 
@@ -64,18 +65,18 @@ class MinioClient(object):
         return self.client.get_object(bucket_name, file.object_name)
 
     @_is_connected
-    def get_bucket(self, bucket_name: str) -> Bucket:
+    def get_bucket(self, bucket_name: str) -> Optional[Bucket]:
         """List Minio buckets"""
         bucket_name = MinioAssertions.bucket_name(bucket_name)
         buckets = self.list_buckets()
 
         for b in buckets:
             if b == bucket_name:
-                log.info(f'Get bucket "{b}"')
+                log.info(f'Bucket: "{b}"')
                 return b
 
         log.error(msg=f'Bucket "{bucket_name}" does not exist', raise_exception=False)
-        return False
+        return
 
     @_is_connected
     def isConnected(self):
@@ -90,7 +91,7 @@ class MinioClient(object):
         buckets = self.client.list_buckets()
         buckets = [Bucket(x) for x in buckets]
 
-        log.info(f'Listing buckets. {len(buckets)} total buckets')
+        log.info(f'Buckets total: {len(buckets)}')
         return buckets
 
     @_is_connected
@@ -106,18 +107,18 @@ class MinioClient(object):
             objects = self.client.list_objects(bucket_name, folder, recursive=recursive, **kwargs)
             objects = [Object(x) for x in objects]
 
-            msg = f'Listing {len(objects)} objects in bucket "{bucket_name}"'
+            msg = f'Objects total: {len(objects)} (bucket: "{bucket_name}")'
 
             if folder:
                 msg += f' Folder: "{folder}"'
 
-            log.debug(msg)
+            log.info(msg)
             return objects
 
         except Exception as e:
             log.error(f'failed to list objects. {e}')
 
-        return False
+        return
 
     @_is_connected
     def list_objects_generator(
@@ -155,7 +156,8 @@ class MinioClient(object):
     @_is_connected
     def remove_objects(self, bucket_name, folder=None):
         bucket_name = MinioAssertions.bucket_name(bucket_name)
-        delete_objects = [DeleteObject(x) for x in self.list_objects(bucket_name, folder)]
+        objects = self.list_objects(bucket_name, folder)
+        delete_objects = [DeleteObject(x) for x in objects]
 
         if delete_objects:
             errors = list(self.client.remove_objects(bucket_name, delete_objects))
@@ -175,7 +177,7 @@ class MinioClient(object):
             log.info(f'Created bucket "{bucket_name}"')
 
         except Exception as e:
-            log.warn(f'Bucket "{bucket_name}" exists')
+            log.warn(f'Bucket exists: "{bucket_name}"')
 
         return self.get_bucket(bucket_name)
 
