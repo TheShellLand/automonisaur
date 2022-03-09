@@ -140,7 +140,7 @@ class MinioClient(object):
         return False
 
     @_is_connected
-    def remove_bucket(self, bucket_name: str) -> bool:
+    def remove_bucket(self, bucket_name: str) -> Optional[bool]:
         bucket_name = MinioAssertions.bucket_name(bucket_name)
 
         try:
@@ -151,22 +151,25 @@ class MinioClient(object):
         except Exception as e:
             log.error(f'Remove bucket "{bucket_name}" failed. {e}', enable_traceback=False)
 
-        return False
+        return
 
     @_is_connected
-    def remove_objects(self, bucket_name, folder=None):
+    def remove_objects(self, bucket_name, folder=None) -> bool:
         bucket_name = MinioAssertions.bucket_name(bucket_name)
         objects = self.list_objects(bucket_name, folder)
         delete_objects = [DeleteObject(x) for x in objects]
 
-        if delete_objects:
-            errors = list(self.client.remove_objects(bucket_name, delete_objects))
-            log.info(f'Removed {len(delete_objects)} objects in bucket "{bucket_name}"')
-            return True
-        else:
-            log.info(f'Bucket "{bucket_name}" is empty')
+        if not delete_objects:
+            log.info(f'Bucket is empty: "{bucket_name}"')
+            return
 
-        return False
+        errors = list(self.client.remove_objects(bucket_name, delete_objects))
+        log.info(f'Removed {len(delete_objects)} objects in bucket "{bucket_name}"')
+
+        if self.list_objects(bucket_name, folder):
+            return self.remove_objects(bucket_name, folder=folder)
+
+        return True
 
     @_is_connected
     def make_bucket(self, bucket_name: str) -> Bucket:
