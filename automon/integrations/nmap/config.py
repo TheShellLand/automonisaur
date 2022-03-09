@@ -1,5 +1,5 @@
 from automon.log import Logging
-from automon.helpers.subprocess import Run
+from automon.helpers import Run
 
 
 class NmapConfig(object):

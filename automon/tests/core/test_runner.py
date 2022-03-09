@@ -1,6 +1,6 @@
 import unittest
 
-from automon.helpers.subprocess import Run
+from automon.helpers import Run
 
 
 class RunTest(unittest.TestCase):
