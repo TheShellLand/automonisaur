@@ -41,7 +41,7 @@ class MinioClient(object):
         )
         return client
 
-    def _isConnected(func):
+    def _is_connected(func):
         """Decorator that checks if MinioClient is connected
         """
 
@@ -54,7 +54,7 @@ class MinioClient(object):
 
         return _wrapper
 
-    @_isConnected
+    @_is_connected
     def download_object(self, bucket_name, file):
         """Minio object downloader
         """
@@ -63,7 +63,7 @@ class MinioClient(object):
         log.debug(f'[downloader] Downloading: {bucket_name}/{file.object_name}')
         return self.client.get_object(bucket_name, file.object_name)
 
-    @_isConnected
+    @_is_connected
     def get_bucket(self, bucket_name: str) -> Bucket:
         """List Minio buckets"""
         bucket_name = MinioAssertions.bucket_name(bucket_name)
@@ -77,14 +77,14 @@ class MinioClient(object):
         log.error(msg=f'Bucket "{bucket_name}" does not exist', raise_exception=False)
         return False
 
-    @_isConnected
+    @_is_connected
     def isConnected(self):
         """Check if MinioClient is connected
         """
         log.info(f'Minio client OK')
         return True
 
-    @_isConnected
+    @_is_connected
     def list_buckets(self) -> [Bucket]:
         """List Minio buckets"""
         buckets = self.client.list_buckets()
@@ -93,7 +93,7 @@ class MinioClient(object):
         log.info(f'Listing buckets. {len(buckets)} total buckets')
         return buckets
 
-    @_isConnected
+    @_is_connected
     def list_objects(
             self,
             bucket_name: str,
@@ -119,7 +119,7 @@ class MinioClient(object):
 
         return False
 
-    @_isConnected
+    @_is_connected
     def list_objects_generator(
             self,
             bucket_name: str,
@@ -138,7 +138,7 @@ class MinioClient(object):
 
         return False
 
-    @_isConnected
+    @_is_connected
     def remove_bucket(self, bucket_name: str) -> bool:
         bucket_name = MinioAssertions.bucket_name(bucket_name)
 
@@ -152,7 +152,7 @@ class MinioClient(object):
 
         return False
 
-    @_isConnected
+    @_is_connected
     def remove_objects(self, bucket_name, folder=None):
         bucket_name = MinioAssertions.bucket_name(bucket_name)
         delete_objects = [DeleteObject(x) for x in self.list_objects(bucket_name, folder)]
@@ -166,7 +166,7 @@ class MinioClient(object):
 
         return False
 
-    @_isConnected
+    @_is_connected
     def make_bucket(self, bucket_name: str) -> Bucket:
         """Make a bucket"""
         bucket_name = MinioAssertions.bucket_name(bucket_name)
@@ -179,7 +179,7 @@ class MinioClient(object):
 
         return self.get_bucket(bucket_name)
 
-    @_isConnected
+    @_is_connected
     def put_object(self, bucket_name: str, object_name: str, data: io.BytesIO, length: int = None,
                    content_type='application/octet-stream',
                    metadata=None, sse=None, progress=None,
