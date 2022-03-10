@@ -48,10 +48,15 @@ class MinioClient(object):
 
         @functools.wraps(func)
         def _wrapper(self, *args, **kwargs):
-            if self.config.isReady():
-                if self.client.list_buckets():
-                    # if not self._sessionExpired() or self.client.list_buckets():
-                    return func(self, *args, **kwargs)
+            if not self.config.isReady():
+                return False
+            try:
+                self.client.list_buckets()
+                # if not self._sessionExpired() or self.client.list_buckets():
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                log.error(f'Minio client not connected. {e}')
+            return False
 
         return _wrapper
 
