@@ -26,12 +26,6 @@ class ClientTest(unittest.TestCase):
             self.assertTrue(c.get_bucket(test))
             self.assertTrue(type(c.get_bucket(test)), Bucket)
 
-    def test_remove_bucket(self):
-        if c.isConnected():
-            test = c.make_bucket('20220227')
-            c.remove_objects(test)
-            self.assertTrue(c.remove_bucket(test))
-
 
 if __name__ == '__main__':
     unittest.main()
