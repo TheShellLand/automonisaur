@@ -14,14 +14,14 @@ log = Logging(name='SplunkClient', level=Logging.DEBUG)
 class SplunkRestClient:
 
     def __int__(self, config: SplunkConfig = SplunkConfig()):
-        self._log = Logging(SplunkRestClient.__name__, level=Logging.DEBUG)
         self.config = config
 
 
 class SplunkClient(object):
 
     def __init__(self, config: SplunkConfig = None):
-        self._log = Logging(SplunkClient.__name__, level=Logging.DEBUG)
+        """Splunk client"""
+
         self.config = config or SplunkConfig()
         self.queue = Queue()
 

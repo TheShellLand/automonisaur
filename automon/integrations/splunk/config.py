@@ -1,9 +1,9 @@
-import os
-
 import splunklib.binding as binding
 
 from automon.log import Logging
 from automon.helpers import environ
+
+log = Logging(name='SplunkConfig', level=Logging.DEBUG)
 
 
 class SplunkConfig:
@@ -19,10 +19,10 @@ class SplunkConfig:
                  token: str = None,
                  cookie: str = None,
                  timeout: int = 1):
-        self._log = Logging(name=SplunkConfig.__name__, level=Logging.DEBUG)
+        """Splunk config"""
 
         self.host = host or environ('SPLUNK_HOST', 'splunkcloud.com')
-        self.port = port or environ('SPLUNK_PORT', 8090)
+        self.port = port or environ('SPLUNK_PORT', 8089)
         self.username = username or environ('SPLUNK_USERNAME', 'admin')
         self.password = password or environ('SPLUNK_PASSWORD', 'changeme')
         self.verify = verify
@@ -37,4 +37,4 @@ class SplunkConfig:
         return f'{self}'
 
     def __str__(self):
-        return f'{self.username}@{self.scheme}://{self.host}:{self.port}'
+        return f'{self.__dict__}'
