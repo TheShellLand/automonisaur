@@ -1,10 +1,10 @@
 from automon import Logging
 
-from .common import Scaffolding
+from .datatypes import AbstractDataType
 
 log = Logging('Artifact', level=Logging.CRITICAL)
 
 
-class Artifact(Scaffolding):
-    def __init__(self, artifact: dict):
+class Artifact(AbstractDataType):
+    def __init__(self, artifact: dict = {}):
         self.__dict__.update(artifact)

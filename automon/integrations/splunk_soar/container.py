@@ -3,18 +3,18 @@ import datetime
 
 from automon import Logging
 
-from .common import Scaffolding
+from .datatypes import AbstractDataType
 
 log = Logging('Container', level=Logging.CRITICAL)
 
 
-class Container(Scaffolding):
+class Container(AbstractDataType):
     artifact_count: int
     start_time: datetime
     id: int
     name: str
 
-    def __init__(self, container: dict):
+    def __init__(self, container: dict = {}):
         self.artifact_count = None
         self.start_time = None
         self.id = None

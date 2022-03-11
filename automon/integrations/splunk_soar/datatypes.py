@@ -5,10 +5,10 @@ from dateutil import parser
 
 from automon import Logging
 
-log = Logging('Scaffolding', level=Logging.DEBUG)
+log = Logging('AbstractDataType', level=Logging.DEBUG)
 
 
-class Scaffolding:
+class AbstractDataType:
     def __init__(self, data: dict):
         self.__dict__.update(data)
 

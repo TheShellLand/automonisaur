@@ -1,6 +1,8 @@
 import json
 import functools
 
+from typing import Optional
+
 from automon import Logging
 from automon.integrations.requests import Requests
 
@@ -8,7 +10,7 @@ from .rest import Urls
 from .artifact import Artifact
 from .container import Container
 from .config import SplunkSoarConfig
-from .results import ResultsContainer
+from .responses import Response
 
 log = Logging(name='SplunkSoarClient', level=Logging.DEBUG)
 Logging(name='RequestsClient', level=Logging.DEBUG)
@@ -27,7 +29,6 @@ class SplunkSoarClient:
         self.action_run = None
         self.app = None
         self.app_run = None
-        self.artifacts = None
         self.asset = None
         self.cluster_node = None
         self.containers = None
@@ -216,12 +217,31 @@ class SplunkSoarClient:
         return False
 
     @_isConnected
-    def list_artifact(self, artifact_id: int = None, **kwargs) -> bool:
+    def get_artifact(self, artifact_id: int = None, **kwargs) -> Artifact:
+        """list action run"""
+        if self._get(Urls().artifact(identifier=artifact_id, **kwargs)):
+            artifact = Artifact(self._content_dict())
+            log.info(f'get artifact: {artifact}')
+            return artifact
+
+        log.error(f'artifact not found: {artifact_id}', enable_traceback=False)
+        return Artifact()
+
+    @_isConnected
+    def get_container(self, container_id: int = None, **kwargs) -> Container:
+        if self._get(Urls().container(identifier=container_id, **kwargs)):
+            container = Container(self._content_dict())
+            log.info(f'get container: {container}')
+            return container
+
+        log.error(f'container not found: {container_id}', enable_traceback=False)
+        return Container()
+
+    @_isConnected
+    def list_artifact(self, artifact_id: int = None, **kwargs) -> [Artifact]:
         """list action run"""
         if self._get(Urls().artifact(identifier=artifact_id, **kwargs)):
             request = self._content_dict()
-            if artifact_id:
-                return Artifact(request)
             artifacts = [Artifact(a) for a in request['data']]
             return artifacts
         return []
@@ -251,59 +271,29 @@ class SplunkSoarClient:
         return False
 
     @_isConnected
-    def list_artifacts(self, **kwargs) -> bool:
+    def list_artifacts(self,
+                       page: int = None,
+                       page_size: int = 1000, **kwargs) -> Response:
         """list artifacts"""
-        if self._get(Urls().artifact(**kwargs)):
-            self.artifacts = self._content_dict()
-            return True
-        return False
+        if self._get(Urls().artifact(page=page, page_size=page_size, **kwargs)):
+            response = Response(self._content())
+            log.info(f'list artifacts: {len(response.data)}')
+            return response
+        return Response()
 
     @_isConnected
-    def list_asset(self, **kwargs) -> bool:
-        """list asset"""
-        if self._get(Urls().asset(**kwargs)):
-            self.asset = self._content_dict()
-            return True
-        return False
-
-    @_isConnected
-    def get_container(self, container_id: int = None, **kwargs) -> Container:
-        if self._get(Urls().container(identifier=container_id, **kwargs)):
-            request = self._content_dict()
-            container = Container(request)
-            log.info(f'get container: {container}')
-            return container
-
-        log.error(f'container not found: {container_id}', enable_traceback=False)
-        return False
-
-    @_isConnected
-    def list_containers(self,
-                        page: int = None,
-                        page_size: int = 1000,
-                        *args, **kwargs) -> ResultsContainer:
-        """list containers"""
-
-        url = Urls().container(page=page, page_size=page_size, *args, **kwargs)
-        if self._get(url):
-            request = self._content_dict()
-            containers = ResultsContainer(request)
-            log.info(f'list containers: {len(containers.data)}')
-            return containers
-        log.error(f'no containers', enable_traceback=False)
-        return ResultsContainer()
-
-    @_isConnected
-    def list_containers_generator(self, page: int = 0, page_size: int = None, **kwargs) -> [Container]:
-        """Generator for paging through containers"""
+    def list_artifact_generator(self,
+                                page: int = 0,
+                                page_size: int = None, **kwargs) -> [Container]:
+        """Generator for paging through artifacts"""
 
         page = page
 
         while True:
-            request = self.list_containers(page=page, page_size=page_size)
-            if request.data:
-                containers = request.data
-                num_pages = request.num_pages
+            response = self.list_containers(page=page, page_size=page_size, **kwargs)
+            if response.data:
+                containers = [Container(x) for x in response.data]
+                num_pages = response.num_pages
                 log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
 
                 if page > num_pages:
@@ -313,17 +303,78 @@ class SplunkSoarClient:
                 yield containers
                 page += 1
 
-            elif request.data == []:
+            elif response.data == []:
                 log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
-                log.info(f'list container finished. {request}')
+                log.info(f'list container finished. {response}')
                 return True
 
-            elif request.data is None:
+            elif response.data is None:
                 log.error(f'list container failed', enable_traceback=True)
                 return False
 
             else:
-                log.info(f'no containers. {request}')
+                log.info(f'no containers. {response}')
+                return True
+
+        return False
+
+    @_isConnected
+    def list_asset(self, **kwargs) -> Response:
+        """list asset"""
+        if self._get(Urls().asset(**kwargs)):
+            response = Response(self._content_dict())
+            log.info(f'list assets: {len(response.data)}')
+            return response
+        return Response()
+
+    @_isConnected
+    def list_containers(self,
+                        page: int = None,
+                        page_size: int = 1000,
+                        *args, **kwargs) -> Response:
+        """list containers"""
+
+        url = Urls().container(page=page, page_size=page_size, *args, **kwargs)
+        if self._get(url):
+            response = Response(self._content_dict())
+            log.info(f'list containers: {len(response.data)}')
+            return response
+        log.error(f'no containers', enable_traceback=False)
+        return Response()
+
+    @_isConnected
+    def list_containers_generator(self,
+                                  page: int = 0,
+                                  page_size: int = None, **kwargs) -> [Container]:
+        """Generator for paging through containers"""
+
+        page = page
+
+        while True:
+            response = self.list_containers(page=page, page_size=page_size, **kwargs)
+            if response.data:
+                containers = [Container(x) for x in response.data]
+                num_pages = response.num_pages
+                log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
+
+                if page > num_pages:
+                    log.info(f'list container finished')
+                    return True
+
+                yield containers
+                page += 1
+
+            elif response.data == []:
+                log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
+                log.info(f'list container finished. {response}')
+                return True
+
+            elif response.data is None:
+                log.error(f'list container failed', enable_traceback=True)
+                return False
+
+            else:
+                log.info(f'no containers. {response}')
                 return True
 
         return False
