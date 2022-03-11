@@ -10,7 +10,7 @@ from .rest import Urls
 from .artifact import Artifact
 from .container import Container
 from .config import SplunkSoarConfig
-from .responses import Response
+from .response import Response
 
 log = Logging(name='SplunkSoarClient', level=Logging.DEBUG)
 Logging(name='RequestsClient', level=Logging.DEBUG)
