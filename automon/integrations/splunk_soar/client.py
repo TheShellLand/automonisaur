@@ -238,13 +238,12 @@ class SplunkSoarClient:
         return Container()
 
     @_isConnected
-    def list_artifact(self, artifact_id: int = None, **kwargs) -> [Artifact]:
+    def list_artifact(self, artifact_id: int = None, **kwargs) -> Response:
         """list action run"""
         if self._get(Urls().artifact(identifier=artifact_id, **kwargs)):
-            request = self._content_dict()
-            artifacts = [Artifact(a) for a in request['data']]
-            return artifacts
-        return []
+            response = Response(self._content_dict())
+            return response
+        return Response()
 
     @_isConnected
     def list_action_run(self, **kwargs) -> bool:
