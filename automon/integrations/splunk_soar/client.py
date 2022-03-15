@@ -113,7 +113,7 @@ class SplunkSoarClient:
                  type=type)
         )
 
-        if self._post(Urls().artifact(*args, **kwargs), data=artifact.to_json()):
+        if self._post(Urls.artifact(*args, **kwargs), data=artifact.to_json()):
             if self.client.results.status_code == 200:
                 id = self.client.to_dict()['id']
                 log.info(f'artifact created. {artifact} {self.client.to_dict()}')
@@ -187,7 +187,7 @@ class SplunkSoarClient:
                  authorized_users=authorized_users)
         )
 
-        if self._post(Urls().container(*args, **kwargs), data=container.to_json()):
+        if self._post(Urls.container(*args, **kwargs), data=container.to_json()):
             if self.client.results.status_code == 200:
                 id = self.client.to_dict()['id']
                 log.info(f'container created. {container} {self.client.to_dict()}')
@@ -200,7 +200,7 @@ class SplunkSoarClient:
         """Delete containers"""
         assert isinstance(container_id, int)
 
-        if self._delete(Urls().container(identifier=container_id, *args, **kwargs)):
+        if self._delete(Urls.container(identifier=container_id, *args, **kwargs)):
             if self.client.results.status_code == 200:
                 log.info(f'container deleted: {container_id}')
                 return True
@@ -210,7 +210,7 @@ class SplunkSoarClient:
     def isConnected(self) -> bool:
         """check if client can connect"""
         if self.config.isReady():
-            if self._get(Urls().container()):
+            if self._get(Urls.container()):
                 log.info(f'client connected '
                          f'{self.config.host} '
                          f'[{self.client.results.status_code}] ')
@@ -223,7 +223,7 @@ class SplunkSoarClient:
     @_isConnected
     def get_artifact(self, artifact_id: int = None, **kwargs) -> Artifact:
         """list action run"""
-        if self._get(Urls().artifact(identifier=artifact_id, **kwargs)):
+        if self._get(Urls.artifact(identifier=artifact_id, **kwargs)):
             artifact = Artifact(self._content_dict())
             log.info(f'get artifact: {artifact}')
             return artifact
@@ -233,7 +233,7 @@ class SplunkSoarClient:
 
     @_isConnected
     def get_container(self, container_id: int = None, **kwargs) -> Container:
-        if self._get(Urls().container(identifier=container_id, **kwargs)):
+        if self._get(Urls.container(identifier=container_id, **kwargs)):
             container = Container(self._content_dict())
             log.info(f'get container: {container}')
             return container
@@ -244,7 +244,7 @@ class SplunkSoarClient:
     @_isConnected
     def list_artifact(self, artifact_id: int = None, **kwargs) -> Response:
         """list action run"""
-        if self._get(Urls().artifact(identifier=artifact_id, **kwargs)):
+        if self._get(Urls.artifact(identifier=artifact_id, **kwargs)):
             response = Response(self._content_dict())
             return response
         return Response()
@@ -252,7 +252,7 @@ class SplunkSoarClient:
     @_isConnected
     def list_action_run(self, **kwargs) -> bool:
         """list action run"""
-        if self._get(Urls().action_run(**kwargs)):
+        if self._get(Urls.action_run(**kwargs)):
             self.containers = self._content_dict()
             return True
         return False
@@ -260,7 +260,7 @@ class SplunkSoarClient:
     @_isConnected
     def list_app(self, **kwargs) -> bool:
         """list app"""
-        if self._get(Urls().app(**kwargs)):
+        if self._get(Urls.app(**kwargs)):
             self.app = self._content_dict()
             return True
         return False
@@ -268,7 +268,7 @@ class SplunkSoarClient:
     @_isConnected
     def list_app_run(self, **kwargs) -> bool:
         """list app run"""
-        if self._get(Urls().app_run(**kwargs)):
+        if self._get(Urls.app_run(**kwargs)):
             self.app_run = self._content_dict()
             return True
         return False
@@ -278,7 +278,7 @@ class SplunkSoarClient:
                        page: int = None,
                        page_size: int = 1000, **kwargs) -> Response:
         """list artifacts"""
-        if self._get(Urls().artifact(page=page, page_size=page_size, **kwargs)):
+        if self._get(Urls.artifact(page=page, page_size=page_size, **kwargs)):
             response = Response(self._content())
             log.info(f'list artifacts: {len(response.data)}')
             return response
@@ -324,7 +324,7 @@ class SplunkSoarClient:
     @_isConnected
     def list_asset(self, **kwargs) -> Response:
         """list asset"""
-        if self._get(Urls().asset(**kwargs)):
+        if self._get(Urls.asset(**kwargs)):
             response = Response(self._content_dict())
             log.info(f'list assets: {len(response.data)}')
             return response
@@ -337,7 +337,7 @@ class SplunkSoarClient:
                         *args, **kwargs) -> Response:
         """list containers"""
 
-        url = Urls().container(page=page, page_size=page_size, *args, **kwargs)
+        url = Urls.container(page=page, page_size=page_size, *args, **kwargs)
         if self._get(url):
             response = Response(self._content_dict())
             log.info(f'list containers: {len(response.data)}')
@@ -385,7 +385,7 @@ class SplunkSoarClient:
     @_isConnected
     def list_cluster_node(self, **kwargs) -> bool:
         """list cluster node"""
-        if self._get(Urls().cluster_node(**kwargs)):
+        if self._get(Urls.cluster_node(**kwargs)):
             self.cluster_node = self._content_dict()
             return True
         return False
@@ -393,7 +393,7 @@ class SplunkSoarClient:
     @_isConnected
     def list_playbook_run(self, **kwargs) -> bool:
         """list cluster node"""
-        if self._get(Urls().playbook_run(**kwargs)):
+        if self._get(Urls.playbook_run(**kwargs)):
             self.playbook_run = self._content_dict()
             return True
         return False
@@ -401,7 +401,7 @@ class SplunkSoarClient:
     @_isConnected
     def list_vault(self, identifier=None, **kwargs) -> bool:
         """list cluster node"""
-        if self._get(Urls().vault(identifier=identifier, **kwargs)):
+        if self._get(Urls.vault(identifier=identifier, **kwargs)):
             self.playbook_run = self._content_dict()
             return True
         return False

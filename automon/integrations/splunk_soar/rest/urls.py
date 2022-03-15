@@ -25,28 +25,36 @@ class Urls:
     PLAYBOOK_RUN = f'{REST}/playbook_run'
     VAULT = f'{REST}/vault_document'
 
-    def action_run(self, identifier: int = None, detail: str = None, *args, **kwargs):
-        return f'{self.ACTION_RUN}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+    @classmethod
+    def action_run(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.ACTION_RUN}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
-    def app(self, identifier: int = None, detail: str = None, *args, **kwargs):
-        return f'{self.APP}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+    @classmethod
+    def app(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.APP}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
-    def app_run(self, identifier: int = None, detail: str = None, *args, **kwargs):
-        return f'{self.APP_RUN}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+    @classmethod
+    def app_run(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.APP_RUN}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
-    def artifact(self, identifier: int = None, detail: str = None, *args, **kwargs):
-        return f'{self.ARTIFACT}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+    @classmethod
+    def artifact(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.ARTIFACT}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
-    def asset(self, identifier: int = None, detail: str = None, *args, **kwargs):
-        return f'{self.ASSET}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+    @classmethod
+    def asset(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.ASSET}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
-    def container(self, identifier: int = None, detail: str = None, *args, **kwargs):
-        return f'{self.CONTAINER}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+    @classmethod
+    def container(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.CONTAINER}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
-    def cluster_node(self, identifier: int = None, detail: str = None, *args, **kwargs):
-        return f'{self.CLUSTER_NODE}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+    @classmethod
+    def cluster_node(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.CLUSTER_NODE}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
-    def exclude(self, field_name: str, value: str or int or list or None):
+    @classmethod
+    def exclude(cls, field_name: str, value: str or int or list or None):
         """Excluding
 
         docs: https://docs.splunk.com/Documentation/SOAR/current/PlatformAPI/RESTQueryData#Excluding
@@ -77,7 +85,8 @@ class Urls:
 
         return f'_exclude_{field_name}={value}'
 
-    def filter(self, field_name: str, value: str or int or list or None):
+    @classmethod
+    def filter(cls, field_name: str, value: str or int or list or None):
         """Filtering
 
         docs: https://docs.splunk.com/Documentation/SOAR/current/PlatformAPI/RESTQueryData#Filtering
@@ -114,20 +123,23 @@ class Urls:
 
         return f'_filter_{field_name}={value}'
 
-    def playbook(self, identifier: int = None, detail: str = None, *args, **kwargs):
-        return f'{self.PLAYBOOK}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+    @classmethod
+    def playbook(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.PLAYBOOK}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
-    def playbook_run(self, identifier: int = None, detail: str = None, *args, **kwargs):
-        return f'{self.PLAYBOOK_RUN}{self.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+    @classmethod
+    def playbook_run(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.PLAYBOOK_RUN}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
-    def params(self, page: int = None,
+    @classmethod
+    def params(cls, page: int = None,
                page_size: int = None,
                pretty: bool = None,
                filter: (str, str or int or list or None) = None,
                exclude: str = None,
                include_expensive: bool = None,
                sort: str = None,
-               order: str = None, **kwargs):
+               order: str = None, **kwargs) -> str:
 
         """General Form for a Parameters
 
@@ -178,10 +190,10 @@ class Urls:
 
         if filter:
             field_name, value = filter
-            params.append(f'{self.filter(field_name=field_name, value=value)}')
+            params.append(f'{cls.filter(field_name=field_name, value=value)}')
 
         if exclude:
-            params.append(f'{self.exclude(exclude)}')
+            params.append(f'{cls.exclude(exclude)}')
 
         if include_expensive:
             params.append(f'{include_expensive}')
@@ -199,7 +211,8 @@ class Urls:
 
         return params
 
-    def query(self,
+    @classmethod
+    def query(cls,
               identifier: int = None,
               detail: str = None,
               page: int = None,
@@ -246,7 +259,7 @@ class Urls:
         order	string	Either "asc" or "desc". This is the sorting order for the results.
         """
         query = ''
-        params = self.params(
+        params = cls.params(
             page=page,
             page_size=page_size,
             pretty=pretty,
@@ -268,5 +281,6 @@ class Urls:
 
         return query
 
-    def vault(self, identifier: int = None, *args, **kwargs):
-        return f'{self.VAULT}{self.query(identifier=identifier, *args, **kwargs)}'
+    @classmethod
+    def vault(cls, identifier: int = None, *args, **kwargs):
+        return f'{cls.VAULT}{cls.query(identifier=identifier, *args, **kwargs)}'
