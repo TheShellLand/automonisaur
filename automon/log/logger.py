@@ -86,13 +86,13 @@ class Logging(object):
     """Standard logging
     """
 
-    TEST = 5
-    DEBUG = DEBUG
-    INFO = INFO
-    WARN = WARN
-    ERROR = ERROR
-    CRITICAL = CRITICAL
-    NOTSET = NOTSET
+    TEST: int = 5
+    DEBUG: int = DEBUG
+    INFO: int = INFO
+    WARN: int = WARN
+    ERROR: int = ERROR
+    CRITICAL: int = CRITICAL
+    NOTSET: int = NOTSET
 
     def __init__(self, name: str = __name__,
                  level: int = INFO,
