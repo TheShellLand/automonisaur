@@ -39,11 +39,15 @@ class SplunkSoarClient:
 
     def _content(self) -> bytes:
         """get result"""
-        return self.client.results.content
+        if self.client.results:
+            return self.client.results.content
+        return b''
 
     def _content_dict(self) -> dict:
         """convert request.content to dict"""
-        return json.loads(self._content())
+        if self._content():
+            return json.loads(self._content())
+        return {}
 
     def _get(self, url: str) -> bool:
         """send get request"""
@@ -354,7 +358,7 @@ class SplunkSoarClient:
             if response.data:
                 containers = [Container(x) for x in response.data]
                 num_pages = response.num_pages
-                log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
+                log.info(f'container page {page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
 
                 if page > num_pages:
                     log.info(f'list container finished')
