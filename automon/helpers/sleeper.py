@@ -3,7 +3,7 @@ import random
 
 from automon.log import Logging
 
-log = Logging(__name__, level=Logging.INFO)
+log = Logging('Sleeper', level=Logging.INFO)
 
 
 class Sleeper:
