@@ -1,6 +1,6 @@
 from os import getenv
 
-from automon import Logging
+from automon.log import Logging
 
 log = Logging(name='GmailConfig', level=Logging.DEBUG)
 

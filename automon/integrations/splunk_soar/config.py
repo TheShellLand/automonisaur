@@ -1,4 +1,4 @@
-from automon import Logging
+from automon.log import Logging
 from automon.helpers.os import environ
 
 log = Logging(name='SplunkSoarConfig', level=Logging.DEBUG)

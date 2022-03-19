@@ -1,4 +1,4 @@
-from automon import Logging
+from automon.log import Logging
 
 log = Logging(name='PeopleUrls', level=Logging.ERROR)
 

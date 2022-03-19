@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 
-from automon import Logging
+from automon.log import Logging
 
 from .ssid import Ssid
 

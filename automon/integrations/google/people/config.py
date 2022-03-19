@@ -10,7 +10,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from automon import Logging
+from automon.log import Logging
 from automon.helpers import environ
 
 log = Logging(name='PeopleConfig', level=Logging.DEBUG)

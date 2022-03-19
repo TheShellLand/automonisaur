@@ -7,7 +7,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from automon import Logging
+from automon.log import Logging
 
 from .urls import PeopleUrls
 from .config import PeopleConfig

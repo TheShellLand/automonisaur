@@ -3,16 +3,16 @@ import subprocess
 from pprint import pprint
 from subprocess import PIPE
 
-import automon
+from automon.log.logger import Logging
+from automon.helpers.dates import Dates
 
-from automon.helpers import Dates
+log = Logging(name='Run', level=Logging.DEBUG)
 
 
 class Run:
 
     def __init__(self, command: str = None, *args, **kwargs):
         """Run shell"""
-        self._log = automon.Logging(name=Run.__name__, level=automon.Logging.DEBUG)
 
         self.last_run = None
         self.command = ''

@@ -1,6 +1,6 @@
 from enum import Enum
 
-from automon import Logging
+from automon.log import Logging
 
 log = Logging(level=Logging.DEBUG)
 

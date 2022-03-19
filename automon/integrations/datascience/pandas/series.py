@@ -1,6 +1,6 @@
 import pandas
 
-from automon import Logging
+from automon.log import Logging
 
 
 def Series(*args, **kwargs) -> pandas.Series:

@@ -3,7 +3,7 @@ import datetime
 
 from dateutil import parser
 
-from automon import Logging
+from automon.log import Logging
 
 log = Logging('AbstractDataType', level=Logging.DEBUG)
 

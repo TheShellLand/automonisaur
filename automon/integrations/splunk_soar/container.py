@@ -1,7 +1,7 @@
 import json
 import datetime
 
-from automon import Logging
+from automon.log import Logging
 
 from .datatypes import AbstractDataType
 

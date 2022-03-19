@@ -3,7 +3,7 @@ import functools
 
 from typing import Optional
 
-from automon import Logging
+from automon.log import Logging
 from automon.integrations.requests import Requests
 
 from .rest import Urls

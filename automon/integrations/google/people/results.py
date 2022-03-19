@@ -1,4 +1,4 @@
-from automon import Logging
+from automon.log import Logging
 
 from .person import Person
 

@@ -1,6 +1,6 @@
 import unittest
 
-from automon import Logging
+from automon.log import Logging
 from automon.integrations.sentryio.client import SentryClient
 
 
