@@ -17,4 +17,6 @@ class Artifact(AbstractDataType):
         self.__dict__.update(artifact)
 
     def __repr__(self):
-        return self.name
+        if self.name:
+            return self.name
+        return ''
