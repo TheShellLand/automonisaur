@@ -16,6 +16,7 @@ class RequestsClient(object):
 
         self.url = url
         self.data = data
+        self.errors = None
         self.headers = headers
         self.results = None
         self.requests = requests
@@ -70,6 +71,7 @@ class RequestsClient(object):
             self._log_result()
             return True
         except Exception as e:
+            self.errors = e
             log.error(f'delete failed. {e}', enable_traceback=False)
         return False
 
@@ -86,6 +88,7 @@ class RequestsClient(object):
             self._log_result()
             return True
         except Exception as e:
+            self.errors = e
             log.error(f'get failed. {e}', enable_traceback=False)
         return False
 
@@ -102,6 +105,7 @@ class RequestsClient(object):
             self._log_result()
             return True
         except Exception as e:
+            self.errors = e
             log.error(f'patch failed. {e}', enable_traceback=False)
         return False
 
@@ -118,6 +122,7 @@ class RequestsClient(object):
             self._log_result()
             return True
         except Exception as e:
+            self.errors = e
             log.error(f'post failed. {e}', enable_traceback=False)
         return False
 
@@ -134,6 +139,7 @@ class RequestsClient(object):
             self._log_result()
             return True
         except Exception as e:
+            self.errors = e
             log.error(f'put failed. {e}', enable_traceback=False)
         return False
 
