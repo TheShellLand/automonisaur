@@ -15,7 +15,7 @@ class TestClient(unittest.TestCase):
 
     def test_list_containers_generator(self):
         if c.isConnected():
-            containers = [x for x in c.list_containers_generator(page_size=1000)]
+            containers = [x for x in c.list_containers_generator(page_size=100, max_pages=2)]
             self.assertTrue(containers)
         else:
             self.assertFalse(c.list_containers_generator())
