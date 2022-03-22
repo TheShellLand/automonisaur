@@ -30,7 +30,6 @@ class SplunkSoarClient:
         self.app = None
         self.app_run = None
         self.asset = None
-        self.cluster_node = None
         self.containers = None
         self.playbook_run = None
 
@@ -57,7 +56,8 @@ class SplunkSoarClient:
         @functools.wraps(func)
         def wrapper(self, *args, **kwargs):
             if self.config.isReady():
-                return func(self, *args, **kwargs)
+                if self.isConnected():
+                    return func(self, *args, **kwargs)
             return False
 
         return wrapper
@@ -210,7 +210,7 @@ class SplunkSoarClient:
     def isConnected(self) -> bool:
         """check if client can connect"""
         if self.config.isReady():
-            if self._get(Urls.container()):
+            if self._get(Urls.container(page_size=1)):
                 log.info(f'client connected '
                          f'{self.config.host} '
                          f'[{self.client.results.status_code}] ')
@@ -274,9 +274,10 @@ class SplunkSoarClient:
         return False
 
     @_isConnected
-    def list_artifacts(self,
-                       page: int = None,
-                       page_size: int = 1000, **kwargs) -> Response:
+    def list_artifacts(
+            self,
+            page: int = None,
+            page_size: int = 1000, **kwargs) -> Response:
         """list artifacts"""
         if self._get(Urls.artifact(page=page, page_size=page_size, **kwargs)):
             response = Response(self._content())
@@ -285,9 +286,10 @@ class SplunkSoarClient:
         return Response()
 
     @_isConnected
-    def list_artifact_generator(self,
-                                page: int = 0,
-                                page_size: int = None, **kwargs) -> [Container]:
+    def list_artifact_generator(
+            self,
+            page: int = 0,
+            page_size: int = None, **kwargs) -> [Container]:
         """Generator for paging through artifacts"""
 
         page = page
@@ -331,10 +333,11 @@ class SplunkSoarClient:
         return Response()
 
     @_isConnected
-    def list_containers(self,
-                        page: int = None,
-                        page_size: int = 1000,
-                        *args, **kwargs) -> Response:
+    def list_containers(
+            self,
+            page: int = None,
+            page_size: int = 1000,
+            *args, **kwargs) -> Response:
         """list containers"""
 
         url = Urls.container(page=page, page_size=page_size, *args, **kwargs)
@@ -346,15 +349,23 @@ class SplunkSoarClient:
         return Response()
 
     @_isConnected
-    def list_containers_generator(self,
-                                  page: int = 0,
-                                  page_size: int = None, **kwargs) -> [Container]:
+    def list_containers_generator(
+            self,
+            page: int = 0,
+            page_size: int = None,
+            max_pages: int = None, **kwargs) -> [Container]:
         """Generator for paging through containers"""
 
         page = page
+        i = 0
 
         while True:
+            if max_pages and i > max_pages:
+                break
+
             response = self.list_containers(page=page, page_size=page_size, **kwargs)
+
+            i += 1
             if response.data:
                 containers = [Container(x) for x in response.data]
                 num_pages = response.num_pages
@@ -362,7 +373,7 @@ class SplunkSoarClient:
 
                 if page > num_pages:
                     log.info(f'list container finished')
-                    return True
+                    break
 
                 yield containers
                 page += 1
@@ -370,38 +381,33 @@ class SplunkSoarClient:
             elif response.data == []:
                 log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
                 log.info(f'list container finished. {response}')
-                return True
+                break
 
             elif response.data is None:
                 log.error(f'list container failed', enable_traceback=True)
-                return False
+                break
 
             else:
                 log.info(f'no containers. {response}')
-                return True
+                break
 
-        return False
+        return []
 
     @_isConnected
-    def list_cluster_node(self, **kwargs) -> bool:
+    def list_cluster_node(self, **kwargs) -> Optional[dict]:
         """list cluster node"""
         if self._get(Urls.cluster_node(**kwargs)):
-            self.cluster_node = self._content_dict()
-            return True
-        return False
+            cluster_node = self._content_dict()
+            return cluster_node
 
     @_isConnected
-    def list_playbook_run(self, **kwargs) -> bool:
+    def run_playbook(self, **kwargs) -> Optional[dict]:
         """list cluster node"""
         if self._get(Urls.playbook_run(**kwargs)):
-            self.playbook_run = self._content_dict()
-            return True
-        return False
+            return self._content_dict()
 
     @_isConnected
-    def list_vault(self, identifier=None, **kwargs) -> bool:
+    def list_vault(self, identifier=None, **kwargs) -> Optional[dict]:
         """list cluster node"""
         if self._get(Urls.vault(identifier=identifier, **kwargs)):
-            self.playbook_run = self._content_dict()
-            return True
-        return False
+            return self._content_dict()
