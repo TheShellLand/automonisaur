@@ -7,12 +7,6 @@ c = SplunkSoarClient()
 
 class TestClient(unittest.TestCase):
 
-    def test_isConnected(self):
-        if c.isConnected():
-            self.assertTrue(c.isConnected())
-        else:
-            self.assertFalse(c.isConnected())
-
     def test_create_artifact(self):
         if c.isConnected():
             id = c.create_container(label='testing', name='testing').id
@@ -51,6 +45,15 @@ class TestClient(unittest.TestCase):
             self.assertTrue(c.list_containers())
         else:
             self.assertFalse(c.list_containers())
+
+    def test_run_playbook(self):
+        if c.isConnected():
+            container = c.create_container(label='testing', name='testing')
+            playbook = ''
+            self.assertTrue(c.run_playbook(
+                container_id=container.id,
+                playbook_id=playbook
+            ))
 
 
 if __name__ == '__main__':
