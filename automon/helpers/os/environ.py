@@ -8,5 +8,5 @@ def environ(env_var: str, default: any = None):
             return True
         if f'{env}'.lower() == 'false':
             return False
-        return env
+        return f'{env}'.strip()
     return default
