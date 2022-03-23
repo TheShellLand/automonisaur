@@ -31,11 +31,13 @@ class RequestsClient(object):
     def _log_result(self):
         if self.results.status_code == 200:
             msg = f'{self.results.status_code} ' \
+                  f'{self.results.request.method} ' \
                   f'{self.results.url} ' \
                   f'{round(len(self.results.content) / 1024, 2)} KB'
             return log.debug(msg)
 
         msg = f'{self.results.status_code} ' \
+              f'{self.results.request.method} ' \
               f'{self.results.url} ' \
               f'{round(len(self.results.content) / 1024, 2)} KB ' \
               f'{self.results.content}'
@@ -51,6 +53,9 @@ class RequestsClient(object):
         if headers is None:
             headers = self.headers
 
+        self.url = url
+        self.data = data
+        self.headers = headers
         return url, data, headers
 
     @property
