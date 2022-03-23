@@ -6,17 +6,11 @@ log = Logging('Artifact', level=Logging.CRITICAL)
 
 
 class Artifact(AbstractDataType):
-    name: str
-    container: int
-    id: int
-
-    def __init__(self, artifact: dict = {}):
-        self.container = None
-        self.id = None
-        self.name = None
-        self.__dict__.update(artifact)
+    name: str = None
+    container: int = None
+    id: int = None
 
     def __repr__(self):
         if self.name:
             return self.name
-        return ''
+        return self.to_json()
