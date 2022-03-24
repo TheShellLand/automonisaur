@@ -3,7 +3,11 @@ import json
 from dateutil import parser
 from typing import Optional
 
+from automon.log import Logging
+
 from .container import Container
+
+log = Logging(name='Responses', level=Logging.DEBUG)
 
 
 class GeneralResponse:
@@ -14,24 +18,19 @@ class GeneralResponse:
         return f'{self.__dict__}'
 
 
-class Response(GeneralResponse):
-    count: int
-    num_pages: int
-    data: list = None
-
-
 class CreateContainerResponse(GeneralResponse):
     success: bool
     id: int = None
     new_artifacts_ids: list
 
 
-class RunPlaybookResponse(GeneralResponse):
-    playbook_run_id: str = None
-    received: bool
+class CancelPlaybookResponse(GeneralResponse):
+    cancelled: int = None
+    message: str = None
+    playbook_run_id: int = None
 
 
-class Playbook(GeneralResponse):
+class PlaybookRun(GeneralResponse):
     action_exec: list
     cancelled: Optional[bool]
     container: int = None
@@ -55,18 +54,29 @@ class Playbook(GeneralResponse):
     version: int
 
     def __repr__(self):
-        return f'{self.playbook_name}'
+        return f'[{self.status}] {self.playbook_name}'
 
     def __len__(self):
-        return self.playbook
+        return self._playbook_run_id
 
     @property
-    def message_to_dict(self):
-        return json.loads(self.message)
+    def _playbook_run_id(self):
+        if self.playbook_run_id:
+            return self.playbook_run_id
+        return self.id
+
+    @property
+    def message_to_dict(self) -> Optional[dict]:
+        try:
+            return json.loads(self.message)
+        except Exception as e:
+            log.warn(f'message is not json. {e}')
 
     @property
     def playbook_name(self):
-        return self.message_to_dict['playbook']
+        if self.message_to_dict:
+            return self.message_to_dict['playbook']
+        return ''
 
     @property
     def start_time_parsed(self):
@@ -75,3 +85,19 @@ class Playbook(GeneralResponse):
     @property
     def update_time_parsed(self):
         return parser.parse(self.update_time)
+
+
+class Response(GeneralResponse):
+    count: int
+    num_pages: int
+    data: list = None
+
+
+class RunPlaybookResponse(GeneralResponse):
+    playbook_run_id: str = None
+    received: bool
+
+
+class UpdatePlaybookResponse(GeneralResponse):
+    message: int = None
+    success: bool = None
