@@ -20,6 +20,13 @@ class TestClient(unittest.TestCase):
         else:
             self.assertFalse(c.create_container(label='testing', name='testing'))
 
+    def test_close_container(self):
+        if c.isConnected():
+            container = c.create_container(label='testing', name='testing')
+            self.assertTrue(c.close_container(container.id))
+        else:
+            self.assertFalse(c.close_container())
+
     def test_delete_containers(self):
         if c.isConnected():
             container = c.create_container(label='testing', name='testing')
