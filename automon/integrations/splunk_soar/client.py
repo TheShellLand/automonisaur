@@ -10,7 +10,8 @@ from .rest import Urls
 from .artifact import Artifact
 from .container import Container
 from .config import SplunkSoarConfig
-from .responses import Response, CreateContainerResponse, RunPlaybookResponse, Playbook
+from .responses import (CancelPlaybookResponse, CreateContainerResponse, PlaybookRun,
+                        Response, RunPlaybookResponse, UpdatePlaybookResponse)
 
 log = Logging(name='SplunkSoarClient', level=Logging.DEBUG)
 Logging(name='RequestsClient', level=Logging.DEBUG)
@@ -53,6 +54,8 @@ class SplunkSoarClient:
         return self.client.get(url=url, headers=self.client.headers)
 
     def _isConnected(func):
+        """wrapper for connection checking"""
+
         @functools.wraps(func)
         def wrapper(self, *args, **kwargs):
             if self.config.isReady():
@@ -69,6 +72,23 @@ class SplunkSoarClient:
     def _post(self, url: str, data: dict) -> bool:
         """send post request"""
         return self.client.post(url=url, headers=self.client.headers, data=data)
+
+    @_isConnected
+    def cancel_playbook_run(
+            self,
+            playbook_run_id: int = None,
+            cancel: bool = True, **kwargs) -> CancelPlaybookResponse:
+        """Cancel playbook run"""
+        data = dict(cancel=cancel)
+        data = json.dumps(data)
+
+        if self._post(Urls.playbook_run(identifier=playbook_run_id, **kwargs), data=data):
+            if self.client.results.status_code == 200:
+                response = CancelPlaybookResponse(self._content_dict())
+                log.info(f'cancel playbook run: {response}')
+                return response
+
+        log.error(f'cancel failed: {playbook_run_id} {self.client.to_dict()}', enable_traceback=False)
 
     @_isConnected
     def create_artifact(
@@ -117,11 +137,11 @@ class SplunkSoarClient:
             if self.client.results.status_code == 200:
                 id = self.client.to_dict()['id']
                 log.info(f'artifact created. {artifact} {self.client.to_dict()}')
-                return self.list_artifact(artifact_id=id)
+                return self.get_artifact(artifact_id=id)
             else:
                 existing_artifact_id = self.client.to_dict()['existing_artifact_id']
                 log.info(f'artifact exists. {artifact} {self.client.to_dict()}')
-                return self.list_artifact(artifact_id=existing_artifact_id)
+                return self.get_artifact(artifact_id=existing_artifact_id)
 
         log.error(f'create artifact. {self.client.to_dict()}', enable_traceback=False)
         return False
@@ -223,7 +243,7 @@ class SplunkSoarClient:
 
     @_isConnected
     def get_artifact(self, artifact_id: int = None, **kwargs) -> Artifact:
-        """list action run"""
+        """Get artifact"""
         if self._get(Urls.artifact(identifier=artifact_id, **kwargs)):
             artifact = Artifact(self._content_dict())
             log.info(f'get artifact: {artifact}')
@@ -234,6 +254,7 @@ class SplunkSoarClient:
 
     @_isConnected
     def get_container(self, container_id: int = None, **kwargs) -> Container:
+        """Get container"""
         if self._get(Urls.container(identifier=container_id, **kwargs)):
             container = Container(self._content_dict())
             log.info(f'get container: {container}')
@@ -243,25 +264,26 @@ class SplunkSoarClient:
         return Container()
 
     @_isConnected
-    def get_playbook_run(self, playbook_run_id: str = None, **kwargs) -> Optional[Playbook]:
+    def get_playbook_run(self, playbook_run_id: str, **kwargs) -> Optional[PlaybookRun]:
+        """Get running playbook"""
         if self._get(Urls.playbook_run(identifier=playbook_run_id, **kwargs)):
-            response = Playbook(self._content_dict())
+            response = PlaybookRun(self._content_dict())
 
             if response.status != 'failed':
                 log.info(f'playbook run: {response}')
                 return response
 
-            log.error(f'playbook failed: {response.message_to_dict}', enable_traceback=False)
+            log.error(f'playbook run failed: {response.message_to_dict}', enable_traceback=False)
             return
 
         log.error(f'playbook failed: {self.client.errors}', enable_traceback=False)
 
     @_isConnected
-    def list_artifact(self, artifact_id: int = None, **kwargs) -> Response:
+    def list_artifact(self, **kwargs) -> Response:
         """list artifacts"""
-        if self._get(Urls.artifact(identifier=artifact_id, **kwargs)):
+        if self._get(Urls.artifact(**kwargs)):
             response = Response(self._content_dict())
-            # log.info(f'list artifacts: {response.count}')
+            log.info(f'list artifacts: {response.count}')
             return response
 
         return Response()
@@ -418,13 +440,41 @@ class SplunkSoarClient:
             return cluster_node
 
     @_isConnected
+    def list_vault(self, identifier=None, **kwargs) -> Optional[dict]:
+        """list cluster node"""
+        if self._get(Urls.vault(identifier=identifier, **kwargs)):
+            return self._content_dict()
+
+    @_isConnected
+    def update_playbook(
+            self,
+            playbook_id: int = None,
+            active: bool = None,
+            cancel_runs: bool = False,
+            **kwargs) -> Optional[UpdatePlaybookResponse]:
+        """Update playbook active state"""
+        data = dict(
+            active=active,
+            cancel_runs=cancel_runs
+        )
+        data = json.dumps(data)
+        if self._post(Urls.playbook(identifier=playbook_id, **kwargs), data=data):
+            if self.client.results.status_code == 200:
+                response = UpdatePlaybookResponse(self._content_dict())
+                log.info(f'update playbook: {data}')
+                return response
+
+        log.error(f'update failed: {self.client.to_dict()}', enable_traceback=False)
+
+    @_isConnected
     def run_playbook(
             self,
-            container_id: int = None,
-            playbook_id: int = None,
-            scope: str = None,
-            run: bool = True, **kwargs) -> Optional[RunPlaybookResponse]:
-        """list cluster node"""
+            container_id: int,
+            playbook_id: int,
+            scope: str = 'new',
+            run: bool = True,
+            **kwargs) -> Optional[RunPlaybookResponse]:
+        """Run playbook on a container"""
         data = dict(
             container_id=container_id,
             playbook_id=playbook_id,
@@ -435,16 +485,7 @@ class SplunkSoarClient:
         if self._post(Urls.playbook_run(**kwargs), data=data):
             if self.client.results.status_code == 200:
                 response = RunPlaybookResponse(self._content_dict())
-                playbook_run_id = response.playbook_run_id
                 log.info(f'run playbook: {data}')
+                return response
 
-                if self.get_playbook_run(playbook_run_id=playbook_run_id):
-                    return response
-
-        log.error(f'run failed: {data}', enable_traceback=False)
-
-    @_isConnected
-    def list_vault(self, identifier=None, **kwargs) -> Optional[dict]:
-        """list cluster node"""
-        if self._get(Urls.vault(identifier=identifier, **kwargs)):
-            return self._content_dict()
+        log.error(f'run failed: {self.client.to_dict()}', enable_traceback=False)
