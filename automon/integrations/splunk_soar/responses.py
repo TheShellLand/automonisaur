@@ -18,6 +18,11 @@ class GeneralResponse:
         return f'{self.__dict__}'
 
 
+class CloseContainerResponse(GeneralResponse):
+    id: int = None
+    success: bool = None
+
+
 class CreateContainerResponse(GeneralResponse):
     success: bool
     id: int = None

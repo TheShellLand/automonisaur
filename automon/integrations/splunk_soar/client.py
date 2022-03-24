@@ -10,8 +10,15 @@ from .rest import Urls
 from .artifact import Artifact
 from .container import Container
 from .config import SplunkSoarConfig
-from .responses import (CancelPlaybookResponse, CreateContainerResponse, PlaybookRun,
-                        Response, RunPlaybookResponse, UpdatePlaybookResponse)
+from .responses import (
+    CancelPlaybookResponse,
+    CloseContainerResponse,
+    CreateContainerResponse,
+    PlaybookRun,
+    Response,
+    RunPlaybookResponse,
+    UpdatePlaybookResponse
+)
 
 log = Logging(name='SplunkSoarClient', level=Logging.DEBUG)
 Logging(name='RequestsClient', level=Logging.DEBUG)
@@ -89,6 +96,18 @@ class SplunkSoarClient:
                 return response
 
         log.error(f'cancel failed: {playbook_run_id} {self.client.to_dict()}', enable_traceback=False)
+
+    @_isConnected
+    def close_container(self, container_id: int, **kwargs) -> Optional[CloseContainerResponse]:
+        """Set container status to closed"""
+        data = dict(status='closed')
+        if self._post(Urls.container(identifier=container_id, **kwargs), data=json.dumps(data)):
+            if self.client.results.status_code == 200:
+                response = CloseContainerResponse(self._content_dict())
+                log.info(f'container closed: {response}')
+                return response
+
+        log.error(msg=f'close failed. {self.client.to_dict()}', raise_exception=False)
 
     @_isConnected
     def create_artifact(
@@ -210,9 +229,8 @@ class SplunkSoarClient:
         if self._post(Urls.container(*args, **kwargs), data=container.to_json()):
             if self.client.results.status_code == 200:
                 response = CreateContainerResponse(self.client.to_dict())
-                id = response.id
                 log.info(f'container created. {container} {response}')
-                return self.get_container(container_id=id)
+                return response
         log.error(f'create container. {self.client.to_dict()}', enable_traceback=False)
         return False
 
