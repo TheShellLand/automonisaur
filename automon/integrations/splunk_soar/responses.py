@@ -35,6 +35,12 @@ class CancelPlaybookResponse(GeneralResponse):
     playbook_run_id: int = None
 
 
+class GenericResponse(GeneralResponse):
+    count: int
+    num_pages: int
+    data: list = None
+
+
 class PlaybookRun(GeneralResponse):
     action_exec: list
     cancelled: Optional[bool]

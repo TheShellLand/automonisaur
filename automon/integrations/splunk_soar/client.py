@@ -14,6 +14,7 @@ from .responses import (
     CancelPlaybookResponse,
     CloseContainerResponse,
     CreateContainerResponse,
+    GenericResponse,
     PlaybookRun,
     Response,
     RunPlaybookResponse,
@@ -260,6 +261,36 @@ class SplunkSoarClient:
         return False
 
     @_isConnected
+    def generic_delete(self, api: str, **kwargs) -> Optional[GenericResponse]:
+        """Make generic delete calls"""
+        if self._delete(Urls.generic(api=api, **kwargs)):
+            response = GenericResponse(self._content_dict())
+            log.info(f'generic delete {api}: {response}')
+            return response
+
+        log.error(f'failed generic delete {api}: {response}', raise_exception=False)
+
+    @_isConnected
+    def generic_get(self, api: str, **kwargs) -> Optional[GenericResponse]:
+        """Make generic get calls"""
+        if self._get(Urls.generic(api=api, **kwargs)):
+            response = GenericResponse(self._content_dict())
+            log.info(f'generic get {api}: {response}')
+            return response
+
+        log.error(f'failed generic get {api}: {response}', raise_exception=False)
+
+    @_isConnected
+    def generic_post(self, api: str, data: dict) -> Optional[GenericResponse]:
+        """Make generic post calls"""
+        if self._post(Urls.generic(api=api, **kwargs), data=data):
+            response = GenericResponse(self._content_dict())
+            log.info(f'generic post {api}: {response}')
+            return response
+
+        log.error(f'failed generic post {api}: {response}', raise_exception=False)
+
+    @_isConnected
     def get_artifact(self, artifact_id: int = None, **kwargs) -> Artifact:
         """Get artifact"""
         if self._get(Urls.artifact(identifier=artifact_id, **kwargs)):
@@ -292,7 +323,7 @@ class SplunkSoarClient:
                 return response
 
             log.error(f'playbook run failed: {response.message_to_dict}', enable_traceback=False)
-            return
+            return response
 
         log.error(f'playbook failed: {self.client.errors}', enable_traceback=False)
 

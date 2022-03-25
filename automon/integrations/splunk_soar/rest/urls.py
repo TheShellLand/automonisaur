@@ -25,6 +25,12 @@ class Urls:
     PLAYBOOK_RUN = f'{REST}/playbook_run'
     VAULT = f'{REST}/vault_document'
 
+    GENERIC = f'{REST}/'
+
+    @classmethod
+    def generic(cls, api: str, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.GENERIC}{api}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+
     @classmethod
     def action_run(cls, identifier: int = None, detail: str = None, *args, **kwargs):
         return f'{cls.ACTION_RUN}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
