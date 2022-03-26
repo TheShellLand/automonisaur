@@ -13,4 +13,4 @@ class Artifact(AbstractDataType):
     def __repr__(self):
         if self.name:
             return self.name
-        return self.to_json()
+        return f'{self.to_dict()}'
