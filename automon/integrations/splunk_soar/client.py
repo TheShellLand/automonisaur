@@ -84,6 +84,18 @@ class SplunkSoarClient:
         return self.client.post(url=url, headers=self.client.headers, data=data)
 
     @_isConnected
+    def close_container(self, container_id: int, **kwargs) -> Optional[CloseContainerResponse]:
+        """Set container status to closed"""
+        data = dict(status='closed')
+        if self._post(Urls.container(identifier=container_id, **kwargs), data=json.dumps(data)):
+            if self.client.results.status_code == 200:
+                response = CloseContainerResponse(self._content_dict())
+                log.info(f'container closed: {response}')
+                return response
+
+        log.error(msg=f'close failed. {self.client.to_dict()}', raise_exception=False)
+
+    @_isConnected
     def cancel_playbook_run(
             self,
             playbook_run_id: int = None,
@@ -99,18 +111,6 @@ class SplunkSoarClient:
                 return response
 
         log.error(f'cancel failed: {playbook_run_id} {self.client.to_dict()}', enable_traceback=False)
-
-    @_isConnected
-    def close_container(self, container_id: int, **kwargs) -> Optional[CloseContainerResponse]:
-        """Set container status to closed"""
-        data = dict(status='closed')
-        if self._post(Urls.container(identifier=container_id, **kwargs), data=json.dumps(data)):
-            if self.client.results.status_code == 200:
-                response = CloseContainerResponse(self._content_dict())
-                log.info(f'container closed: {response}')
-                return response
-
-        log.error(msg=f'close failed. {self.client.to_dict()}', raise_exception=False)
 
     @_isConnected
     def create_artifact(
@@ -249,6 +249,31 @@ class SplunkSoarClient:
         log.error(f'delete container: {container_id}. {self.client.to_dict()}', enable_traceback=False)
         return False
 
+    @_isConnected
+    def create_vault(
+            self,
+            file_location,
+            container=None,
+            file_name=None,
+            metadata=None,
+            trace=False, **kwargs) -> Vault:
+        """Add vault object"""
+
+        data = Vault(dict(
+            container=container,
+            file_location=file_location,
+            file_name=file_name,
+            metadata=metadata,
+            trace=trace
+        ))
+
+        if self._post(Urls.vault_add(identifire=vault_id, **kwargs), data=data.to_json()):
+            response = Vault(self._content_dict())
+            log.info(msg=f'add vault: {response}')
+            return response
+
+        log.error(msg=f'add vault failed: {response}', raise_exception=False)
+
     def isConnected(self) -> bool:
         """check if client can connect"""
         if self.config.isReady():
@@ -328,6 +353,17 @@ class SplunkSoarClient:
             return response
 
         log.error(f'playbook failed: {self.client.errors}', enable_traceback=False)
+
+    @_isConnected
+    def get_vault(self, vault_id: int, **kwargs) -> Optional[Vault]:
+        """Get vault object"""
+        if self._get(Urls.vault(identifier=vault_id, **kwargs)):
+            if self.client.results.status_code == 200:
+                response = Vault(self._content_dict())
+                log.info(msg=f'get vault: {response}')
+                return response
+
+        log.error(msg=f'get vault failed: {self.client.to_dict()}', raise_exception=False)
 
     @_isConnected
     def list_artifact(self, **kwargs) -> Response:
@@ -495,30 +531,6 @@ class SplunkSoarClient:
         """list vault"""
         if self._get(Urls.vault(**kwargs)):
             response = VaultResponse(self._content_dict())
-            log.info(msg=f'list vault: {response}')
-            return response
-
-        log.error(msg=f'list vault failed: {response}', raise_exception=False)
-
-    @_isConnected
-    def get_vault(self, vault_id: int, **kwargs) -> Optional[Vault]:
-        """Get vault object"""
-        if self._get(Urls.vault(identifier=vault_id, **kwargs)):
-            if self.client.results.status_code == 200:
-                response = Vault(self._content_dict())
-                log.info(msg=f'get vault: {response}')
-                return response
-
-        log.error(msg=f'get vault failed: {self.client.to_dict()}', raise_exception=False)
-
-    @_isConnected
-    def create_vault(self, vault_id: int, **kwargs) -> Vault:
-        """Create vault object"""
-
-        data = Vault()
-
-        if self._post(Urls.vault(identifire=vault_id, **kwargs), data=data.to_json()):
-            response = Vault(self._content_dict())
             log.info(msg=f'list vault: {response}')
             return response
 

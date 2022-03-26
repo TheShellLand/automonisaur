@@ -24,6 +24,9 @@ class Urls:
     PLAYBOOK = f'{REST}/playbook'
     PLAYBOOK_RUN = f'{REST}/playbook_run'
     VAULT = f'{REST}/vault_document'
+    VAULT_ADD = f'{REST}/vault_add'
+    VAULT_DELETE = f'{REST}/vault_delete'
+    VAULT_INFO = f'{REST}/vault_info'
 
     GENERIC = f'{REST}/'
 
@@ -290,3 +293,15 @@ class Urls:
     @classmethod
     def vault(cls, identifier: int = None, *args, **kwargs):
         return f'{cls.VAULT}{cls.query(identifier=identifier, *args, **kwargs)}'
+
+    @classmethod
+    def vault_add(cls, identifier: int = None, *args, **kwargs):
+        return f'{cls.VAULT_ADD}{cls.query(identifier=identifier, *args, **kwargs)}'
+
+    @classmethod
+    def vault_delete(cls, identifier: int = None, *args, **kwargs):
+        return f'{cls.VAULT_DELETE}{cls.query(identifier=identifier, *args, **kwargs)}'
+
+    @classmethod
+    def vault_info(cls, identifier: int = None, *args, **kwargs):
+        return f'{cls.VAULT_INFO}{cls.query(identifier=identifier, *args, **kwargs)}'
