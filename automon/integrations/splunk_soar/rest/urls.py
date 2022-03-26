@@ -276,10 +276,10 @@ class Urls:
             order=order, **kwargs
         )
 
-        if identifier:
+        if identifier is not None:
             query += f'/{identifier}'
 
-        if detail:
+        if detail is not None:
             query += f'/{detail}'
 
         if params:

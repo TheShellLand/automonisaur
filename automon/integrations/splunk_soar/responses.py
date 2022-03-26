@@ -112,3 +112,12 @@ class RunPlaybookResponse(GeneralResponse):
 class UpdatePlaybookResponse(GeneralResponse):
     message: int = None
     success: bool = None
+
+
+class VaultResponse(GeneralResponse):
+    count: int = None
+    data: list = None
+    num_pages: int = None
+
+    def __repr__(self):
+        return f'{dict(count=self.count, num_pages=self.num_pages)}'
