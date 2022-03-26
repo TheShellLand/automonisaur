@@ -6,10 +6,11 @@ from typing import Optional
 from automon.log import Logging
 from automon.integrations.requests import Requests
 
-from .rest import Urls
 from .artifact import Artifact
-from .container import Container
 from .config import SplunkSoarConfig
+from .container import Container
+from .vault import Vault
+from .rest import Urls
 from .responses import (
     CancelPlaybookResponse,
     CloseContainerResponse,
@@ -18,7 +19,8 @@ from .responses import (
     PlaybookRun,
     Response,
     RunPlaybookResponse,
-    UpdatePlaybookResponse
+    UpdatePlaybookResponse,
+    VaultResponse
 )
 
 log = Logging(name='SplunkSoarClient', level=Logging.DEBUG)
@@ -489,10 +491,38 @@ class SplunkSoarClient:
             return cluster_node
 
     @_isConnected
-    def list_vault(self, identifier=None, **kwargs) -> Optional[dict]:
-        """list cluster node"""
-        if self._get(Urls.vault(identifier=identifier, **kwargs)):
-            return self._content_dict()
+    def list_vault(self, **kwargs) -> Optional[VaultResponse]:
+        """list vault"""
+        if self._get(Urls.vault(**kwargs)):
+            response = VaultResponse(self._content_dict())
+            log.info(msg=f'list vault: {response}')
+            return response
+
+        log.error(msg=f'list vault failed: {response}', raise_exception=False)
+
+    @_isConnected
+    def get_vault(self, vault_id: int, **kwargs) -> Optional[Vault]:
+        """Get vault object"""
+        if self._get(Urls.vault(identifier=vault_id, **kwargs)):
+            if self.client.results.status_code == 200:
+                response = Vault(self._content_dict())
+                log.info(msg=f'get vault: {response}')
+                return response
+
+        log.error(msg=f'get vault failed: {self.client.to_dict()}', raise_exception=False)
+
+    @_isConnected
+    def create_vault(self, vault_id: int, **kwargs) -> Vault:
+        """Create vault object"""
+
+        data = Vault()
+
+        if self._post(Urls.vault(identifire=vault_id, **kwargs), data=data.to_json()):
+            response = Vault(self._content_dict())
+            log.info(msg=f'list vault: {response}')
+            return response
+
+        log.error(msg=f'list vault failed: {response}', raise_exception=False)
 
     @_isConnected
     def update_playbook(
