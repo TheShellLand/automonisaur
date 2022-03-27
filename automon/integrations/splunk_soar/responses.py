@@ -6,6 +6,7 @@ from typing import Optional
 from automon.log import Logging
 
 from .container import Container
+from .vault import Vault
 
 log = Logging(name='Responses', level=Logging.DEBUG)
 
@@ -121,3 +122,11 @@ class VaultResponse(GeneralResponse):
 
     def __repr__(self):
         return f'{dict(count=self.count, num_pages=self.num_pages)}'
+
+    @property
+    def data_parsed(self):
+        return [Vault(x) for x in self.data]
+
+    def get_one(self):
+        if self.data_parsed:
+            return self.data_parsed[-1]
