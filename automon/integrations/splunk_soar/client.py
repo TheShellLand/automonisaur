@@ -253,14 +253,14 @@ class SplunkSoarClient:
     def create_vault(
             self,
             file_location,
-            container=None,
+            container_id=None,
             file_name=None,
             metadata=None,
             trace=False, **kwargs) -> Vault:
         """Add vault object"""
 
         data = Vault(dict(
-            container=container,
+            container=container_id,
             file_location=file_location,
             file_name=file_name,
             metadata=metadata,
