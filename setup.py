@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="automonisaur",
-    version="0.2.19",
+    version="0.2.20",
     author="naisanza",
     author_email="naisanza@gmail.com",
     description="Core libraries for automonisaur",
