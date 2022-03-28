@@ -1,4 +1,5 @@
 import json
+import base64
 import functools
 
 from typing import Optional
@@ -14,6 +15,7 @@ from .rest import Urls
 from .responses import (
     CancelPlaybookResponse,
     CloseContainerResponse,
+    CreateContainerAttachmentResponse,
     CreateContainerResponse,
     GenericResponse,
     PlaybookRun,
@@ -237,17 +239,39 @@ class SplunkSoarClient:
         log.error(f'create container. {self.client.to_dict()}', enable_traceback=False)
         return False
 
-    @_isConnected
-    def delete_container(self, container_id, *args, **kwargs):
-        """Delete containers"""
-        assert isinstance(container_id, int)
+    @staticmethod
+    def base64_encode(data: bytes, **kwargs) -> str:
+        encode = base64.b64encode(data, **kwargs)
+        decode = encode.decode()
+        return decode
 
-        if self._delete(Urls.container(identifier=container_id, *args, **kwargs)):
-            if self.client.results.status_code == 200:
-                log.info(f'container deleted: {container_id}')
-                return True
-        log.error(f'delete container: {container_id}. {self.client.to_dict()}', enable_traceback=False)
-        return False
+    @_isConnected
+    def create_container_attachment(
+            self,
+            container_id: int,
+            file_name: str,
+            file_content: bytes,
+            metadata: dict = None, **kwargs) -> Optional[CreateContainerAttachmentResponse]:
+        """Create container attachment"""
+
+        if metadata:
+            metadata = json.dumps(metadata)
+
+        file_content = self.base64_encode(file_content)
+
+        data = json.dumps(dict(
+            container_id=container_id,
+            file_name=file_name,
+            file_content=file_content,
+            metadata=metadata
+        ))
+
+        if self._post(Urls.container_attachment(**kwargs), data=data):
+            response = CreateContainerAttachmentResponse(self.client.to_dict())
+            log.info(f'create attachment: {response}')
+            return response
+
+        log.error(f'create attachment failed. {response}', raise_exception=False)
 
     @_isConnected
     def create_vault(
@@ -273,6 +297,18 @@ class SplunkSoarClient:
             return response
 
         log.error(msg=f'add vault failed: {response}', raise_exception=False)
+
+    @_isConnected
+    def delete_container(self, container_id, *args, **kwargs):
+        """Delete containers"""
+        assert isinstance(container_id, int)
+
+        if self._delete(Urls.container(identifier=container_id, *args, **kwargs)):
+            if self.client.results.status_code == 200:
+                log.info(f'container deleted: {container_id}')
+                return True
+        log.error(f'delete container: {container_id}. {self.client.to_dict()}', enable_traceback=False)
+        return False
 
     def isConnected(self) -> bool:
         """check if client can connect"""

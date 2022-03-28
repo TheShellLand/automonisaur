@@ -21,6 +21,7 @@ class Urls:
     ASSET = f'{REST}/asset'
     CLUSTER_NODE = f'{REST}/cluster_node'
     CONTAINER = f'{REST}/container'
+    CONTAINER_ATTACHMENT = f'{REST}/container_attachment'
     PLAYBOOK = f'{REST}/playbook'
     PLAYBOOK_RUN = f'{REST}/playbook_run'
     VAULT = f'{REST}/vault_document'
@@ -57,6 +58,10 @@ class Urls:
     @classmethod
     def container(cls, identifier: int = None, detail: str = None, *args, **kwargs):
         return f'{cls.CONTAINER}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+
+    @classmethod
+    def container_attachment(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.CONTAINER_ATTACHMENT}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
     @classmethod
     def cluster_node(cls, identifier: int = None, detail: str = None, *args, **kwargs):

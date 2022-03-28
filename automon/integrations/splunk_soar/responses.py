@@ -19,21 +19,36 @@ class GeneralResponse:
         return f'{self.__dict__}'
 
 
+class CancelPlaybookResponse(GeneralResponse):
+    cancelled: int = None
+    message: str = None
+    playbook_run_id: int = None
+
+
 class CloseContainerResponse(GeneralResponse):
     id: int = None
     success: bool = None
+
+
+class CreateContainerAttachmentResponse(GeneralResponse):
+    succeeded: bool = None
+    message: str = None
+    hash: str = None
+    vault_id: str = None
+    container: int = None
+    size: int = None
+    id: int = None
+    created_via: str = None
+
+    @property
+    def vault_id(self):
+        return self.hash
 
 
 class CreateContainerResponse(GeneralResponse):
     success: bool
     id: int = None
     new_artifacts_ids: list
-
-
-class CancelPlaybookResponse(GeneralResponse):
-    cancelled: int = None
-    message: str = None
-    playbook_run_id: int = None
 
 
 class GenericResponse(GeneralResponse):
