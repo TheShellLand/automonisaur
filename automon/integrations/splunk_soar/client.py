@@ -288,6 +288,11 @@ class SplunkSoarClient:
         return False
 
     @_isConnected
+    def filter_vault(self, filter: str) -> Vault:
+        """Filter for matching vault files"""
+        pass
+
+    @_isConnected
     def generic_delete(self, api: str, **kwargs) -> Optional[GenericResponse]:
         """Make generic delete calls"""
         if self._delete(Urls.generic(api=api, **kwargs)):
@@ -489,7 +494,10 @@ class SplunkSoarClient:
             if max_pages and i > max_pages:
                 break
 
-            response = self.list_containers(page=page, page_size=page_size, **kwargs)
+            response = self.list_containers(
+                page=page,
+                page_size=page_size, **kwargs
+            )
 
             i += 1
             if response.data:
@@ -521,20 +529,66 @@ class SplunkSoarClient:
 
     @_isConnected
     def list_cluster_node(self, **kwargs) -> Optional[dict]:
-        """list cluster node"""
+        """List cluster node"""
         if self._get(Urls.cluster_node(**kwargs)):
             cluster_node = self._content_dict()
             return cluster_node
 
     @_isConnected
     def list_vault(self, **kwargs) -> Optional[VaultResponse]:
-        """list vault"""
+        """List vault"""
         if self._get(Urls.vault(**kwargs)):
             response = VaultResponse(self._content_dict())
             log.info(msg=f'list vault: {response}')
             return response
 
         log.error(msg=f'list vault failed: {response}', raise_exception=False)
+
+    @_isConnected
+    def list_vault_generator(
+            self,
+            page: int = 0,
+            page_size: int = None,
+            max_pages: int = None, **kwargs) -> [Vault]:
+        """Generator for paging through vaults"""
+        i = 0
+
+        while True:
+            if max_pages and i > max_pages:
+                break
+
+            response = self.list_vault(
+                page=page,
+                page_size=page_size, **kwargs
+            )
+
+            i += 1
+            if response.data:
+                vaults = [Vault(x) for x in response.data]
+                num_pages = response.num_pages
+                log.info(f'vault page {page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
+
+                if page > num_pages:
+                    log.info(f'list vault finished')
+                    break
+
+                yield vaults
+                page += 1
+
+            elif response.data == []:
+                log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
+                log.info(f'list vault finished. {response}')
+                break
+
+            elif response.data is None:
+                log.error(f'list vault failed', enable_traceback=True)
+                break
+
+            else:
+                log.info(f'no vaults. {response}')
+                break
+
+        return []
 
     @_isConnected
     def update_playbook(
