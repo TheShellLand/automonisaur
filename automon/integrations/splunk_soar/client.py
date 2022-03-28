@@ -288,9 +288,20 @@ class SplunkSoarClient:
         return False
 
     @_isConnected
-    def filter_vault(self, filter: str) -> Vault:
+    def filter_vault(self, filter: str, page_size: int = None, **kwargs) -> [Vault]:
         """Filter for matching vault files"""
-        pass
+        matches = []
+
+        for sublist in self.list_vault_generator(page_size=page_size, **kwargs):
+            for vault in sublist:
+                if filter in vault.meta.values():
+                    matches.append(vault)
+                elif filter in vault.names:
+                    matches.append(vault)
+                elif filter in vault.__dict__.values():
+                    matches.append(vault)
+
+        return matches
 
     @_isConnected
     def generic_delete(self, api: str, **kwargs) -> Optional[GenericResponse]:
