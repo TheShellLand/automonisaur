@@ -20,12 +20,14 @@ class TestClient(unittest.TestCase):
         if c.isConnected():
             container = c.create_container(label='testing', name='testing')
             playbook = ''
-            run = c.run_playbook(
-                container_id=container.id,
-                playbook_id=playbook
-            )
-            get = c.get_playbook_run(playbook_run_id=run.playbook_run_id)
-            cancel = c.cancel_playbook_run(run.playbook_run_id)
+
+            if playbook:
+                run = c.run_playbook(
+                    container_id=container.id,
+                    playbook_id=playbook
+                )
+                get = c.get_playbook_run(playbook_run_id=run.playbook_run_id)
+                cancel = c.cancel_playbook_run(run.playbook_run_id)
 
 
 if __name__ == '__main__':

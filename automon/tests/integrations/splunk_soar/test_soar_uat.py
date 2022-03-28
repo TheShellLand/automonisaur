@@ -57,10 +57,11 @@ class TestClient(unittest.TestCase):
         if c.isConnected():
             container = c.create_container(label='testing', name='testing')
             playbook = ''
-            self.assertTrue(c.run_playbook(
-                container_id=container.id,
-                playbook_id=playbook
-            ))
+            if playbook:
+                self.assertTrue(c.run_playbook(
+                    container_id=container.id,
+                    playbook_id=playbook
+                ))
 
 
 if __name__ == '__main__':
