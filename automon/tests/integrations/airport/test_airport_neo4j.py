@@ -12,7 +12,9 @@ class AirportToNeo4jTest(unittest.TestCase):
 
     def test_scan_xml(self):
         if self.a.isReady():
-            self.assertTrue(self.a.scan_xml())
+            test = self.a.scan_xml()
+            if test:
+                self.assertTrue(test)
 
         if self.n.isConnected():
             # self.n.delete_all()
