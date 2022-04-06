@@ -85,5 +85,9 @@ class ServiceNowTicket(ServiceNow):
     work_notes_list = None
     work_start = None
 
+    @property
+    def number(self):
+        return self.sys_id
+
     def add_property(self, key, value):
         return self.__dict__.update({key: value})
