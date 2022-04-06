@@ -663,7 +663,7 @@ class SplunkSoarClient:
             self,
             container_id: int,
             playbook_id: int,
-            scope: str = 'new',
+            scope: str = 'all',
             run: bool = True,
             **kwargs) -> Optional[RunPlaybookResponse]:
         """Run playbook on a container"""
