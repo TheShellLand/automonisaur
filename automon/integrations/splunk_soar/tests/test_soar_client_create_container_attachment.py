@@ -11,12 +11,11 @@ class TestClient(unittest.TestCase):
             container = c.create_container(label='testing', name='testing')
             container = c.get_container(container_id=container.id)
 
-            test_file = open('automon/tests/integrations/splunk_soar/dino.png', 'rb').read()
-
+            from .dino import dino
             attachment = c.create_container_attachment(
                 container_id=container.id,
                 file_name='dino.png',
-                file_content=test_file,
+                file_content=dino,
                 metadata=None
             )
 
