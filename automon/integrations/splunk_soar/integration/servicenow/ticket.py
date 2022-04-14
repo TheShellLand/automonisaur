@@ -1,3 +1,5 @@
+import json
+
 from .datatypes import ServiceNow
 
 
@@ -91,3 +93,8 @@ class ServiceNowTicket(ServiceNow):
 
     def add_property(self, key, value):
         return self.__dict__.update({key: value})
+
+    def to_api(self):
+        d = self.to_dict()
+        d['number'] = self.number
+        return json.dumps(d)
