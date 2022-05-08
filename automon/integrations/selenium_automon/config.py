@@ -6,16 +6,16 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from automon.log import Logging
 
-log = Logging(name='selenium', level=Logging.INFO)
+log = Logging(name='SeleniumConfig', level=Logging.INFO)
 
 
 class SeleniumConfig:
 
     def __init__(self, webdriver: selenium.webdriver = None, chromedriver: str = None):
         self.webdriver = webdriver or selenium.webdriver
-        self.SELENIUM_CHROMEDRIVER_PATH = chromedriver or os.getenv('SELENIUM_CHROMEDRIVER_PATH') or ''
+        self.selenium_chromedriver_path = chromedriver or os.getenv('SELENIUM_CHROMEDRIVER_PATH') or ''
 
-        if self.SELENIUM_CHROMEDRIVER_PATH:
+        if self.selenium_chromedriver_path:
             os.environ['PATH'] = f"{os.getenv('PATH')}:{self.SELENIUM_CHROMEDRIVER_PATH}"
 
     def chrome(self):
@@ -185,7 +185,3 @@ class SeleniumOptions:
         self.options.add_experimental_option(
             "prefs", {"profile.default_content_setting_values.notifications": 1}
         )
-
-
-if __name__ == "__main__":
-    pass

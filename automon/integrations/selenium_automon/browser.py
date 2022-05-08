@@ -1,6 +1,6 @@
 import os
-
 import tempfile
+import functools
 
 from urllib.parse import urlparse
 
@@ -8,57 +8,27 @@ from automon.log import Logging
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
-from automon.integrations.selenium.config import SeleniumConfig
+
+from .config import SeleniumConfig
+
+log = Logging(name='SeleniumBrowser', level=Logging.DEBUG)
 
 
-class SeleniumBrowser:
+class SeleniumBrowser(object):
 
     def __init__(self, config: SeleniumConfig = None):
-        self._log = Logging(name=SeleniumBrowser.__name__, level=Logging.DEBUG)
-
         self.config = config or SeleniumConfig()
         self.webdriver = self.config.webdriver
-        self.connected = False
+        self.browser = None
 
-        try:
-            self.browser = self.webdriver.Chrome()
-            self.connected = True
-        except Exception as e:
-            self._log.error(f'Unable to spawn browser: {e}')
+    def _isRunning(func):
+        @functools.wraps(func)
+        def wrapped(self, *args, **kwargs):
+            if self.browser:
+                return func(self, *args, **kwargs)
+            return False
 
-    def get(self, url: str):
-        try:
-            self.browser.get(url)
-            return True
-        except Exception as e:
-            self._log.error(f'Error getting {url}: {e}')
-
-        return False
-
-    def get_screenshot_as_png(self):
-        return self.browser.get_screenshot_as_png()
-
-    def get_screenshot_as_base64(self):
-        return self.browser.get_screenshot_as_base64()
-
-    def save_screenshot(self, filename: str = None, prefix: str = None, folder: str = None):
-
-        if not filename:
-            filename = self._screenshot_name(prefix)
-
-        if not folder:
-            path = os.path.abspath(tempfile.gettempdir())
-        else:
-            path = os.path.abspath(folder)
-
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        save = os.path.join(path, filename)
-
-        self._log.info(f'Saving screenshot to: {save}')
-
-        return self.browser.save_screenshot(save)
+        return wrapped
 
     def _screenshot_name(self, prefix=None):
         """Generate a unique filename
@@ -81,7 +51,86 @@ class SeleniumBrowser:
 
         return f'{hostname_}_{title_}_{timestamp}.png'
 
-    def new_resolution(self, width=1920, height=1080, device_type='web'):
+    @_isRunning
+    def isRunning(self):
+        return True
+
+    def chrome(self):
+        return self.webdriver.Chrome()
+
+    def chromium_edge(self):
+        return self.webdriver.ChromiumEdge()
+
+    def edge(self):
+        return self.webdriver.Edge()
+
+    def firefox(self):
+        return self.webdriver.Firefox()
+
+    def ie(self):
+        return self.webdriver.Ie()
+
+    def opera(self):
+        return self.webdriver.Opera()
+
+    def proxy(self):
+        return self.webdriver.Proxy()
+
+    def remote(self):
+        return self.webdriver.Remote()
+
+    def safari(self):
+        return self.webdriver.Safari()
+
+    def webkit_gtk(self):
+        return self.webdriver.WebKitGTK()
+
+    def wpewebkit(self):
+        return self.webdriver.WPEWebKit()
+
+    def close(self):
+        self.browser.close()
+
+    @_isRunning
+    def get(self, url: str):
+        try:
+            self.browser.get(url)
+            return True
+        except Exception as e:
+            log.error(f'Error getting {url}: {e}')
+
+        return False
+
+    @_isRunning
+    def get_screenshot_as_png(self):
+        return self.browser.get_screenshot_as_png()
+
+    @_isRunning
+    def get_screenshot_as_base64(self):
+        return self.browser.get_screenshot_as_base64()
+
+    @_isRunning
+    def save_screenshot(self, filename: str = None, prefix: str = None, folder: str = None):
+
+        if not filename:
+            filename = self._screenshot_name(prefix)
+
+        if not folder:
+            path = os.path.abspath(tempfile.gettempdir())
+        else:
+            path = os.path.abspath(folder)
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        save = os.path.join(path, filename)
+
+        log.info(f'Saving screenshot to: {save}')
+
+        return self.browser.save_screenshot(save)
+
+    @_isRunning
+    def set_resolution(self, width=1920, height=1080, device_type=None):
 
         if device_type == 'pixel3':
             width = 1080
@@ -123,16 +172,14 @@ class SeleniumBrowser:
             width = 1920
             height = 3080
 
+        if not width and not height:
+            width = 1920
+            height = 1080
+
         self.browser.set_window_size(width, height)
 
-    def close(self):
-        self.browser.close()
-
+    @_isRunning
     def quit(self):
         self.browser.close()
         self.browser.quit()
         self.browser.stop_client()
-
-
-if __name__ == "__main__":
-    pass
