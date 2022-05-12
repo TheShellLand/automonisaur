@@ -96,7 +96,7 @@ class MinioClient(object):
         buckets = self.client.list_buckets()
         buckets = [Bucket(x) for x in buckets]
 
-        log.info(f'Buckets total: {len(buckets)}')
+        log.info(f'Total Buckets: {len(buckets)}')
         return buckets
 
     @_is_connected
@@ -185,7 +185,7 @@ class MinioClient(object):
             log.info(f'Created bucket "{bucket_name}"')
 
         except Exception as e:
-            log.warn(f'Bucket exists: "{bucket_name}"')
+            log.warn(f'Bucket exists: "{bucket_name}". {e}')
 
         return self.get_bucket(bucket_name)
 
