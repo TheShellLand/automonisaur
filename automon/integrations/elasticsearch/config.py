@@ -19,7 +19,6 @@ class ElasticsearchConfig:
                  api_key_secret: str = None,
                  request_timeout: int = 1,
                  http_auth: tuple = None,
-                 use_ssl: bool = True,
                  verify_certs: bool = True,
                  connection_class: object = None,
                  proxy=None):
@@ -46,7 +45,6 @@ class ElasticsearchConfig:
         self.ELASTICSEARCH_PROXY = proxy or os.getenv('ELASTICSEARCH_PROXY')
         self.ELASTICSEARCH_REQUEST_TIMEOUT = request_timeout or os.getenv('ELASTICSEARCH_REQUEST_TIMEOUT')
         self.request_timeout = self.ELASTICSEARCH_REQUEST_TIMEOUT
-        self.use_ssl = use_ssl
         self.verify_certs = verify_certs
         self.connection_class = connection_class
 
