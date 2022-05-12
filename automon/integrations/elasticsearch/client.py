@@ -61,8 +61,8 @@ class ElasticsearchClient(Elasticsearch):
                 api_key=self.config.ELASTICSEARCH_API_KEY,
                 request_timeout=self.config.ELASTICSEARCH_REQUEST_TIMEOUT,
                 http_auth=self.config.http_auth,
-                verify_certs=self.config.verify_certs,
-                connection_class=self.config.connection_class)
+                verify_certs=self.config.verify_certs
+            )
             self._log.info(f'Connected to elasticsearch: {client}')
             return client
 

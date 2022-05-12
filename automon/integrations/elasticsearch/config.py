@@ -20,7 +20,6 @@ class ElasticsearchConfig:
                  request_timeout: int = 1,
                  http_auth: tuple = None,
                  verify_certs: bool = True,
-                 connection_class: object = None,
                  proxy=None):
         """elasticsearch config"""
 
@@ -46,7 +45,6 @@ class ElasticsearchConfig:
         self.ELASTICSEARCH_REQUEST_TIMEOUT = request_timeout or os.getenv('ELASTICSEARCH_REQUEST_TIMEOUT')
         self.request_timeout = self.ELASTICSEARCH_REQUEST_TIMEOUT
         self.verify_certs = verify_certs
-        self.connection_class = connection_class
 
         if self.ELASTICSEARCH_USER and self.ELASTICSEARCH_PASSWORD:
             self.http_auth = (self.ELASTICSEARCH_USER, self.ELASTICSEARCH_PASSWORD)
