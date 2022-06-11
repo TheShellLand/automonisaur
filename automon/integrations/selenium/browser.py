@@ -10,6 +10,7 @@ from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
 
 from .config import SeleniumConfig
+from .browser_types import BrowserType
 
 log = Logging(name='SeleniumBrowser', level=Logging.DEBUG)
 
@@ -20,6 +21,10 @@ class SeleniumBrowser(object):
         self.config = config or SeleniumConfig()
         self.webdriver = self.config.webdriver
         self.browser = None
+
+    @property
+    def browser_type(self):
+        return BrowserType
 
     def _isRunning(func):
         @functools.wraps(func)
@@ -52,42 +57,6 @@ class SeleniumBrowser(object):
         return f'{hostname_}_{title_}_{timestamp}.png'
 
     @_isRunning
-    def isRunning(self):
-        return True
-
-    def chrome(self):
-        return self.webdriver.Chrome()
-
-    def chromium_edge(self):
-        return self.webdriver.ChromiumEdge()
-
-    def edge(self):
-        return self.webdriver.Edge()
-
-    def firefox(self):
-        return self.webdriver.Firefox()
-
-    def ie(self):
-        return self.webdriver.Ie()
-
-    def opera(self):
-        return self.webdriver.Opera()
-
-    def proxy(self):
-        return self.webdriver.Proxy()
-
-    def remote(self):
-        return self.webdriver.Remote()
-
-    def safari(self):
-        return self.webdriver.Safari()
-
-    def webkit_gtk(self):
-        return self.webdriver.WebKitGTK()
-
-    def wpewebkit(self):
-        return self.webdriver.WPEWebKit()
-
     def close(self):
         self.browser.close()
 
@@ -100,6 +69,10 @@ class SeleniumBrowser(object):
             log.error(f'Error getting {url}: {e}')
 
         return False
+
+    @_isRunning
+    def get_page(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
 
     @_isRunning
     def get_screenshot_as_png(self):
@@ -128,6 +101,13 @@ class SeleniumBrowser(object):
         log.info(f'Saving screenshot to: {save}')
 
         return self.browser.save_screenshot(save)
+
+    @_isRunning
+    def isRunning(self):
+        return True
+
+    def set_browser(self, browser: BrowserType):
+        self.browser = browser
 
     @_isRunning
     def set_resolution(self, width=1920, height=1080, device_type=None):

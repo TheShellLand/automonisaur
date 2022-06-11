@@ -3,7 +3,7 @@ import unittest
 from automon.integrations.selenium.browser import SeleniumBrowser
 
 browser = SeleniumBrowser()
-browser.browser = browser.chrome()
+browser.set_browser(browser.browser_type.chrome)
 
 
 class SeleniumClientTest(unittest.TestCase):
