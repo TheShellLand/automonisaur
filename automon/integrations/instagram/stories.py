@@ -3,15 +3,11 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from automon.log.logger import Logging
 from automon.helpers.sleeper import Sleeper
-from automon.integrations.selenium import (Browser, chrome_nosandbox, chrome_headless_nosandbox,
-                                           chrome, chrome_for_docker, chrome_headless_nosandbox_bigshm,
-                                           chrome_headless_nosandbox_noshm, chrome_headless_nosandbox_unsafe,
-                                           chrome_headless_sandboxed, chrome_remote, chrome_sandboxed,
-                                           click, type, )
+from automon.integrations.selenium import SeleniumBrowser, SeleniumConfig
 
 from automon.integrations.minio import MinioClient
 
-log = Logging(name='instagram', level=Logging.INFO)
+log = Logging(name='instagram', level=Logging.DEBUG)
 
 
 def authenticate(username, password, minio_client=None, retries=None):
@@ -29,12 +25,12 @@ def authenticate(username, password, minio_client=None, retries=None):
         #       send traffic to /api
         login_page = 'https://www.instagram.com/accounts/login/?source=auth_switcher'
 
-        # browser = Browser(chrome())
-        # browser = Browser(chrome_headless_nosandbox())
-        browser = Browser(chrome_for_docker())
-        # browser = Browser(chrome_sandboxed())
-        # browser = Browser(chrome_headless_sandboxed())
-        # browser = Browser(chrome_remote())
+        # browser = SeleniumBrowser(chrome())
+        # browser = SeleniumBrowser(chrome_headless_nosandbox())
+        browser = SeleniumBrowser(SeleniumConfig.chrome_for_docker())
+        # browser = SeleniumBrowser(chrome_sandboxed())
+        # browser = SeleniumBrowser(chrome_headless_sandboxed())
+        # browser = SeleniumBrowser(chrome_remote())
 
         if minio_client:
             browser.set_minio_client(minio_client)
