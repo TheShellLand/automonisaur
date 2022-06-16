@@ -20,11 +20,9 @@ class SeleniumBrowser(object):
     def __init__(self, config: SeleniumConfig = None):
         self.config = config or SeleniumConfig()
         self.webdriver = self.config.webdriver
+        self.browser_type = BrowserType(self.webdriver)
+        self.type = self.browser_type
         self.browser = None
-
-    @property
-    def browser_type(self):
-        return BrowserType
 
     def _isRunning(func):
         @functools.wraps(func)
