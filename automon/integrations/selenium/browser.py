@@ -22,13 +22,21 @@ class SeleniumBrowser(object):
         self.webdriver = self.config.webdriver
         self.browser_type = BrowserType(self.webdriver)
         self.type = self.browser_type
-        self.browser = None
+        self.browser = 'Browser not set'
+
+        self.url = None
+        self.size = ''
+        self.return_code = ''
+
+    def __repr__(self):
+        return f'{self.browser.name} {self.return_code} {self.url} {self.size}'
 
     def _isRunning(func):
         @functools.wraps(func)
         def wrapped(self, *args, **kwargs):
             if self.browser:
                 return func(self, *args, **kwargs)
+            log.error(f'Browser is not set!', enable_traceback=False)
             return False
 
         return wrapped
@@ -56,15 +64,20 @@ class SeleniumBrowser(object):
 
     @_isRunning
     def close(self):
+        log.info(f'Browser closed')
         self.browser.close()
 
     @_isRunning
     def get(self, url: str):
         try:
+            self.url = url
             self.browser.get(url)
+            self.return_code = 'OK'
+            self.size = ''
             return True
         except Exception as e:
-            log.error(f'Error getting {url}: {e}')
+            self.return_code = 'ERROR'
+            log.error(f'Error getting {url}: {e}', enable_traceback=False)
 
         return False
 
