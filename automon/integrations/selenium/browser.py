@@ -68,7 +68,7 @@ class SeleniumBrowser(object):
         self.browser.close()
 
     @_isRunning
-    def get(self, url: str):
+    def get(self, url: str) -> bool:
         try:
             self.url = url
             self.browser.get(url)
