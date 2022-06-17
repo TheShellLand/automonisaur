@@ -6,7 +6,6 @@ from urllib.parse import urlparse
 
 from automon.log import Logging
 from automon.helpers.dates import Dates
-from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
 
 from .config import SeleniumConfig
@@ -23,10 +22,10 @@ class SeleniumBrowser(object):
         self._browser_type = BrowserType(self.webdriver)
         self.type = self._browser_type
         self.browser = 'Browser not set'
+        self.window_size = ''
 
-        self.url = None
-        self.size = ''
-        self.return_code = ''
+        self.url = ''
+        self.status = ''
 
     def __repr__(self):
         return f'{self.browser.name} {self.status} {self.url} {self.window_size}'
@@ -76,11 +75,10 @@ class SeleniumBrowser(object):
         try:
             self.url = url
             self.browser.get(url)
-            self.return_code = 'OK'
-            self.size = ''
+            self.status = 'OK'
             return True
         except Exception as e:
-            self.return_code = 'ERROR'
+            self.status = 'ERROR'
             log.error(f'Error getting {url}: {e}', enable_traceback=False)
 
         return False
@@ -171,6 +169,7 @@ class SeleniumBrowser(object):
             width = 1920
             height = 1080
 
+        self.window_size = width, height
         self.browser.set_window_size(width, height)
 
     @_isRunning
