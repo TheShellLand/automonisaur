@@ -1,8 +1,8 @@
 import io
+import minio
 import socket
 import functools
 
-from minio import Minio
 from typing import Optional
 
 from automon.log import Logging
@@ -31,7 +31,7 @@ class MinioClient(object):
 
     @property
     def client(self):
-        client = Minio(
+        client = minio.Minio(
             endpoint=self.config.endpoint,
             access_key=self.config.access_key,
             secret_key=self.config.secret_key,
