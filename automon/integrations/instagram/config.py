@@ -8,8 +8,8 @@ log = Logging('InstagramConfig', level=Logging.INFO)
 class InstagramConfig(object):
 
     def __init__(self, login: str = None, password: str = None):
-        self.login = login or environ('INSTAGRAM_LOGIN')
-        self.password = password or environ('INSTAGRAM_PASSWORD')
+        self.login = login or environ('INSTAGRAM_LOGIN', '')
+        self.password = password or environ('INSTAGRAM_PASSWORD', '')
 
     def isConfigured(self):
         if self.login and self.password:
