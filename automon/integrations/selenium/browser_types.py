@@ -10,6 +10,9 @@ class BrowserType(object):
     def __init__(self, webdriver: selenium.webdriver):
         self.webdriver = webdriver
 
+    def __repr__(self):
+        return ''
+
     @property
     def chrome(self):
         log.info(f'Browser set as Chrome')
