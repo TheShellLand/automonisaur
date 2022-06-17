@@ -29,7 +29,11 @@ class SeleniumBrowser(object):
         self.return_code = ''
 
     def __repr__(self):
-        return f'{self.browser.name} {self.return_code} {self.url} {self.size}'
+        return f'{self.browser.name} {self.status} {self.url} {self.window_size}'
+
+    @property
+    def get_log(self, log_type: str = 'browser') -> list:
+        return self.browser.get_log(log_type)
 
     def _isRunning(func):
         @functools.wraps(func)
