@@ -20,8 +20,8 @@ class SeleniumBrowser(object):
     def __init__(self, config: SeleniumConfig = None):
         self.config = config or SeleniumConfig()
         self.webdriver = self.config.webdriver
-        self.browser_type = BrowserType(self.webdriver)
-        self.type = self.browser_type
+        self._browser_type = BrowserType(self.webdriver)
+        self.type = self._browser_type
         self.browser = 'Browser not set'
 
         self.url = None

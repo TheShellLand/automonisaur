@@ -7,7 +7,7 @@ log = Logging(name='BrowserType', level=Logging.DEBUG)
 
 class BrowserType(object):
 
-    def __init__(self, webdriver: selenium.webdriver):
+    def __init__(self, webdriver):
         self.webdriver = webdriver
 
     def __repr__(self):

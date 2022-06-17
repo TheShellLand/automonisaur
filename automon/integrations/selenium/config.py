@@ -2,16 +2,14 @@ import os
 import warnings
 import selenium
 
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-
 from automon.log import Logging
 
 log = Logging(name='SeleniumConfig', level=Logging.INFO)
 
 
-class SeleniumConfig:
+class SeleniumConfig(object):
 
-    def __init__(self, webdriver: selenium.webdriver = None, chromedriver: str = None):
+    def __init__(self, webdriver=None, chromedriver: str = None):
         self.webdriver = webdriver or selenium.webdriver
         self.selenium_chromedriver_path = chromedriver or os.getenv('SELENIUM_CHROMEDRIVER_PATH') or ''
 
@@ -138,13 +136,13 @@ class SeleniumConfig:
 
         self.webdriver.Remote(
             command_executor=f'http://{host}:{port}{executor_path}',
-            desired_capabilities=DesiredCapabilities.CHROME
+            desired_capabilities=selenium.webdriver.common.desired_capabilities.DesiredCapabilities.CHROME
         )
 
 
 class SeleniumOptions:
 
-    def __init__(self, webdriver: selenium.webdriver):
+    def __init__(self, webdriver):
         self.webdriver = webdriver or selenium.webdriver
         self.options = self.webdriver.ChromeOptions()
 
