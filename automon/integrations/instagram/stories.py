@@ -3,7 +3,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from automon.log.logger import Logging
 from automon.helpers.sleeper import Sleeper
-from automon.integrations.selenium import SeleniumBrowser, SeleniumConfig
+from automon.integrations.selenium.config import SeleniumConfig
+from automon.integrations.selenium.browser import SeleniumBrowser
 
 from automon.integrations.minio import MinioClient
 
