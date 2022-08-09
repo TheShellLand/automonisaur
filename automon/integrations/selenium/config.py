@@ -14,7 +14,10 @@ class SeleniumConfig(object):
         self.selenium_chromedriver_path = chromedriver or os.getenv('SELENIUM_CHROMEDRIVER_PATH') or ''
 
         if self.selenium_chromedriver_path:
-            os.environ['PATH'] = f"{os.getenv('PATH')}:{self.SELENIUM_CHROMEDRIVER_PATH}"
+            os.environ['PATH'] = f"{os.getenv('PATH')}:{self.selenium_chromedriver_path}"
+
+    def __repr__(self):
+        return f'{self.__dict__}'
 
     def chrome(self):
         """Chrome with no options

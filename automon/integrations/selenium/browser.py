@@ -18,17 +18,17 @@ class SeleniumBrowser(object):
 
     def __init__(self, config: SeleniumConfig = None):
         self.config = config or SeleniumConfig()
-        self.webdriver = self.config.webdriver
-        self._browser_type = BrowserType(self.webdriver)
-        self.type = self._browser_type
-        self.browser = 'Browser not set'
+        self.type = self._browser_type = BrowserType(self.config)
+        self.browser = 'not set'
         self.window_size = ''
 
         self.url = ''
         self.status = ''
 
     def __repr__(self):
-        return f'{self.browser.name} {self.status} {self.url} {self.window_size}'
+        if self.url:
+            return f'{self.browser.name} {self.status} {self.url} {self.window_size}'
+        return f'{self.browser}'
 
     @property
     def get_log(self, log_type: str = 'browser') -> list:
