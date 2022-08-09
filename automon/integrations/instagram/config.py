@@ -13,10 +13,12 @@ class InstagramConfig(object):
 
     def isConfigured(self):
         if self.login and self.password:
-            log.info(f'config ready')
+            log.info(f'OK')
             return True
-        log.warn(f'config not ready')
+        log.warn(f'BAD')
         return False
 
     def __repr__(self):
-        return f'Ready: {self.isConfigured()}'
+        if self.isConfigured():
+            return f'ready'
+        return f'not ready'
