@@ -67,7 +67,7 @@ class ElasticsearchClient(Elasticsearch):
             return client
 
         except Exception as e:
-            self._log.error(f'Cannot connect to elasticsearch: {self.config.ELASTICSEARCH_HOST}, {e}')
+            self._log.error(f'Cannot connect to elasticsearch: {self.config.ELASTICSEARCH_HOST}, {e}', enable_traceback=False)
 
         return False
 
