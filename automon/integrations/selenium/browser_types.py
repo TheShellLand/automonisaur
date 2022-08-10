@@ -15,59 +15,63 @@ class BrowserType(object):
         self.chromedriver = self.config.selenium_chromedriver_path
 
     def __repr__(self):
-        return ''
+        return 'BrowserType'
 
     @property
     def chrome(self):
         log.info(f'Browser set as Chrome')
-        return self.webdriver.Chrome(self.chromedriver)
+        if self.chromedriver:
+            return self.webdriver.Chrome(self.chromedriver)
+        return self.webdriver.Chrome()
 
     @property
     def chromium_edge(self):
         log.info(f'Browser set as Chromium Edge')
-        return self.webdriver.ChromiumEdge(self.chromedriver)
+        if self.chromedriver:
+            return self.webdriver.ChromiumEdge(self.chromedriver)
+        return self.webdriver.ChromiumEdge()
 
     @property
     def edge(self):
         log.info(f'Browser set as Edge')
-        return self.webdriver.Edge(self.chromedriver)
+        return self.webdriver.Edge()
 
     @property
     def firefox(self):
         log.info(f'Browser set as Firefox')
-        return self.webdriver.Firefox(self.chromedriver)
+        return self.webdriver.Firefox()
 
     @property
     def ie(self):
         log.info(f'Browser set as Internet Explorer')
-        return self.webdriver.Ie(self.chromedriver)
+        return self.webdriver.Ie()
 
     @property
     def opera(self):
         log.info(f'Browser set as Opera')
-        return self.webdriver.Opera(self.chromedriver)
+        return self.webdriver.Opera()
 
     @property
     def proxy(self):
         log.info(f'Browser using proxy')
-        return self.webdriver.Proxy(self.chromedriver)
+        return self.webdriver.Proxy()
 
     @property
     def remote(self):
         log.info(f'Browser using remote browser')
-        return self.webdriver.Remote(self.chromedriver)
+        return self.webdriver.Remote()
 
     @property
     def safari(self):
         log.info(f'Browser set as Safari')
-        return self.webdriver.Safari(self.chromedriver)
+        return self.webdriver.Safari()
 
     @property
     def webkit_gtk(self):
         log.info(f'Browser set as WebKitGTK')
-        return self.webdriver.WebKitGTK(self.chromedriver)
+        return self.webdriver.WebKitGTK()
 
     @property
     def wpewebkit(self):
         log.info(f'Browser set as WPEWebKit')
-        return self.webdriver.WPEWebKit(self.chromedriver)
+        return self.webdriver.WPEWebKit()

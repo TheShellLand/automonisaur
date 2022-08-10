@@ -3,6 +3,7 @@ import warnings
 import selenium
 
 from automon.log import Logging
+from automon.helpers.os.environ import environ
 
 log = Logging(name='SeleniumConfig', level=Logging.INFO)
 
@@ -11,7 +12,7 @@ class SeleniumConfig(object):
 
     def __init__(self, webdriver=None, chromedriver: str = None):
         self.webdriver = webdriver or selenium.webdriver
-        self.selenium_chromedriver_path = chromedriver or os.getenv('SELENIUM_CHROMEDRIVER_PATH') or ''
+        self.selenium_chromedriver_path = chromedriver or environ('SELENIUM_CHROMEDRIVER_PATH', '')
 
         if self.selenium_chromedriver_path:
             os.environ['PATH'] = f"{os.getenv('PATH')}:{self.selenium_chromedriver_path}"

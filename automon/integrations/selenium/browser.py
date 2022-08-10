@@ -19,7 +19,7 @@ class SeleniumBrowser(object):
     def __init__(self, config: SeleniumConfig = None):
         self.config = config or SeleniumConfig()
         self.type = self._browser_type = BrowserType(self.config)
-        self.browser = 'not set'
+        self.driver = 'not set'
         self.window_size = ''
 
         self.url = ''
@@ -31,13 +31,17 @@ class SeleniumBrowser(object):
         return f'{self.browser}'
 
     @property
+    def browser(self) -> BrowserType:
+        return self.driver
+
+    @property
     def get_log(self, log_type: str = 'browser') -> list:
         return self.browser.get_log(log_type)
 
     def _isRunning(func):
         @functools.wraps(func)
         def wrapped(self, *args, **kwargs):
-            if self.browser:
+            if self.browser != 'not set':
                 return func(self, *args, **kwargs)
             log.error(f'Browser is not set!', enable_traceback=False)
             return False
@@ -120,7 +124,10 @@ class SeleniumBrowser(object):
         return True
 
     def set_browser(self, browser: BrowserType):
-        self.browser = browser
+        self.set_driver(driver=browser)
+
+    def set_driver(self, driver: BrowserType):
+        self.driver = driver
 
     @_isRunning
     def set_resolution(self, width=1920, height=1080, device_type=None):
