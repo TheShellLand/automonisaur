@@ -2,7 +2,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from automon.log import Logging
 
-log = Logging(name='selenium', level=Logging.INFO)
+log = Logging(name='SeleniumActions', level=Logging.INFO)
 
 
 class SeleniumActions:
