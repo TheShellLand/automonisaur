@@ -28,3 +28,7 @@ class XPaths(object):
             '//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[4]/button',
             '//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[6]/button'
         ]
+
+    @property
+    def save_your_login_info(self):
+        return '//*[@id="react-root"]/section/main/div/div/div/section/div/button'
