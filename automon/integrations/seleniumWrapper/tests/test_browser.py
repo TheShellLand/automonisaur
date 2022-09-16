@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.selenium.browser import SeleniumBrowser
+from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
 
 browser = SeleniumBrowser()
 browser.set_driver(browser.type.chrome)

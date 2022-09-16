@@ -4,7 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 from automon import Logging
-from automon.integrations.selenium.browser import SeleniumBrowser
+from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
 
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.minioWrapper import MinioClient

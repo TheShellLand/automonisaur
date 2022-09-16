@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.selenium.config import SeleniumConfig
+from automon.integrations.seleniumWrapper.config import SeleniumConfig
 
 
 class SeleniumConfigTest(unittest.TestCase):
