@@ -1,4 +1,5 @@
 import selenium
+import functools
 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
@@ -27,6 +28,15 @@ class InstagramClientBrowser:
 
     def __repr__(self):
         return f'{self.__dict__}'
+
+    def _isRunning(func):
+        @functools.wraps(func)
+        def wrapped(self, *args, **kwargs):
+            if self.browser.isRunning():
+                return func(self, *args, **kwargs)
+            return False
+
+        return wrapped
 
     @property
     def urls(self):
@@ -138,6 +148,7 @@ class InstagramClientBrowser:
         #     Sleeper.hour('instagram')
         #     self.run_stories()
 
+    @_isRunning
     def authenticate(self):
         """Authenticate to Instagram
         """
