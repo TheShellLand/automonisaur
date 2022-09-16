@@ -34,7 +34,7 @@ google-auth-oauthlib>=0.5.0
 minio>=7.1.0
 
 # neo4j
-neo4j-driver>=4.3.4
+neo4j>=5.0.0
 
 # openstack swift
 python-keystoneclient>=4.2.0

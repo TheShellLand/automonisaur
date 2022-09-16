@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.neo4j.config import Neo4jConfig
+from automon.integrations.neo4jWrapper.config import Neo4jConfig
 
 
 class ConfigTest(unittest.TestCase):

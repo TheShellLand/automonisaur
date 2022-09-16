@@ -1,7 +1,7 @@
 import unittest
 
-from automon.integrations.neo4j.client import Neo4jClient
-from automon.integrations.neo4j.cypher import Cypher
+from automon.integrations.neo4jWrapper.client import Neo4jClient
+from automon.integrations.neo4jWrapper.cypher import Cypher
 
 
 class Neo4jTest(unittest.TestCase):

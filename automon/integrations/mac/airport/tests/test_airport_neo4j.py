@@ -3,7 +3,7 @@ import unittest
 
 from automon.integrations.mac.airport import Airport
 
-from automon.integrations.neo4j import Neo4jClient
+from automon.integrations.neo4jWrapper import Neo4jClient
 
 
 class AirportToNeo4jTest(unittest.TestCase):

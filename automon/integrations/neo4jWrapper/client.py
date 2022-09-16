@@ -5,7 +5,7 @@ from neo4j import GraphDatabase
 from queue import Queue
 
 from automon.log import Logging
-from automon.integrations.neo4j.cypher import Cypher
+from automon.integrations.neo4jWrapper.cypher import Cypher
 
 from .config import Neo4jConfig
 from .results import Results

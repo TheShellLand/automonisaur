@@ -1,4 +1,4 @@
-from automon.integrations.neo4j.cypher import Cypher
+from automon.integrations.neo4jWrapper.cypher import Cypher
 
 
 # from core.helpers import cryptography
