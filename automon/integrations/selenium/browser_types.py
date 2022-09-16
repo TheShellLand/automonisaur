@@ -20,16 +20,22 @@ class BrowserType(object):
     @property
     def chrome(self):
         log.info(f'Browser set as Chrome')
-        if self.chromedriver:
-            return self.webdriver.Chrome(self.chromedriver)
-        return self.webdriver.Chrome()
+        try:
+            if self.chromedriver:
+                return self.webdriver.Chrome(self.chromedriver)
+            return self.webdriver.Chrome()
+        except Exception as e:
+            log.error(f'Browser not set. {e}', enable_traceback=False)
 
     @property
     def chromium_edge(self):
         log.info(f'Browser set as Chromium Edge')
-        if self.chromedriver:
-            return self.webdriver.ChromiumEdge(self.chromedriver)
-        return self.webdriver.ChromiumEdge()
+        try:
+            if self.chromedriver:
+                return self.webdriver.ChromiumEdge(self.chromedriver)
+            return self.webdriver.ChromiumEdge()
+        except Exception as e:
+            log.error(f'Browser not set. {e}', enable_traceback=False)
 
     @property
     def edge(self):

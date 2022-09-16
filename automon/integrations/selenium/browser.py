@@ -127,7 +127,8 @@ class SeleniumBrowser(object):
         self.set_driver(driver=browser)
 
     def set_driver(self, driver: BrowserType):
-        self.driver = driver
+        if driver:
+            self.driver = driver
 
     @_isRunning
     def set_resolution(self, width=1920, height=1080, device_type=None):
