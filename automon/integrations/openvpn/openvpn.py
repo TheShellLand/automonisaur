@@ -1,7 +1,7 @@
 import os
 import io
 
-from automon.integrations.minio import MinioClient, MinioConfig
+from automon.integrations.minioWrapper import MinioClient, MinioConfig
 from automon.log import Logging
 from automon.helpers.sleeper import Sleeper
 

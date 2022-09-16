@@ -1,8 +1,8 @@
 import unittest
 import hashlib
 
-from automon.integrations.minio import MinioClient
-from automon.integrations.minio.bucket import Bucket
+from automon.integrations.minioWrapper import MinioClient
+from automon.integrations.minioWrapper.bucket import Bucket
 
 MINIO_ENDPOINT = 'play.minio.io:9000'
 MINIO_ACCESS_KEY = 'Q3AM3UQ867SPQQA43P2F'

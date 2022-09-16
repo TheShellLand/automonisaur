@@ -1,7 +1,7 @@
 import unittest
 import hashlib
 
-from automon.integrations.minio.client import MinioClient
+from automon.integrations.minioWrapper.client import MinioClient
 
 c = MinioClient()
 

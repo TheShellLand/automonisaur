@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.minio.config import MinioConfig
+from automon.integrations.minioWrapper.config import MinioConfig
 
 c = MinioConfig()
 

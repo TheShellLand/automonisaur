@@ -7,7 +7,7 @@ from automon import Logging
 from automon.integrations.selenium.browser import SeleniumBrowser
 
 from automon.helpers.sleeper import Sleeper
-from automon.integrations.minio import MinioClient
+from automon.integrations.minioWrapper import MinioClient
 
 from .config import InstagramConfig
 from .urls import Urls

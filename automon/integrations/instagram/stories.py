@@ -6,7 +6,7 @@ from automon.helpers.sleeper import Sleeper
 from automon.integrations.selenium.config import SeleniumConfig
 from automon.integrations.selenium.browser import SeleniumBrowser
 
-from automon.integrations.minio import MinioClient
+from automon.integrations.minioWrapper import MinioClient
 
 log = Logging(name='instagram', level=Logging.DEBUG)
 
