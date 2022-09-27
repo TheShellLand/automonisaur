@@ -1,13 +1,13 @@
 import re
 
-from neo4j.work.result import Result
+from neo4j.work.summary import ResultSummary
 
 from automon.log import Logging
 
-log = Logging(name='Results', level=Logging.DEBUG)
+log = Logging(name='ResultSummary', level=Logging.DEBUG)
 
 
-class Results(Result):
+class Results(ResultSummary):
     def __init__(self, results):
         self._results = results
         self.summary = results._summary
