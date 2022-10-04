@@ -100,8 +100,10 @@ class Logging(object):
                  encoding: str = 'utf-8',
                  filemode: str = 'a',
                  log_stream: LogStream = False,
+                 log_format: str = None,
                  callbacks: list = None,
-                 timestamp: bool = True, *args, **kwargs):
+                 timestamp: bool = True,
+                 *args, **kwargs):
 
         self.started = Dates.now()
 
@@ -123,10 +125,14 @@ class Logging(object):
         module = '%(module)s'
         message = '%(message)s'
 
-        # self.log_format = f'{levelname}\t[{logger}]\t{message}'
-        self.log_format = f'{levelname}\t[{logger}]\t[{filename} {func}:L{line}]\t{message}'
-        # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
-        # self.log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
+        if log_format:
+            self.log_format = log_format
+        else:
+            self.log_format = f'{levelname}\t{message}'
+            # self.log_format = f'{levelname}\t[{logger}]\t{message}'
+            # self.log_format = f'{levelname}\t[{logger}]\t[{filename} {func}:L{line}]\t{message}'
+            # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
+            # self.log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
 
         if timestamp:
             self.log_format = f'{time}\t{self.log_format}'
