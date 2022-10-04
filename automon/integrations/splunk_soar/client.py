@@ -601,7 +601,7 @@ class SplunkSoarClient:
         i = 0
 
         while True:
-            if max_pages and i > max_pages:
+            if max_pages and i >= max_pages:
                 break
 
             response = self.list_vault(
