@@ -72,37 +72,41 @@ class Run:
         elif self.command:
             command = self._command(self.command)
 
-        if inBackground or inShell:
-            self.call = subprocess.Popen(command, text=text, **kwargs)
-            return True
-        else:
-            self.call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=text, **kwargs)
-            stdout, stderr = self.call.communicate()
-            # call.wait()
-
-            timestamp = Dates.iso()
-
-            self.last_run = timestamp
-            self.stdout = stdout
-            self.stderr = stderr
-            self.returncode = self.call.returncode
-
-            if self.stdout:
-                log.debug(f'[stdout] {stdout}')
-
-            if self.stderr:
-                log.error(f'[stderr] {stderr}', enable_traceback=False)
-
-            if self.returncode == 0:
+        try:
+            if inBackground or inShell:
+                self.call = subprocess.Popen(command, text=text, **kwargs)
                 return True
+            else:
+                self.call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=text, **kwargs)
+                stdout, stderr = self.call.communicate()
+                # call.wait()
+
+                timestamp = Dates.iso()
+
+                self.last_run = timestamp
+                self.stdout = stdout
+                self.stderr = stderr
+                self.returncode = self.call.returncode
+
+                if self.stdout:
+                    log.debug(f'[stdout] {stdout}')
+
+                if self.stderr:
+                    log.error(f'[stderr] {stderr}', enable_traceback=False)
+
+                if self.returncode == 0:
+                    return True
+
+        except Exception as e:
+            log.error(f'{e}', enable_traceback=False)
 
         return False
 
     def _command(self, command: str) -> list:
+        log.debug(f'[command] {command}')
         if isinstance(command, str):
             command = f'{command}'.split(' ')
         self.command = command
-        log.debug(f'[command] {command}')
         return self.command
 
     def __repr__(self) -> str:
