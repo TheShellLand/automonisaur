@@ -271,7 +271,7 @@ class SplunkSoarClient:
             log.info(f'create attachment: {response}')
             return response
 
-        log.error(f'create attachment failed. {response}', raise_exception=False)
+        log.error(f'create attachment failed.', raise_exception=False)
 
     @_isConnected
     def create_vault(
@@ -291,12 +291,12 @@ class SplunkSoarClient:
             trace=trace
         ))
 
-        if self._post(Urls.vault_add(identifire=vault_id, **kwargs), data=data.to_json()):
+        if self._post(Urls.vault_add(identifire=data.id, **kwargs), data=data.to_json()):
             response = Vault(self._content_dict())
             log.info(msg=f'add vault: {response}')
             return response
 
-        log.error(msg=f'add vault failed: {response}', raise_exception=False)
+        log.error(msg=f'add vault failed.', raise_exception=False)
 
     @_isConnected
     def delete_container(self, container_id, *args, **kwargs):
@@ -347,7 +347,7 @@ class SplunkSoarClient:
             log.info(f'generic delete {api}: {response}')
             return response
 
-        log.error(f'failed generic delete {api}: {response}', raise_exception=False)
+        log.error(f'failed generic delete {api}', raise_exception=False)
 
     @_isConnected
     def generic_get(self, api: str, **kwargs) -> Optional[GenericResponse]:
@@ -357,17 +357,17 @@ class SplunkSoarClient:
             log.info(f'generic get {api}: {response}')
             return response
 
-        log.error(f'failed generic get {api}: {response}', raise_exception=False)
+        log.error(f'failed generic get {api}', raise_exception=False)
 
     @_isConnected
-    def generic_post(self, api: str, data: dict) -> Optional[GenericResponse]:
+    def generic_post(self, api: str, data: dict, **kwargs) -> Optional[GenericResponse]:
         """Make generic post calls"""
         if self._post(Urls.generic(api=api, **kwargs), data=data):
             response = GenericResponse(self._content_dict())
             log.info(f'generic post {api}: {response}')
             return response
 
-        log.error(f'failed generic post {api}: {response}', raise_exception=False)
+        log.error(f'failed generic post {api}', raise_exception=False)
 
     @_isConnected
     def get_artifact(self, artifact_id: int = None, **kwargs) -> Artifact:
@@ -589,7 +589,7 @@ class SplunkSoarClient:
             log.info(msg=f'list vault: {response}')
             return response
 
-        log.error(msg=f'list vault failed: {response}', raise_exception=False)
+        log.error(msg=f'list vault failed.', raise_exception=False)
 
     @_isConnected
     def list_vault_generator(
