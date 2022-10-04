@@ -87,6 +87,12 @@ class Run:
             self.stderr = stderr
             self.returncode = self.call.returncode
 
+            if self.stdout:
+                log.debug(f'[stdout] {stdout}')
+
+            if self.stderr:
+                log.error(f'[stderr] {stderr}', enable_traceback=False)
+
             if self.returncode == 0:
                 return True
 
@@ -96,6 +102,7 @@ class Run:
         if isinstance(command, str):
             command = f'{command}'.split(' ')
         self.command = command
+        log.debug(f'[command] {command}')
         return self.command
 
     def __repr__(self) -> str:
