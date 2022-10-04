@@ -1,6 +1,6 @@
 from sentry_sdk import set_level
 
-from automon.helpers.os import environ
+from automon.helpers.osWrapper import environ
 
 
 class SentryConfig(object):

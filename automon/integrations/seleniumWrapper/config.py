@@ -3,7 +3,7 @@ import warnings
 import selenium
 
 from automon.log import Logging
-from automon.helpers.os.environ import environ
+from automon.helpers.osWrapper.environ import environ
 
 log = Logging(name='SeleniumConfig', level=Logging.INFO)
 

@@ -1,6 +1,6 @@
 from automon import Logging
 
-from automon.helpers.os.environ import environ
+from automon.helpers.osWrapper.environ import environ
 
 log = Logging('InstagramConfig', level=Logging.INFO)
 
