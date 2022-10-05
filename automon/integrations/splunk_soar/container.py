@@ -14,4 +14,7 @@ class Container(AbstractDataType):
     name: str = None
 
     def __repr__(self):
-        return self.name
+        if self.name:
+            return self.name
+
+        return self.id
