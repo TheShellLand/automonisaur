@@ -13,6 +13,8 @@ from .container import Container
 from .vault import Vault
 from .rest import Urls
 from .responses import (
+    AppRunResults,
+    AppRunResponse,
     CancelPlaybookResponse,
     CloseContainerResponse,
     CreateContainerAttachmentResponse,
@@ -444,11 +446,18 @@ class SplunkSoarClient:
         return False
 
     @_isConnected
-    def list_app_run(self, **kwargs) -> bool:
+    def list_app_run(
+            self,
+            page: int = None,
+            page_size: int = None, **kwargs) -> bool:
         """list app run"""
-        if self._get(Urls.app_run(**kwargs)):
-            self.app_run = self._content_dict()
-            return True
+        if self._get(Urls.app_run(page=page, page_size=page_size, **kwargs)):
+            self.app_run = AppRunResponse(self._content_dict())
+            response = AppRunResponse(self._content_dict())
+            response.data = [AppRunResults(x) for x in response.data]
+            log.info(f'list app runs: {response.count}')
+            self.app_run = response
+            return response
         return False
 
     @_isConnected

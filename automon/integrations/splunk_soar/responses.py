@@ -19,6 +19,43 @@ class GeneralResponse:
         return f'{self.__dict__}'
 
 
+class GenericResponse(GeneralResponse):
+    count: int
+    num_pages: int
+    data: list = None
+
+
+class AppRunResults(GeneralResponse):
+    app: int = None
+    app_name: str = None
+    app_version: str = None
+    action: str = None
+    container: int = None
+    id: int = None
+    message: str = None
+    playbook_run: int = None
+    status: str = None
+
+    @property
+    def asset_name(self):
+        name = self.message
+        name = name.split(':')[0]
+        name = name.split('on asset')[-1]
+        name = name.strip()
+        name = name.replace('\'', '')
+
+        return name
+
+    def __repr__(self):
+        if self.status == 'success':
+            return f"{self.app_name} {self.app_version} '{self.asset_name}' '{self.action}'"
+        return f"{self.app_name} {self.app_version} '{self.asset_name}' '{self.action}' {self.status}"
+
+
+class AppRunResponse(GenericResponse):
+    data: [AppRunResults] = None
+
+
 class CancelPlaybookResponse(GeneralResponse):
     cancelled: int = None
     message: str = None
@@ -49,12 +86,6 @@ class CreateContainerResponse(GeneralResponse):
     success: bool
     id: int = None
     new_artifacts_ids: list
-
-
-class GenericResponse(GeneralResponse):
-    count: int
-    num_pages: int
-    data: list = None
 
 
 class PlaybookRun(GeneralResponse):
