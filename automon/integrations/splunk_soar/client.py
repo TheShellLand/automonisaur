@@ -530,7 +530,8 @@ class SplunkSoarClient:
     def list_artifact_generator(
             self,
             page: int = 0,
-            page_size: int = None, **kwargs) -> [Container]:
+            page_size: int = None,
+            max_pages: int = None, **kwargs) -> [Container]:
         """Generator for paging through artifacts"""
 
         page = page
@@ -542,7 +543,7 @@ class SplunkSoarClient:
                 num_pages = response.num_pages
                 log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
 
-                if page > num_pages:
+                if page >= num_pages or page >= max_pages:
                     log.info(f'list container finished')
                     return True
 
