@@ -465,7 +465,7 @@ class SplunkSoarClient:
             self,
             page: int = 0,
             page_size: int = None,
-            max_pages: int = None, **kwargs) -> AppRunResponse or bool:
+            max_pages: int = None, **kwargs) -> AppRunResults or bool:
         """Generator for paging through app runs"""
 
         page = page
@@ -502,17 +502,18 @@ class SplunkSoarClient:
     @_isConnected
     def list_app_run_by_playbook_run(
             self,
+            playbook_run: int,
             page: int = None,
             page_size: int = None, **kwargs) -> bool:
-        """list app run"""
-        if self._get(Urls.app_run(page=page, page_size=page_size, **kwargs)):
-            self.app_run = AppRunResponse(self._content_dict())
-            response = AppRunResponse(self._content_dict())
-            response.data = [AppRunResults(x) for x in response.data]
-            log.info(f'list app runs: {response.count}')
-            self.app_run = response
-            return response
-        return False
+        """list app run by playbook run"""
+
+        app_runs = []
+
+        for app_run in self.list_app_run_generator(page=page, page_size=page_size, **kwargs):
+            if app_run.playbook_run == playbook_run:
+                app_runs.append(app_run)
+
+        return app_runs
 
     @_isConnected
     def list_artifacts(
