@@ -55,6 +55,11 @@ class AppRunResults(GeneralResponse):
 class AppRunResponse(GenericResponse):
     data: [AppRunResults] = None
 
+    def summary(self):
+        summary = self.__dict__
+        summary['data'] = len(summary['data'])
+        return f'{summary}'
+
 
 class CancelPlaybookResponse(GeneralResponse):
     cancelled: int = None

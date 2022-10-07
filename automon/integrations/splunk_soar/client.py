@@ -455,6 +455,60 @@ class SplunkSoarClient:
             self.app_run = AppRunResponse(self._content_dict())
             response = AppRunResponse(self._content_dict())
             response.data = [AppRunResults(x) for x in response.data]
+            log.info(f'list app runs, page: {page} page_size: {page_size}, {response.summary()}')
+            self.app_run = response
+            return response
+        return False
+
+    @_isConnected
+    def list_app_run_generator(
+            self,
+            page: int = 0,
+            page_size: int = None,
+            max_pages: int = None, **kwargs) -> AppRunResponse or bool:
+        """Generator for paging through app runs"""
+
+        page = page
+
+        while True:
+            response = self.list_app_run(page=page, page_size=page_size, **kwargs)
+            if response.data:
+                app_runs = response.data
+                num_pages = response.num_pages
+                log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
+
+                if page >= num_pages or page >= max_pages:
+                    log.info(f'list app runs finished')
+                    return True
+
+                yield app_runs
+                page += 1
+
+            elif response.data == []:
+                log.info(f'{page}/{num_pages} ({round(page / num_pages * 100, 2)}%)')
+                log.info(f'list app runs finished. {response}')
+                return True
+
+            elif response.data is None:
+                log.error(f'list app runs failed', enable_traceback=True)
+                return False
+
+            else:
+                log.info(f'no app runs. {response}')
+                return True
+
+        return False
+
+    @_isConnected
+    def list_app_run_by_playbook_run(
+            self,
+            page: int = None,
+            page_size: int = None, **kwargs) -> bool:
+        """list app run"""
+        if self._get(Urls.app_run(page=page, page_size=page_size, **kwargs)):
+            self.app_run = AppRunResponse(self._content_dict())
+            response = AppRunResponse(self._content_dict())
+            response.data = [AppRunResults(x) for x in response.data]
             log.info(f'list app runs: {response.count}')
             self.app_run = response
             return response
