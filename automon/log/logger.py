@@ -128,8 +128,8 @@ class Logging(object):
         if log_format:
             self.log_format = log_format
         else:
-            self.log_format = f'{levelname}\t{message}'
-            # self.log_format = f'{levelname}\t[{logger}]\t{message}'
+            # self.log_format = f'{levelname}\t{message}'
+            self.log_format = f'{levelname}\t[{logger}]\t{message}'
             # self.log_format = f'{levelname}\t[{logger}]\t[{filename} {func}:L{line}]\t{message}'
             # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
             # self.log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
