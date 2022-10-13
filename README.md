@@ -64,7 +64,7 @@ _Note: install requirements.txt to use all integrations_
 
 ```shell script
 # shell script
-/bin/bash requirements.sh
+/bin/bash install-requirements.sh
 
 # pip
 python3 -m pip install -U -r requirements.txt
