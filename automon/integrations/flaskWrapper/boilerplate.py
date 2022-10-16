@@ -1,7 +1,7 @@
 from flask import Flask
 
 from automon.log import Logging
-from automon.integrations.flask.config import FlaskConfig
+from automon.integrations.flaskWrapper.config import FlaskConfig
 
 
 class FlaskBoilerplate:

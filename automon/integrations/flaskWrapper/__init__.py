@@ -1,0 +1,1 @@
+from .boilerplate import FlaskBoilerplate

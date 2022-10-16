@@ -2,8 +2,8 @@ import unittest
 
 from flask import Flask
 
-from automon.integrations.flask.boilerplate import FlaskBoilerplate
-from automon.integrations.flask.config import FlaskConfig
+from automon.integrations.flaskWrapper.boilerplate import FlaskBoilerplate
+from automon.integrations.flaskWrapper.config import FlaskConfig
 
 
 class FlaskTest(unittest.TestCase):
