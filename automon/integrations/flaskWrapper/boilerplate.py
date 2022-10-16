@@ -11,3 +11,6 @@ class FlaskBoilerplate:
 
         self.app = Flask(flask_name)
         self.app = FlaskConfig.javascript_compatibility(self.app)
+
+    def run(self, port: int = None, debug: bool = False, **kwargs):
+        return self.app.run(port=port, debug=debug, **kwargs)
