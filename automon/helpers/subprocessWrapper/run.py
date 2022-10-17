@@ -98,6 +98,7 @@ class Run:
                     return True
 
         except Exception as e:
+            self.stderr = f'{e}'.encode()
             log.error(f'{e}', enable_traceback=False)
 
         return False
