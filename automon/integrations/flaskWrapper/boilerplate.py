@@ -7,11 +7,13 @@ from automon.integrations.flaskWrapper.config import FlaskConfig
 
 class FlaskBoilerplate:
 
-    def __init__(self, flask_name=__name__):
+    def __init__(self, flask_name=__name__, enable_javascript_compatibility: bool = False, **kwargs):
         self._log = Logging(FlaskBoilerplate.__name__, Logging.DEBUG)
 
-        self.app = Flask(flask_name)
-        self.app = FlaskConfig.javascript_compatibility(self.app)
+        self.app = Flask(flask_name, **kwargs)
+
+        if enable_javascript_compatibility:
+            self.app = FlaskConfig.javascript_compatibility(self.app)
 
     @property
     def request(self):
