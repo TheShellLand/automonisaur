@@ -7,13 +7,12 @@ from automon.integrations.flaskWrapper.config import FlaskConfig
 
 class FlaskBoilerplate(object):
 
-    def __init__(self, flask_name=__name__,
-                 enable_javascript_compatibility: bool = False,
-                 config: FlaskConfig = None, **kwargs):
+    def __init__(self, import_name: str = __name__, config: FlaskConfig = None,
+                 enable_javascript_compatibility: bool = False, **kwargs):
         """Wrapper for flask"""
         self._log = Logging(FlaskBoilerplate.__name__, Logging.DEBUG)
 
-        self.Flask = Flask(flask_name, **kwargs)
+        self.Flask = Flask(import_name=import_name, **kwargs)
         self.config = config or FlaskConfig()
 
         if enable_javascript_compatibility:
