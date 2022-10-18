@@ -18,6 +18,10 @@ class FlaskBoilerplate(object):
         return f'{self.Flask}'
 
     @property
+    def flaskWrapper(self):
+        return flask
+
+    @property
     def request(self):
         """Get flask request"""
         return flask.request
