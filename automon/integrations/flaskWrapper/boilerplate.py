@@ -18,7 +18,7 @@ class FlaskBoilerplate(object):
         return f'{self.Flask}'
 
     @property
-    def flaskWrapper(self):
+    def flask(self):
         return flask
 
     @property
