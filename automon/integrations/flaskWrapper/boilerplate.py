@@ -5,7 +5,7 @@ from automon.log import Logging
 from automon.integrations.flaskWrapper.config import FlaskConfig
 
 
-class FlaskBoilerplate:
+class FlaskBoilerplate(Flask):
 
     def __init__(self, flask_name=__name__,
                  enable_javascript_compatibility: bool = False,
