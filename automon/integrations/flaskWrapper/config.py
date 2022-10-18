@@ -1,10 +1,8 @@
 import os
 import hashlib
 
-from flask import Flask
 
-
-class FlaskConfig(Flask):
+class FlaskConfig(object):
 
     @staticmethod
     def javascript_compatibility(app):
