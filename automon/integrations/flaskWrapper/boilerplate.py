@@ -5,7 +5,7 @@ from automon.log import Logging
 from automon.integrations.flaskWrapper.config import FlaskConfig
 
 
-class FlaskBoilerplate(Flask):
+class FlaskBoilerplate(object):
 
     def __init__(self, flask_name=__name__,
                  enable_javascript_compatibility: bool = False,
@@ -13,11 +13,11 @@ class FlaskBoilerplate(Flask):
         """Wrapper for flask"""
         self._log = Logging(FlaskBoilerplate.__name__, Logging.DEBUG)
 
-        self.app = Flask(flask_name, **kwargs)
+        self.Flask = Flask(flask_name, **kwargs)
         self.config = config or FlaskConfig()
 
         if enable_javascript_compatibility:
-            self.app = FlaskConfig.javascript_compatibility(self.app)
+            self.Flask = FlaskConfig.javascript_compatibility(self.Flask)
 
     @property
     def request(self):
@@ -26,4 +26,4 @@ class FlaskBoilerplate(Flask):
 
     def run(self, port: int = None, debug: bool = False, **kwargs):
         """Run flask app"""
-        return self.app.run(port=port, debug=debug, **kwargs)
+        return self.Flask.run(port=port, debug=debug, **kwargs)
