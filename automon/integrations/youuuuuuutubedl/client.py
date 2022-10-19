@@ -6,11 +6,8 @@ import time
 import psutil
 import shutil
 import requests
-import subprocess
 
 from queue import Queue
-from shutil import move
-from subprocess import PIPE
 from bs4 import BeautifulSoup
 from concurrent.futures import (ThreadPoolExecutor, wait, as_completed)
 
@@ -18,212 +15,23 @@ from automon.log.logger import Logging
 from automon.helpers.subprocessWrapper import Run
 from automon.helpers.sanitation import Sanitation
 
-# logging
-log_Url = Logging('Url', Logging.DEBUG)
-log_Options = Logging('Options', Logging.DEBUG)
-log_LogStream = Logging('LogStream', Logging.ERROR)
-log_File = Logging('File', Logging.ERROR)
-log_Youtube = Logging('Youtube', Logging.DEBUG)
+from .url import Url
+from .file import File
+from .options import Options
+from .logstream import LogStream
+from .config import YoutubeConfig
 
+log_Youtube = Logging('Youtube', Logging.DEBUG)
 logging_spaces = 0
 
 
-class Url(object):
-    url = str
-    name = str
-    folder = str
-    download_name = str
+class YoutubeClient(object):
 
-    custom_name = str
-    custom_folder = str
-
-    filetype = type
-
-    def __init__(self, url: str, name: str, folder: str):
-
-        self.url = url
-        self.name = name if name else ''
-        self.folder = folder if folder else ''
-
-        self.custom_name = self.name
-        self.custom_folder = self.folder
-
-        self.files = []
-
-        log_Url.debug(f'{self.__str__()}')
-
-    def __repr__(self):
-        if self.folder and self.name:
-            return f'{self.folder} {self.name} {self.url}'
-        if self.folder and not self.name:
-            return f'{self.folder} {self.url}'
-        if not self.folder and self.name:
-            return f'{self.name} {self.url}'
-        else:
-            return f'{self.url}'
-
-    def __eq__(self, other):
-        if isinstance(other, Url):
-            return (self.url, self.name, self.download_name, self.folder) == \
-                   (other.url, self.name, self.download_name, self.folder)
-        else:
-            return False
-
-
-class Options(object):
-    def __init__(self, folder: str, url_object: Url, mp3: bool = False):
-
-        # Youtube-dl configuration
-        self._yt = os.path.join('bin', 'youtube-dl')
-        self._yt_name = f'--get-filename -o "{folder}/%(title)s.%(ext)s"'
-        self._yt_args = f'-o "{folder}/%(title)s.%(ext)s"'
-
-        self.python = 'python3'
-
-        self.mp3 = mp3
-
-        name = url_object.custom_name or ''
-        url = url_object.url
-
-        if not mp3:
-            if name:
-                self.dl = f'{self.python} {self._yt} -o "{os.path.join(folder, name)}.%(ext)s" {url}'
-            else:
-                self.dl = f'{self.python} {self._yt} -o "{folder}/%(title)s.%(ext)s" {url}'
-
-        # Requires ffmpeg or avconv and ffprobe or avprobe
-        # apt install ffmpeg avconv
-        # apt install ffprobe avprobe
-        if mp3:
-            if name:
-                self.dl = f'{self.python} {self._yt} -o "{os.path.join(folder, name)}.%(ext)s" ' \
-                          f'--extract-audio --audio-format mp3 -k {url}'
-            else:
-                self.dl = f'{self.python} {self._yt} {self._yt_args} --extract-audio --audio-format mp3 -k {url}'
-
-    def __str__(self):
-        return f'{self.dl}'
-
-
-class LogStream(object):
-    def __init__(self):
-        """Hold a bunch of logs
-        """
-        self.logs = []
-        self.errors = []
-
-    def store(self, log):
-        """Logs are expected as a string list
-        """
-        output, error = log
-
-        output = output.decode().splitlines()
-        error = error.decode().splitlines()
-
-        self.logs.extend(output)
-        self.errors.extend(error)
-
-        log_LogStream.debug(f'{len(self.logs)} lines')
-        if self.errors:
-            if len(self.errors) > 5:
-                log_LogStream.error(f'{len(self.errors)} lines')
-            else:
-                log_LogStream.error(f'{self.errors}')
-
-    def pop(self, index=0):
-        """Pop a log off the top
-        """
-        try:
-            log = self.logs.pop(index)
-            log_LogStream.debug(log)
-            return log
-        except:
-            return False
-
-
-class File(object):
-    def __init__(self, url: str, filename: str, folder: str = None, extension: str = None):
-
-        self.url = url
-        self.download_name = filename
-        self.folder = folder or ''
-        self.extension = extension or ''
-        self.filename = None
-        self.size = None
-
-        self.logs = LogStream()
-
-    def add_logs(self, logs: LogStream):
-        self.logs = logs
-
-    def _parse_log(self, log: str):
-        log_regexes = [
-            # merging files into better format
-            {'type': 'finished', 'regex': '(?<=Merging formats into ").*(?=")'},
-            # file exists
-            {'type': 'finished', 'regex': '(?<=^\[download\] ).*(?= has already been downloaded)(?= and merged)?'},
-            # create new file
-            {'type': 'finished', 'regex': '(?<=Merging formats into ").*(?=")'},
-            # new audio file
-            {'type': 'finished', 'regex': '(?<=Destination: ).*mp3'},
-            # catch all files
-            {'type': 'finished', 'regex': '(?<=Destination: ).*'},
-        ]
-
-        for r in log_regexes:
-            regex = r.get('regex')
-            r_type = r.get('type')
-
-            m = re.search(regex, log)
-
-            if m:
-                log_File.debug(f'[regex] {regex} => {m.group()}')
-                return m.group()
-
-    def get_filename(self, download_path):
-
-        while True:
-
-            log = self.logs.pop()
-
-            if log is False:
-                break
-
-            result = self._parse_log(log)
-
-            if result:
-                filename = os.path.split(result)[1]
-                extension = os.path.splitext(filename)[1]
-                filepath = os.path.join(download_path, filename)
-
-                if os.path.exists(filepath):
-                    self.filename = filename
-                    if not self.extension:
-                        self.extension = extension
-                    self.size = os.stat(filepath).st_size
-                    log_File.info(f'{self.filename}')
-
-    def __str__(self):
-        if self.download_name and self.extension and self.folder:
-            return f'{self.folder}/{self.download_name}{self.extension}'
-        elif self.download_name and self.folder:
-            return f'{self.folder}/{self.download_name}'
-        else:
-            return f'{self.download_name}'
-
-    def __eq__(self, other):
-        if isinstance(other, File):
-            return (self.download_name, self.extension, self.filetype) \
-                   == (other.download_name, other.extension, other.filetype)
-        else:
-            return NotImplemented
-
-
-class Youtube(object):
-
-    def __init__(self, max_thread_pool: int = None, urls_file: str = None):
+    def __init__(self, max_thread_pool: int = None, urls_file: str = None, config: YoutubeConfig = None):
         """A multi-threaded wrapper for youtube-dl
         """
+
+        self.config = config or YoutubeConfig()
 
         # Directories
         self.dir_downloading = os.path.join('files', 'downloading')
@@ -329,7 +137,8 @@ class Youtube(object):
         """Handle finished download
         """
 
-        log_Youtube.debug(f'[finished ] {file.filename} ({os.stat(os.path.join(self.dir_downloading, file.filename)).st_size} B)')
+        log_Youtube.debug(
+            f'[finished ] {file.filename} ({os.stat(os.path.join(self.dir_downloading, file.filename)).st_size} B)')
         self._move_file(file)
 
     def _url_builder(self) -> [Url]:
@@ -593,14 +402,3 @@ class Youtube(object):
             added += 1
             self.queue.put(url)
             log_Youtube.info(f'[{"queue": >{logging_spaces}}] ({added}/{urls}) {url}')
-
-
-def main():
-    """Main
-
-    """
-    Youtube()
-
-
-if __name__ == '__main__':
-    main()
