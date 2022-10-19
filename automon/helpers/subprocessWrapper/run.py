@@ -63,7 +63,7 @@ class Run:
     def run(self, command: str = None,
             text: bool = False,
             inBackground: bool = False,
-            inShell: bool = False,
+            shell: bool = False,
             **kwargs) -> bool:
 
         if command:
@@ -73,11 +73,12 @@ class Run:
             command = self._command(self.command)
 
         try:
-            if inBackground or inShell:
-                self.call = subprocess.Popen(command, text=text, **kwargs)
+            if inBackground:
+                self.call = subprocess.Popen(command, text=text, shell=shell, **kwargs)
                 return True
             else:
-                self.call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=text, **kwargs)
+                self.call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=text, shell=shell,
+                                             **kwargs)
                 stdout, stderr = self.call.communicate()
                 # call.wait()
 
@@ -106,8 +107,13 @@ class Run:
     def _command(self, command: str) -> list:
         log.debug(f'[_command] {command}')
         if isinstance(command, str):
-            command = f'{command}'.split(' ')
-        self.command = command
+            split_command = f'{command}'.split(' ')
+        self.command = split_command
+
+        for arg in split_command:
+            if '|' in arg:
+                log.warn(f'Pipes are not supported! {split_command}')
+
         return self.command
 
     def __repr__(self) -> str:
