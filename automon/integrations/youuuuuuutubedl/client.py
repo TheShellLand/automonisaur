@@ -18,6 +18,7 @@ from automon.helpers.sanitation import Sanitation
 from .url import Url
 from .file import File
 from .directories import Directories
+from .reader import Reader
 from .options import Options
 from .logstream import LogStream
 from .config import YoutubeConfig
@@ -27,19 +28,28 @@ logging_spaces = 0
 
 
 class YoutubeClient(object):
+    urls: [Url]
 
-    def __init__(self, max_thread_pool: int = None, urls_file: str = None, config: YoutubeConfig = None):
+    def __init__(self, url: str = None, max_thread_pool: int = None, file: str = None, config: YoutubeConfig = None):
         """A multi-threaded wrapper for youtube-dl
         """
 
         self.config = config or YoutubeConfig()
-
-        Directories.prepare_folders()
-
+        self.urls = []
         self.run = Run()
-        self.urls_file = urls_file
-        self.urls = self._url_builder()
-        self.cookies = self._cookie_builder(Directories.cookies) or []
+        self.file = file
+
+        if url:
+            self.urls.append(Url(url=url))
+
+        self.directories = Directories()
+        if not self.directories.isReady:
+            self.directories.prepare_folders()
+
+        self.reader = Reader(directory=self.directories.pending)
+        self.urls.extend(self.reader.urls)
+
+        self.cookies = self._cookie_builder(self.directories.cookies)
 
         self.downloads = []
         self.downloading = []
@@ -65,7 +75,7 @@ class YoutubeClient(object):
 
         return False
 
-    def _cookie_builder(self, cookies):
+    def _cookie_builder(self, cookies) -> list:
         """Create a clean list of cookies
         """
 
@@ -73,7 +83,7 @@ class YoutubeClient(object):
 
         return cookies
 
-    def _cookie_jar(self, cookie_path):
+    def _cookie_jar(self, cookie_path) -> list:
         """Create a list of cookies
         """
 
