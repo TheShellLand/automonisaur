@@ -1,5 +1,7 @@
 from automon.log.logger import Logging
 
+from automon.helpers.sanitation import Sanitation
+
 log_Url = Logging('Url', Logging.DEBUG)
 logging_spaces = 0
 
@@ -17,9 +19,9 @@ class Url(object):
 
     def __init__(self, url: str, name: str, folder: str):
 
-        self.url = url
-        self.name = name if name else ''
-        self.folder = folder if folder else ''
+        self.url = self.sanatize(url)
+        self.name = name or ''
+        self.folder = folder or ''
 
         self.custom_name = self.name
         self.custom_folder = self.folder
@@ -27,6 +29,10 @@ class Url(object):
         self.files = []
 
         log_Url.debug(f'{self.__str__()}')
+
+    def sanatize(self, url: str) -> tuple:
+        """Sanitize url"""
+        return Sanitation.strip(url)
 
     def __repr__(self):
         if self.folder and self.name:
