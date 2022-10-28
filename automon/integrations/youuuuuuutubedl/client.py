@@ -17,6 +17,7 @@ from automon.helpers.sanitation import Sanitation
 
 from .url import Url
 from .file import File
+from .directories import Directories
 from .options import Options
 from .logstream import LogStream
 from .config import YoutubeConfig
@@ -33,18 +34,12 @@ class YoutubeClient(object):
 
         self.config = config or YoutubeConfig()
 
-        # Directories
-        self.dir_downloading = os.path.join('files', 'downloading')
-        self.dir_finished = os.path.join('files', 'finished')
-        self.dir_pending = os.path.join('files', 'pending')
-        self.dir_cookies = os.path.join('files', 'cookies')
-
-        self._prepare_folders()
+        Directories.prepare_folders()
 
         self.run = Run()
         self.urls_file = urls_file
         self.urls = self._url_builder()
-        self.cookies = self._cookie_builder(self.dir_cookies) or []
+        self.cookies = self._cookie_builder(Directories.cookies) or []
 
         self.downloads = []
         self.downloading = []
@@ -128,7 +123,7 @@ class YoutubeClient(object):
         logs.store(self._run(yt.dl))
 
         # get filename from logs
-        file.get_filename(self.dir_downloading)
+        file.get_filename(Directories.downloading)
 
         self._finished(file)
         log_Youtube.info(f'[{"download": >{logging_spaces}}] took {int(time.time() - start)} seconds to complete {url}')
@@ -138,7 +133,7 @@ class YoutubeClient(object):
         """
 
         log_Youtube.debug(
-            f'[finished ] {file.filename} ({os.stat(os.path.join(self.dir_downloading, file.filename)).st_size} B)')
+            f'[finished ] {file.filename} ({os.stat(os.path.join(Directories.downloading, file.filename)).st_size} B)')
         self._move_file(file)
 
     def _url_builder(self) -> [Url]:
@@ -150,7 +145,7 @@ class YoutubeClient(object):
         and create a list of URLs from it
         """
 
-        return self._read_files(self.dir_pending)
+        return self._read_files(Directories.pending)
 
     def _read_files(self, directory) -> [Url]:
         """Read files from 'pending'
@@ -281,12 +276,12 @@ class YoutubeClient(object):
                 downloads += 1
 
                 # download video
-                video_options = Options(folder=self.dir_downloading, url_object=url)
+                video_options = Options(folder=Directories.downloading, url_object=url)
                 self.futures.append(self.thread_pool.submit(self._download, url, video_options))
 
                 if mp3:
                     # download mp3
-                    mp3_options = Options(folder=self.dir_downloading, url_object=url, mp3=True)
+                    mp3_options = Options(folder=Directories.downloading, url_object=url, mp3=True)
                     self.futures.append(self.thread_pool.submit(self._download, url, mp3_options))
                     log_Youtube.info(f'[{"download": >{logging_spaces}}] ({downloads}/{len(self.urls)}) {url}')
                     sleep = int(sleep / 2)
@@ -312,19 +307,19 @@ class YoutubeClient(object):
         filename = file.filename
         folder = file.folder
 
-        source = os.path.join(self.dir_downloading, filename)
+        source = os.path.join(Directories.downloading, filename)
 
         if not os.path.exists(source):
             log_Youtube.error(f'[move ] source not found: {source}')
             return False
 
         if folder:
-            if not os.path.exists(os.path.join(self.dir_finished, folder)):
-                os.mkdir(os.path.join(self.dir_finished, folder))
-            destination = os.path.join(self.dir_finished, folder, filename)
+            if not os.path.exists(os.path.join(Directories.finished, folder)):
+                os.mkdir(os.path.join(Directories.finished, folder))
+            destination = os.path.join(Directories.finished, folder, filename)
             destination_short = f'{os.path.split(os.path.split(destination)[0])[1]}/{os.path.split(destination)[1]}'
         else:
-            destination = os.path.join(self.dir_finished, filename)
+            destination = os.path.join(Directories.finished, filename)
             destination_short = f'{os.path.split(os.path.split(destination)[0])[1]}/{os.path.split(destination)[1]}'
 
         try:
@@ -343,19 +338,6 @@ class YoutubeClient(object):
         except Exception as e:
             log_Youtube.error(f'[moving ] failed {os.path.split(source)[-1]}')
             return False
-
-    def _prepare_folders(self):
-        _dirs = [self.dir_downloading, self.dir_finished, self.dir_pending, self.dir_cookies]
-
-        for directory in _dirs:
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            if directory == self.dir_downloading:
-                for directory in os.listdir(self.dir_downloading):
-                    # Don't delete up previous downloads
-                    # Clean out previous downloads
-                    # os.remove(self.dir_d + '/' + directory)
-                    pass
 
     def _prepare_url(self, raw_url: str) -> tuple:
 
