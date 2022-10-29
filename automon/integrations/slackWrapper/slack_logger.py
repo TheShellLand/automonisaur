@@ -5,9 +5,9 @@ from json import dumps
 from asyncio import sleep
 
 from automon.helpers.asyncio_ import AsyncStarter
-from automon.integrations.slack.client import SlackClient
+from automon.integrations.slackWrapper.client import SlackClient
 
-from automon.integrations.slack.slack_formatting import Emoji, Chat, Format
+from automon.integrations.slackWrapper.slack_formatting import Emoji, Chat, Format
 from automon.log import Logging, INFO, ERROR, WARN, CRITICAL, DEBUG
 
 

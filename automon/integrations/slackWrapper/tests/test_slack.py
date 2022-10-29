@@ -1,10 +1,10 @@
 import unittest
 
-from automon.integrations.slack.client import SlackClient
-from automon.integrations.slack.error import SlackError
-from automon.integrations.slack.bots import BotInfo
-from automon.integrations.slack.config import SlackConfig
-from automon.integrations.slack.slack_formatting import Format, Chat, Emoji
+from automon.integrations.slackWrapper.client import SlackClient
+from automon.integrations.slackWrapper.error import SlackError
+from automon.integrations.slackWrapper.bots import BotInfo
+from automon.integrations.slackWrapper.config import SlackConfig
+from automon.integrations.slackWrapper.slack_formatting import Format, Chat, Emoji
 
 
 class ConfigTest(unittest.TestCase):
