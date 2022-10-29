@@ -1,7 +1,7 @@
 import unittest
 
-from automon.integrations.requests import RequestsClient
-from automon.integrations.requests import RequestsConfig
+from automon.integrations.requestsWrapper import RequestsClient
+from automon.integrations.requestsWrapper import RequestsConfig
 
 r = RequestsClient()
 
