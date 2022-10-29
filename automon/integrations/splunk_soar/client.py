@@ -5,7 +5,7 @@ import functools
 from typing import Optional
 
 from automon.log import Logging
-from automon.integrations.requests import Requests
+from automon.integrations.requestsWrapper import Requests
 
 from .artifact import Artifact
 from .config import SplunkSoarConfig

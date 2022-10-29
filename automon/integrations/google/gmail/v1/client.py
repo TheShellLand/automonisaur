@@ -1,4 +1,4 @@
-from automon.integrations.requests import RequestsClient
+from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import GmailConfig
 
