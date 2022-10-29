@@ -6,7 +6,7 @@ import yaml
 import xmltodict
 import subprocess
 
-from automon.integrations.slack.slack_formatting import Chat
+from automon.integrations.slackWrapper.slack_formatting import Chat
 from automon.log import Logging
 
 log = Logging(__name__, level=Logging.INFO)
