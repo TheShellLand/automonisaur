@@ -20,7 +20,7 @@ class AsyncStarter:
 
         self._finished = None
 
-    async def _coro(self) -> asyncio.coroutine:
+    async def _coro(self) -> asyncio:
         await asyncio.sleep(0)
 
     def run_until_complete(self):

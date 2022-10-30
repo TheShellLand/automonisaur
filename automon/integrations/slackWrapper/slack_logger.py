@@ -4,7 +4,7 @@ import traceback
 from json import dumps
 from asyncio import sleep
 
-from automon.helpers.asyncio_ import AsyncStarter
+from automon.helpers.nest_asyncioWrapper import AsyncStarter
 from automon.integrations.slackWrapper.client import SlackClient
 
 from automon.integrations.slackWrapper.slack_formatting import Emoji, Chat, Format

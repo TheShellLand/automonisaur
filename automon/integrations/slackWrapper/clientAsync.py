@@ -4,7 +4,7 @@ import random
 import asyncio
 
 from automon.log import Logging
-from automon.helpers.asyncio_ import AsyncStarter
+from automon.helpers.nest_asyncioWrapper import AsyncStarter
 
 from .config import ConfigSlack
 from .bots import BotInfo
