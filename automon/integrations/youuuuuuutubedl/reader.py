@@ -14,7 +14,8 @@ class Reader(object):
 
         if directory:
             for f in self.read_directory(directory):
-                self.urls.extend(self.read_file(file=f))
+                path = os.path.join(directory, f)
+                self.urls.extend(self.read_file(file=path))
 
         if file:
             self.urls.extend(self.read_file(file))
@@ -32,6 +33,7 @@ class Reader(object):
 
         with open(file, 'r') as f:
             lines = open(file, 'r')
+            lines = lines.read()
             lines = lines.splitlines()
 
         for url in lines:
