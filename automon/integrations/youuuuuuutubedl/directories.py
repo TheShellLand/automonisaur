@@ -6,10 +6,10 @@ log = Logging('Directories', level=Logging.DEBUG)
 
 
 class Directories:
-    downloading: str
-    finished: str
-    pending: str
-    cookies: str
+    downloading: str = os.path.join('youuuuuuutubedl', 'downloading')
+    finished: str = os.path.join('youuuuuuutubedl', 'finished')
+    pending: str = os.path.join('youuuuuuutubedl', 'pending')
+    cookies: str = os.path.join('youuuuuuutubedl', 'cookies')
 
     def __init__(self):
         self.downloading = os.path.join('youuuuuuutubedl', 'downloading')
