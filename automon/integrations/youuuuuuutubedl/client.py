@@ -55,7 +55,10 @@ class YoutubeClient(object):
         self.downloading = []
         self.finished = []
 
-        self.thread_pool = self.ThreadPool.config_thread_pool(thread_pool=max_thread_pool or len(self.urls))
+        if not max_thread_pool:
+            max_thread_pool = len(self.urls)
+
+        self.thread_pool = ThreadPool.config_thread_pool(thread_pool=max_thread_pool)
         self.queue = Queue()
 
         self._queue_urls()
