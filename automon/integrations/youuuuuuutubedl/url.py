@@ -7,17 +7,17 @@ logging_spaces = 0
 
 
 class Url(object):
-    url = str
-    name = str
-    folder = str
-    download_name = str
+    url: str
+    name: str
+    folder: str
+    download_name: str
 
-    custom_name = str
-    custom_folder = str
+    custom_name: str
+    custom_folder: str
 
-    filetype = type
+    filetype: type
 
-    def __init__(self, url: str, name: str, folder: str):
+    def __init__(self, url: str, name: str = None, folder: str = None):
 
         self.url = self.sanatize(url)
         self.name = name or ''
