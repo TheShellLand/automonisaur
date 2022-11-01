@@ -9,7 +9,6 @@ import requests
 
 from queue import Queue
 from bs4 import BeautifulSoup
-from concurrent.futures import (ThreadPoolExecutor, wait, as_completed)
 
 from automon.log.logger import Logging
 from automon.helpers.subprocessWrapper import Run
@@ -22,6 +21,7 @@ from .reader import Reader
 from .options import Options
 from .logstream import LogStream
 from .config import YoutubeConfig
+from .thread import ThreadPool
 
 log_Youtube = Logging('Youtube', Logging.DEBUG)
 logging_spaces = 0
@@ -55,25 +55,11 @@ class YoutubeClient(object):
         self.downloading = []
         self.finished = []
 
-        self.thread_pool = self._config_thread_pool(thread_pool=max_thread_pool)
+        self.thread_pool = self.ThreadPool.config_thread_pool(thread_pool=max_thread_pool or len(self.urls))
         self.queue = Queue()
 
         self._queue_urls()
         self._start_downloads(mp3=False)
-
-    def _config_thread_pool(self, thread_pool):
-        """Configure threading pool
-        """
-
-        if thread_pool:
-            return ThreadPoolExecutor(max_workers=thread_pool)
-        else:
-            if self.urls:
-                return ThreadPoolExecutor(len(self.urls))
-            else:
-                return ThreadPoolExecutor()
-
-        return False
 
     def _cookie_builder(self, cookies) -> list:
         """Create a clean list of cookies
