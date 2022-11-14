@@ -35,7 +35,7 @@ class AsyncStarter:
     def sleep(seconds: int):
         asyncio.run(asyncio.sleep(seconds))
 
-    def run(self) -> asyncio.run:
+    def run(self) -> asyncio:
         asyncio.run(self._coro())
 
     def start(self) -> run:
