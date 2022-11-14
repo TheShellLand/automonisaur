@@ -74,11 +74,30 @@ class Run:
 
         try:
             if inBackground:
-                self.call = subprocess.Popen(command, text=text, shell=shell, **kwargs)
+                if 'text' in dir(subprocess.Popen):
+                    self.call = subprocess.Popen(command, text=text, shell=shell, **kwargs)
+                else:
+                    self.call = subprocess.Popen(command, shell=shell, **kwargs)
                 return True
             else:
-                self.call = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=text, shell=shell,
-                                             **kwargs)
+                if 'text' in dir(subprocess.Popen):
+                    self.call = subprocess.Popen(
+                        command,
+                        stdin=PIPE,
+                        stdout=PIPE,
+                        stderr=PIPE,
+                        text=text,
+                        shell=shell,
+                        **kwargs)
+                else:
+                    self.call = subprocess.Popen(
+                        command,
+                        stdin=PIPE,
+                        stdout=PIPE,
+                        stderr=PIPE,
+                        shell=shell,
+                        **kwargs)
+
                 stdout, stderr = self.call.communicate()
                 # call.wait()
 
