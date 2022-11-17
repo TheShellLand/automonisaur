@@ -7,6 +7,7 @@ from typing import Optional
 from automon.log import Logging
 from automon.integrations.requestsWrapper import Requests
 
+from .action_run import ActionRun
 from .artifact import Artifact
 from .config import SplunkSoarConfig
 from .container import Container
@@ -370,6 +371,17 @@ class SplunkSoarClient:
             return response
 
         log.error(f'failed generic post {api}', raise_exception=False)
+
+    @_isConnected
+    def get_action_run(self, action_run_id: int = None, **kwargs) -> ActionRun:
+        """Get action run"""
+        if self._get(Urls.action_run(identifier=action_run_id, **kwargs)):
+            action_run = ActionRun(self._content_dict())
+            log.info(f'get action run: {action_run}')
+            return action_run
+
+        log.error(f'action run not found: {action_run_id}', enable_traceback=False)
+        return ActionRun()
 
     @_isConnected
     def get_artifact(self, artifact_id: int = None, **kwargs) -> Artifact:
