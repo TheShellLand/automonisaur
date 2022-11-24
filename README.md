@@ -52,7 +52,7 @@ Github issues and feature requests welcomed.
 
 #### Requires
 
-- python >= 3.7
+- python >= 3.6
 
 _Note: install requirements.txt to use all integrations_
 
