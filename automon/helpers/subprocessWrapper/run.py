@@ -64,13 +64,19 @@ class Run:
             text: bool = False,
             inBackground: bool = False,
             shell: bool = False,
+            sanitize_command: bool = True,
             **kwargs) -> bool:
 
         if command:
-            command = self._command(command)
+            if sanitize_command:
+                command = self._command(command)
 
         elif self.command:
-            command = self._command(self.command)
+            command = self.command
+            if sanitize_command:
+                command = self._command(self.command)
+
+        log.debug(f'[command] {command}')
 
         try:
             if inBackground:
@@ -124,7 +130,7 @@ class Run:
         return False
 
     def _command(self, command: str) -> list:
-        log.debug(f'[_command] {command}')
+        log.debug(f'[command] {command}')
         if isinstance(command, str):
             split_command = f'{command}'.split(' ')
         self.command = split_command
