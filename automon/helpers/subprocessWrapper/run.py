@@ -131,13 +131,16 @@ class Run:
 
     def _command(self, command: str) -> list:
         log.debug(f'[command] {command}')
+
+        self.command = command
+
         if isinstance(command, str):
             split_command = f'{command}'.split(' ')
-        self.command = split_command
+            self.command = split_command
 
-        for arg in split_command:
-            if '|' in arg:
-                log.warn(f'Pipes are not supported! {split_command}')
+            for arg in split_command:
+                if '|' in arg:
+                    log.warn(f'Pipes are not supported! {split_command}')
 
         return self.command
 
