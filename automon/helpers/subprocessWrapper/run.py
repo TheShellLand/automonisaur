@@ -130,8 +130,6 @@ class Run:
         return False
 
     def _command(self, command: str) -> list:
-        log.debug(f'[command] {command}')
-
         self.command = command
 
         if isinstance(command, str):
