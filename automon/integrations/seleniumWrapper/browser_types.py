@@ -23,22 +23,67 @@ class BrowserType(object):
         return 'BrowserType'
 
     @property
-    def chrome(self):
+    def chrome(self, options: list = None):
+        """Chrome"""
         log.info(f'Browser set as Chrome')
+
+        chrome_options = selenium.webdriver.chrome.options.Options()
+
+        if options:
+            for arg in options:
+                chrome_options.add_argument(arg)
+
         try:
             if self.chromedriver:
-                return self.webdriver.Chrome(self.chromedriver)
-            return self.webdriver.Chrome()
+                return self.webdriver.Chrome(self.chromedriver, options=chrome_options)
+            return self.webdriver.Chrome(options=chrome_options)
         except Exception as e:
             log.error(f'Browser not set. {e}', enable_traceback=False)
 
     @property
-    def chromium_edge(self):
-        log.info(f'Browser set as Chromium Edge')
+    def chrome_headless(self, options: list = None, **kwargs):
+        """Chrome headless
+
+        chrome_options = Options()
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--no-sandbox") # linux only
+        chrome_options.add_argument("--headless")
+
+        chrome_options.headless = True # also works
+
+        """
+        log.info(f'Browser set as Chrome Headless')
+
+        chrome_options = selenium.webdriver.chrome.options.Options()
+        chrome_options.headless = True
+
+        if options:
+            for arg in options:
+                chrome_options.add_argument(arg)
+
         try:
             if self.chromedriver:
-                return self.webdriver.ChromiumEdge(self.chromedriver)
-            return self.webdriver.ChromiumEdge()
+                return self.webdriver.Chrome(self.chromedriver, options=chrome_options, **kwargs)
+            return self.webdriver.Chrome(options=chrome_options, **kwargs)
+        except Exception as e:
+            log.error(f'Browser not set. {e}', enable_traceback=False)
+
+    @property
+    def chromium_edge(self, options: list = None, **kwargs):
+        """Chromium"""
+        log.info(f'Browser set as Chromium Edge')
+
+        chromium_options = selenium.webdriver.chromium.options.ChromiumOptions()
+
+        if options:
+            for arg in options:
+                chromium_options.add_argument(arg)
+
+        try:
+            if self.chromedriver:
+                return self.webdriver.ChromiumEdge(self.chromedriver, options=chromium_options, **kwargs)
+            return self.webdriver.ChromiumEdge(options=chromium_options, **kwargs)
         except Exception as e:
             log.error(f'Browser not set. {e}', enable_traceback=False)
 
