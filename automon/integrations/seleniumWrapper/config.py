@@ -1,6 +1,7 @@
 import os
 import warnings
 import selenium
+import selenium.webdriver
 
 from automon.log import Logging
 from automon.helpers.osWrapper.environ import environ
@@ -9,6 +10,8 @@ log = Logging(name='SeleniumConfig', level=Logging.INFO)
 
 
 class SeleniumConfig(object):
+    webdriver: selenium.webdriver
+    selenium_chromedriver_path: str
 
     def __init__(self, webdriver=None, chromedriver: str = None):
         self.webdriver = webdriver or selenium.webdriver
