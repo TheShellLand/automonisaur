@@ -23,7 +23,7 @@ class BrowserType(object):
         return 'BrowserType'
 
     @property
-    def chrome(self, options: list = None):
+    def chrome(self, options: list = None) -> Chrome:
         """Chrome"""
         log.info(f'Browser set as Chrome')
 
@@ -41,7 +41,7 @@ class BrowserType(object):
             log.error(f'Browser not set. {e}', enable_traceback=False)
 
     @property
-    def chrome_headless(self, options: list = None, **kwargs):
+    def chrome_headless(self, options: list = None, **kwargs) -> Chrome:
         """Chrome headless
 
         chrome_options = Options()
@@ -70,7 +70,7 @@ class BrowserType(object):
             log.error(f'Browser not set. {e}', enable_traceback=False)
 
     @property
-    def chromium_edge(self, options: list = None, **kwargs):
+    def chromium_edge(self, options: list = None, **kwargs) -> ChromiumEdge:
         """Chromium"""
         log.info(f'Browser set as Chromium Edge')
 
@@ -88,30 +88,30 @@ class BrowserType(object):
             log.error(f'Browser not set. {e}', enable_traceback=False)
 
     @property
-    def edge(self, **kwargs):
+    def edge(self, **kwargs) -> Edge:
         """Edge"""
         log.info(f'Browser set as Edge')
         return self.webdriver.Edge(**kwargs)
 
     @property
-    def firefox(self, **kwargs):
+    def firefox(self, **kwargs) -> Firefox:
         """Firefox"""
         log.info(f'Browser set as Firefox')
         return self.webdriver.Firefox(**kwargs)
 
     @property
-    def ie(self, **kwargs):
+    def ie(self, **kwargs) -> Ie:
         """Internet Explorer"""
         log.info(f'Browser set as Internet Explorer')
         return self.webdriver.Ie(**kwargs)
 
     @property
-    def opera(self, **kwargs):
+    def opera(self):
         """Depreciated: Opera"""
         log.warn(f'Opera is depreciated')
 
     @property
-    def proxy(self, **kwargs):
+    def proxy(self, **kwargs) -> Proxy:
         """Proxy"""
         log.info(f'Browser using proxy')
         return self.webdriver.Proxy(**kwargs)
@@ -122,25 +122,25 @@ class BrowserType(object):
         log.warn(f'PhantomJS not supported')
 
     @property
-    def remote(self, **kwargs):
+    def remote(self, **kwargs) -> Remote:
         """Remote"""
         log.info(f'Browser using remote browser')
         return self.webdriver.Remote(**kwargs)
 
     @property
-    def safari(self, **kwargs):
+    def safari(self, **kwargs) -> Safari:
         """Safari"""
         log.info(f'Browser set as Safari')
         return self.webdriver.Safari(**kwargs)
 
     @property
-    def webkit_gtk(self, **kwargs):
+    def webkit_gtk(self, **kwargs) -> WebKitGTK:
         """WebKit GTK"""
         log.info(f'Browser set as WebKitGTK')
         return self.webdriver.WebKitGTK(**kwargs)
 
     @property
-    def wpewebkit(self, **kwargs):
+    def wpewebkit(self, **kwargs) -> WPEWebKit:
         """WPE WebKit"""
         log.info(f'Browser set as WPEWebKit')
         return self.webdriver.WPEWebKit(**kwargs)
