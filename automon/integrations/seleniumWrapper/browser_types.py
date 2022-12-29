@@ -1,12 +1,28 @@
 import selenium
 import selenium.webdriver.chrome.options
-import selenium.webdriver.chromium.options
 
-from selenium.webdriver import (Chrome, ChromiumEdge, Edge, Firefox, Ie, Proxy, Remote, Safari, WebKitGTK, WPEWebKit)
+from selenium.webdriver import Chrome
+from selenium.webdriver import Edge
+from selenium.webdriver import Firefox
+from selenium.webdriver import Ie
+from selenium.webdriver import Proxy
+from selenium.webdriver import Remote
+from selenium.webdriver import Safari
+from selenium.webdriver import WebKitGTK
 
 from automon.log import Logging
 
 from .config import SeleniumConfig
+
+# fix for python36
+try:
+    import selenium.webdriver.chromium.options
+    from selenium.webdriver import ChromiumEdge
+    from selenium.webdriver import WPEWebKit
+except:
+    from selenium.webdriver import Chrome as ChromiumEdge
+    from selenium.webdriver import Chrome as WPEWebKit
+
 
 log = Logging(name='BrowserType', level=Logging.DEBUG)
 
