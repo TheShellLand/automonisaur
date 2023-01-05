@@ -1,7 +1,9 @@
 import os
 import tempfile
 import functools
+import selenium
 
+from selenium.webdriver.common.keys import Keys
 from urllib.parse import urlparse
 
 from automon.log import Logging
@@ -15,11 +17,13 @@ log = Logging(name='SeleniumBrowser', level=Logging.DEBUG)
 
 
 class SeleniumBrowser(object):
+    config: SeleniumConfig
+    type: BrowserType
 
     def __init__(self, config: SeleniumConfig = None):
         self.config = config or SeleniumConfig()
         self.type = self._browser_type = BrowserType(self.config)
-        self.driver = 'not set'
+        self.driver = 'not set' or self.type.chrome_headless
         self.window_size = ''
 
         self.url = ''
@@ -31,8 +35,12 @@ class SeleniumBrowser(object):
         return f'{self.browser}'
 
     @property
-    def browser(self) -> BrowserType:
+    def browser(self):
         return self.driver
+
+    @property
+    def keys(self):
+        return selenium.webdriver.common.keys.Keys()
 
     @property
     def get_log(self, log_type: str = 'browser') -> list:
@@ -70,9 +78,38 @@ class SeleniumBrowser(object):
         return f'{hostname_}_{title_}_{timestamp}.png'
 
     @_isRunning
+    def action_click(self, xpath: str):
+        """perform mouse command"""
+        try:
+            log.debug(f'click: {xpath}')
+            self.browser.find_element(xpath).click()
+            return True
+        except Exception as e:
+            log.error(f'failed to click: {xpath}, {e}', enable_traceback=False)
+        return False
+
+    @_isRunning
+    def action_type(self, key: str or Keys):
+        """perform keyboard command"""
+        try:
+            log.debug(f'type: {key}')
+            actions = selenium.webdriver.common.action_chains.ActionChains(
+                self.browser)
+            actions.send_keys(key)
+            actions.perform()
+            return True
+        except Exception as e:
+            log.error(f'failed to type: {key}, {e}', enable_traceback=False)
+        return False
+
+    @_isRunning
     def close(self):
         log.info(f'Browser closed')
         self.browser.close()
+
+    @_isRunning
+    def find_element(self, xpath: str, **kwargs):
+        return self.browser.find_element(xpath, **kwargs)
 
     @_isRunning
     def get(self, url: str) -> bool:
@@ -100,7 +137,11 @@ class SeleniumBrowser(object):
         return self.browser.get_screenshot_as_base64()
 
     @_isRunning
-    def save_screenshot(self, filename: str = None, prefix: str = None, folder: str = None):
+    def save_screenshot(
+            self,
+            filename: str = None,
+            prefix: str = None,
+            folder: str = None):
 
         if not filename:
             filename = self._screenshot_name(prefix)
