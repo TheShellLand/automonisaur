@@ -1,8 +1,8 @@
 import unittest
 
-from automon.integrations.instagram.client_browser import InstagramClientBrowser
+from automon.integrations.instagram.client_browser import InstagramBrowserClient
 
-c = InstagramClientBrowser()
+c = InstagramBrowserClient()
 
 
 class InstagramClientTest(unittest.TestCase):

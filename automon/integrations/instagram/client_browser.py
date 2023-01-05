@@ -1,7 +1,6 @@
 import selenium
 import functools
 
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 from automon import Logging
@@ -17,14 +16,21 @@ from .xpaths import XPaths
 log = Logging('InstagramClientBrowser', level=Logging.INFO)
 
 
-class InstagramClientBrowser:
+class InstagramBrowserClient:
+    login: str
+    password: str
+    config: InstagramConfig
+    browser: SeleniumBrowser
 
-    def __init__(self, login: str = None, password: str = None, config: InstagramConfig = None):
+    def __init__(self,
+                 login: str = None,
+                 password: str = None,
+                 config: InstagramConfig = None):
         """Instagram Browser Client"""
         self.config = config or InstagramConfig(login=login, password=password)
         self.login = self.config.login
         self.browser = SeleniumBrowser()
-        self.browser.set_browser(self.browser.type.chrome)
+        self.browser.set_browser(self.browser.type.chrome_headless)
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -68,7 +74,8 @@ class InstagramClientBrowser:
 
         browser = self.authenticated_browser
         browser.get(story)
-        browser.browser.save_screenshot_to_minio(bucket_name='screenshots', prefix='instagram/' + account)
+        browser.browser.save_screenshot_to_minio(bucket_name='screenshots',
+                                                 prefix='instagram/' + account)
 
         if 'Page Not Found' in browser.browser.title:
             log.debug('[get_stories] no stories for {}'.format(account))
@@ -82,12 +89,15 @@ class InstagramClientBrowser:
 
                 title = browser.browser.title
                 if title == 'Instagram':
-                    log.debug(('[get_stories] {} end of stories'.format(account)))
+                    log.debug(
+                        ('[get_stories] {} end of stories'.format(account)))
                     raise Exception
                 num_of_stories += 1
-                browser.save_screenshot_to_minio(bucket_name='screenshots', prefix='instagram/' + account)
+                browser.save_screenshot_to_minio(bucket_name='screenshots',
+                                                 prefix='instagram/' + account)
                 Sleeper.seconds('watch the story for a bit', 1)
-                browser.save_screenshot_to_minio(bucket_name='screenshots', prefix='instagram/' + account)
+                browser.save_screenshot_to_minio(bucket_name='screenshots',
+                                                 prefix='instagram/' + account)
             except:
                 # TODO: disable browser proxy when done
                 log.debug('[get_stories] done: {}'.format(account))
@@ -153,22 +163,13 @@ class InstagramClientBrowser:
         """Authenticate to Instagram
         """
 
-        # TODO: create capture proxy
-        #       send traffic to /api
-
-        browser = self.browser
-        actions = ActionChains(browser.browser)
-
-        browser.set_resolution(1024, 1024)
-        browser.get(self.urls.login_page)
-
         log.debug('[authenticate] {}'.format(self.urls.login_page))
+        self.browser.get(self.urls.login_page)
 
         Sleeper.seconds('instagram get page', 1)
 
-        actions.send_keys(Keys.TAB)
-        actions.send_keys(self.login)
-        actions.perform()
+        self.browser.action_type(self.browser.keys.TAB)
+        self.browser.action_type(self.login)
 
         Sleeper.seconds('instagram get page', 1)
 
@@ -179,43 +180,44 @@ class InstagramClientBrowser:
         found_pass = False
         for xpath in login_pass_xpaths:
             try:
-                login_pass = browser.browser.find_element_by_xpath(xpath)
+                self.browser.find_element(xpath)
+                login_pass = xpath
                 found_pass = True
+                log.debug(f'password field: {xpath}')
                 break
             except:
-                pass
+                log.debug(f'password field is not: {xpath}')
 
         Sleeper.seconds('instagram get page', 2)
 
         found_btn = False
         for xpath in login_btn_xpaths:
             try:
-                login_btn = browser.browser.find_element_by_xpath(xpath)
+                self.browser.find_element(xpath)
+                login_btn = xpath
                 found_btn = True
+                log.debug(f'password button: {xpath}')
                 break
             except:
-                pass
+                log.debug(f'password button is not: {xpath}')
 
         if found_pass and found_btn:
             pass
         else:
-            log.error('[browser] Authentication failed')
-            log.debug('[browser] Found password field: {} Found login button: {}'.format(browser.browser.name,
-                                                                                         found_pass,
-                                                                                         found_btn))
-            Sleeper.minute("instagram can't authenticate")
+            log.error("Authentication failed. "
+                      "Please check the login field and button")
             return False
 
-        login_pass.send_keys(self.password)
-        login_btn.click()
+        self.browser.action_click(login_pass)
+        self.browser.action_type(self.password)
+        self.browser.action_click(login_btn)
 
         Sleeper.seconds('wait for instagram to log in', 5)
 
         log.debug(
-            '[authenticated browser] [{}] {} session: {}'.format(browser.browser.name, browser.browser.title,
-                                                                 browser.browser.session_id))
-
-        browser.save_screenshot_to_minio(bucket_name='screenshots', prefix='instagram/')
+            f'[authenticated browser] [{self.browser.browser.name}] '
+            f'{self.browser.browser.title} '
+            f'session: {self.browser.browser.session_id}')
 
         return self.browser
 
@@ -300,9 +302,10 @@ def authenticate(username, password, minio_client=None, retries=None):
             log.error('[browser] Authentication failed')
 
             log.debug(
-                '[browser] Found password field: {} Found login button: {}'.format(browser.browser.name,
-                                                                                   found_pass,
-                                                                                   found_btn))
+                '[browser] Found password field: {} Found login button: {}'.format(
+                    browser.browser.name,
+                    found_pass,
+                    found_btn))
 
             Sleeper.minute("instagram can't authenticate")
 
@@ -312,9 +315,11 @@ def authenticate(username, password, minio_client=None, retries=None):
     Sleeper.seconds('wait for instagram to log in', 5)
 
     log.debug(
-        '[authenticated browser] [{}] {} session: {}'.format(browser.browser.name, browser.browser.title,
-                                                             browser.browser.session_id))
-    browser.save_screenshot_to_minio(bucket_name='screenshots', prefix='instagram/')
+        '[authenticated browser] [{}] {} session: {}'.format(
+            browser.browser.name, browser.browser.title,
+            browser.browser.session_id))
+    browser.save_screenshot_to_minio(bucket_name='screenshots',
+                                     prefix='instagram/')
 
     return browser
 
@@ -331,7 +336,8 @@ def get_stories(authenticated_browser, account):
     log.debug('[get_stories] {}'.format(story))
 
     browser.get(story)
-    browser.save_screenshot_to_minio(bucket_name='screenshots', prefix='instagram/' + account)
+    browser.save_screenshot_to_minio(bucket_name='screenshots',
+                                     prefix='instagram/' + account)
 
     if 'Page Not Found' in browser.browser.title:
         log.debug('[get_stories] no stories for {}'.format(account))
@@ -348,9 +354,11 @@ def get_stories(authenticated_browser, account):
                 log.debug(('[get_stories] {} end of stories'.format(account)))
                 raise Exception
             num_of_stories += 1
-            browser.save_screenshot_to_minio(bucket_name='screenshots', prefix='instagram/' + account)
+            browser.save_screenshot_to_minio(bucket_name='screenshots',
+                                             prefix='instagram/' + account)
             Sleeper.seconds('watch the story for a bit', 1)
-            browser.save_screenshot_to_minio(bucket_name='screenshots', prefix='instagram/' + account)
+            browser.save_screenshot_to_minio(bucket_name='screenshots',
+                                             prefix='instagram/' + account)
         except:
             # TODO: disable browser proxy when done
             log.debug('[get_stories] done: {}'.format(account))
@@ -395,7 +403,8 @@ def get_page(authenticated_browser, account):
 
 def runrun(browser, account):
     log.debug(
-        '[runrun] [{}] {} session: {}'.format(browser.browser.name, browser.browser.title,
+        '[runrun] [{}] {} session: {}'.format(browser.browser.name,
+                                              browser.browser.title,
                                               browser.browser.session_id))
 
     num_of_stories = get_stories(browser, account)
