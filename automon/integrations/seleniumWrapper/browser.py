@@ -3,11 +3,13 @@ import tempfile
 import functools
 import selenium
 
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from urllib.parse import urlparse
 
 from automon.log import Logging
 from automon.helpers.dates import Dates
+from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
 
 from .config import SeleniumConfig
@@ -37,6 +39,10 @@ class SeleniumBrowser(object):
     @property
     def browser(self):
         return self.driver
+
+    @property
+    def by(self) -> By:
+        return selenium.webdriver.common.by.By
 
     @property
     def keys(self):
@@ -137,6 +143,16 @@ class SeleniumBrowser(object):
         return self.browser.get_screenshot_as_base64()
 
     @_isRunning
+    def isRunning(self):
+        return True
+
+    @_isRunning
+    def quit(self):
+        self.browser.close()
+        self.browser.quit()
+        self.browser.stop_client()
+
+    @_isRunning
     def save_screenshot(
             self,
             filename: str = None,
@@ -159,10 +175,6 @@ class SeleniumBrowser(object):
         log.info(f'Saving screenshot to: {save}')
 
         return self.browser.save_screenshot(save)
-
-    @_isRunning
-    def isRunning(self):
-        return True
 
     def set_browser(self, browser: BrowserType):
         self.set_driver(driver=browser)
@@ -221,8 +233,35 @@ class SeleniumBrowser(object):
         self.window_size = width, height
         self.browser.set_window_size(width, height)
 
-    @_isRunning
-    def quit(self):
-        self.browser.close()
-        self.browser.quit()
-        self.browser.stop_client()
+    def wait_for_generic(self, value: str, by: By = By.XPATH):
+        while True:
+            try:
+                self.browser.find_element(by=by, value=value)
+                break
+            except Exception as error:
+                log.error(f'waiting for {by}: {value}, {error}',
+                          enable_traceback=False)
+                Sleeper.seconds(f'wait_for_xpath', 1)
+        return True
+
+    def wait_for_element(self, element: str) -> bool:
+        while True:
+            try:
+                self.browser.find_element(by=self.by.ID, value=element)
+                break
+            except Exception as error:
+                log.error(f'waiting for element: {element}, {error}',
+                          enable_traceback=False)
+                Sleeper.seconds(f'wait_for_xpath', 1)
+        return True
+
+    def wait_for_xpath(self, xpath: str) -> bool:
+        while True:
+            try:
+                self.browser.find_element(by=self.by.XPATH, value=xpath)
+                break
+            except Exception as error:
+                log.error(f'waiting for xpath: {xpath}, {error}',
+                          enable_traceback=False)
+                Sleeper.seconds(f'wait_for_xpath', 1)
+        return True
