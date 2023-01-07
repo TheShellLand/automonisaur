@@ -25,12 +25,15 @@ class InstagramBrowserClient:
     def __init__(self,
                  login: str = None,
                  password: str = None,
-                 config: InstagramConfig = None):
+                 config: InstagramConfig = None,
+                 headless: bool = True):
         """Instagram Browser Client"""
         self.config = config or InstagramConfig(login=login, password=password)
-        self.login = self.config.login
         self.browser = SeleniumBrowser()
-        self.browser.set_browser(self.browser.type.chrome_headless)
+        self.browser.set_browser(self.browser.type.chrome)
+
+        if headless:
+            self.browser.set_browser(self.browser.type.chrome_headless)
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -43,6 +46,10 @@ class InstagramBrowserClient:
             return False
 
         return wrapped
+
+    @property
+    def login(self) -> str:
+        return self.config.login
 
     @property
     def urls(self):
