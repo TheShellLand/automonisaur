@@ -8,7 +8,7 @@ browser.set_resolution(device_type='web-large')
 
 
 class SeleniumClientTest(unittest.TestCase):
-    if browser.isRunning():
+    if browser.is_running():
         def test(self):
             while True:
 

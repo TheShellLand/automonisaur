@@ -7,7 +7,7 @@ browser.set_driver(browser.type.chrome)
 
 
 class SeleniumClientTest(unittest.TestCase):
-    if browser.isRunning():
+    if browser.is_running():
         def test(self):
             self.assertFalse(browser.get('http://555.555.555.555'))
             if browser.get('http://1.1.1.1'):

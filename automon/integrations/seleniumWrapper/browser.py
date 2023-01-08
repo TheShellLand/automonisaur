@@ -26,7 +26,6 @@ class SeleniumBrowser(object):
         """A selenium wrapper"""
 
         self.config = config or SeleniumConfig()
-        self.type = self._browser_type = BrowserType(self.config)
         self.driver = 'not set' or self.type.chrome_headless
         self.window_size = ''
 
@@ -37,6 +36,10 @@ class SeleniumBrowser(object):
         if self.url:
             return f'{self.browser.name} {self.status} {self.url} {self.window_size}'
         return f'{self.browser}'
+
+    @property
+    def type(self):
+        return BrowserType(self.config)
 
     @property
     def browser(self):
@@ -58,7 +61,7 @@ class SeleniumBrowser(object):
         """Gets the log for a given log type"""
         return self.browser.get_log(log_type)
 
-    def _isRunning(func) -> functools.wraps:
+    def _is_running(func) -> functools.wraps:
         @functools.wraps(func)
         def wrapped(self, *args, **kwargs):
             if self.browser != 'not set':
@@ -85,7 +88,7 @@ class SeleniumBrowser(object):
 
         return f'{hostname_}_{title_}_{timestamp}.png'
 
-    @_isRunning
+    @_is_running
     def action_click(self, xpath: str) -> str or False:
         """perform mouse command"""
         try:
@@ -97,27 +100,31 @@ class SeleniumBrowser(object):
             log.error(f'failed to click: {xpath}, {e}', enable_traceback=False)
         return False
 
-    @_isRunning
-    def action_type(self, key: str or Keys):
+    @_is_running
+    def action_type(self, key: str or Keys, secret: bool = False):
         """perform keyboard command"""
         try:
             actions = selenium.webdriver.common.action_chains.ActionChains(
                 self.browser)
             actions.send_keys(key)
             actions.perform()
+
+            if secret:
+                key = f'*' * len(key)
+
             log.debug(f'type: {key}')
             return True
         except Exception as e:
             log.error(f'failed to type: {key}, {e}', enable_traceback=False)
         return False
 
-    @_isRunning
+    @_is_running
     def close(self):
         """close browser"""
         log.info(f'Browser closed')
         self.browser.close()
 
-    @_isRunning
+    @_is_running
     def find_element(
             self,
             value: str,
@@ -126,7 +133,7 @@ class SeleniumBrowser(object):
         """find element"""
         return self.browser.find_element(value=value, by=by, **kwargs)
 
-    @_isRunning
+    @_is_running
     def get(self, url: str, **kwargs) -> bool:
         """get url"""
         try:
@@ -141,27 +148,27 @@ class SeleniumBrowser(object):
 
         return False
 
-    @_isRunning
+    @_is_running
     def get_page(self, *args, **kwargs):
         """alias to get"""
         return self.get(*args, **kwargs)
 
-    @_isRunning
+    @_is_running
     def get_screenshot_as_png(self, **kwargs):
         """screenshot as png"""
         return self.browser.get_screenshot_as_png(**kwargs)
 
-    @_isRunning
+    @_is_running
     def get_screenshot_as_base64(self, **kwargs):
         """screenshot as base64"""
         return self.browser.get_screenshot_as_base64(**kwargs)
 
-    @_isRunning
-    def isRunning(self) -> True:
+    @_is_running
+    def is_running(self) -> True:
         """browser is running"""
         return True
 
-    @_isRunning
+    @_is_running
     def quit(self) -> bool:
         """gracefully quit browser"""
         try:
@@ -173,7 +180,7 @@ class SeleniumBrowser(object):
             return False
         return True
 
-    @_isRunning
+    @_is_running
     def save_screenshot(
             self,
             filename: str = None,
@@ -209,7 +216,7 @@ class SeleniumBrowser(object):
             self.driver = driver
         return True
 
-    @_isRunning
+    @_is_running
     def set_resolution(self, width=1920, height=1080, device_type=None) -> bool:
         """set browser resolution"""
 
@@ -295,7 +302,7 @@ class SeleniumBrowser(object):
             except Exception as error:
                 log.error(f'waiting for {by}: {value}, {error}',
                           enable_traceback=False)
-                Sleeper.seconds(f'wait for', round(retry/2))
+                Sleeper.seconds(f'wait for', round(retry / 2))
 
             retry += 1
 
