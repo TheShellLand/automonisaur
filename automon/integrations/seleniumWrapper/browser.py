@@ -115,8 +115,13 @@ class SeleniumBrowser(object):
         self.browser.close()
 
     @_isRunning
-    def find_element(self, xpath: str, **kwargs):
-        return self.browser.find_element(xpath, **kwargs)
+    def find_element(
+            self,
+            value: str,
+            by: By = By.ID,
+            **kwargs):
+        """find element"""
+        return self.browser.find_element(value=value, by=by, **kwargs)
 
     @_isRunning
     def get(self, url: str) -> bool:
