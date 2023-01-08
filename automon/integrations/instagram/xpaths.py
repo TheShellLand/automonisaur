@@ -12,23 +12,25 @@ class XPaths(object):
         return '//*[@id="loginForm"]/div/div[2]/div/label/input'
 
     @property
-    def login_button(self):
+    def login_btn(self):
         return '//*[@id="loginForm"]/div/div[3]/button'
 
     @property
-    def login_pass_xpaths(self):
-        return [
-            '//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[3]/div/label/input',
-            '//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[4]/div/label/input'
-        ]
+    def profile_picture(self):
+        return '/html/body/div[2]/div/div/div/div[1]/div/div/div/div[1]/section/nav/div[2]/div/div/div[3]/div/div[6]'
 
     @property
-    def login_btn_xpaths(self):
-        return [
-            '//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[4]/button',
-            '//*[@id="react-root"]/section/main/div/article/div/div[1]/div/form/div[6]/button'
-        ]
+    def save_info(self):
+        return '/html/body/div[2]/div/div/div/div[1]/div/div/div/div[1]/section/main/div/div/div/section/div/button'
 
     @property
-    def save_your_login_info(self):
-        return '//*[@id="react-root"]/section/main/div/div/div/section/div/button'
+    def save_info_not_now(self):
+        return '/html/body/div[2]/div/div/div/div[1]/div/div/div/div[1]/section/main/div/div/div/div/button'
+
+    @property
+    def turn_on_notifications(self):
+        return '/html/body/div[2]/div/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/button[1]'
+
+    @property
+    def turn_on_notifications_not_now(self):
+        return '/html/body/div[2]/div/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/button[2]'
