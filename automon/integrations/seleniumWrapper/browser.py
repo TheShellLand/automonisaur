@@ -23,6 +23,8 @@ class SeleniumBrowser(object):
     type: BrowserType
 
     def __init__(self, config: SeleniumConfig = None):
+        """A selenium wrapper"""
+
         self.config = config or SeleniumConfig()
         self.type = self._browser_type = BrowserType(self.config)
         self.driver = 'not set' or self.type.chrome_headless
@@ -38,21 +40,25 @@ class SeleniumBrowser(object):
 
     @property
     def browser(self):
+        """alias to selenium driver"""
         return self.driver
 
     @property
     def by(self) -> By:
-        return selenium.webdriver.common.by.By
+        """Set of supported locator strategies"""
+        return selenium.webdriver.common.by.By()
 
     @property
     def keys(self):
-        return selenium.webdriver.common.keys.Keys()
+        """Set of special keys codes"""
+        return selenium.webdriver.common.keys.Keys
 
     @property
     def get_log(self, log_type: str = 'browser') -> list:
+        """Gets the log for a given log type"""
         return self.browser.get_log(log_type)
 
-    def _isRunning(func):
+    def _isRunning(func) -> functools.wraps:
         @functools.wraps(func)
         def wrapped(self, *args, **kwargs):
             if self.browser != 'not set':
@@ -63,12 +69,8 @@ class SeleniumBrowser(object):
         return wrapped
 
     def _screenshot_name(self, prefix=None):
-        """Generate a unique filename
+        """Generate a unique filename"""
 
-        :param browser:
-        :param prefix: prefix filename with a string
-        :return:
-        """
         title = self.browser.title
         url = self.browser.current_url
         hostname = urlparse(url).hostname
@@ -99,11 +101,11 @@ class SeleniumBrowser(object):
     def action_type(self, key: str or Keys):
         """perform keyboard command"""
         try:
-            log.debug(f'type: {key}')
             actions = selenium.webdriver.common.action_chains.ActionChains(
                 self.browser)
             actions.send_keys(key)
             actions.perform()
+            log.debug(f'type: {key}')
             return True
         except Exception as e:
             log.error(f'failed to type: {key}, {e}', enable_traceback=False)
@@ -111,6 +113,7 @@ class SeleniumBrowser(object):
 
     @_isRunning
     def close(self):
+        """close browser"""
         log.info(f'Browser closed')
         self.browser.close()
 
@@ -124,11 +127,13 @@ class SeleniumBrowser(object):
         return self.browser.find_element(value=value, by=by, **kwargs)
 
     @_isRunning
-    def get(self, url: str) -> bool:
+    def get(self, url: str, **kwargs) -> bool:
+        """get url"""
         try:
             self.url = url
-            self.browser.get(url)
+            self.browser.get(url, **kwargs)
             self.status = 'OK'
+            log.debug(f'GET {url}, {kwargs}')
             return True
         except Exception as e:
             self.status = 'ERROR'
@@ -138,32 +143,44 @@ class SeleniumBrowser(object):
 
     @_isRunning
     def get_page(self, *args, **kwargs):
+        """alias to get"""
         return self.get(*args, **kwargs)
 
     @_isRunning
-    def get_screenshot_as_png(self):
-        return self.browser.get_screenshot_as_png()
+    def get_screenshot_as_png(self, **kwargs):
+        """screenshot as png"""
+        return self.browser.get_screenshot_as_png(**kwargs)
 
     @_isRunning
-    def get_screenshot_as_base64(self):
-        return self.browser.get_screenshot_as_base64()
+    def get_screenshot_as_base64(self, **kwargs):
+        """screenshot as base64"""
+        return self.browser.get_screenshot_as_base64(**kwargs)
 
     @_isRunning
-    def isRunning(self):
+    def isRunning(self) -> True:
+        """browser is running"""
         return True
 
     @_isRunning
-    def quit(self):
-        self.browser.close()
-        self.browser.quit()
-        self.browser.stop_client()
+    def quit(self) -> bool:
+        """gracefully quit browser"""
+        try:
+            self.browser.close()
+            self.browser.quit()
+            self.browser.stop_client()
+        except Exception as error:
+            log.error(f'failed to quit browser. {error}')
+            return False
+        return True
 
     @_isRunning
     def save_screenshot(
             self,
             filename: str = None,
             prefix: str = None,
-            folder: str = None):
+            folder: str = None,
+            **kwargs) -> bool:
+        """save screenshot to file"""
 
         if not filename:
             filename = self._screenshot_name(prefix)
@@ -180,17 +197,21 @@ class SeleniumBrowser(object):
 
         log.info(f'Saving screenshot to: {save}')
 
-        return self.browser.save_screenshot(save)
+        return self.browser.save_screenshot(save, **kwargs)
 
-    def set_browser(self, browser: BrowserType):
-        self.set_driver(driver=browser)
+    def set_browser(self, browser: BrowserType) -> True:
+        """set browser driver"""
+        return self.set_driver(driver=browser)
 
-    def set_driver(self, driver: BrowserType):
+    def set_driver(self, driver: BrowserType) -> True:
+        """set driver"""
         if driver:
             self.driver = driver
+        return True
 
     @_isRunning
-    def set_resolution(self, width=1920, height=1080, device_type=None):
+    def set_resolution(self, width=1920, height=1080, device_type=None) -> bool:
+        """set browser resolution"""
 
         if device_type == 'pixel3':
             width = 1080
@@ -237,7 +258,13 @@ class SeleniumBrowser(object):
             height = 1080
 
         self.window_size = width, height
-        self.browser.set_window_size(width, height)
+
+        try:
+            self.browser.set_window_size(width, height)
+        except Exception as error:
+            log.error(f'failed to set resolution. {error}')
+            return False
+        return True
 
     def wait_for(
             self,
