@@ -239,35 +239,48 @@ class SeleniumBrowser(object):
         self.window_size = width, height
         self.browser.set_window_size(width, height)
 
-    def wait_for_generic(self, value: str, by: By = By.XPATH):
+    def wait_for(
+            self,
+            value: str or list,
+            by: By = By.XPATH,
+            retries: int = 30,
+            **kwargs) -> str or False:
+        """wait for something"""
+        retry = 1
         while True:
             try:
-                self.browser.find_element(by=by, value=value)
-                break
+                if isinstance(value, list):
+                    for each in value:
+                        self.find_element(
+                            by=by,
+                            value=each,
+                            **kwargs)
+                        value = each
+                        log.debug(f'found {by}: {value}')
+                        return value
+                else:
+                    self.find_element(
+                        by=by,
+                        value=value,
+                        **kwargs)
+                    log.debug(f'found {by}: {value}')
+                    return value
             except Exception as error:
                 log.error(f'waiting for {by}: {value}, {error}',
                           enable_traceback=False)
-                Sleeper.seconds(f'wait_for_xpath', 1)
-        return True
+                Sleeper.seconds(f'wait for', round(retry/2))
 
-    def wait_for_element(self, element: str) -> bool:
-        while True:
-            try:
-                self.browser.find_element(by=self.by.ID, value=element)
-                break
-            except Exception as error:
-                log.error(f'waiting for element: {element}, {error}',
-                          enable_traceback=False)
-                Sleeper.seconds(f'wait_for_xpath', 1)
-        return True
+            retry += 1
 
-    def wait_for_xpath(self, xpath: str) -> bool:
-        while True:
-            try:
-                self.browser.find_element(by=self.by.XPATH, value=xpath)
+            if retry > retries:
+                log.error(f'max wait reached', enable_traceback=False)
                 break
-            except Exception as error:
-                log.error(f'waiting for xpath: {xpath}, {error}',
-                          enable_traceback=False)
-                Sleeper.seconds(f'wait_for_xpath', 1)
-        return True
+        return False
+
+    def wait_for_element(self, element: str or list, **kwargs) -> str or False:
+        """wait for an element"""
+        return self.wait_for(value=element, by=self.by.ID, **kwargs)
+
+    def wait_for_xpath(self, xpath: str or list, **kwargs) -> str or False:
+        """wait for an xpath"""
+        return self.wait_for(value=xpath, by=self.by.XPATH, **kwargs)
