@@ -13,22 +13,30 @@ class Sleeper:
         """Sleep for this many seconds"""
 
         sleep = seconds
-        log.info(f'[{Sleeper.seconds.__name__}] [{caller}] sleeping for {sleep} seconds')
+        if sleep < 2:
+            log.info(f'[{Sleeper.seconds.__name__}] '
+                     f'[{caller}] sleeping for {sleep} second')
+        else:
+            log.info(f'[{Sleeper.seconds.__name__}] '
+                     f'[{caller}] sleeping for {sleep} seconds')
         return time.sleep(sleep)
 
     @staticmethod
     def minute(caller: object or str, sleep: int = 60) -> time.sleep:
         """Sleep for a minute"""
 
-        log.info(f'[{Sleeper.minute.__name__}] [{caller}] sleeping for {sleep} seconds')
+        log.info(f'[{Sleeper.minute.__name__}] '
+                 f'[{caller}] sleeping for {sleep} seconds')
         return time.sleep(sleep)
 
     @staticmethod
     def within_a_minute(caller, sleep: int = None):
         """Sleep for a random minute"""
 
-        sleep = sleep if isinstance(sleep, int) else random.choice(range(1, 1 * 60))
-        log.info(f'[{Sleeper.within_a_minute.__name__}] [{caller}] sleeping for {sleep} seconds')
+        sleep = sleep if isinstance(sleep, int) else \
+            random.choice(range(1, 1 * 60))
+        log.info(f'[{Sleeper.within_a_minute.__name__}] '
+                 f'[{caller}] sleeping for {sleep} seconds')
         return time.sleep(sleep)
 
     @staticmethod
@@ -36,7 +44,8 @@ class Sleeper:
         """Sleep for this many minutes"""
 
         sleep = minutes * 60
-        log.info(f'[{Sleeper.minutes.__name__}] [{caller}] sleeping for {sleep} minutes')
+        log.info(f'[{Sleeper.minutes.__name__}] '
+                 f'[{caller}] sleeping for {sleep} minutes')
         return time.sleep(sleep)
 
     @staticmethod
@@ -45,7 +54,8 @@ class Sleeper:
 
         sleep = hour if not hour else random.choice(
             range(1, hour * 60 * 60))
-        log.info(f'[{Sleeper.hour.__name__}] [{caller}] sleeping for {sleep} seconds')
+        log.info(f'[{Sleeper.hour.__name__}] '
+                 f'[{caller}] sleeping for {sleep} seconds')
         return time.sleep(sleep)
 
     @staticmethod
@@ -53,7 +63,8 @@ class Sleeper:
         """Sleep for this many hours"""
 
         sleep = hours * 60 * 60
-        log.info(f'[{Sleeper.hours.__name__}] [{caller}] sleeping for {hours} hours')
+        log.info(f'[{Sleeper.hours.__name__}] '
+                 f'[{caller}] sleeping for {hours} hours')
         return time.sleep(sleep)
 
     @staticmethod
@@ -62,7 +73,8 @@ class Sleeper:
 
         sleep = hours if not hours else random.choice(
             range(1, hours * 60 * 60))
-        log.info(f'[{Sleeper.day.__name__}] [{caller}] sleeping for {sleep} seconds')
+        log.info(f'[{Sleeper.day.__name__}] '
+                 f'[{caller}] sleeping for {sleep} seconds')
         return time.sleep(sleep)
 
     @staticmethod
@@ -70,7 +82,8 @@ class Sleeper:
         """Sleep for one day"""
 
         sleep = hours if not hours else hours * 60 * 60
-        log.info(f'[{Sleeper.daily.__name__}] [{caller}] sleeping for {sleep} seconds')
+        log.info(f'[{Sleeper.daily.__name__}] '
+                 f'[{caller}] sleeping for {sleep} seconds')
         return time.sleep(sleep)
 
     @staticmethod
@@ -79,5 +92,6 @@ class Sleeper:
         """
         sleep = seconds if not seconds else random.choice(
             range(1, seconds))
-        log.info(f'[{Sleeper.time_range.__name__}] [{caller}] sleeping for {sleep} seconds')
+        log.info(f'[{Sleeper.time_range.__name__}] '
+                 f'[{caller}] sleeping for {sleep} seconds')
         return time.sleep(sleep)
