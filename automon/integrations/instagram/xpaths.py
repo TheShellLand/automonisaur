@@ -13,7 +13,7 @@ class XPaths(object):
 
     @property
     def login_btn(self):
-        return '/html/body/div[2]/div/div/div/div[1]/div/div/div/div[1]/section/main/div/div/div[1]/div[2]/form/div/div[4]/button'
+        return '/html/body/div[2]/div/div/div/div[1]/div/div/div/div[1]/section/main/div/div/div[1]/div[2]/form/div/div[3]/button'
 
     @property
     def profile_picture(self):
