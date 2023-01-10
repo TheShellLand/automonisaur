@@ -11,7 +11,8 @@ class InstagramConfig(object):
         self.login = login or environ('INSTAGRAM_LOGIN', '')
         self.password = password or environ('INSTAGRAM_PASSWORD', '')
 
-    def isConfigured(self):
+    @property
+    def is_configured(self):
         if self.login and self.password:
             log.info(f'config ready')
             return True
@@ -19,6 +20,6 @@ class InstagramConfig(object):
         return False
 
     def __repr__(self):
-        if self.isConfigured():
+        if self.is_configured:
             return f'ready'
         return f'not ready'

@@ -7,8 +7,8 @@ config = InstagramConfig()
 
 class InstagramConfigTest(unittest.TestCase):
     def test_config(self):
-        if config.login and config.password:
-            self.assertTrue(config.isConfigured())
+        if config.is_configured:
+            self.assertTrue(config.is_configured)
 
 
 if __name__ == '__main__':
