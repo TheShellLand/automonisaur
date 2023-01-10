@@ -2,13 +2,14 @@ import unittest
 
 from automon.integrations.instagram.client_browser import InstagramBrowserClient
 
-c = InstagramBrowserClient()
+c = InstagramBrowserClient(headless=False)
 
 
 class InstagramClientTest(unittest.TestCase):
     if c.authenticate():
         def test_authenticate(self):
-            self.assertTrue(c.authenticate())
+            self.assertTrue(c.is_authenticated())
+            c.browser.quit()
 
 
 if __name__ == '__main__':
