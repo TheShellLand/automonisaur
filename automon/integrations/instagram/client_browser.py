@@ -83,7 +83,7 @@ class InstagramBrowserClient:
 
         while True:
             try:
-                next_story(browser)
+                self._next_story(browser)
 
                 title = browser.browser.title
                 if title == 'Instagram':
