@@ -159,73 +159,44 @@ class InstagramBrowserClient:
         #     Sleeper.hour('instagram')
         #     self.run_stories()
 
-    @_isRunning
+    @_is_running
     def authenticate(self):
         """Authenticate to Instagram
         """
 
-        log.debug('[authenticate] {}'.format(self.urls.login_page))
         self.browser.get(self.urls.login_page)
 
-        Sleeper.seconds('instagram get page', 1)
-
-        self.browser.action_type(self.browser.keys.TAB)
+        # user
+        self.browser.wait_for_xpath(self.xpaths.login_user)
+        self.browser.action_click(self.xpaths.login_user, 'user')
         self.browser.action_type(self.login)
 
-        Sleeper.seconds('instagram get page', 1)
+        # password
+        login_pass = self.browser.wait_for_xpath(self.xpaths.login_pass)
+        self.browser.action_click(login_pass, 'login')
+        self.browser.action_type(self.config.password, secret=True)
 
-        # the password field is sometimes div[3] and div[4]
-        login_pass_xpaths = self.xpaths.login_pass_xpaths
-        login_btn_xpaths = self.xpaths.login_btn_xpaths
+        # login
+        login_btn = self.browser.wait_for_xpath(self.xpaths.login_btn)
+        self.browser.action_click(login_btn, 'login button')
 
-        found_pass = False
-        for xpath in login_pass_xpaths:
-            try:
-                self.browser.find_element(xpath)
-                login_pass = xpath
-                found_pass = True
-                log.debug(f'password field: {xpath}')
-                break
-            except:
-                log.debug(f'password field is not: {xpath}')
+        # check for "save your login info" dialogue
+        not_now = self.browser.wait_for_xpath(self.xpaths.save_info_not_now)
+        self.browser.action_click(not_now, 'dont save login info')
 
-        Sleeper.seconds('instagram get page', 2)
-
-        found_btn = False
-        for xpath in login_btn_xpaths:
-            try:
-                self.browser.find_element(xpath)
-                login_btn = xpath
-                found_btn = True
-                log.debug(f'password button: {xpath}')
-                break
-            except:
-                log.debug(f'password button is not: {xpath}')
-
-        if found_pass and found_btn:
-            pass
-        else:
-            log.error("Authentication failed. "
-                      "Please check the login field and button")
-            return False
-
-        self.browser.action_click(login_pass)
-        self.browser.action_type(self.password)
-        self.browser.action_click(login_btn)
-
-        Sleeper.seconds('wait for instagram to log in', 5)
+        # check for "notifications" dialogue
+        notifications_not_now = self.browser.wait_for_xpath(self.xpaths.turn_on_notifications_not_now)
+        self.browser.action_click(notifications_not_now, 'no notifications')
 
         log.debug(
             f'[authenticated browser] [{self.browser.browser.name}] '
             f'{self.browser.browser.title} '
             f'session: {self.browser.browser.session_id}')
 
-        return self.browser
+        if self.browser.wait_for_xpath(self.xpaths.profile_picture):
+            return True
 
-    @_isAuthenticated
-    def isAuthenticated(self):
-        return
-
+        return False
 
 def authenticate(username, password, minio_client=None, retries=None):
     """Authenticates through browser and returns browser driver
