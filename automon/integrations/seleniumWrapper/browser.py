@@ -134,6 +134,11 @@ class SeleniumBrowser(object):
         return self.browser.find_element(value=value, by=by, **kwargs)
 
     @_is_running
+    def find_xpath(self, value: str, by: By = By.XPATH, **kwargs):
+        """find xpath"""
+        return self.find_element(value=value, by=by, **kwargs)
+
+    @_is_running
     def get(self, url: str, **kwargs) -> bool:
         """get url"""
         try:
