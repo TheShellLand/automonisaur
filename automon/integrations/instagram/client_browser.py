@@ -47,20 +47,14 @@ class InstagramBrowserClient:
 
         return wrapped
 
-    @property
-    def login(self) -> str:
-        return self.config.login
+    def _is_authenticated(func):
+        @functools.wraps(func)
+        def wrapped(self, *args, **kwargs):
+            if self.browser.find_xpath(self.xpaths.profile_picture):
+                return func(self, *args, **kwargs)
+            return False
 
-    @property
-    def urls(self):
-        return Urls()
-
-    @property
-    def xpaths(self):
-        return XPaths()
-
-    def _isAuthenticated(self):
-        return
+        return wrapped
 
     def _get_page(self, account):
         """ Get page
