@@ -172,7 +172,7 @@ class SeleniumBrowser(object):
         return self.browser.get_screenshot_as_base64(**kwargs)
 
     @_is_running
-    def is_running(self) -> True:
+    def is_running(self) -> bool:
         """browser is running"""
         return True
 
