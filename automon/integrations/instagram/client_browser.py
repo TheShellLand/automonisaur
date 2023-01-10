@@ -203,12 +203,9 @@ class InstagramBrowserClient:
     def is_authenticated(self):
         return True
 
-    :param username: username string
-    :param password: password string
-    :param minio_client: minio client
-    :param retries: not implemented
-    :return: authenticated browser
-    """
+    @_is_running
+    def is_running(self) -> bool:
+        return True
 
     while True:
 
