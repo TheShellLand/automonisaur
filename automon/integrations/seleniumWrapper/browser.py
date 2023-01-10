@@ -89,12 +89,15 @@ class SeleniumBrowser(object):
         return f'{hostname_}_{title_}_{timestamp}.png'
 
     @_is_running
-    def action_click(self, xpath: str) -> str or False:
+    def action_click(self, xpath: str, note: str = None) -> str or False:
         """perform mouse command"""
         try:
             click = self.find_element(value=xpath, by=self.by.XPATH)
             click.click()
-            log.debug(f'click: {xpath}')
+            if note:
+                log.debug(f'click: ({note}) {xpath}')
+            else:
+                log.debug(f'click: {xpath}')
             return click
         except Exception as e:
             log.error(f'failed to click: {xpath}, {e}', enable_traceback=False)
