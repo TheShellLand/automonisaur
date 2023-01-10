@@ -198,8 +198,10 @@ class InstagramBrowserClient:
 
         return False
 
-def authenticate(username, password, minio_client=None, retries=None):
-    """Authenticates through browser and returns browser driver
+    @_is_running
+    @_is_authenticated
+    def is_authenticated(self):
+        return True
 
     :param username: username string
     :param password: password string
