@@ -96,9 +96,9 @@ class InstagramBrowserClient:
                 Sleeper.seconds('watch the story for a bit', 1)
                 browser.save_screenshot_to_minio(bucket_name='screenshots',
                                                  prefix='instagram/' + account)
-            except:
+            except Exception as error:
                 # TODO: disable browser proxy when done
-                log.debug('[get_stories] done: {}'.format(account))
+                log.debug(f'[get_stories] done: {account}, {error}')
                 return num_of_stories
 
     def _next_story(self, authenticated_browser):
@@ -118,8 +118,8 @@ class InstagramBrowserClient:
                 found_btn = True
                 log.debug('[next_story] next story')
                 return button.click()
-            except:
-                pass
+            except Exception as error:
+                log.error(f'{error}', enable_traceback=False)
 
         if not found_btn:
             # no more stories. exit
