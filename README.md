@@ -38,6 +38,7 @@ Github issues and feature requests welcomed.
 - elasticsearch
 - flask
 - google people api
+- instagram
 - logging
 - minio
 - neo4j
