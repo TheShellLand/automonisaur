@@ -38,10 +38,10 @@ class InstagramBrowserClient:
     def __repr__(self):
         return f'{self.__dict__}'
 
-    def _isRunning(func):
+    def _is_running(func):
         @functools.wraps(func)
         def wrapped(self, *args, **kwargs):
-            if self.browser.isRunning():
+            if self.browser.is_running():
                 return func(self, *args, **kwargs)
             return False
 
