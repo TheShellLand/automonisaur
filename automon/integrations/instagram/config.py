@@ -16,7 +16,7 @@ class InstagramConfig(object):
         if self.login and self.password:
             log.info(f'config ready')
             return True
-        log.error(f'missing login and password', enable_traceback=False)
+        log.warn(f'missing login and password')
         return False
 
     def __repr__(self):
