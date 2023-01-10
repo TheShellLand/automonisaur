@@ -38,10 +38,10 @@ class InstagramBrowserClient:
     def _is_running(func):
         @functools.wraps(func)
         def wrapped(self, *args, **kwargs):
-            if self.browser.is_running():
-                return func(self, *args, **kwargs)
-            return False
-
+            if self.config.is_configured:
+                if self.browser.is_running():
+                    return func(self, *args, **kwargs)
+                return False
         return wrapped
 
     def _is_authenticated(func):
