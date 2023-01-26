@@ -10,7 +10,7 @@ class RequestsConfig(object):
     def __init__(self):
         pass
 
-    def isReady(self):
+    def is_ready(self):
         return f'{NotImplemented}'
 
     def __repr__(self):

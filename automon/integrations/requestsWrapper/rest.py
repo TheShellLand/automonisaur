@@ -16,7 +16,7 @@ class BaseRestClient:
         self.requests = RequestsClient()
 
     def isConnected(self):
-        if self.config.isReady:
+        if self.config.is_ready:
             return True
         return False
 
