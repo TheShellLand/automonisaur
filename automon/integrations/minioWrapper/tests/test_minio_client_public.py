@@ -15,12 +15,12 @@ bucket = hashlib.md5(f'{MINIO_ENDPOINT}'.encode()).hexdigest()
 class ClientTest(unittest.TestCase):
 
     def test_list_buckets(self):
-        if client.isConnected():
+        if client.is_connected():
             self.assertTrue(client.list_buckets())
             self.assertEqual(type(client.list_buckets()), list)
 
     def test_get_bucket(self):
-        if client.isConnected():
+        if client.is_connected():
             test = client.make_bucket(bucket)
 
             self.assertTrue(client.get_bucket(test))

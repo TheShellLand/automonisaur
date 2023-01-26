@@ -8,10 +8,10 @@ c = MinioConfig()
 class ConfigTest(unittest.TestCase):
 
     def test_MinioConfig(self):
-        if c.isReady():
-            self.assertTrue(MinioConfig().isReady())
+        if c.is_ready():
+            self.assertTrue(MinioConfig().is_ready())
         else:
-            self.assertFalse(MinioConfig().isReady())
+            self.assertFalse(MinioConfig().is_ready())
 
 
 if __name__ == '__main__':

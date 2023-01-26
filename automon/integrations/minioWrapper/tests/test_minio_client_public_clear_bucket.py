@@ -16,7 +16,7 @@ bucket = hashlib.md5(f'{datetime.datetime.now()}'.encode()).hexdigest()
 class ClientTest(unittest.TestCase):
 
     def test_remove_bucket(self):
-        if c.isConnected():
+        if c.is_connected():
             test = c.make_bucket(bucket)
             c.remove_objects(test)
             self.assertTrue(c.remove_bucket(test))

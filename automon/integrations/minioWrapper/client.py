@@ -48,7 +48,7 @@ class MinioClient(object):
 
         @functools.wraps(func)
         def _wrapper(self, *args, **kwargs):
-            if not self.config.isReady():
+            if not self.config.is_ready():
                 return False
             try:
                 self.client.list_buckets()
@@ -84,7 +84,7 @@ class MinioClient(object):
         return
 
     @_is_connected
-    def isConnected(self):
+    def is_connected(self):
         """Check if MinioClient is connected
         """
         log.info(f'Minio client OK')

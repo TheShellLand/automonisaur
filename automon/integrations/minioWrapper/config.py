@@ -35,7 +35,7 @@ class MinioConfig(object):
         if not self.secret_key:
             log.warn(f'missing MINIO_SECRET_KEY')
 
-    def isReady(self):
+    def is_ready(self):
         if self.endpoint and self.access_key and self.secret_key:
             return True
         return False
