@@ -25,7 +25,7 @@ class SplunkSoarConfig:
     def __repr__(self):
         return f'{self.__dict__}'
 
-    def isReady(self) -> bool:
+    def is_ready(self) -> bool:
         if self.host:
             return True
         log.warn(f'bad config')

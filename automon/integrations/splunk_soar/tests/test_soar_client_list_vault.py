@@ -6,7 +6,7 @@ c = SplunkSoarClient()
 
 
 class TestClient(unittest.TestCase):
-    if c.isConnected():
+    if c.is_connected():
         def test_list_vault_generator(self):
             test = [x for x in c.list_vault_generator(page_size=1, max_pages=1)]
             if test:

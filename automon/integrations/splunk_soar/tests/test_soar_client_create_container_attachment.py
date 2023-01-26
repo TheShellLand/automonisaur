@@ -6,7 +6,7 @@ c = SplunkSoarClient()
 
 
 class TestClient(unittest.TestCase):
-    if c.isConnected():
+    if c.is_connected():
         def test_soar_client_create_container_attachment(self):
             container = c.create_container(label='testing', name='testing')
             container = c.get_container(container_id=container.id)

@@ -6,7 +6,7 @@ c = SplunkSoarClient()
 
 
 class TestClient(unittest.TestCase):
-    if c.isConnected():
+    if c.is_connected():
         def test_create_artifact(self):
             id = c.create_container(label='testing', name='testing').id
             self.assertTrue(c.create_artifact(container_id=id))
@@ -31,7 +31,7 @@ class TestClient(unittest.TestCase):
                 self.assertTrue(c.get_vault(vault_id=vault.id))
 
         def test_isConnected(self):
-            self.assertTrue(c.isConnected())
+            self.assertTrue(c.is_connected())
 
         def test_list_artifact(self):
             self.assertTrue(c.list_artifact())

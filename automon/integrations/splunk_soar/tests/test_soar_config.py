@@ -8,10 +8,10 @@ c = SplunkSoarConfig()
 class TestPhantomConfig(unittest.TestCase):
 
     def test_config(self):
-        if c.isReady():
-            self.assertTrue(c.isReady())
+        if c.is_ready():
+            self.assertTrue(c.is_ready())
         else:
-            self.assertFalse(c.isReady())
+            self.assertFalse(c.is_ready())
 
 
 if __name__ == '__main__':

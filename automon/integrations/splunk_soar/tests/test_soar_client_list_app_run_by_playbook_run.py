@@ -7,7 +7,7 @@ c = SplunkSoarClient()
 
 
 class TestClient(unittest.TestCase):
-    if c.isConnected():
+    if c.is_connected():
         def test_list_app_run_by_playbook_run(self):
             # TODO: create test list_app_run_by_playbook_run
             pass

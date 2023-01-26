@@ -8,7 +8,7 @@ c = SplunkSoarClient()
 class TestClient(unittest.TestCase):
 
     def test_run_playbook(self):
-        if c.isConnected():
+        if c.is_connected():
             container = c.create_container(label='testing', name='testing')
             playbook = ''
             c.run_playbook(
@@ -17,7 +17,7 @@ class TestClient(unittest.TestCase):
             )
 
     def test_cancel_playbook(self):
-        if c.isConnected():
+        if c.is_connected():
             container = c.create_container(label='testing', name='testing')
             playbook = ''
 
