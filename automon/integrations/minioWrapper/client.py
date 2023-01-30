@@ -87,7 +87,7 @@ class MinioClient(object):
     def is_connected(self):
         """Check if MinioClient is connected
         """
-        log.info(f'Minio client OK')
+        log.info(f'Minio client connected')
         return True
 
     @_is_connected
@@ -103,25 +103,27 @@ class MinioClient(object):
     def list_objects(
             self,
             bucket_name: str,
-            folder: str = None,
-            recursive: bool = True, **kwargs) -> [Object]:
+            prefix: str = None,
+            recursive: bool = False,
+            start_after: str = None, **kwargs) -> [Object]:
         """List Minio objects"""
         bucket_name = MinioAssertions.bucket_name(bucket_name)
 
         try:
-            objects = self.client.list_objects(bucket_name, folder, recursive=recursive, **kwargs)
+            objects = self.client.list_objects(bucket_name=bucket_name, prefix=prefix,
+                                               recursive=recursive, start_after=start_after, **kwargs)
             objects = [Object(x) for x in objects]
 
             msg = f'Objects total: {len(objects)} (bucket: "{bucket_name}")'
 
-            if folder:
-                msg += f' Folder: "{folder}"'
+            if prefix:
+                msg += f' Prefix: "{prefix}"'
 
             log.info(msg)
             return objects
 
         except Exception as e:
-            log.error(f'failed to list objects. {e}')
+            log.error(f'failed to list objects. {e}', enable_traceback=False)
 
         return
 
