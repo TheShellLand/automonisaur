@@ -8,6 +8,13 @@ log = Logging(name='MinioConfig', level=Logging.ERROR)
 
 
 class MinioConfig(object):
+    endpoint: str
+    access_key: str
+    secret_key: str
+    session_token: str
+    secure: bool
+    region: str
+    http_client: urllib3.PoolManager
 
     def __init__(self, endpoint: str = None,
                  access_key: str = None,
@@ -35,6 +42,7 @@ class MinioConfig(object):
         if not self.secret_key:
             log.warn(f'missing MINIO_SECRET_KEY')
 
+    @property
     def is_ready(self):
         if self.endpoint and self.access_key and self.secret_key:
             return True

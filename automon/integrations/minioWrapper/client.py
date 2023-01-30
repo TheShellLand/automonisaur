@@ -48,7 +48,7 @@ class MinioClient(object):
 
         @functools.wraps(func)
         def _wrapper(self, *args, **kwargs):
-            if not self.config.is_ready():
+            if not self.config.is_ready:
                 return False
             try:
                 self.client.list_buckets()
