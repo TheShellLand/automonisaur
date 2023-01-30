@@ -73,7 +73,7 @@ class SplunkSoarClient:
 
         @functools.wraps(func)
         def wrapper(self, *args, **kwargs):
-            if self.config.is_ready():
+            if self.config.is_ready:
                 if self._get(Urls.container(page_size=1)):
                     return func(self, *args, **kwargs)
             return False
@@ -315,7 +315,7 @@ class SplunkSoarClient:
 
     def is_connected(self) -> bool:
         """check if client can connect"""
-        if self.config.is_ready():
+        if self.config.is_ready:
             if self._get(Urls.container(page_size=1)):
                 log.info(f'client connected '
                          f'{self.config.host} '

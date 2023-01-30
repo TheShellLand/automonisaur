@@ -25,6 +25,7 @@ class SplunkSoarConfig:
     def __repr__(self):
         return f'{self.__dict__}'
 
+    @property
     def is_ready(self) -> bool:
         if self.host:
             return True
