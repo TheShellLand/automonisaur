@@ -18,8 +18,8 @@ class ClientTest(unittest.TestCase):
     def test_remove_bucket(self):
         if c.is_connected():
             test = c.make_bucket(bucket)
-            c.remove_objects(test)
-            self.assertTrue(c.remove_bucket(test))
+            c.remove_objects(test.name)
+            self.assertTrue(c.remove_bucket(test.name))
 
 
 if __name__ == '__main__':
