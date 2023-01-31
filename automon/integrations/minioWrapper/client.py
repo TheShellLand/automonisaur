@@ -16,6 +16,10 @@ log = Logging(name='MinioClient', level=Logging.DEBUG)
 
 
 class MinioClient(object):
+    endpoint: str
+    access_key: str
+    secret_key: str
+    config: MinioConfig
 
     def __init__(self,
                  endpoint: str = None,
@@ -122,10 +126,10 @@ class MinioClient(object):
             log.info(msg)
             return objects
 
-        except Exception as e:
-            log.error(f'failed to list objects. {e}', enable_traceback=False)
+        except Exception as error:
+            log.error(f'failed to list objects. {error}', enable_traceback=False)
 
-        return
+        return []
 
     @_is_connected
     def list_objects_generator(
