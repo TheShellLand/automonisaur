@@ -45,7 +45,7 @@ class MinioClient(object):
         return client
 
     def _is_connected(func):
-        """Decorator that checks if MinioClient is connected
+        """Decorator that checks if MinioClient can list buckets
         """
 
         @functools.wraps(func)
@@ -72,16 +72,15 @@ class MinioClient(object):
         return self.client.get_object(bucket_name, file.object_name)
 
     @_is_connected
-    def get_bucket(self, bucket_name: str, **kwargs) -> Optional[Bucket]:
+    def get_bucket(self, bucket_name: str, **kwargs) -> Bucket or None:
         """List Minio buckets
         """
         bucket_name = MinioAssertions.bucket_name(bucket_name)
         buckets = self.list_buckets(**kwargs)
 
-        for bucket in buckets:
-            if bucket == bucket_name:
-                log.info(f'Get bucket: "{bucket}"')
-                return bucket
+        if bucket_name in buckets:
+            bucket_index = buckets.index(bucket_name)
+            return buckets[bucket_index]
 
         log.info(msg=f'Get bucket: "{bucket_name}" does not exist')
         return
