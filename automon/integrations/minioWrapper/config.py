@@ -25,13 +25,13 @@ class MinioConfig(object):
                  http_client: urllib3.PoolManager = None):
         """Minio config"""
 
-        self.endpoint = endpoint or environ('MINIO_ENDPOINT', 'localhost')
-        self.access_key = access_key or environ('MINIO_ACCESS_KEY')
-        self.secret_key = secret_key or environ('MINIO_SECRET_KEY')
-        self.session_token = session_token or environ('MINIO_SESSION_TOKEN')
-        self.secure = secure or environ('MINIO_SECURE', True)
-        self.region = region or environ('MINIO_REGION')
-        self.http_client = http_client or environ('MINIO_HTTP_CLIENT')
+        self._endpoint = endpoint or environ('MINIO_ENDPOINT', 'localhost')
+        self._access_key = access_key or environ('MINIO_ACCESS_KEY')
+        self._secret_key = secret_key or environ('MINIO_SECRET_KEY')
+        self._session_token = session_token or environ('MINIO_SESSION_TOKEN')
+        self._secure = secure or environ('MINIO_SECURE', True)
+        self._region = region or environ('MINIO_REGION')
+        self._http_client = http_client or environ('MINIO_HTTP_CLIENT')
 
         if not self.endpoint:
             log.warn(f'missing MINIO_ENDPOINT')
@@ -43,10 +43,38 @@ class MinioConfig(object):
             log.warn(f'missing MINIO_SECRET_KEY')
 
     @property
+    def access_key(self):
+        return self._access_key
+
+    @property
+    def endpoint(self):
+        return self._endpoint
+
+    @property
     def is_ready(self):
         if self.endpoint and self.access_key and self.secret_key:
             return True
         return False
+
+    @property
+    def secret_key(self):
+        return self._secret_key
+
+    @property
+    def secure(self):
+        return self._secure
+
+    @property
+    def session_token(self):
+        return self._session_token
+
+    @property
+    def region(self):
+        return self._region
+
+    @property
+    def http_client(self):
+        return self._http_client
 
     def __repr__(self):
         return f'{self.__dict__}'
