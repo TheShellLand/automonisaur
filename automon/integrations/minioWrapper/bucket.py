@@ -16,6 +16,3 @@ class Bucket(minio.datatypes.Bucket):
 
     def __repr__(self):
         return f'{str(self.creation_date)[:19]} ({self.name})'
-
-    def __str__(self):
-        return f'{str(self.creation_date)[:19]} ({self.name})'
