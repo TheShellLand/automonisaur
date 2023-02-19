@@ -23,8 +23,8 @@ class ClientTest(unittest.TestCase):
         if client.is_connected():
             test = client.make_bucket(bucket)
 
-            self.assertTrue(client.get_bucket(test.name))
-            self.assertTrue(type(client.get_bucket(test.name)), Bucket)
+            self.assertTrue(client.get_bucket(test))
+            self.assertTrue(type(client.get_bucket(test)), Bucket)
 
 
 if __name__ == '__main__':
