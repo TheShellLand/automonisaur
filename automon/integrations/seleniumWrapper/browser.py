@@ -14,6 +14,7 @@ from automon.helpers.sanitation import Sanitation
 
 from .config import SeleniumConfig
 from .browser_types import SeleniumBrowserType
+from .user_agents import SeleniumUserAgentBuilder
 
 log = Logging(name='SeleniumBrowser', level=Logging.DEBUG)
 
@@ -160,6 +161,9 @@ class SeleniumBrowser(object):
     def get_page(self, *args, **kwargs):
         """alias to get"""
         return self.get(*args, **kwargs)
+
+    def get_random_user_agent(self, filter: list or str = None, case_sensitive: bool = False) -> list:
+        return SeleniumUserAgentBuilder().get_random(filter=filter, case_sensitive=case_sensitive)
 
     @_is_running
     def get_screenshot_as_png(self, **kwargs):
