@@ -13,7 +13,7 @@ from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
 
 from .config import SeleniumConfig
-from .browser_types import BrowserType
+from .browser_types import SeleniumBrowserType
 
 log = Logging(name='SeleniumBrowser', level=Logging.DEBUG)
 

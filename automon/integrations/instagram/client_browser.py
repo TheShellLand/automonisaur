@@ -27,10 +27,10 @@ class InstagramBrowserClient:
         """Instagram Browser Client"""
         self.config = config or InstagramConfig(login=login, password=password)
         self.browser = SeleniumBrowser()
-        self.browser.set_browser(self.browser.type.chrome)
+        self.browser.set_browser(self.browser.type.chrome())
 
         if headless:
-            self.browser.set_browser(self.browser.type.chrome_headless)
+            self.browser.set_browser(self.browser.type.chrome_headless())
 
     def __repr__(self):
         return f'{self.__dict__}'
