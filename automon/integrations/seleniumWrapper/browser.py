@@ -20,13 +20,13 @@ log = Logging(name='SeleniumBrowser', level=Logging.DEBUG)
 
 class SeleniumBrowser(object):
     config: SeleniumConfig
-    type: BrowserType
+    type: SeleniumBrowserType
 
     def __init__(self, config: SeleniumConfig = None):
         """A selenium wrapper"""
 
         self.config = config or SeleniumConfig()
-        self.driver = 'not set' or self.type.chrome_headless
+        self.driver = 'not set' or self.type.chrome_headless()
         self.window_size = ''
 
         self.url = ''
@@ -39,7 +39,7 @@ class SeleniumBrowser(object):
 
     @property
     def type(self):
-        return BrowserType(self.config)
+        return SeleniumBrowserType(self.config)
 
     @property
     def browser(self):
@@ -214,11 +214,11 @@ class SeleniumBrowser(object):
 
         return self.browser.save_screenshot(save, **kwargs)
 
-    def set_browser(self, browser: BrowserType) -> True:
+    def set_browser(self, browser: SeleniumBrowserType) -> True:
         """set browser driver"""
         return self.set_driver(driver=browser)
 
-    def set_driver(self, driver: BrowserType) -> True:
+    def set_driver(self, driver: SeleniumBrowserType) -> True:
         """set driver"""
         if driver:
             self.driver = driver

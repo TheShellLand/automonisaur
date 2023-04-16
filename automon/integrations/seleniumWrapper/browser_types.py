@@ -24,10 +24,10 @@ except:
     from selenium.webdriver import Chrome as WPEWebKit
 
 
-log = Logging(name='BrowserType', level=Logging.DEBUG)
+log = Logging(name='SeleniumBrowserType', level=Logging.DEBUG)
 
 
-class BrowserType(object):
+class SeleniumBrowserType(object):
     config: SeleniumConfig
 
     def __init__(self, config: SeleniumConfig):
@@ -36,9 +36,8 @@ class BrowserType(object):
         self.chromedriver = self.config.selenium_chromedriver_path
 
     def __repr__(self):
-        return 'BrowserType'
+        return 'SeleniumBrowserType'
 
-    @property
     def chrome(self, options: list = None) -> Chrome:
         """Chrome"""
         log.info(f'Browser set as Chrome')
@@ -51,12 +50,11 @@ class BrowserType(object):
 
         try:
             if self.chromedriver:
-                return self.webdriver.Chrome(self.chromedriver, options=chrome_options)
+                return self.webdriver.Chrome(executable_path=self.chromedriver, options=chrome_options)
             return self.webdriver.Chrome(options=chrome_options)
         except Exception as e:
             log.error(f'Browser not set. {e}', enable_traceback=False)
 
-    @property
     def chrome_headless(self, options: list = None, **kwargs) -> Chrome:
         """Chrome headless
 
@@ -103,59 +101,49 @@ class BrowserType(object):
         except Exception as e:
             log.error(f'Browser not set. {e}', enable_traceback=False)
 
-    @property
     def edge(self, **kwargs) -> Edge:
         """Edge"""
         log.info(f'Browser set as Edge')
         return self.webdriver.Edge(**kwargs)
 
-    @property
     def firefox(self, **kwargs) -> Firefox:
         """Firefox"""
         log.info(f'Browser set as Firefox')
         return self.webdriver.Firefox(**kwargs)
 
-    @property
     def ie(self, **kwargs) -> Ie:
         """Internet Explorer"""
         log.info(f'Browser set as Internet Explorer')
         return self.webdriver.Ie(**kwargs)
 
-    @property
     def opera(self):
         """Depreciated: Opera"""
         log.warn(f'Opera is depreciated')
 
-    @property
     def proxy(self, **kwargs) -> Proxy:
         """Proxy"""
         log.info(f'Browser using proxy')
         return self.webdriver.Proxy(**kwargs)
 
-    @property
     def phantomjs(self):
         """PhantomJS"""
         log.warn(f'PhantomJS not supported')
 
-    @property
     def remote(self, **kwargs) -> Remote:
         """Remote"""
         log.info(f'Browser using remote browser')
         return self.webdriver.Remote(**kwargs)
 
-    @property
     def safari(self, **kwargs) -> Safari:
         """Safari"""
         log.info(f'Browser set as Safari')
         return self.webdriver.Safari(**kwargs)
 
-    @property
     def webkit_gtk(self, **kwargs) -> WebKitGTK:
         """WebKit GTK"""
         log.info(f'Browser set as WebKitGTK')
         return self.webdriver.WebKitGTK(**kwargs)
 
-    @property
     def wpewebkit(self, **kwargs) -> WPEWebKit:
         """WPE WebKit"""
         log.info(f'Browser set as WPEWebKit')
