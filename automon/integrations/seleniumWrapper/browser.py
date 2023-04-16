@@ -171,6 +171,10 @@ class SeleniumBrowser(object):
         return self.browser.get_screenshot_as_png(**kwargs)
 
     @_is_running
+    def get_user_agent(self):
+        return self.browser.execute_script("return navigator.userAgent")
+
+    @_is_running
     def get_screenshot_as_base64(self, **kwargs):
         """screenshot as base64"""
         return self.browser.get_screenshot_as_base64(**kwargs)
