@@ -20,6 +20,4 @@ class InstagramConfig(object):
         return False
 
     def __repr__(self):
-        if self.is_configured:
-            return f'ready'
-        return f'not ready'
+        return f'{self.login}'
