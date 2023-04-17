@@ -53,14 +53,24 @@ class SeleniumBrowser(object):
         return selenium.webdriver.common.by.By()
 
     @property
+    def get_log(self, log_type: str = 'browser') -> list:
+        """Gets the log for a given log type"""
+        return self.browser.get_log(log_type)
+
+    @property
     def keys(self):
         """Set of special keys codes"""
         return selenium.webdriver.common.keys.Keys
 
     @property
-    def get_log(self, log_type: str = 'browser') -> list:
-        """Gets the log for a given log type"""
-        return self.browser.get_log(log_type)
+    def type(self):
+        return SeleniumBrowserType(self.config)
+
+    @property
+    def url(self):
+        if self.browser.current_url == 'data:,':
+            return ''
+        return self.browser.current_url
 
     def _is_running(func) -> functools.wraps:
         @functools.wraps(func)
@@ -176,13 +186,13 @@ class SeleniumBrowser(object):
         return self.browser.get_screenshot_as_png(**kwargs)
 
     @_is_running
-    def get_user_agent(self):
-        return self.browser.execute_script("return navigator.userAgent")
-
-    @_is_running
     def get_screenshot_as_base64(self, **kwargs):
         """screenshot as base64"""
         return self.browser.get_screenshot_as_base64(**kwargs)
+
+    @_is_running
+    def get_user_agent(self):
+        return self.browser.execute_script("return navigator.userAgent")
 
     @_is_running
     def is_running(self) -> bool:
@@ -232,9 +242,13 @@ class SeleniumBrowser(object):
         return self.set_driver(driver=browser)
 
     def set_driver(self, driver: SeleniumBrowserType) -> True:
-        """set driver"""
+        """set driver
+
+        setting driver will launch browser
+        """
         if driver:
             self.driver = driver
+            log.info(f'Launching {self.browser.name}')
         return True
 
     @_is_running
