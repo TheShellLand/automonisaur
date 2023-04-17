@@ -160,7 +160,7 @@ class SeleniumBrowser(object):
             return True
         except Exception as e:
             self.status = f'ERROR {url}'
-            msg = f'GET {self.status} {url}: {e}'
+            msg = f'GET {self.status}: {e}'
             log.error(msg, enable_traceback=False)
 
         return False
