@@ -162,6 +162,11 @@ class SeleniumBrowser(object):
         """alias to get"""
         return self.get(*args, **kwargs)
 
+    @_is_running
+    def get_page_source(self):
+        """get page source"""
+        return self.driver.page_source
+
     def get_random_user_agent(self, filter: list or str = None, case_sensitive: bool = False) -> list:
         return SeleniumUserAgentBuilder().get_random(filter=filter, case_sensitive=case_sensitive)
 
