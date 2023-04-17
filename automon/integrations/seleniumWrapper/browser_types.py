@@ -23,7 +23,6 @@ except:
     from selenium.webdriver import Chrome as ChromiumEdge
     from selenium.webdriver import Chrome as WPEWebKit
 
-
 log = Logging(name='SeleniumBrowserType', level=Logging.DEBUG)
 
 
@@ -36,7 +35,7 @@ class SeleniumBrowserType(object):
         self.chromedriver = self.config.selenium_chromedriver_path
 
     def __repr__(self):
-        return 'SeleniumBrowserType'
+        return f'{self.__class__.__name__}'
 
     def chrome(self, options: list = None) -> Chrome:
         """Chrome"""
