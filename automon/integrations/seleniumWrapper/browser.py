@@ -29,18 +29,12 @@ class SeleniumBrowser(object):
         self.config = config or SeleniumConfig()
         self.driver = 'not set' or self.type.chrome_headless()
         self.window_size = ''
-
-        self.url = ''
         self.status = ''
 
     def __repr__(self):
         if self.url:
-            return f'{self.browser.name} {self.status} {self.url} {self.window_size}'
-        return f'{self.browser}'
-
-    @property
-    def type(self):
-        return SeleniumBrowserType(self.config)
+            return f'{self.browser.name} {self.status} {self.browser.current_url} {self.window_size}'
+        return f'{self.browser.name} {self.window_size}'
 
     @property
     def browser(self):
@@ -156,14 +150,18 @@ class SeleniumBrowser(object):
     def get(self, url: str, **kwargs) -> bool:
         """get url"""
         try:
-            self.url = url
             self.browser.get(url, **kwargs)
             self.status = 'OK'
-            log.debug(f'GET {url}, {kwargs}')
+
+            msg = f'GET {self.status} {self.browser.current_url}'
+            if kwargs:
+                msg += f', {kwargs}'
+            log.debug(msg)
             return True
         except Exception as e:
-            self.status = 'ERROR'
-            log.error(f'Error getting {url}: {e}', enable_traceback=False)
+            self.status = f'ERROR {url}'
+            msg = f'GET {self.status} {url}: {e}'
+            log.error(msg, enable_traceback=False)
 
         return False
 
