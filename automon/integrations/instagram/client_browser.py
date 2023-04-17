@@ -29,6 +29,12 @@ class InstagramBrowserClient:
         self.config = config or InstagramConfig(login=login, password=password)
         self.browser = SeleniumBrowser()
 
+        useragent = self.browser.get_random_user_agent()
+        if browser_options:
+            browser_options.extend([f"user-agent={useragent}"])
+        else:
+            browser_options = [f"user-agent={useragent}"]
+
         if headless:
             self.browser.set_browser(self.browser.type.chrome_headless(options=browser_options))
         else:
