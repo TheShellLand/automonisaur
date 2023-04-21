@@ -6,6 +6,7 @@ import selenium
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup
 
 from automon.log import Logging
 from automon.helpers.dates import Dates
@@ -109,7 +110,7 @@ class SeleniumBrowser(object):
         return False
 
     @_is_running
-    def action_type(self, key: str or Keys, secret: bool = False):
+    def action_type(self, key: str or Keys, secret: bool = False, ):
         """perform keyboard command"""
         try:
             actions = selenium.webdriver.common.action_chains.ActionChains(
@@ -171,9 +172,16 @@ class SeleniumBrowser(object):
         return self.get(*args, **kwargs)
 
     @_is_running
-    def get_page_source(self):
+    def get_page_source(self) -> str:
         """get page source"""
         return self.driver.page_source
+
+    @_is_running
+    def get_page_source_beautifulsoup(self, markdup: str = None, features: str = 'lxml') -> BeautifulSoup:
+        """read page source with beautifulsoup"""
+        if not markdup:
+            markdup = self.get_page_source()
+        return BeautifulSoup(markup=markdup, features=features)
 
     def get_random_user_agent(self, filter: list or str = None, case_sensitive: bool = False) -> list:
         return SeleniumUserAgentBuilder().get_random(filter=filter, case_sensitive=case_sensitive)
