@@ -29,13 +29,16 @@ class SeleniumBrowser(object):
 
         self.config = config or SeleniumConfig()
         self.driver = 'not set' or self.type.chrome_headless()
-        self.window_size = ''
         self.status = ''
 
     def __repr__(self):
         if self.url:
             return f'{self.browser.name} {self.status} {self.browser.current_url} {self.window_size}'
         return f'{self.browser.name} {self.window_size}'
+
+    @property
+    def config_browser(self):
+        return self.config
 
     @property
     def browser(self):
@@ -66,6 +69,10 @@ class SeleniumBrowser(object):
         if self.browser.current_url == 'data:,':
             return ''
         return self.browser.current_url
+
+    @property
+    def window_size(self):
+        return self.config.window_size
 
     def _is_running(func) -> functools.wraps:
         @functools.wraps(func)
@@ -258,57 +265,13 @@ class SeleniumBrowser(object):
         return True
 
     @_is_running
-    def set_resolution(self, width=1920, height=1080, device_type=None) -> bool:
+    def set_window_size(self, width=1920, height=1080, device_type=None) -> bool:
         """set browser resolution"""
 
-        if device_type == 'pixel3':
-            width = 1080
-            height = 2160
-
-        if device_type == 'web-small' or device_type == '800x600':
-            width = 800
-            height = 600
-
-        if device_type == 'web-small-2' or device_type == '1024x768':
-            width = 1024
-            height = 768
-
-        if device_type == 'web-small-3' or device_type == '1280x960':
-            width = 1280
-            height = 960
-
-        if device_type == 'web-small-4' or device_type == '1280x1024':
-            width = 1280
-            height = 1024
-
-        if device_type == 'web' or device_type == '1920x1080':
-            width = 1920
-            height = 1080
-
-        if device_type == 'web-2' or device_type == '1600x1200':
-            width = 1600
-            height = 1200
-
-        if device_type == 'web-3' or device_type == '1920x1200':
-            width = 1920
-            height = 1200
-
-        if device_type == 'web-large' or device_type == '2560x1400':
-            width = 2560
-            height = 1400
-
-        if device_type == 'web-long' or device_type == '1920x3080':
-            width = 1920
-            height = 3080
-
-        if not width and not height:
-            width = 1920
-            height = 1080
-
-        self.window_size = width, height
+        self.config_browser.set_window_size(width=width, height=height, device_type=device_type)
 
         try:
-            self.browser.set_window_size(width, height)
+            self.browser.set_window_size(self.config.window_size)
         except Exception as error:
             log.error(f'failed to set resolution. {error}')
             return False
