@@ -23,22 +23,17 @@ class InstagramBrowserClient:
                  login: str = None,
                  password: str = None,
                  config: InstagramConfig = None,
-                 headless: bool = True,
-                 browser_options: list = None):
+                 headless: bool = True):
         """Instagram Browser Client"""
         self.config = config or InstagramConfig(login=login, password=password)
         self.browser = SeleniumBrowser()
 
         useragent = self.browser.get_random_user_agent()
-        if browser_options:
-            browser_options.extend([f"user-agent={useragent}"])
-        else:
-            browser_options = [f"user-agent={useragent}"]
 
         if headless:
-            self.browser.set_browser(self.browser.type.chrome_headless(options=browser_options))
+            self.browser.config.set_webdriver.Chrome().in_headless().set_user_agent(useragent)
         else:
-            self.browser.set_browser(self.browser.type.chrome(options=browser_options))
+            self.browser.config.set_webdriver.Chrome().in_headless()
 
     def __repr__(self):
         return f'{self.__dict__}'
