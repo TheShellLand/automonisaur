@@ -10,6 +10,9 @@ xmltodict>=0.12.0
 beautifulsoup4>=4.10.0
 lxml>=4.7.1
 
+# aws
+boto3==1.28.10
+
 # datascience
 pandas>=1.1.5
 jupyterlab>=3.1.9
