@@ -28,6 +28,10 @@ class RequestsClient(object):
     def __repr__(self):
         return f'{self.__dict__}'
 
+    def __len__(self):
+        if self.content:
+            len(self.content)
+
     def _log_result(self):
         if self.results.status_code == 200:
             msg = f'{self.results.status_code} ' \
@@ -60,8 +64,13 @@ class RequestsClient(object):
 
     @property
     def content(self):
-        if self.results is not None:
+        if self.results:
             return self.results.content
+
+    @property
+    def text(self):
+        if self.results:
+            return self.results.text
 
     def delete(self,
                url: str = None,
