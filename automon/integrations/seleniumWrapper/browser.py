@@ -39,11 +39,6 @@ class SeleniumBrowser(object):
         return f'{self.webdriver}'
 
     @property
-    def browser(self):
-        """alias to webdriver"""
-        return self.webdriver
-
-    @property
     def by(self) -> By:
         """Set of supported locator strategies"""
         return selenium.webdriver.common.by.By()
@@ -66,9 +61,9 @@ class SeleniumBrowser(object):
         """Set of special keys codes"""
         return selenium.webdriver.common.keys.Keys
 
-    @property
-    def type(self) -> SeleniumBrowserType:
-        return SeleniumBrowserType(self.config)
+    # @property
+    # def type(self) -> SeleniumBrowserType:
+    #     return SeleniumBrowserType(self.config)
 
     @property
     def url(self):
