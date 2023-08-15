@@ -263,6 +263,7 @@ class ConfigChrome(object):
         if self.chromedriver:
             if not self._path_updated:
                 os.environ['PATH'] = f"{os.getenv('PATH')}:{self._chromedriver}"
+                self._path_updated = True
 
     def quit(self):
         """quit
