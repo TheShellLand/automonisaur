@@ -279,7 +279,7 @@ class SeleniumBrowser(object):
             self,
             value: str or list,
             by: By = By.XPATH,
-            retries: int = 30,
+            retries: int = 3,
             **kwargs) -> str or False:
         """wait for something"""
         retry = 1
