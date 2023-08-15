@@ -290,14 +290,17 @@ class SeleniumBrowser(object):
         while True:
             try:
                 if isinstance(value, list):
-                    for each in value:
-                        self.find_element(
-                            by=by,
-                            value=each,
-                            **kwargs)
-                        value = each
-                        log.debug(f'found {by}: {value}')
-                        return value
+                    values = value
+                    for value in values:
+                        try:
+                            self.find_element(
+                                by=by,
+                                value=value,
+                                **kwargs)
+                            log.debug(f'found {by}: {value}')
+                            return value
+                        except:
+                            log.error(f'{by} not found: {value}', enable_traceback=False)
                 else:
                     self.find_element(
                         by=by,
@@ -308,7 +311,7 @@ class SeleniumBrowser(object):
             except Exception as error:
                 log.error(f'waiting for {by}: {value}, {error}',
                           enable_traceback=False)
-                Sleeper.seconds(f'wait for', round(retry / 2))
+                Sleeper.seconds(f'wait for', 1)
 
             retry += 1
 
