@@ -52,9 +52,17 @@ class SeleniumBrowser(object):
         return self.config.webdriver
 
     @property
-    def get_log(self, log_type: str = 'browser') -> list:
+    def get_log(self) -> list:
         """Gets the log for a given log type"""
-        return self.webdriver.get_log(log_type)
+        logs = []
+        for log_type in self.webdriver.log_types:
+            logs.append(
+                {
+                    log_type: self.webdriver.get_log(log_type)
+                }
+            )
+
+        return logs
 
     @property
     def keys(self):
