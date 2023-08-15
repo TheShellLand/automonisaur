@@ -219,7 +219,7 @@ class ConfigChrome(object):
         self.disable_sandbox()
         return self
 
-    def run(self):
+    def run(self) -> selenium.webdriver.Chrome:
         log.info(f'starting {self}')
         try:
             if self.chromedriver:
