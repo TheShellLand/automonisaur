@@ -29,4 +29,4 @@ class SeleniumConfig(object):
         if self.set_webdriver.webdriver:
             return self.set_webdriver.webdriver
         else:
-            log.error('driver not set. configure a driver first')
+            log.error('driver not set. configure a driver first', raise_exception=True)
