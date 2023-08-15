@@ -13,6 +13,7 @@ from automon.log import Logging
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
+from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import SeleniumConfig
 from .browser_types import SeleniumBrowserType
@@ -164,7 +165,7 @@ class SeleniumBrowser(object):
         """get url"""
         try:
             self.webdriver.get(url, **kwargs)
-            self.status = 'OK'
+            self.status = RequestsClient(url=url).results
 
             msg = f'GET {self.status} {self.webdriver.current_url}'
             if kwargs:
@@ -172,7 +173,7 @@ class SeleniumBrowser(object):
             log.debug(msg)
             return True
         except Exception as e:
-            self.status = f'ERROR {url}'
+            self.status = RequestsClient(url=url).results
             msg = f'GET {self.status}: {e}'
             log.error(msg, enable_traceback=False)
 
