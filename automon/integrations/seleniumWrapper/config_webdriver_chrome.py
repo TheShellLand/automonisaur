@@ -17,6 +17,7 @@ class ConfigChrome(object):
         self._webdriver = None
         self._chrome_options = selenium.webdriver.ChromeOptions()
         self._chromedriver = environ('SELENIUM_CHROMEDRIVER_PATH')
+        self._ChromeService = None
 
         self._path_updated = None
         self.update_paths()
@@ -39,6 +40,10 @@ class ConfigChrome(object):
     @property
     def chromedriver(self):
         return self._chromedriver
+
+    @property
+    def ChromeService(self):
+        return self._ChromeService
 
     @property
     def webdriver(self) -> selenium.webdriver.Chrome:
@@ -223,14 +228,19 @@ class ConfigChrome(object):
         log.info(f'starting {self}')
         try:
             if self.chromedriver:
-                self._webdriver = selenium.webdriver.Chrome(executable_path=self.chromedriver,
-                                                            options=self.chrome_options)
+                self._ChromeService = selenium.webdriver.ChromeService(
+                    executable_path=self.chromedriver
+                )
+                self._webdriver = selenium.webdriver.Chrome(
+                    service=self._ChromeService,
+                    options=self.chrome_options
+                )
                 return self.webdriver
 
             self._webdriver = selenium.webdriver.Chrome(options=self.chrome_options)
             return self.webdriver
         except Exception as e:
-            log.error(f'Browser not set. {e}', enable_traceback=False)
+            log.error(f'Browser not set. {e}', raise_exception=True)
 
     def set_chromedriver(self, chromedriver: str):
         self._chromedriver = chromedriver
