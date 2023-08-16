@@ -88,7 +88,6 @@ class SeleniumBrowser(object):
         def wrapped(self, *args, **kwargs):
             if self.webdriver is not None:
                 return func(self, *args, **kwargs)
-            log.error(f'Browser is not set!', enable_traceback=False)
             return False
 
         return wrapped
