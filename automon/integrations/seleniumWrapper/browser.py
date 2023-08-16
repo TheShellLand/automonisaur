@@ -155,12 +155,16 @@ class SeleniumBrowser(object):
             by: By.ID = By.ID,
             **kwargs):
         """find element"""
-        return self.webdriver.find_element(value=value, by=by, **kwargs)
+        element = self.webdriver.find_element(value=value, by=by, **kwargs)
+        log.info(f'found element: {self.url} {element.text}')
+        return element
 
     @_is_running
     def find_xpath(self, value: str, by: By = By.XPATH, **kwargs):
         """find xpath"""
-        return self.find_element(value=value, by=by, **kwargs)
+        xpath = self.find_element(value=value, by=by, **kwargs)
+        log.info(f'found xpath: {self.url} {xpath.text}')
+        return xpath
 
     @_is_running
     def get(self, url: str, **kwargs) -> bool:
@@ -296,26 +300,26 @@ class SeleniumBrowser(object):
                                 by=by,
                                 value=value,
                                 **kwargs)
-                            log.debug(f'found {by}: {value}')
+                            log.debug(f'waiting for {by}: {self.url} {value}')
                             return value
                         except:
-                            log.error(f'{by} not found: {value}', enable_traceback=False)
+                            log.error(f'{by} not found: {self.url} {value}', enable_traceback=False)
                 else:
                     self.find_element(
                         by=by,
                         value=value,
                         **kwargs)
-                    log.debug(f'found {by}: {value}')
+                    log.debug(f'waiting for {by}: {self.url} {value}')
                     return value
             except Exception as error:
-                log.error(f'waiting for {by}: {value}, {error}',
+                log.error(f'not found {by}: {self.url} {value}, {error}',
                           enable_traceback=False)
                 Sleeper.seconds(f'wait for', 1)
 
             retry += 1
 
             if retry > retries:
-                log.error(f'max wait reached', enable_traceback=False)
+                log.error(f'max wait reached: {self.url}', enable_traceback=False)
                 break
         return False
 
