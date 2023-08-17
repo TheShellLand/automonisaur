@@ -247,6 +247,10 @@ class ConfigChrome(object):
         self.update_paths()
         return self
 
+    def set_locale(self, locale: str = 'en'):
+        self.chrome_options.add_argument(f"--lang={locale}")
+        return self
+
     def set_user_agent(self, user_agent: str):
         self.chrome_options.add_argument(f"user-agent={user_agent}")
         return self
