@@ -18,9 +18,9 @@
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python37.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python37.yml)
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python36.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python36.yml)
 
-[![Downloads](https://pepy.tech/badge/automonisaur)](https://pepy.tech/project/automonisaur)
-[![Downloads](https://pepy.tech/badge/automonisaur/month)](https://pepy.tech/project/automonisaur)
-[![Downloads](https://pepy.tech/badge/automonisaur/week)](https://pepy.tech/project/automonisaur)
+[![Downloads](https://static.pepy.tech/badge/automonisaur)](https://pepy.tech/project/automonisaur)
+[![Downloads](https://static.pepy.tech/badge/automonisaur/month)](https://pepy.tech/project/automonisaur)
+[![Downloads](https://static.pepy.tech/badge/automonisaur/week)](https://pepy.tech/project/automonisaur)
 
 [//]: # ([![codecov]&#40;https://codecov.io/gh/TheShellLand/automonisaur/branch/master/graph/badge.svg&#41;]&#40;https://codecov.io/gh/TheShellLand/automonisaur&#41;)
 
