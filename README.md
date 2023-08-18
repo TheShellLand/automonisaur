@@ -35,15 +35,20 @@ Github issues and feature requests welcomed.
 ### Integrations
 
 - airport
+- beautifulsoup
 - elasticsearch
+- facebook groups
 - flask
+- google auth api
 - google people api
+- google sheets api
 - instagram
 - logging
 - minio
 - neo4j
 - nmap
 - requests
+- scrapy
 - selenium
 - sentryio
 - slack
