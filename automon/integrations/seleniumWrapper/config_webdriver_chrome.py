@@ -60,6 +60,7 @@ class ConfigChrome(object):
 
     def disable_extensions(self):
         self.chrome_options.add_argument("--disable-extensions")
+        return self
 
     def disable_infobars(self):
         self.chrome_options.add_argument("--disable-infobars")
@@ -110,6 +111,17 @@ class ConfigChrome(object):
 
     def enable_maximized(self):
         self.chrome_options.add_argument('--start-maximized')
+        return self
+
+    def enable_translate(self, native_language: str = 'en'):
+        prefs = {
+            "translate_whitelists": {"your native language": native_language},
+            "translate": {"enabled": "True"}
+        }
+        self.chrome_options.add_experimental_option(
+            name="prefs",
+            value=prefs,
+        )
         return self
 
     def close(self):
