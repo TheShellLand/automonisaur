@@ -263,6 +263,12 @@ class ConfigChrome(object):
         self.chrome_options.add_argument(f"--lang={locale}")
         return self
 
+    def set_locale_experimental(self, locale: str = 'en-US'):
+        self.chrome_options.add_experimental_option(
+            name='prefs',
+            value={'intl.accept_languages': locale})
+        return self
+
     def set_user_agent(self, user_agent: str):
         self.chrome_options.add_argument(f"user-agent={user_agent}")
         return self
