@@ -156,14 +156,14 @@ class SeleniumBrowser(object):
             **kwargs):
         """find element"""
         element = self.webdriver.find_element(value=value, by=by, **kwargs)
-        log.info(f'found element: {self.url} {element.text}')
+        log.debug(f'found element: {self.url} {element.text}')
         return element
 
     @_is_running
     def find_xpath(self, value: str, by: By = By.XPATH, **kwargs):
         """find xpath"""
         xpath = self.find_element(value=value, by=by, **kwargs)
-        log.info(f'found xpath: {self.url} {xpath.text}')
+        log.debug(f'found xpath: {self.url} {xpath.text}')
         return xpath
 
     @_is_running
