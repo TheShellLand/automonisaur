@@ -19,7 +19,6 @@ class ConfigChrome(object):
         self._chromedriver = environ('SELENIUM_CHROMEDRIVER_PATH')
         self._ChromeService = None
 
-        self._path_updated = None
         self.update_paths()
 
         self._window_size = set_window_size()
@@ -293,9 +292,8 @@ class ConfigChrome(object):
 
     def update_paths(self):
         if self.chromedriver:
-            if not self._path_updated:
+            if self.chromedriver not in os.getenv('PATH'):
                 os.environ['PATH'] = f"{os.getenv('PATH')}:{self._chromedriver}"
-                self._path_updated = True
 
     def quit(self):
         """quit
