@@ -25,13 +25,13 @@ log = Logging(name='SeleniumBrowser', level=Logging.DEBUG)
 class SeleniumBrowser(object):
     config: SeleniumConfig
     webdriver: selenium.webdriver
-    status: str
+    status: int
 
     def __init__(self, config: SeleniumConfig = None):
         """A selenium wrapper"""
 
         self._config = config or SeleniumConfig()
-        self.status = ''
+        self.request = None
 
     def __repr__(self):
         if self.url:
@@ -68,6 +68,11 @@ class SeleniumBrowser(object):
     def keys(self):
         """Set of special keys codes"""
         return selenium.webdriver.common.keys.Keys
+
+    @property
+    def status(self):
+        if self.request is not None:
+            return self.request.results.status_code
 
     # @property
     # def type(self) -> SeleniumBrowserType:
@@ -171,7 +176,7 @@ class SeleniumBrowser(object):
         """get url"""
         try:
             self.webdriver.get(url, **kwargs)
-            self.status = RequestsClient(url=url).results
+            self.request = RequestsClient(url=url)
 
             msg = f'GET {self.status} {self.webdriver.current_url}'
             if kwargs:
@@ -179,7 +184,7 @@ class SeleniumBrowser(object):
             log.debug(msg)
             return True
         except Exception as e:
-            self.status = RequestsClient(url=url).results
+            self.request = RequestsClient(url=url)
             msg = f'GET {self.status}: {e}'
             log.error(msg, enable_traceback=False)
 
