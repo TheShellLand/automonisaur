@@ -2,10 +2,10 @@ from os import getenv
 
 from automon.log import Logging
 
-log = Logging(name='GmailConfig', level=Logging.DEBUG)
+log = Logging(name='GoogleGmailConfig', level=Logging.DEBUG)
 
 
-class GmailConfig:
+class GoogleGmailConfig:
     def __init__(self, endpoint: str = None,
                  api_key: str = None,
                  user: str = None,

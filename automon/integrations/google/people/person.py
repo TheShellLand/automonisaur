@@ -2,7 +2,7 @@ from enum import Enum
 
 from automon.log import Logging
 
-log = Logging(level=Logging.DEBUG)
+log = Logging(name='GooglePeople', level=Logging.DEBUG)
 
 
 class AgeRange(Enum):

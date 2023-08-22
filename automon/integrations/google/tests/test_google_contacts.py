@@ -1,8 +1,8 @@
 import unittest
 
-from automon.integrations.google import PeopleClient
+from automon.integrations.google import GooglePeopleClient
 
-c = PeopleClient()
+c = GooglePeopleClient()
 
 
 class TestClient(unittest.TestCase):

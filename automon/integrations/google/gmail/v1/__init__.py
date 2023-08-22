@@ -1,2 +1,2 @@
-from .client import GmailClient
-from .config import GmailConfig
+from .client import GoogleGmailClient
+from .config import GoogleGmailConfig
