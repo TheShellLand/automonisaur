@@ -80,7 +80,7 @@ class ConfigWebdriver(object):
         try:
             return self.webdriver_wrapper.run()
         except Exception as e:
-            log.error(f'failed to run: {e}', raise_exception=True)
+            log.error(f'failed to run: {e}', enable_traceback=False)
 
     def start(self):
         """alias to run"""
