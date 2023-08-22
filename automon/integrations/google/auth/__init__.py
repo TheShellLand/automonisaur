@@ -1,2 +1,2 @@
-from .client import AuthClient
-from .config import AuthConfig
+from .client import GoogleAuthClient
+from .config import GoogleAuthConfig

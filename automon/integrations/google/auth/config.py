@@ -14,7 +14,7 @@ from automon.helpers import environ
 log = Logging(name='AuthConfig', level=Logging.DEBUG)
 
 
-class AuthConfig(object):
+class GoogleAuthConfig(object):
     """Google Auth config"""
 
     def __init__(

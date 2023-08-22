@@ -1,11 +1,11 @@
 import unittest
 
-from automon.integrations.google.auth import AuthConfig
+from automon.integrations.google.auth import GoogleAuthConfig
 
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        test = AuthConfig()
+        test = GoogleAuthConfig()
         if test.Credentials:
             self.assertTrue(test.Credentials)
 

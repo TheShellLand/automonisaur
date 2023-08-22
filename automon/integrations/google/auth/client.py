@@ -5,24 +5,24 @@ import google.auth.transport.requests
 
 from automon.log import Logging
 
-from .config import AuthConfig
+from .config import GoogleAuthConfig
 
-log = Logging(name='AuthClient', level=Logging.DEBUG)
+log = Logging(name='GoogleAuthClient', level=Logging.DEBUG)
 
 
-class AuthClient(object):
+class GoogleAuthClient(object):
     """Google Auth client"""
 
     def __init__(
             self,
-            config: AuthConfig = None,
+            config: GoogleAuthConfig = None,
             serviceName: str = None,
             scopes: list = None,
             version: str = None,
             **kwargs,
     ):
 
-        self.config = config or AuthConfig(
+        self.config = config or GoogleAuthConfig(
             serviceName=serviceName,
             scopes=scopes,
             version=version,
