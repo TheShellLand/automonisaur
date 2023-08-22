@@ -1,4 +1,5 @@
 import os
+import json
 import base64
 
 import google.auth.crypt
@@ -11,7 +12,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from automon.log import Logging
 from automon.helpers import environ
 
-log = Logging(name='AuthConfig', level=Logging.DEBUG)
+log = Logging(name='GoogleAuthConfig', level=Logging.DEBUG)
 
 
 class GoogleAuthConfig(object):
@@ -57,7 +58,7 @@ class GoogleAuthConfig(object):
         except:
             pass
 
-        log.error(f'Missing credentials', enable_traceback=False)
+        log.error(f'Missing GOOGLE_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64', enable_traceback=False)
 
     @property
     def _GOOGLE_CREDENTIALS(self):
@@ -99,12 +100,15 @@ class GoogleAuthConfig(object):
                 self.base64_to_dict()
             )
 
-    def base64_to_dict(self, base64: str = None):
+    def base64_to_dict(self, base64_str: str = None) -> dict:
         """convert credential json to dict"""
-        if not base64 and self._GOOGLE_CREDENTIALS_BASE64:
-            base64 = self._GOOGLE_CREDENTIALS_BASE64
+        if not base64_str and not self._GOOGLE_CREDENTIALS_BASE64:
+            raise Exception(f'Missing GOOGLE_CREDENTIALS_BASE6')
 
-        return base64.decode(base64)
+        base64_str = base64_str or self._GOOGLE_CREDENTIALS_BASE64
+        return json.loads(
+            base64.b64decode(base64_str)
+        )
 
     def file_to_base64(self, path: str = None):
         """convert file to base64"""

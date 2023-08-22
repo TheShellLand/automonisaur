@@ -82,7 +82,9 @@ class GoogleAuthClient(object):
 
     def authenticate_service_account(self) -> bool:
         """authenticate service account"""
-        return True
+        if self.config.Credentials:
+            return True
+        return False
 
     def is_connected(self) -> bool:
         """Check if authenticated to make requests"""
