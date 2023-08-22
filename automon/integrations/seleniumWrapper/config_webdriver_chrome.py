@@ -17,8 +17,8 @@ class ConfigChrome(object):
         self._webdriver = None
         self._chrome_options = selenium.webdriver.ChromeOptions()
         self._chromedriver = environ('SELENIUM_CHROMEDRIVER_PATH')
+        self._ChromeService = None
 
-        self._path_updated = None
         self.update_paths()
 
         self._window_size = set_window_size()
@@ -41,6 +41,10 @@ class ConfigChrome(object):
         return self._chromedriver
 
     @property
+    def ChromeService(self):
+        return self._ChromeService
+
+    @property
     def webdriver(self) -> selenium.webdriver.Chrome:
         return self._webdriver
 
@@ -55,6 +59,7 @@ class ConfigChrome(object):
 
     def disable_extensions(self):
         self.chrome_options.add_argument("--disable-extensions")
+        return self
 
     def disable_infobars(self):
         self.chrome_options.add_argument("--disable-infobars")
@@ -105,6 +110,17 @@ class ConfigChrome(object):
 
     def enable_maximized(self):
         self.chrome_options.add_argument('--start-maximized')
+        return self
+
+    def enable_translate(self, native_language: str = 'en'):
+        prefs = {
+            "translate_whitelists": {"your native language": native_language},
+            "translate": {"enabled": "True"}
+        }
+        self.chrome_options.add_experimental_option(
+            name="prefs",
+            value=prefs,
+        )
         return self
 
     def close(self):
@@ -219,22 +235,37 @@ class ConfigChrome(object):
         self.disable_sandbox()
         return self
 
-    def run(self):
+    def run(self) -> selenium.webdriver.Chrome:
         log.info(f'starting {self}')
         try:
             if self.chromedriver:
-                self._webdriver = selenium.webdriver.Chrome(executable_path=self.chromedriver,
-                                                            options=self.chrome_options)
+                self._ChromeService = selenium.webdriver.ChromeService(
+                    executable_path=self.chromedriver
+                )
+                self._webdriver = selenium.webdriver.Chrome(
+                    service=self._ChromeService,
+                    options=self.chrome_options
+                )
                 return self.webdriver
 
             self._webdriver = selenium.webdriver.Chrome(options=self.chrome_options)
             return self.webdriver
         except Exception as e:
-            log.error(f'Browser not set. {e}', enable_traceback=False)
+            log.error(f'Browser not set. {e}', raise_exception=True)
 
     def set_chromedriver(self, chromedriver: str):
         self._chromedriver = chromedriver
         self.update_paths()
+        return self
+
+    def set_locale(self, locale: str = 'en'):
+        self.chrome_options.add_argument(f"--lang={locale}")
+        return self
+
+    def set_locale_experimental(self, locale: str = 'en-US'):
+        self.chrome_options.add_experimental_option(
+            name='prefs',
+            value={'intl.accept_languages': locale})
         return self
 
     def set_user_agent(self, user_agent: str):
@@ -261,7 +292,7 @@ class ConfigChrome(object):
 
     def update_paths(self):
         if self.chromedriver:
-            if not self._path_updated:
+            if self.chromedriver not in os.getenv('PATH'):
                 os.environ['PATH'] = f"{os.getenv('PATH')}:{self._chromedriver}"
 
     def quit(self):

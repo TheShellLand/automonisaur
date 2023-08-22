@@ -2,7 +2,7 @@ from automon.log import Logging
 
 from .person import Person
 
-log = Logging(name='PeopleResults', level=Logging.DEBUG)
+log = Logging(name='GooglePeopleResults', level=Logging.DEBUG)
 
 
 class ConnectionsResults:

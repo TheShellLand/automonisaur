@@ -1,9 +1,9 @@
 from automon.log import Logging
 
-log = Logging(name='PeopleUrls', level=Logging.ERROR)
+log = Logging(name='GooglePeopleUrls', level=Logging.ERROR)
 
 
-class PeopleUrls:
+class GooglePeopleUrls:
     PEOPLE_API = 'https://people.googleapis.com'
     API_VER = 'v1'
     BASE_URL = f'{PEOPLE_API}/{API_VER}'

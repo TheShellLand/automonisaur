@@ -1,2 +1,2 @@
-from .v1 import GmailClient as GmailClientV1
-from .v1 import GmailConfig as GmailConfigV1
+from .v1 import GoogleGmailClient
+from .v1 import GoogleGmailConfig

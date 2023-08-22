@@ -13,6 +13,7 @@ from automon.log import Logging
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
+from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import SeleniumConfig
 from .browser_types import SeleniumBrowserType
@@ -24,23 +25,18 @@ log = Logging(name='SeleniumBrowser', level=Logging.DEBUG)
 class SeleniumBrowser(object):
     config: SeleniumConfig
     webdriver: selenium.webdriver
-    status: str
+    status: int
 
     def __init__(self, config: SeleniumConfig = None):
         """A selenium wrapper"""
 
         self._config = config or SeleniumConfig()
-        self.status = ''
+        self.request = None
 
     def __repr__(self):
         if self.url:
             return f'{self.webdriver.name} {self.status} {self.webdriver.current_url} {self.window_size}'
         return f'{self.webdriver}'
-
-    @property
-    def browser(self):
-        """alias to webdriver"""
-        return self.webdriver
 
     @property
     def by(self) -> By:
@@ -56,9 +52,17 @@ class SeleniumBrowser(object):
         return self.config.webdriver
 
     @property
-    def get_log(self, log_type: str = 'browser') -> list:
+    def get_log(self) -> list:
         """Gets the log for a given log type"""
-        return self.webdriver.get_log(log_type)
+        logs = []
+        for log_type in self.webdriver.log_types:
+            logs.append(
+                {
+                    log_type: self.webdriver.get_log(log_type)
+                }
+            )
+
+        return logs
 
     @property
     def keys(self):
@@ -66,8 +70,13 @@ class SeleniumBrowser(object):
         return selenium.webdriver.common.keys.Keys
 
     @property
-    def type(self) -> SeleniumBrowserType:
-        return SeleniumBrowserType(self.config)
+    def status(self):
+        if self.request is not None:
+            return self.request.results.status_code
+
+    # @property
+    # def type(self) -> SeleniumBrowserType:
+    #     return SeleniumBrowserType(self.config)
 
     @property
     def url(self):
@@ -84,7 +93,6 @@ class SeleniumBrowser(object):
         def wrapped(self, *args, **kwargs):
             if self.webdriver is not None:
                 return func(self, *args, **kwargs)
-            log.error(f'Browser is not set!', enable_traceback=False)
             return False
 
         return wrapped
@@ -152,19 +160,23 @@ class SeleniumBrowser(object):
             by: By.ID = By.ID,
             **kwargs):
         """find element"""
-        return self.webdriver.find_element(value=value, by=by, **kwargs)
+        element = self.webdriver.find_element(value=value, by=by, **kwargs)
+        log.debug(f'found element: {self.url} {element.text}')
+        return element
 
     @_is_running
     def find_xpath(self, value: str, by: By = By.XPATH, **kwargs):
         """find xpath"""
-        return self.find_element(value=value, by=by, **kwargs)
+        xpath = self.find_element(value=value, by=by, **kwargs)
+        log.debug(f'found xpath: {self.url} {xpath.text}')
+        return xpath
 
     @_is_running
     def get(self, url: str, **kwargs) -> bool:
         """get url"""
         try:
             self.webdriver.get(url, **kwargs)
-            self.status = 'OK'
+            self.request = RequestsClient(url=url)
 
             msg = f'GET {self.status} {self.webdriver.current_url}'
             if kwargs:
@@ -172,7 +184,7 @@ class SeleniumBrowser(object):
             log.debug(msg)
             return True
         except Exception as e:
-            self.status = f'ERROR {url}'
+            self.request = RequestsClient(url=url)
             msg = f'GET {self.status}: {e}'
             log.error(msg, enable_traceback=False)
 
@@ -279,37 +291,40 @@ class SeleniumBrowser(object):
             self,
             value: str or list,
             by: By = By.XPATH,
-            retries: int = 30,
+            retries: int = 3,
             **kwargs) -> str or False:
         """wait for something"""
         retry = 1
         while True:
             try:
                 if isinstance(value, list):
-                    for each in value:
-                        self.find_element(
-                            by=by,
-                            value=each,
-                            **kwargs)
-                        value = each
-                        log.debug(f'found {by}: {value}')
-                        return value
+                    values = value
+                    for value in values:
+                        try:
+                            self.find_element(
+                                by=by,
+                                value=value,
+                                **kwargs)
+                            log.debug(f'waiting for {by}: {self.url} {value}')
+                            return value
+                        except:
+                            log.error(f'{by} not found: {self.url} {value}', enable_traceback=False)
                 else:
                     self.find_element(
                         by=by,
                         value=value,
                         **kwargs)
-                    log.debug(f'found {by}: {value}')
+                    log.debug(f'waiting for {by}: {self.url} {value}')
                     return value
             except Exception as error:
-                log.error(f'waiting for {by}: {value}, {error}',
+                log.error(f'not found {by}: {self.url} {value}, {error}',
                           enable_traceback=False)
-                Sleeper.seconds(f'wait for', round(retry / 2))
+                Sleeper.seconds(f'wait for', 1)
 
             retry += 1
 
             if retry > retries:
-                log.error(f'max wait reached', enable_traceback=False)
+                log.error(f'max wait reached: {self.url}', enable_traceback=False)
                 break
         return False
 
