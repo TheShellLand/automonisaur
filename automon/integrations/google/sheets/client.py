@@ -26,7 +26,7 @@ class GoogleSheetsClient(GoogleAuthClient):
     def __init__(
             self,
             spreadsheetId: str = None,
-            worksheet: str = None,
+            worksheet: str = '',
             range: str = 'A:Z',
             config: GoogleSheetsConfig = None,
             **kwargs
