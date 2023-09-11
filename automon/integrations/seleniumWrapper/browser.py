@@ -72,7 +72,10 @@ class SeleniumBrowser(object):
     @property
     def status(self):
         if self.request is not None:
-            return self.request.results.status_code
+            try:
+                return self.request.results.status_code
+            except:
+                pass
 
     # @property
     # def type(self) -> SeleniumBrowserType:
