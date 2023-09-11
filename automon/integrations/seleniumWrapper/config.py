@@ -16,9 +16,9 @@ class SeleniumConfig(object):
     def __repr__(self):
         return f'{self.driver}'
 
-    @property
-    def driver(self):
-        return self.webdriver
+    # @property
+    # def driver(self):
+    #     return self.webdriver
 
     @property
     def set_webdriver(self):
