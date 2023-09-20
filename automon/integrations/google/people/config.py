@@ -13,10 +13,10 @@ from googleapiclient.errors import HttpError
 from automon.log import Logging
 from automon.helpers import environ
 
-log = Logging(name='PeopleConfig', level=Logging.DEBUG)
+log = Logging(name='GooglePeopleConfig', level=Logging.DEBUG)
 
 
-class PeopleConfig:
+class GooglePeopleConfig:
 
     def __init__(self,
                  token=None,

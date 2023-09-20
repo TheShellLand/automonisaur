@@ -9,20 +9,20 @@ from googleapiclient.errors import HttpError
 
 from automon.log import Logging
 
-from .urls import PeopleUrls
-from .config import PeopleConfig
+from .urls import GooglePeopleUrls
+from .config import GooglePeopleConfig
 from .results import ConnectionsResults
 
-log = Logging(name='PeopleClient', level=Logging.DEBUG)
+log = Logging(name='GooglePeopleClient', level=Logging.DEBUG)
 
 
-class PeopleClient:
+class GooglePeopleClient:
     def __init__(self, client_id: str = None,
                  client_secret: str = None,
-                 config: PeopleConfig = None):
+                 config: GooglePeopleConfig = None):
         """Google People API Client"""
 
-        self.config = config or PeopleConfig(
+        self.config = config or GooglePeopleConfig(
             client_id=client_id,
             client_secret=client_secret
         )
@@ -132,10 +132,10 @@ class PeopleClient:
         """
 
         if not resourceName:
-            resourceName = PeopleUrls().resourceName()
+            resourceName = GooglePeopleUrls().resourceName()
 
         if not personFields:
-            personFields = PeopleUrls().personFields_toStr()
+            personFields = GooglePeopleUrls().personFields_toStr()
 
         return self._list(
             resourceName=resourceName,

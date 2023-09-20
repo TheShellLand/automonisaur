@@ -1,12 +1,12 @@
 from automon.integrations.requestsWrapper import RequestsClient
 
-from .config import GmailConfig
+from .config import GoogleGmailConfig
 
 
-class GmailClient:
+class GoogleGmailClient:
 
-    def __init__(self, api_key: str = None, user: str = None, password: str = None, config: GmailConfig = None):
-        self.config = config or GmailConfig(user=user, password=password, api_key=api_key)
+    def __init__(self, api_key: str = None, user: str = None, password: str = None, config: GoogleGmailConfig = None):
+        self.config = config or GoogleGmailConfig(user=user, password=password, api_key=api_key)
         self.endpoint = self.config.endpoint
         self.userId = self.config.userId
 

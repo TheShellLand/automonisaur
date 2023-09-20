@@ -1,2 +1,3 @@
-from .gmail import GmailClientV1
-from .people import PeopleClient
+from .auth import GoogleAuthClient
+from .gmail import GoogleGmailClient
+from .people import GooglePeopleClient

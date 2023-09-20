@@ -49,6 +49,9 @@ selenium>=3.141.0
 # sentry.io
 sentry-sdk>=1.5.1
 
+# scrapy
+Scrapy>=2.6.0
+
 # slack
 slackclient>=2.9.3
 

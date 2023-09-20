@@ -27,10 +27,13 @@ class InstagramBrowserClient:
         """Instagram Browser Client"""
         self.config = config or InstagramConfig(login=login, password=password)
         self.browser = SeleniumBrowser()
-        self.browser.set_browser(self.browser.type.chrome())
+
+        useragent = self.browser.get_random_user_agent()
 
         if headless:
-            self.browser.set_browser(self.browser.type.chrome_headless())
+            self.browser.config.set_webdriver.Chrome().in_headless().set_user_agent(useragent)
+        else:
+            self.browser.config.set_webdriver.Chrome().in_headless()
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -42,6 +45,7 @@ class InstagramBrowserClient:
                 if self.browser.is_running():
                     return func(self, *args, **kwargs)
                 return False
+
         return wrapped
 
     def _is_authenticated(func):
@@ -53,22 +57,22 @@ class InstagramBrowserClient:
 
         return wrapped
 
-    def _get_page(self, account):
+    def get_page(self, account: str):
         """ Get page
         """
-        log.debug('[_get_page] getting {}'.format(account))
+        log.debug(f'[get_page] getting {account}')
 
-        page = 'https://instagram.com/{}'.format(account)
+        page = f'https://instagram.com/{account}'
         browser = self.authenticated_browser
         return browser.get(page)
 
-    def _get_stories(self, account):
+    def get_stories(self, account: str):
         """ Retrieve story
         """
-        story = 'https://www.instagram.com/stories/{}/'.format(account)
+        story = f'https://www.instagram.com/stories/{account}/'
         num_of_stories = 0
 
-        log.debug('[get_stories] {}'.format(story))
+        log.debug(f'[get_stories] {story}')
 
         browser = self.authenticated_browser
         browser.get(story)
@@ -76,7 +80,7 @@ class InstagramBrowserClient:
                                                  prefix='instagram/' + account)
 
         if 'Page Not Found' in browser.browser.title:
-            log.debug('[get_stories] no stories for {}'.format(account))
+            log.debug(f'[get_stories] no stories for {account}')
             return num_of_stories
 
         Sleeper.seconds('instagram', 2)
@@ -164,22 +168,26 @@ class InstagramBrowserClient:
         self.browser.get(self.urls.login_page)
 
         # user
-        self.browser.wait_for_xpath(self.xpaths.login_user)
-        self.browser.action_click(self.xpaths.login_user, 'user')
+        login_user = self.browser.wait_for_xpath(self.xpaths.login_user)
+        self.browser.action_click(login_user, 'user')
         self.browser.action_type(self.login)
 
         # password
         login_pass = self.browser.wait_for_xpath(self.xpaths.login_pass)
         self.browser.action_click(login_pass, 'login')
         self.browser.action_type(self.config.password, secret=True)
+        self.browser.action_type(self.browser.keys.ENTER)
 
         # login
-        login_btn = self.browser.wait_for_xpath(self.xpaths.login_btn)
-        self.browser.action_click(login_btn, 'login button')
+        # login_btn = self.browser.wait_for_xpath(self.xpaths.login_btn)
+        # self.browser.action_click(login_btn, 'login button')
 
         # check for "save your login info" dialogue
-        not_now = self.browser.wait_for_xpath(self.xpaths.save_info_not_now)
-        self.browser.action_click(not_now, 'dont save login info')
+        not_now = self.browser.wait_for_xpath(self.xpaths.save_info_not_now_div)
+        self.browser.action_type(self.browser.keys.TAB)
+        self.browser.action_type(self.browser.keys.TAB)
+        self.browser.action_type(self.browser.keys.ENTER)
+        # self.browser.action_click(not_now, 'dont save login info')
 
         # check for "notifications" dialogue
         notifications_not_now = self.browser.wait_for_xpath(self.xpaths.turn_on_notifications_not_now)
@@ -194,6 +202,12 @@ class InstagramBrowserClient:
             return True
 
         return False
+
+    @_is_running
+    @_is_authenticated
+    def get_followers(self, account: str):
+        url = self.urls.followers(account)
+        self.browser.get(url)
 
     @_is_running
     @_is_authenticated
@@ -215,13 +229,3 @@ class InstagramBrowserClient:
     @property
     def xpaths(self):
         return XPaths()
-
-
-def get_page(authenticated_browser, account):
-    """ Get page
-    """
-    # TODO: need to download page
-    log.debug('[get_page] getting {}'.format(account))
-    page = 'https://instagram.com/{}'.format(account)
-    browser = authenticated_browser
-    return browser.get(page)

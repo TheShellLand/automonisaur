@@ -3,11 +3,11 @@ import unittest
 from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
 
 browser = SeleniumBrowser()
-browser.set_driver(browser.type.chrome())
+browser.config.set_webdriver.Chrome().enable_defaults()
 
 
 class SeleniumClientTest(unittest.TestCase):
-    if browser.is_running():
+    if browser.run():
         def test(self):
             self.assertFalse(browser.get('http://555.555.555.555'))
             if browser.get('http://1.1.1.1'):
