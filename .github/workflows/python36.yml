@@ -1,4 +1,4 @@
-name: 3.6
+name: 3.6 EOL
 
 on:
   push:

@@ -16,7 +16,6 @@
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml)
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python38.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python38.yml)
 [![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python37.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python37.yml)
-[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python36.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python36.yml)
 
 [![Downloads](https://static.pepy.tech/badge/automonisaur)](https://pepy.tech/project/automonisaur)
 [![Downloads](https://static.pepy.tech/badge/automonisaur/month)](https://pepy.tech/project/automonisaur)
@@ -58,7 +57,7 @@ Github issues and feature requests welcomed.
 
 #### Requires
 
-- python >= 3.6
+- python >= 3.8
 
 _Note: install requirements.txt to use all integrations_
 
