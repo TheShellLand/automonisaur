@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.google import GooglePeopleClient
+from automon.integrations.google.people import GooglePeopleClient
 from automon.integrations.neo4jWrapper import Neo4jClient
 
 c = GooglePeopleClient()
