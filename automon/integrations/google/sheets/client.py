@@ -66,7 +66,7 @@ class GoogleSheetsClient(GoogleAuthClient):
                 **kwargs,
             ).execute()
 
-            print(f"{result.get('updatedCells')} cells updated.")
+            print(f"{result.get('clearedRange')} cells cleared.")
             return result
         except Exception as error:
             print(f"An error occurred: {error}")
