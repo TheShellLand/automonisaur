@@ -44,11 +44,33 @@ class GoogleSheetsClient(GoogleAuthClient):
 
     @property
     def values(self):
+        """row values"""
         if self.response:
             try:
                 return self.response['values']
             except Exception as e:
                 pass
+
+    def clear(
+            self,
+            range: str,
+            spreadsheetId: str = None,
+            **kwargs,
+    ):
+        """clear rows"""
+        try:
+
+            result = self.spreadsheets().values().clear(
+                spreadsheetId=spreadsheetId or self.config.spreadsheetId,
+                range=range or self.range,
+                **kwargs,
+            ).execute()
+
+            print(f"{result.get('updatedCells')} cells updated.")
+            return result
+        except Exception as error:
+            print(f"An error occurred: {error}")
+            return error
 
     def spreadsheets(self):
         """spreadsheet service"""
@@ -62,6 +84,7 @@ class GoogleSheetsClient(GoogleAuthClient):
             fields: Fields or str = None,
             **kwargs,
     ):
+        """get rows"""
         try:
             self.response = self.spreadsheets().get(
                 spreadsheetId=spreadsheetId or self.config.spreadsheetId,
@@ -81,6 +104,7 @@ class GoogleSheetsClient(GoogleAuthClient):
             range: str = None,
             **kwargs,
     ):
+        """get values"""
         try:
             self.response = self.spreadsheets().values().get(
                 spreadsheetId=spreadsheetId or self.config.spreadsheetId,
@@ -103,6 +127,7 @@ class GoogleSheetsClient(GoogleAuthClient):
             valueInputOption: ValueInputOption = ValueInputOption.USER_ENTERED,
             values: list = None,
     ):
+        """update rows"""
         try:
 
             body = {
