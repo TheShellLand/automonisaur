@@ -34,6 +34,7 @@ Github issues and feature requests welcomed.
 ### Integrations
 
 - airport
+- autogen
 - beautifulsoup
 - elasticsearch
 - facebook groups
