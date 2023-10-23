@@ -1,10 +1,11 @@
 import json
 import requests
 
-from automon.log import Logging
+from automon.log import logger
 from .config import RequestsConfig
 
-log = Logging(name='RequestsClient', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class RequestsClient(object):
@@ -34,17 +35,24 @@ class RequestsClient(object):
 
     def _log_result(self):
         if self.results.status_code == 200:
-            msg = f'{self.results.status_code} ' \
-                  f'{self.results.request.method} ' \
-                  f'{self.results.url} ' \
-                  f'{round(len(self.results.content) / 1024, 2)} KB'
+            msg = [
+                self.results.request.method,
+                self.results.url,
+                f'{round(len(self.results.content) / 1024, 2)} KB',
+                self.results.status_code,
+            ]
+            msg = ' '.join(msg)
             return log.debug(msg)
 
-        msg = f'{self.results.status_code} ' \
-              f'{self.results.request.method} ' \
-              f'{self.results.url} ' \
-              f'{round(len(self.results.content) / 1024, 2)} KB ' \
-              f'{self.results.content}'
+        msg = [
+            self.results.request.method,
+            self.results.url,
+            f'{round(len(self.results.content) / 1024, 2)} KB',
+            self.results.status_code,
+            self.results.content
+        ]
+
+        msg = ' '.join(msg)
         return log.error(msg, raise_exception=False)
 
     def _params(self, url, data, headers):
@@ -86,7 +94,7 @@ class RequestsClient(object):
             return True
         except Exception as e:
             self.errors = e
-            log.error(f'delete failed. {e}', enable_traceback=False)
+            log.error(f'delete failed. {e}')
         return False
 
     def get(self,
@@ -99,11 +107,17 @@ class RequestsClient(object):
 
         try:
             self.results = requests.get(url=url, data=data, headers=headers, **kwargs)
-            self._log_result()
+
+            log.debug(
+                f'{self.results.url} '
+                f'{round(len(self.results.content) / 1024, 2)} KB '
+                f'{self.results.status_code}'
+            )
+
             return True
         except Exception as e:
             self.errors = e
-            log.error(f'get failed. {e}', enable_traceback=False)
+            log.error(f'{e}')
         return False
 
     def patch(self,
@@ -116,11 +130,17 @@ class RequestsClient(object):
 
         try:
             self.results = requests.patch(url=url, data=data, headers=headers, **kwargs)
-            self._log_result()
+
+            log.debug(
+                f'{self.results.url} '
+                f'{round(len(self.results.content) / 1024, 2)} KB '
+                f'{self.results.status_code}'
+            )
+
             return True
         except Exception as e:
             self.errors = e
-            log.error(f'patch failed. {e}', enable_traceback=False)
+            log.error(f'patch failed. {e}')
         return False
 
     def post(self,
@@ -133,11 +153,17 @@ class RequestsClient(object):
 
         try:
             self.results = requests.post(url=url, data=data, headers=headers, **kwargs)
-            self._log_result()
+
+            log.debug(
+                f'{self.results.url} '
+                f'{round(len(self.results.content) / 1024, 2)} KB '
+                f'{self.results.status_code}'
+            )
+
             return True
         except Exception as e:
             self.errors = e
-            log.error(f'post failed. {e}', enable_traceback=False)
+            log.error(f'post failed. {e}')
         return False
 
     def put(self,
@@ -150,11 +176,17 @@ class RequestsClient(object):
 
         try:
             self.results = requests.put(url=url, data=data, headers=headers, **kwargs)
-            self._log_result()
+
+            log.debug(
+                f'{self.results.url} '
+                f'{round(len(self.results.content) / 1024, 2)} KB '
+                f'{self.results.status_code}'
+            )
+
             return True
         except Exception as e:
             self.errors = e
-            log.error(f'put failed. {e}', enable_traceback=False)
+            log.error(f'put failed. {e}')
         return False
 
     def to_dict(self):
