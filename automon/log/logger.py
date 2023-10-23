@@ -4,6 +4,8 @@ import traceback
 from automon.helpers import Dates
 from automon.helpers.markdown import Chat, Format
 
+from .attributes import LogRecordAttribute
+
 TEST = 5
 DEBUG = logging.DEBUG
 INFO = logging.INFO
@@ -12,7 +14,14 @@ ERROR = logging.ERROR
 CRITICAL = logging.CRITICAL
 NOTSET = logging.NOTSET
 
-logging.getLogger('logger').setLevel(CRITICAL)
+logging.getLogger(__name__).setLevel(CRITICAL)
+
+TIMESTAMP = True
+DEFAULT_LEVEL = INFO
+
+log_format = LogRecordAttribute(timestamp=TIMESTAMP).levelname().name_and_lineno().funcName().message()
+log_format = f'{log_format}'
+logging.basicConfig(level=DEFAULT_LEVEL, format=log_format)
 
 
 class Callback(object):
@@ -112,30 +121,10 @@ class Logging(object):
 
         self.callbacks = callbacks or []
 
-        spacing = 4
-
-        # logging format
-        time = '%(asctime)s'
-        levelname = '%(levelname)s'
-        logger = '%(name)s'
-        filename = '%(filename)s'
-        pathname = '%(pathname)s'
-        func = '%(funcName)s'
-        line = '%(lineno)d'
-        module = '%(module)s'
-        message = '%(message)s'
-
         if log_format:
             self.log_format = log_format
         else:
-            # self.log_format = f'{levelname}\t{message}'
-            self.log_format = f'{levelname}\t[{logger}]\t{message}'
-            # self.log_format = f'{levelname}\t[{logger}]\t[{filename} {func}:L{line}]\t{message}'
-            # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
-            # self.log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
-
-        if timestamp:
-            self.log_format = f'{time}\t{self.log_format}'
+            self.log_format = f'{LogRecordAttribute(timestamp=timestamp).levelname().name().funcName().message()}'
 
         logging.basicConfig(level=level, format=self.log_format, **kwargs)
 
