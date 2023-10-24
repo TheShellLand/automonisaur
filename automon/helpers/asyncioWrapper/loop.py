@@ -1,8 +1,9 @@
 import asyncio
 
-from automon.log import Logging, logging
+from automon.log import logger
 
-logging.getLogger("asyncioWrapper").setLevel(Logging.ERROR)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 def get_event_loop():
