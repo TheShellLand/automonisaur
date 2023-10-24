@@ -25,9 +25,15 @@ class ConfigChrome(object):
         self._window_size = set_window_size()
 
     def __repr__(self):
+        repr = [f'{__class__.__name__}', ]
+
+        if self.webdriver:
+            repr.append(f'{self.webdriver}')
+
         if self.chromedriver:
-            return f'Chrome {self.chromedriver}'
-        return f'Chrome'
+            repr.append(f'{self.chromedriver}')
+
+        return ' '.join(repr)
 
     @property
     def chrome_options(self):
