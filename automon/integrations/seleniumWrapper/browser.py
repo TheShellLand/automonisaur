@@ -217,12 +217,18 @@ class SeleniumBrowser(object):
     @_is_running
     def get_screenshot_as_png(self, **kwargs):
         """screenshot as png"""
-        return self.webdriver.get_screenshot_as_png(**kwargs)
+        screenshot = self.webdriver.get_screenshot_as_png(**kwargs)
+        log.debug(f'{round(len(screenshot) / 1024)} KB')
+
+        return screenshot
 
     @_is_running
     def get_screenshot_as_base64(self, **kwargs):
         """screenshot as base64"""
-        return self.webdriver.get_screenshot_as_base64(**kwargs)
+        screenshot = self.webdriver.get_screenshot_as_base64(**kwargs)
+        log.debug(f'{round(len(screenshot) / 1024)} KB')
+
+        return screenshot
 
     @_is_running
     def get_user_agent(self):
