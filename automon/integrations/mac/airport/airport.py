@@ -3,7 +3,7 @@ import sys
 
 from bs4 import BeautifulSoup
 
-from automon.log import Logging
+from automon.log import logger
 from automon.helpers import Run
 from automon.helpers import Dates
 
@@ -21,7 +21,8 @@ flags = {
 
 }
 
-log = Logging(name='Airport', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class Airport:
@@ -90,9 +91,10 @@ class Airport:
     def isReady(self):
         if sys.platform == 'darwin':
             if os.path.exists(self._airport):
+                log.debug(f'Airport found! {self._airport}')
                 return True
             else:
-                log.warning(f'Airport not found! {self._airport}')
+                log.error(f'Airport not found! {self._airport}')
         return False
 
     def run(self, args: str = None):
@@ -114,7 +116,8 @@ class Airport:
                 self._scan_output = self._runner.stdout
                 return True
         except Exception as e:
-            log.error(e, raise_exception=True)
+            log.error(e)
+            raise (Exception(e))
 
         return False
 
@@ -179,6 +182,6 @@ class Airport:
                 return True
 
         except Exception as e:
-            log.error(f'Scan not parsed: {e}, {self.scan_cmd}', enable_traceback=False)
+            log.error(f'Scan not parsed: {e}, {self.scan_cmd}')
 
         return False
