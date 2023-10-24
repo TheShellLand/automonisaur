@@ -1,8 +1,9 @@
-from automon.log import Logging
+from automon.log import logger
 
 from .datatypes import AbstractDataType
 
-log = Logging(name='Asset', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class Asset(AbstractDataType):

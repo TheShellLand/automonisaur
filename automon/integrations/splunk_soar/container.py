@@ -1,10 +1,11 @@
 import datetime
 
-from automon.log import Logging
+from automon.log import logger
 
 from .datatypes import AbstractDataType
 
-log = Logging('Container', level=Logging.CRITICAL)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.CRITICAL)
 
 
 class Container(AbstractDataType):

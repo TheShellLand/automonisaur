@@ -1,7 +1,8 @@
-from automon.log import Logging
+from automon.log import logger
 from automon.helpers.osWrapper import environ
 
-log = Logging(name='SplunkSoarConfig', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class SplunkSoarConfig:

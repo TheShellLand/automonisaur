@@ -3,12 +3,13 @@ import json
 from dateutil import parser
 from typing import Optional
 
-from automon.log import Logging
+from automon.log import logger
 
 from .container import Container
 from .vault import Vault
 
-log = Logging(name='Responses', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class GeneralResponse:

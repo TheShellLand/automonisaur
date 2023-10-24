@@ -4,7 +4,7 @@ import functools
 
 from typing import Optional
 
-from automon.log import Logging
+from automon.log import logger
 from automon.integrations.requestsWrapper import Requests
 
 from .action_run import ActionRun
@@ -28,8 +28,10 @@ from .responses import (
     VaultResponse
 )
 
-log = Logging(name='SplunkSoarClient', level=Logging.DEBUG)
-Logging(name='RequestsClient', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
+
+logger.logging.getLogger('RequestsClient').setLevel(logger.DEBUG)
 
 
 class SplunkSoarClient:
@@ -98,7 +100,7 @@ class SplunkSoarClient:
                 log.info(f'container closed: {response}')
                 return response
 
-        log.error(msg=f'close failed. {self.client.to_dict()}', raise_exception=False)
+        log.error(msg=f'close failed. {self.client.to_dict()}')
 
     @_is_connected
     def cancel_playbook_run(
@@ -115,7 +117,7 @@ class SplunkSoarClient:
                 log.info(f'cancel playbook run: {response}')
                 return response
 
-        log.error(f'cancel failed: {playbook_run_id} {self.client.to_dict()}', enable_traceback=False)
+        log.error(f'cancel failed: {playbook_run_id} {self.client.to_dict()}')
 
     @_is_connected
     def create_artifact(
@@ -170,7 +172,7 @@ class SplunkSoarClient:
                 log.info(f'artifact exists. {artifact} {self.client.to_dict()}')
                 return self.get_artifact(artifact_id=existing_artifact_id)
 
-        log.error(f'create artifact. {self.client.to_dict()}', enable_traceback=False)
+        log.error(f'create artifact. {self.client.to_dict()}')
         return False
 
     @_is_connected
@@ -239,7 +241,7 @@ class SplunkSoarClient:
                 response = CreateContainerResponse(self.client.to_dict())
                 log.info(f'container created. {container} {response}')
                 return response
-        log.error(f'create container. {self.client.to_dict()}', enable_traceback=False)
+        log.error(f'create container. {self.client.to_dict()}')
         return False
 
     @staticmethod
@@ -274,7 +276,7 @@ class SplunkSoarClient:
             log.info(f'create attachment: {response}')
             return response
 
-        log.error(f'create attachment failed.', raise_exception=False)
+        log.error(f'create attachment failed.')
 
     @_is_connected
     def create_vault(
@@ -299,7 +301,7 @@ class SplunkSoarClient:
             log.info(msg=f'add vault: {response}')
             return response
 
-        log.error(msg=f'add vault failed.', raise_exception=False)
+        log.error(msg=f'add vault failed.')
 
     @_is_connected
     def delete_container(self, container_id, *args, **kwargs):
@@ -310,7 +312,7 @@ class SplunkSoarClient:
             if self.client.results.status_code == 200:
                 log.info(f'container deleted: {container_id}')
                 return True
-        log.error(f'delete container: {container_id}. {self.client.to_dict()}', enable_traceback=False)
+        log.error(f'delete container: {container_id}. {self.client.to_dict()}')
         return False
 
     def is_connected(self) -> bool:
@@ -350,7 +352,7 @@ class SplunkSoarClient:
             log.info(f'generic delete {api}: {response}')
             return response
 
-        log.error(f'failed generic delete {api}', raise_exception=False)
+        log.error(f'failed generic delete {api}')
 
     @_is_connected
     def generic_get(self, api: str, **kwargs) -> Optional[GenericResponse]:
@@ -360,7 +362,7 @@ class SplunkSoarClient:
             log.info(f'generic get {api}: {response}')
             return response
 
-        log.error(f'failed generic get {api}', raise_exception=False)
+        log.error(f'failed generic get {api}')
 
     @_is_connected
     def generic_post(self, api: str, data: dict, **kwargs) -> Optional[GenericResponse]:
@@ -370,7 +372,7 @@ class SplunkSoarClient:
             log.info(f'generic post {api}: {response}')
             return response
 
-        log.error(f'failed generic post {api}', raise_exception=False)
+        log.error(f'failed generic post {api}')
 
     @_is_connected
     def get_action_run(self, action_run_id: int = None, **kwargs) -> ActionRun:
@@ -380,7 +382,7 @@ class SplunkSoarClient:
             log.info(f'get action run: {action_run}')
             return action_run
 
-        log.error(f'action run not found: {action_run_id}', enable_traceback=False)
+        log.error(f'action run not found: {action_run_id}')
         return ActionRun()
 
     @_is_connected
@@ -391,7 +393,7 @@ class SplunkSoarClient:
             log.info(f'get artifact: {artifact}')
             return artifact
 
-        log.error(f'artifact not found: {artifact_id}', enable_traceback=False)
+        log.error(f'artifact not found: {artifact_id}')
         return Artifact()
 
     @_is_connected
@@ -402,7 +404,7 @@ class SplunkSoarClient:
             log.info(f'get container: {container}')
             return container
 
-        log.error(f'container not found: {container_id}', enable_traceback=False)
+        log.error(f'container not found: {container_id}')
         return Container()
 
     @_is_connected
@@ -415,10 +417,10 @@ class SplunkSoarClient:
                 log.info(f'playbook run: {response}')
                 return response
 
-            log.error(f'playbook run failed: {response.message_to_dict}', enable_traceback=False)
+            log.error(f'playbook run failed: {response.message_to_dict}')
             return response
 
-        log.error(f'playbook failed: {self.client.errors}', enable_traceback=False)
+        log.error(f'playbook failed: {self.client.errors}')
 
     @_is_connected
     def get_vault(self, vault_id: int, **kwargs) -> Optional[Vault]:
@@ -429,7 +431,7 @@ class SplunkSoarClient:
                 log.info(msg=f'get vault: {response}')
                 return response
 
-        log.error(msg=f'get vault failed: {self.client.to_dict()}', raise_exception=False)
+        log.error(msg=f'get vault failed: {self.client.to_dict()}')
 
     @_is_connected
     def list_artifact(self, **kwargs) -> Response:
@@ -502,7 +504,7 @@ class SplunkSoarClient:
                 return True
 
             elif response.data is None:
-                log.error(f'list app runs failed', enable_traceback=True)
+                log.error(f'list app runs failed')
                 return False
 
             else:
@@ -569,7 +571,7 @@ class SplunkSoarClient:
                 return True
 
             elif response.data is None:
-                log.error(f'list container failed', enable_traceback=True)
+                log.error(f'list container failed')
                 return False
 
             else:
@@ -600,7 +602,7 @@ class SplunkSoarClient:
             response = Response(self._content_dict())
             log.info(f'list containers: {len(response.data)}')
             return response
-        log.error(f'no containers', enable_traceback=False)
+        log.error(f'no containers')
         return Response()
 
     @_is_connected
@@ -642,7 +644,7 @@ class SplunkSoarClient:
                 break
 
             elif response.data is None:
-                log.error(f'list container failed', enable_traceback=True)
+                log.error(f'list container failed')
                 break
 
             else:
@@ -666,7 +668,7 @@ class SplunkSoarClient:
             log.info(msg=f'list vault: {response}')
             return response
 
-        log.error(msg=f'list vault failed.', raise_exception=False)
+        log.error(msg=f'list vault failed.')
 
     @_is_connected
     def list_vault_generator(
@@ -705,7 +707,7 @@ class SplunkSoarClient:
                 break
 
             elif response.data is None:
-                log.error(f'list vault failed', enable_traceback=True)
+                log.error(f'list vault failed')
                 break
 
             else:
@@ -733,7 +735,7 @@ class SplunkSoarClient:
                 log.info(f'update playbook: {data}')
                 return response
 
-        log.error(f'update failed: {self.client.to_dict()}', enable_traceback=False)
+        log.error(f'update failed: {self.client.to_dict()}')
 
     @_is_connected
     def run_playbook(
@@ -757,4 +759,4 @@ class SplunkSoarClient:
                 log.info(f'run playbook: {data}')
                 return response
 
-        log.error(f'run failed: {self.client.to_dict()}', enable_traceback=False)
+        log.error(f'run failed: {self.client.to_dict()}')
