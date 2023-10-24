@@ -3,10 +3,11 @@ import subprocess
 from pprint import pprint
 from subprocess import PIPE
 
-from automon.log.logger import Logging
+from automon.log import logger
 from automon.helpers.dates import Dates
 
-log = Logging(name='Run', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class Run:
@@ -118,14 +119,14 @@ class Run:
                     log.debug(f'[stdout] {stdout}')
 
                 if self.stderr:
-                    log.error(f'[stderr] {stderr}', enable_traceback=False)
+                    log.error(f'[stderr] {stderr}')
 
                 if self.returncode == 0:
                     return True
 
         except Exception as e:
             self.stderr = f'{e}'.encode()
-            log.error(f'{e}', enable_traceback=False)
+            log.error(f'{e}')
 
         return False
 
