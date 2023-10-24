@@ -1,11 +1,12 @@
-from automon.log import Logging
+from automon.log import logger
 from automon.helpers import Run
+
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.ERROR)
 
 
 class NmapConfig(object):
     def __init__(self, **kwargs):
-        self._log = Logging(name=NmapConfig.__name__, level=Logging.ERROR)
-
         self.nmap = None
 
     def __repr__(self):
@@ -18,9 +19,9 @@ class NmapConfig(object):
 
         if check.stdout:
             self.nmap = check.stdout.decode().strip()
-            self._log.debug(f'nmap located, {self.nmap}')
+            log.debug(f'nmap located, {self.nmap}')
             return True
         else:
-            self._log.error(f'nmap not found', enable_traceback=False)
+            log.error(f'nmap not found')
 
         return False
