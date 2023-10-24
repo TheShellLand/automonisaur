@@ -2,9 +2,10 @@ import re
 
 from neo4j.work.summary import ResultSummary
 
-from automon.log import Logging
+from automon.log import logger
 
-log = Logging(name='ResultSummary', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class Results(ResultSummary):

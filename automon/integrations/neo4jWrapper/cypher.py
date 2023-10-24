@@ -3,9 +3,10 @@ import re
 from urllib.parse import urlencode
 from datetime import datetime, timezone
 
-from automon.log import Logging
+from automon.log import logger
 
-log = Logging(name='Cypher', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class Node:
@@ -61,7 +62,7 @@ class Cypher:
             return ''
 
         if re.search('[:]', label):
-            log.warn(f"Invalid label '{label}': Colon is not needed here")
+            log.warning(f"Invalid label '{label}': Colon is not needed here")
             label = label.replace(':', '')
 
         if re.search('[`]', label):

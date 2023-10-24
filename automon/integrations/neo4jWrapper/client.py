@@ -4,14 +4,15 @@ import logging
 from neo4j import GraphDatabase
 from queue import Queue
 
-from automon.log import Logging
+from automon.log import logger
 from automon.integrations.neo4jWrapper.cypher import Cypher
 
 from .config import Neo4jConfig
 from .results import Results
 
-logging.getLogger('neo4j').setLevel(logging.ERROR)
-log = Logging('Neo4jClient', Logging.DEBUG)
+logger.logging.getLogger('neo4j').setLevel(logging.ERROR)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class Neo4jClient:
@@ -53,8 +54,7 @@ class Neo4jClient:
             return client
 
         except Exception as e:
-            log.error(f'Cannot connect to neo4j server: {self._config.NEO4J_HOST}, {e}',
-                      enable_traceback=False, raise_exception=False)
+            log.error(f'Cannot connect to neo4j server: {self._config.NEO4J_HOST}, {e}')
 
         return False
 
@@ -185,7 +185,7 @@ class Neo4jClient:
 
             return True
         except Exception as e:
-            log.error(f"{e}", enable_traceback=False, raise_exception=True)
+            log.error(f"{e}")
 
         return False
 

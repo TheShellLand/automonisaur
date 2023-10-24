@@ -1,10 +1,11 @@
 import os
 
-from automon.log import Logging
+from automon.log import logger
 from automon.helpers.sanitation import Sanitation
 from automon.helpers.osWrapper.environ import environ
 
-log = Logging(name='Neo4jConfig', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class Neo4jConfig:
@@ -24,9 +25,9 @@ class Neo4jConfig:
         self.encrypted = encrypted
         self.trust = trust
 
-        if not self.NEO4J_USER: log.warn(f'missing NEO4J_USER')
-        if not self.NEO4J_PASSWORD: log.warn(f'missing NEO4J_PASSWORD')
-        if not self.NEO4J_HOST: log.warn(f'missing NEO4J_HOST')
+        if not self.NEO4J_USER: log.error(f'missing NEO4J_USER')
+        if not self.NEO4J_PASSWORD: log.error(f'missing NEO4J_PASSWORD')
+        if not self.NEO4J_HOST: log.error(f'missing NEO4J_HOST')
 
     @property
     def is_ready(self) -> bool:
