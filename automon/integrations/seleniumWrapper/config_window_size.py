@@ -1,3 +1,8 @@
+from automon.log import logger
+
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.INFO)
+
 def set_window_size(width=1920, height=1080, device_type=None) -> (int, int):
     """set browser resolution"""
 
@@ -44,5 +49,7 @@ def set_window_size(width=1920, height=1080, device_type=None) -> (int, int):
     if not width and not height:
         width = 1920
         height = 1080
+
+    log.debug(f'{width}, {height}')
 
     return width, height

@@ -3,12 +3,13 @@ import warnings
 import selenium
 import selenium.webdriver
 
-from automon.log import Logging
+from automon.log import logger
 from automon.helpers.osWrapper.environ import environ
 
 from .config_window_size import set_window_size
 
-log = Logging(name='ConfigChrome', level=Logging.INFO)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class ConfigChrome(object):
@@ -240,7 +241,7 @@ class ConfigChrome(object):
         return self
 
     def run(self) -> selenium.webdriver.Chrome:
-        log.info(f'starting {self}')
+        log.info(f'{self}')
         try:
             if self.chromedriver:
                 self._ChromeService = selenium.webdriver.ChromeService(
@@ -255,28 +256,33 @@ class ConfigChrome(object):
             self._webdriver = selenium.webdriver.Chrome(options=self.chrome_options)
             return self.webdriver
         except Exception as e:
-            log.error(f'Browser not set. {e}', raise_exception=True)
+            log.error(f'Browser not set. {e}')
 
     def set_chromedriver(self, chromedriver: str):
+        log.debug(f'{chromedriver}')
         self._chromedriver = chromedriver
         self.update_paths()
         return self
 
     def set_locale(self, locale: str = 'en'):
+        log.debug(f'{locale}')
         self.chrome_options.add_argument(f"--lang={locale}")
         return self
 
     def set_locale_experimental(self, locale: str = 'en-US'):
+        log.debug(f'{locale}')
         self.chrome_options.add_experimental_option(
             name='prefs',
             value={'intl.accept_languages': locale})
         return self
 
     def set_user_agent(self, user_agent: str):
+        log.debug(f'{user_agent}')
         self.chrome_options.add_argument(f"user-agent={user_agent}")
         return self
 
     def set_window_size(self, *args, **kwargs):
+        log.debug(f'{args} {kwargs}')
         self._window_size = set_window_size(*args, **kwargs)
         width, height = self.window_size
         self.webdriver.set_window_size(width=width, height=height)

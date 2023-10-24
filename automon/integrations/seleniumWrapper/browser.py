@@ -9,7 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
-from automon.log import Logging
+from automon.log import logger
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
@@ -19,7 +19,8 @@ from .config import SeleniumConfig
 from .browser_types import SeleniumBrowserType
 from .user_agents import SeleniumUserAgentBuilder
 
-log = Logging(name='SeleniumBrowser', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class SeleniumBrowser(object):
@@ -124,12 +125,12 @@ class SeleniumBrowser(object):
             click = self.find_element(value=xpath, by=self.by.XPATH)
             click.click()
             if note:
-                log.debug(f'click: ({note}) {xpath}')
+                log.debug(f'({note}) {xpath}')
             else:
-                log.debug(f'click: {xpath}')
+                log.debug(f'{xpath}')
             return click
         except Exception as e:
-            log.error(f'failed to click: {xpath}, {e}', enable_traceback=False)
+            log.error(f'failed {xpath}, {e}')
         return False
 
     @_is_running
@@ -144,16 +145,16 @@ class SeleniumBrowser(object):
             if secret:
                 key = f'*' * len(key)
 
-            log.debug(f'type: {key}')
+            log.debug(f'{key}')
             return True
         except Exception as e:
-            log.error(f'failed to type: {key}, {e}', enable_traceback=False)
+            log.error(f'failed {key}, {e}')
         return False
 
     @_is_running
     def close(self):
         """close browser"""
-        log.info(f'Browser closed')
+        log.info(f'closed')
         self.webdriver.close()
 
     @_is_running
@@ -181,15 +182,15 @@ class SeleniumBrowser(object):
             self.webdriver.get(url, **kwargs)
             self.request = RequestsClient(url=url)
 
-            msg = f'GET {self.status} {self.webdriver.current_url}'
+            msg = f'{self.webdriver.current_url} {self.status}'
             if kwargs:
                 msg += f', {kwargs}'
             log.debug(msg)
             return True
         except Exception as e:
             self.request = RequestsClient(url=url)
-            msg = f'GET {self.status}: {e}'
-            log.error(msg, enable_traceback=False)
+            msg = f'{self.status}: {e}'
+            log.error(msg)
 
         return False
 
@@ -311,7 +312,7 @@ class SeleniumBrowser(object):
                             log.debug(f'waiting for {by}: {self.url} {value}')
                             return value
                         except:
-                            log.error(f'{by} not found: {self.url} {value}', enable_traceback=False)
+                            log.error(f'{by} not found: {self.url} {value}')
                 else:
                     self.find_element(
                         by=by,
@@ -320,14 +321,13 @@ class SeleniumBrowser(object):
                     log.debug(f'waiting for {by}: {self.url} {value}')
                     return value
             except Exception as error:
-                log.error(f'not found {by}: {self.url} {value}, {error}',
-                          enable_traceback=False)
+                log.error(f'not found {by}: {self.url} {value}, {error}')
                 Sleeper.seconds(f'wait for', 1)
 
             retry += 1
 
             if retry > retries:
-                log.error(f'max wait reached: {self.url}', enable_traceback=False)
+                log.error(f'max wait reached: {self.url}')
                 break
         return False
 
