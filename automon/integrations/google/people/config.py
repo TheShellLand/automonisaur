@@ -191,7 +191,7 @@ class GooglePeopleConfig:
                 )
             }
 
-        log.warn(f'Missing client_type')
+        log.warning(f'Missing client_type')
         return False
 
     def from_authorized_user_file(self, file: str) -> Credentials:
@@ -204,7 +204,7 @@ class GooglePeopleConfig:
         if self.oauth_dict():
             return True
 
-        log.warn(f'config is not ready')
+        log.warning(f'config is not ready')
         return False
 
     def load_oauth(self, oauth: dict) -> Credentials:

@@ -34,13 +34,13 @@ class MinioConfig(object):
         self._http_client = http_client or environ('MINIO_HTTP_CLIENT')
 
         if not self.endpoint:
-            log.warn(f'missing MINIO_ENDPOINT')
+            log.warning(f'missing MINIO_ENDPOINT')
 
         if not self.access_key:
-            log.warn(f'missing MINIO_ACCESS_KEY')
+            log.warning(f'missing MINIO_ACCESS_KEY')
 
         if not self.secret_key:
-            log.warn(f'missing MINIO_SECRET_KEY')
+            log.warning(f'missing MINIO_SECRET_KEY')
 
     @property
     def access_key(self):

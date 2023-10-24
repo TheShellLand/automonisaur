@@ -138,7 +138,7 @@ class Run:
 
             for arg in split_command:
                 if '|' in arg:
-                    log.warn(f'Pipes are not supported! {split_command}')
+                    log.warning(f'Pipes are not supported! {split_command}')
 
         return self.command
 

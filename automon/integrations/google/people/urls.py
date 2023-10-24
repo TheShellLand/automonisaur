@@ -52,5 +52,5 @@ class GooglePeopleUrls:
         return ','.join(self.personFields)
 
     def resourceName(self) -> str:
-        log.warn(msg=f'resourceName is deprecieated. Only people/me is valid.')
+        log.warning(msg=f'resourceName is deprecieated. Only people/me is valid.')
         return f'{self.RESOURCE_NAME}/me'

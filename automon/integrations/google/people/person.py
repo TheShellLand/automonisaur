@@ -7,7 +7,7 @@ log = Logging(name='GooglePeople', level=Logging.DEBUG)
 
 class AgeRange(Enum):
     """Please use person.ageRanges instead"""
-    log.warn(DeprecationWarning)
+    log.warning(DeprecationWarning)
 
     AGE_RANGE_UNSPECIFIED = 'AGE_RANGE_UNSPECIFIED'
     LESS_THAN_EIGHTEEN = 'LESS_THAN_EIGHTEEN'
@@ -393,7 +393,7 @@ class Relation(object):
 
 
 class RelationshipInterest(object):
-    log.warn(DeprecationWarning)
+    log.warning(DeprecationWarning)
 
     metadata: {
         FieldMetadata
@@ -403,7 +403,7 @@ class RelationshipInterest(object):
 
 
 class RelationshipStatus(object):
-    log.warn(DeprecationWarning)
+    log.warning(DeprecationWarning)
 
     metadata: {
         FieldMetadata
@@ -413,7 +413,7 @@ class RelationshipStatus(object):
 
 
 class Residence(object):
-    log.warn(DeprecationWarning)
+    log.warning(DeprecationWarning)
 
     metadata: {
         FieldMetadata
@@ -439,7 +439,7 @@ class Skill(object):
 
 
 class Tagline(object):
-    log.warn(DeprecationWarning)
+    log.warning(DeprecationWarning)
 
     metadata: {
         FieldMetadata

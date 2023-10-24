@@ -92,7 +92,7 @@ class Airport:
             if os.path.exists(self._airport):
                 return True
             else:
-                log.warn(f'Airport not found! {self._airport}')
+                log.warning(f'Airport not found! {self._airport}')
         return False
 
     def run(self, args: str = None):

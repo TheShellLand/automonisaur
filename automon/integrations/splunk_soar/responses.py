@@ -134,7 +134,7 @@ class PlaybookRun(GeneralResponse):
         try:
             return json.loads(self.message)
         except Exception as e:
-            log.warn(f'message is not json. {e}')
+            log.warning(f'message is not json. {e}')
 
     @property
     def playbook_name(self):

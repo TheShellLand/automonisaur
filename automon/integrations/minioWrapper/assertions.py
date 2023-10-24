@@ -9,5 +9,5 @@ class MinioAssertions:
     def bucket_name(bucket: str) -> bool:
         if bucket == f'{bucket}'.lower():
             return f'{bucket}'
-        log.warn(msg=f'bucket name "{bucket}" must be lower')
+        log.warning(msg=f'bucket name "{bucket}" must be lower')
         return f'{bucket}'.lower()

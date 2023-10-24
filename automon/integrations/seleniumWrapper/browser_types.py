@@ -117,7 +117,7 @@ class SeleniumBrowserType(object):
 
     def opera(self):
         """Depreciated: Opera"""
-        log.warn(f'Opera is depreciated')
+        log.warning(f'Opera is depreciated')
 
     def proxy(self, **kwargs) -> Proxy:
         """Proxy"""
@@ -126,7 +126,7 @@ class SeleniumBrowserType(object):
 
     def phantomjs(self):
         """PhantomJS"""
-        log.warn(f'PhantomJS not supported')
+        log.warning(f'PhantomJS not supported')
 
     def remote(self, **kwargs) -> Remote:
         """Remote"""

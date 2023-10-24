@@ -60,7 +60,7 @@ class ConfigChrome(object):
         return self._window_size
 
     def disable_certificate_verification(self):
-        log.warn('Certificates are not verified')
+        log.warning('Certificates are not verified')
         self.chrome_options.add_argument('--ignore-certificate-errors')
         return self
 
@@ -86,12 +86,12 @@ class ConfigChrome(object):
         return self
 
     def disable_shm(self):
-        log.warn('Disabled shm will use disk I/O, and will be slow')
+        log.warning('Disabled shm will use disk I/O, and will be slow')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
         return self
 
     def enable_bigshm(self):
-        log.warn('Big shm not yet implemented')
+        log.warning('Big shm not yet implemented')
         return self
 
     def enable_defaults(self):
@@ -158,7 +158,7 @@ class ConfigChrome(object):
         """Headless Chrome with sandbox enabled
 
         """
-        log.warn(
+        log.warning(
             'Docker does not support sandbox option. '
             'Default shm size is 64m, which will cause chrome driver to crash.'
         )
@@ -171,7 +171,7 @@ class ConfigChrome(object):
         """Headless Chrome with sandbox disabled
 
         """
-        log.warn('Default shm size is 64m, which will cause chrome driver to crash.')
+        log.warning('Default shm size is 64m, which will cause chrome driver to crash.')
 
         self.enable_defaults()
         self.enable_headless()
@@ -182,7 +182,7 @@ class ConfigChrome(object):
         """Headless Chrome with sandbox disabled with no certificate verification
 
         """
-        log.warn('Default shm size is 64m, which will cause chrome driver to crash.')
+        log.warning('Default shm size is 64m, which will cause chrome driver to crash.')
 
         self.enable_defaults()
         self.enable_headless()
@@ -204,7 +204,7 @@ class ConfigChrome(object):
         """Headless Chrome with sandbox disabled
 
         """
-        log.warn('Larger shm option is not implemented')
+        log.warning('Larger shm option is not implemented')
 
         self.enable_defaults()
         self.enable_headless()
@@ -228,7 +228,7 @@ class ConfigChrome(object):
         """Chrome with sandbox enabled
 
         """
-        log.warn(
+        log.warning(
             'Docker does not support sandbox option. '
             'Default shm size is 64m, which will cause chrome driver to crash.'
         )
@@ -240,7 +240,7 @@ class ConfigChrome(object):
         """Chrome with sandbox disabled
 
         """
-        log.warn('Default shm size is 64m, which will cause chrome driver to crash.')
+        log.warning('Default shm size is 64m, which will cause chrome driver to crash.')
 
         self.enable_defaults()
         self.disable_sandbox()

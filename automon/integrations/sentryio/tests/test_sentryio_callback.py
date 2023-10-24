@@ -14,7 +14,7 @@ class CallbackTest(unittest.TestCase):
         self.assertTrue(self.log.info('test'))
         self.assertTrue(self.log.debug('test'))
         self.assertTrue(self.log.error('test'))
-        self.assertTrue(self.log.warn('test'))
+        self.assertTrue(self.log.warning('test'))
         self.assertTrue(self.log.critical('test'))
 
 

@@ -325,7 +325,7 @@ class SplunkSoarClient:
                 return True
 
         else:
-            log.warn(f'client not connected')
+            log.warning(f'client not connected')
         return False
 
     @_is_connected
