@@ -267,9 +267,11 @@ class SeleniumBrowser(object):
 
         save = os.path.join(path, filename)
 
-        log.info(f'Saving screenshot to: {save}')
+        if self.webdriver.save_screenshot(save, **kwargs):
+            log.info(f'Saving screenshot to: {save} ({round(os.stat(save).st_size / 1024)} KB)')
+            return True
 
-        return self.webdriver.save_screenshot(save, **kwargs)
+        return False
 
     @_is_running
     def set_window_size(self, width=1920, height=1080, device_type=None) -> bool:
