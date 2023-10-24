@@ -30,7 +30,6 @@ class Neo4jAsyncClient:
         :param hosts: list
         :param encrypted: bool
         """
-        self._log = Logging(Neo4jAsyncClient.__name__, Logging.DEBUG)
 
         self.config = config or Neo4jConfig(
             user=user,
@@ -61,7 +60,7 @@ class Neo4jAsyncClient:
             return client
 
         except Exception as e:
-            self._log.error(f'Cannot connect to neo4j server: {self.config.NEO4J_HOST}, {e}')
+            log.error(f'Cannot connect to neo4j server: {self.config.NEO4J_HOST}, {e}')
 
         return False
 
@@ -79,10 +78,10 @@ class Neo4jAsyncClient:
         try:
             while not self.cypher.empty():
                 cypher = self.cypher.get_nowait()
-                self._log.debug(f'cypher: {cypher}')
+                log.debug(f'cypher: {cypher}')
                 self.session.run(cypher)
             return True
         except Exception as e:
-            self._log.error(f'{e}')
+            log.error(f'{e}')
 
         return False
