@@ -166,7 +166,10 @@ class Airport:
         self.scan(ssid=ssid, args='-x', channel=channel)
 
         data = self._scan_output
-        data = [x.strip() for x in data.splitlines()]
+        data = [x for x in data.splitlines()]
+        data = [x.decode() for x in data]
+        data = [f'{x}' for x in data]
+        data = [x.strip() for x in data]
         data = ''.join(data)
 
         try:
