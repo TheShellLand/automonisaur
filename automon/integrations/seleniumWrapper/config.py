@@ -1,10 +1,11 @@
 import selenium.webdriver
 
-from automon.log import Logging
+from automon.log import logger
 
 from .config_webdriver import ConfigWebdriver
 
-log = Logging(name='SeleniumConfig', level=Logging.INFO)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class SeleniumConfig(object):

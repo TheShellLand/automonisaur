@@ -10,7 +10,7 @@ from selenium.webdriver import Remote
 from selenium.webdriver import Safari
 from selenium.webdriver import WebKitGTK
 
-from automon.log import Logging
+from automon.log import logger
 
 from .config import SeleniumConfig
 
@@ -23,8 +23,8 @@ except:
     from selenium.webdriver import Chrome as ChromiumEdge
     from selenium.webdriver import Chrome as WPEWebKit
 
-log = Logging(name='SeleniumBrowserType', level=Logging.DEBUG)
-
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 class SeleniumBrowserType(object):
     config: SeleniumConfig
@@ -52,7 +52,7 @@ class SeleniumBrowserType(object):
                 return self.webdriver.Chrome(executable_path=self.chromedriver, options=chrome_options)
             return self.webdriver.Chrome(options=chrome_options)
         except Exception as e:
-            log.error(f'Browser not set. {e}', enable_traceback=False)
+            log.error(f'Browser not set. {e}')
 
     def chrome_headless(self, options: list = None, **kwargs) -> Chrome:
         """Chrome headless
@@ -80,7 +80,7 @@ class SeleniumBrowserType(object):
                 return self.webdriver.Chrome(self.chromedriver, options=chrome_options, **kwargs)
             return self.webdriver.Chrome(options=chrome_options, **kwargs)
         except Exception as e:
-            log.error(f'Browser not set. {e}', enable_traceback=False)
+            log.error(f'Browser not set. {e}')
 
     @property
     def chromium_edge(self, options: list = None, **kwargs) -> ChromiumEdge:
@@ -98,7 +98,7 @@ class SeleniumBrowserType(object):
                 return self.webdriver.ChromiumEdge(self.chromedriver, options=chromium_options, **kwargs)
             return self.webdriver.ChromiumEdge(options=chromium_options, **kwargs)
         except Exception as e:
-            log.error(f'Browser not set. {e}', enable_traceback=False)
+            log.error(f'Browser not set. {e}')
 
     def edge(self, **kwargs) -> Edge:
         """Edge"""

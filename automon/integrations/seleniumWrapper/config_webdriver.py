@@ -1,10 +1,11 @@
 import selenium.webdriver
 
-from automon.log import Logging
+from automon.log import logger
 
 from .config_webdriver_chrome import ConfigChrome
 
-log = Logging(name='ConfigWebdriver', level=Logging.INFO)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class ConfigWebdriver(object):
@@ -80,7 +81,7 @@ class ConfigWebdriver(object):
         try:
             return self.webdriver_wrapper.run()
         except Exception as e:
-            log.error(f'failed to run: {e}', enable_traceback=False)
+            log.error(f'failed to run: {e}')
 
     def start(self):
         """alias to run"""
