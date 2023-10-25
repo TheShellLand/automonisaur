@@ -1,8 +1,9 @@
-from automon import Logging
+from automon.log import logger
 
 from automon.helpers.osWrapper.environ import environ
 
-log = Logging('InstagramConfig', level=Logging.INFO)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.INFO)
 
 
 class InstagramConfig(object):
@@ -16,7 +17,7 @@ class InstagramConfig(object):
         if self.login and self.password:
             log.info(f'config ready')
             return True
-        log.warning(f'missing login and password')
+        log.error(f'missing login and password')
         return False
 
     def __repr__(self):

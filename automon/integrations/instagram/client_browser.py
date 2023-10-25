@@ -1,6 +1,6 @@
 import functools
 
-from automon import Logging
+from automon.log import logger
 from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
 
 from automon.helpers.sleeper import Sleeper
@@ -10,7 +10,8 @@ from .config import InstagramConfig
 from .urls import Urls
 from .xpaths import XPaths
 
-log = Logging('InstagramClientBrowser', level=Logging.INFO)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.INFO)
 
 
 class InstagramBrowserClient:
@@ -123,7 +124,7 @@ class InstagramBrowserClient:
                 log.debug('[next_story] next story')
                 return button.click()
             except Exception as error:
-                log.error(f'{error}', enable_traceback=False)
+                log.error(f'{error}')
 
         if not found_btn:
             # no more stories. exit

@@ -1,14 +1,15 @@
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
-from automon.log.logger import Logging
+from automon.log import logger
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.seleniumWrapper.config import SeleniumConfig
 from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
 
 from automon.integrations.minioWrapper import MinioClient
 
-log = Logging(name='instagram', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 def authenticate(username, password, minio_client=None, retries=None):
