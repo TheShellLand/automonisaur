@@ -1,9 +1,10 @@
 import datetime
 
-from automon.log import Logging
+from automon.log import logger
 from automon.integrations.seleniumWrapper import SeleniumBrowser
 
-log = Logging(name='FacebookGroups', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class FacebookGroups(object):
@@ -83,7 +84,7 @@ class FacebookGroups(object):
                 xpath_content_unavailble = self._browser.wait_for_xpath(self.xpath_content_unavailble)
                 self._content_unavailable = self._browser.find_xpath(xpath_content_unavailble).text
             except Exception as e:
-                log.error(f"can't get content message {self.url}: {e}", enable_traceback=False)
+                log.error(f"can't get content message {self.url}: {e}")
 
         return self._content_unavailable
 
@@ -97,7 +98,7 @@ class FacebookGroups(object):
                 xpath_creation_date = self._browser.wait_for_xpath(self.xpath_creation_date)
                 self._creation_date = self._browser.find_xpath(xpath_creation_date).text
             except Exception as e:
-                log.error(f"can't get creation date {self.url}: {e}", enable_traceback=False)
+                log.error(f"can't get creation date {self.url}: {e}")
 
         return self._creation_date
 
@@ -117,7 +118,7 @@ class FacebookGroups(object):
                 xpath_history = self._browser.wait_for_xpath(self.xpath_history)
                 self._history = self._browser.find_xpath(xpath_history).text
             except Exception as e:
-                log.error(f"can't get history {self.url}: {e}", enable_traceback=False)
+                log.error(f"can't get history {self.url}: {e}")
 
         return self._history
 
@@ -132,7 +133,7 @@ class FacebookGroups(object):
                 self._members = self._browser.find_xpath(xpath_members).text
                 # TODO: need to clean up string from members and remove bad chars
             except Exception as e:
-                log.error(f"can't get member count {self.url}: {e}", enable_traceback=False)
+                log.error(f"can't get member count {self.url}: {e}")
 
         return self._members
 
@@ -186,7 +187,7 @@ class FacebookGroups(object):
                 xpath_posts_today = self._browser.wait_for_xpath(self.xpath_posts_today)
                 self._posts_today = self._browser.find_xpath(xpath_posts_today).text
             except Exception as e:
-                log.error(f"can't get today's posts {self.url}: {e}", enable_traceback=False)
+                log.error(f"can't get today's posts {self.url}: {e}")
 
         return self._posts_today
 
@@ -213,7 +214,7 @@ class FacebookGroups(object):
                 xpath_privacy = self._browser.wait_for_xpath(self.xpath_privacy)
                 self._privacy = self._browser.find_xpath(xpath_privacy).text
             except Exception as e:
-                log.error(f"can't get privacy {self.url}: {e}", enable_traceback=False)
+                log.error(f"can't get privacy {self.url}: {e}")
 
         return self._privacy
 
@@ -227,7 +228,7 @@ class FacebookGroups(object):
                 xpath_privacy_details = self._browser.wait_for_xpath(self.xpath_privacy_details)
                 self._privacy_details = self._browser.find_xpath(xpath_privacy_details).text
             except Exception as e:
-                log.error(f"can't get privacy details {self.url}: {e}", enable_traceback=False)
+                log.error(f"can't get privacy details {self.url}: {e}")
 
         return self._privacy_details
 
@@ -241,7 +242,7 @@ class FacebookGroups(object):
                 xpath_title = self._browser.wait_for_xpath(self.xpath_title)
                 self._title = self._browser.find_xpath(xpath_title).text
             except Exception as e:
-                log.error(f"can't get title {self.url}: {e}", enable_traceback=False)
+                log.error(f"can't get title {self.url}: {e}")
 
         return self._title
 
@@ -259,7 +260,7 @@ class FacebookGroups(object):
                 xpath_visible = self._browser.wait_for_xpath(self.xpath_visible)
                 self._visible = self._browser.find_xpath(xpath_visible).text
             except Exception as e:
-                log.error(f"can't get visible {self.url}: {e}", enable_traceback=False)
+                log.error(f"can't get visible {self.url}: {e}")
 
         return self._visible
 
