@@ -1,10 +1,10 @@
 from .client import RequestsClient
 from .config import RequestsConfig
 
-from automon import Logging
+from automon.log import logger
 
-log = Logging('BaseRestClient', level=Logging.DEBUG)
-
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 class BaseRestClient:
     requests: RequestsClient

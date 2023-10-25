@@ -53,7 +53,7 @@ class RequestsClient(object):
         ]
 
         msg = ' '.join(msg)
-        return log.error(msg, raise_exception=False)
+        return log.error(msg)
 
     def _params(self, url, data, headers):
         if url is None:
