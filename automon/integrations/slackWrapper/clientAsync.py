@@ -3,12 +3,15 @@ import slack
 import random
 import asyncio
 
-from automon.log import Logging
+from automon.log import logger
 from automon.helpers.nest_asyncioWrapper import AsyncStarter
 
 from .config import ConfigSlack
 from .bots import BotInfo
 from .error import SlackError
+
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.ERROR)
 
 
 class SlackAsyncClient(ConfigSlack):
@@ -17,8 +20,6 @@ class SlackAsyncClient(ConfigSlack):
                  channel: str = '', icon_emoji: str = None, icon_url: str = None):
         """Slack Async client
         """
-
-        self._log = Logging(SlackAsyncClient.__name__, Logging.ERROR)
 
         self.token = ConfigSlack.slack_token or token
         self.client = slack.WebClient(token=token)
@@ -49,13 +50,12 @@ class SlackAsyncClient(ConfigSlack):
 
         try:
             name = BotInfo(self.client.bots_info()).name
-            self._log.debug(f'Bot name: {name}')
+            log.debug(f'Bot name: {name}')
             return name
         except Exception as e:
             error = SlackError(e)
-            self._log.error(
-                f'''[{self._get_bot_info.__name__}]\tCouldn't get bot name, missing permission: {error.needed}''',
-                enable_traceback=False)
+            log.error(
+                f'''[{self._get_bot_info.__name__}]\tCouldn't get bot name, missing permission: {error.needed}''')
             return ''
 
         return ''
@@ -98,8 +98,8 @@ class SlackAsyncClient(ConfigSlack):
 
         # check if file exists
         if not os.path.isfile(file):
-            self._log.error(f'File not found: {file}')
-            self._log.error(f'Working dir: {os.getcwd()}')
+            log.error(f'File not found: {file}')
+            log.error(f'Working dir: {os.getcwd()}')
             return False
 
         # get filename
@@ -119,7 +119,7 @@ class SlackAsyncClient(ConfigSlack):
 
         assert response["ok"]
 
-        self._log.debug(f'File uploaded: {file} ({file_size}B) ({self.username}')
+        log.debug(f'File uploaded: {file} ({file_size}B) ({self.username}')
 
         return response
 
@@ -138,7 +138,7 @@ class SlackAsyncClient(ConfigSlack):
 
             while self.connected:
                 try:
-                    self._log.debug(msg)
+                    log.debug(msg)
                     response = self.client.chat_postMessage(
                         text=text, channel=channel, username=self.username,
                         icon_emoji=self.icon_emoji, icon_url=self.icon_url)
@@ -149,10 +149,10 @@ class SlackAsyncClient(ConfigSlack):
                         await asyncio.sleep(random.choice(range(2)))
                     else:
                         sleep = random.choice(range(4))
-                        self._log.debug(f'sleeping {sleep}, queue size is {self.queue.qsize()}')
+                        log.debug(f'sleeping {sleep}, queue size is {self.queue.qsize()}')
                         await asyncio.sleep(sleep)
 
-                    self._log.debug(f'Burst: {burst}, Retry: {retry}, Queue {self.queue.qsize()}')
+                    log.debug(f'Burst: {burst}, Retry: {retry}, Queue {self.queue.qsize()}')
 
                     burst += 1
                     retry = 0
@@ -165,7 +165,6 @@ class SlackAsyncClient(ConfigSlack):
                     retry += 1
                     burst_max = burst
                     error = SlackError(e)
-                    self._log.error(
-                        f'{self._consumer.__name__}\t{error.error}\t{msg}\tRetry: {retry}, Burst max: {burst_max}',
-                        enable_traceback=False)
+                    log.error(
+                        f'{self._consumer.__name__}\t{error.error}\t{msg}\tRetry: {retry}, Burst max: {burst_max}')
                     burst = 0

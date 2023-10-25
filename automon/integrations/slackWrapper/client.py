@@ -1,11 +1,14 @@
 import os
 import slack
 
-from automon.log import Logging
+from automon.log import logger
 
 from .config import SlackConfig
 from .bots import BotInfo
 from .error import SlackError
+
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.ERROR)
 
 
 class SlackClient(SlackConfig):
@@ -18,8 +21,6 @@ class SlackClient(SlackConfig):
                  icon_url: str = None):
         """Slack client
         """
-
-        self._log = Logging(SlackClient.__name__, Logging.ERROR)
 
         self.config = config or SlackConfig(token=token, username=username, channel=channel)
         self.client = slack.WebClient(token=self.config.token)
@@ -43,13 +44,12 @@ class SlackClient(SlackConfig):
 
         try:
             name = BotInfo(self.client.bots_info()).name
-            self._log.debug(f'Bot name: {name}')
+            log.debug(f'Bot name: {name}')
             return name
         except Exception as e:
             error = SlackError(e)
-            self._log.error(
-                f'''[{self._get_bot_info.__name__}]\tCouldn't get bot name, missing permission: {error.needed}''',
-                enable_traceback=False)
+            log.error(
+                f'''[{self._get_bot_info.__name__}]\tCouldn't get bot name, missing permission: {error.needed}''')
             return ''
 
         return ''
@@ -63,7 +63,7 @@ class SlackClient(SlackConfig):
             return SyntaxError
 
         msg = f'{channel} @{self.username}: {text}'
-        self._log.debug(msg)
+        log.debug(msg)
 
         try:
             response = self.client.chat_postMessage(
@@ -72,7 +72,7 @@ class SlackClient(SlackConfig):
             assert response["ok"]
             return response
         except Exception as e:
-            self._log.error(e, enable_traceback=False)
+            log.error(e)
 
         return False
 
@@ -96,8 +96,8 @@ class SlackClient(SlackConfig):
 
         # check if file exists
         if not os.path.isfile(file):
-            self._log.error(f'File not found: {file}')
-            self._log.error(f'Working dir: {os.getcwd()}')
+            log.error(f'File not found: {file}')
+            log.error(f'Working dir: {os.getcwd()}')
             return False
 
         # get filename
@@ -116,6 +116,6 @@ class SlackClient(SlackConfig):
             file=file, filename=filename, title=title, username=self.username, channels=self.channel)
 
         assert response["ok"]
-        self._log.debug(f'File uploaded: {file} ({file_size}B) ({self.username}')
+        log.debug(f'File uploaded: {file} ({file_size}B) ({self.username}')
 
         return response

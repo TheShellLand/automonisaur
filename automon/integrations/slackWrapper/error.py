@@ -1,4 +1,7 @@
-from automon.log import Logging
+from automon.log import logger
+
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.ERROR)
 
 
 class SlackError:
@@ -13,7 +16,6 @@ class SlackError:
         }
         """
 
-        self._log = Logging(name=SlackError.__name__, level=Logging.ERROR)
 
         self._error = error
         self._reason = getattr(self._error, 'reason', '')
@@ -48,7 +50,7 @@ class SlackError:
         if self._reason:
             return self.strerror
 
-        self._log.warn(f'{NotImplemented}')
+        log.warning(f'{NotImplemented}')
         return f'{self._error}'
 
     def needed(self):
@@ -58,7 +60,7 @@ class SlackError:
         if self._reason:
             return self.strerror
 
-        self._log.warn(f'{NotImplemented}')
+        log.warning(f'{NotImplemented}')
         return f'{self._error}'
 
     def __repr__(self):
@@ -68,7 +70,7 @@ class SlackError:
         if self._reason:
             return f'{self.strerror}'
 
-        self._log.warn(f'{NotImplemented}')
+        log.warning(f'{NotImplemented}')
         return f'{self._error}'
 
     def __str__(self):

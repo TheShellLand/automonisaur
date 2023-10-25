@@ -1,8 +1,9 @@
 import os
 
-from automon.log import Logging
+from automon.log import logger
 
-log = Logging(name=__name__, level=Logging.ERROR)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.ERROR)
 
 
 class SlackConfig(object):
