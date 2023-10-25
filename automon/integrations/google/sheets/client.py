@@ -1,9 +1,10 @@
-from automon.log import Logging
+from automon.log import logger
 from automon.integrations.google.auth import GoogleAuthClient
 
 from .config import GoogleSheetsConfig
 
-log = Logging(name='GoogleSheetsClient', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class Fields:
@@ -94,7 +95,7 @@ class GoogleSheetsClient(GoogleAuthClient):
                 **kwargs,
             ).execute()
         except Exception as e:
-            log.error(f'{e}', enable_traceback=False)
+            log.error(f'{e}')
 
         return self
 
@@ -112,7 +113,7 @@ class GoogleSheetsClient(GoogleAuthClient):
                 **kwargs,
             ).execute()
         except Exception as e:
-            log.error(f'{e}', enable_traceback=False)
+            log.error(f'{e}')
 
         return self
 

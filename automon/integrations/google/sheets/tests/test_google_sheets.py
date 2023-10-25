@@ -6,7 +6,7 @@ import tracemalloc
 import pandas as pd
 import numpy as np
 
-from automon import Logging
+from automon.log import logger
 from automon.integrations.facebook import FacebookGroups
 from automon.integrations.google.sheets import GoogleSheetsClient
 
@@ -25,7 +25,8 @@ logging.getLogger('RequestsClient').setLevel(logging.INFO)
 
 tracemalloc.start()
 
-log = Logging(level=Logging.INFO)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.INFO)
 
 sheets_client = GoogleSheetsClient(
     worksheet='Automated Count WIP',

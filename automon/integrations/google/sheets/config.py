@@ -1,8 +1,9 @@
-from automon.log import Logging
+from automon.log import logger
 from automon.helpers.osWrapper import environ
 from automon.integrations.google.auth import GoogleAuthConfig
 
-log = Logging(name='SheetsConfig', level=Logging.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class GoogleSheetsConfig(GoogleAuthConfig):
