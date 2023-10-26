@@ -160,7 +160,7 @@ class FacebookGroups(object):
                 xpath_monthly_posts = self._browser.wait_for_xpath(self.xpath_posts_monthly)
                 self._posts_monthly = self._browser.find_xpath(xpath_monthly_posts).text
             except Exception as e:
-                print(f"can't get monthly posts {self.url}: {e}")
+                log.error(f"can't get monthly posts {self.url}: {e}")
 
         return self._posts_monthly
 
@@ -270,23 +270,31 @@ class FacebookGroups(object):
             self.start()
 
         if not url and not self.url:
+            log.error(f'missing url')
             raise Exception(f"missing url")
 
-        return self._browser.get(url=url or self.url)
+        get = self._browser.get(url=url or self.url)
+        log.info(f'{get}')
+        return get
 
     def get_about(self):
         url = f'{self.url}/about'
-        return self.get(url=url)
+        log.debug(f'get {url}')
+        get = self.get(url=url)
+        log.info(f'{get}')
+        return get
 
     def run(self):
         """run selenium browser"""
         if self._browser:
+            log.info(f'{self._browser}')
             return self._browser.run()
 
     def restart(self):
         """quit and start new instance of selenium"""
         if self._browser:
             self.quit()
+        log.info(f'{self._browser}')
         return self.start()
 
     def start(self, headless: bool = True):
@@ -298,6 +306,7 @@ class FacebookGroups(object):
         else:
             self._browser.config.set_webdriver.Chrome().set_locale_experimental()
 
+        log.info(f'{self._browser}')
         return self._browser.run()
 
     def stop(self):
@@ -343,4 +352,5 @@ class FacebookGroups(object):
     def quit(self):
         """quit selenium"""
         if self._browser:
+            log.info(f'{self._browser}')
             return self._browser.quit()
