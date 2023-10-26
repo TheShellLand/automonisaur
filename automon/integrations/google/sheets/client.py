@@ -67,10 +67,11 @@ class GoogleSheetsClient(GoogleAuthClient):
                 **kwargs,
             ).execute()
 
-            print(f"{result.get('clearedRange')} cells cleared.")
+            log.info(f'{result}')
+            log.info(f"{result.get('clearedRange')} cells cleared.")
             return result
         except Exception as error:
-            print(f"An error occurred: {error}")
+            log.error(f"An error occurred: {error}")
             return error
 
     def spreadsheets(self):
@@ -94,6 +95,8 @@ class GoogleSheetsClient(GoogleAuthClient):
                 fields=fields,
                 **kwargs,
             ).execute()
+            # too verbose
+            # log.debug(f'{self.response}')
         except Exception as e:
             log.error(f'{e}')
 
@@ -112,6 +115,8 @@ class GoogleSheetsClient(GoogleAuthClient):
                 range=range or f'{self.worksheet}!{self.range}',
                 **kwargs,
             ).execute()
+            # too verbose
+            # log.debug(f'{self.response}')
         except Exception as e:
             log.error(f'{e}')
 
@@ -119,6 +124,7 @@ class GoogleSheetsClient(GoogleAuthClient):
 
     def list(self):
         # list(pageSize=1).execute()
+        log.warning(f'{NotImplemented}')
         return
 
     def update(
@@ -135,6 +141,8 @@ class GoogleSheetsClient(GoogleAuthClient):
                 'values': values
             }
 
+            log.debug(f'{body}')
+
             result = self.spreadsheets().values().update(
                 spreadsheetId=spreadsheetId or self.config.spreadsheetId,
                 range=range or self.range,
@@ -142,8 +150,9 @@ class GoogleSheetsClient(GoogleAuthClient):
                 body=body
             ).execute()
 
-            print(f"{result.get('updatedCells')} cells updated.")
+            log.info(f'{result}')
+            log.info(f"{result.get('updatedCells')} cells updated.")
             return result
         except Exception as error:
-            print(f"An error occurred: {error}")
+            log.error(f"An error occurred: {error}")
             return error

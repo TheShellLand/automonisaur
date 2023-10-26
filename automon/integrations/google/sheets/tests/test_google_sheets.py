@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 
 from automon.log import logger
+from automon.helpers.sleeper import Sleeper
 from automon.integrations.facebook import FacebookGroups
 from automon.integrations.google.sheets import GoogleSheetsClient
 
@@ -18,18 +19,21 @@ logging.getLogger('selenium.webdriver.common.service').setLevel(logging.ERROR)
 logging.getLogger('selenium.webdriver.remote.remote_connection').setLevel(logging.ERROR)
 logging.getLogger('selenium.webdriver.common.selenium_manager').setLevel(logging.ERROR)
 
-logging.getLogger('SeleniumBrowser').setLevel(logging.CRITICAL)
-logging.getLogger('FacebookGroups').setLevel(logging.CRITICAL)
-logging.getLogger('ConfigChrome').setLevel(logging.ERROR)
-logging.getLogger('RequestsClient').setLevel(logging.INFO)
+logging.getLogger('automon.integrations.seleniumWrapper.browser').setLevel(logging.DEBUG)
+logging.getLogger('automon.integrations.seleniumWrapper.config_webdriver_chrome').setLevel(logging.ERROR)
+logging.getLogger('automon.integrations.facebook.groups').setLevel(logging.DEBUG)
+logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(logging.INFO)
 
 tracemalloc.start()
 
 log = logger.logging.getLogger(__name__)
-log.setLevel(logger.INFO)
+log.setLevel(logger.DEBUG)
+
+SHEET_NAME = 'Automated Count DO NOT EDIT'
+SHEET_NAME_INGEST = 'URLS TO INGEST'
 
 sheets_client = GoogleSheetsClient(
-    worksheet='Automated Count WIP',
+    worksheet=SHEET_NAME,
 )
 
 
@@ -48,6 +52,8 @@ def get_facebook_info(url: str):
 
 
 def url_cleaner(url: str):
+    if not url:
+        return
     if url[-1] == '/':
         url = url[:-1]
     return url
@@ -55,7 +61,7 @@ def url_cleaner(url: str):
 
 def merge_urls():
     sheets_client.get(
-        ranges='AUDIT list Shelley!A:Z',
+        ranges='AUG23 AUDIT!A:Z',
         fields="sheets/data/rowData/values/hyperlink",
     )
 
@@ -72,7 +78,7 @@ def merge_urls():
 
     sheets_client.get()
     sheets_client.get_values(
-        range='Automated Count WIP!A:Z'
+        range=f'{SHEET_NAME}!A:Z'
     )
 
     sheet_values = sheets_client.values
@@ -88,14 +94,13 @@ def merge_urls():
     return df
 
 
-def batch_processing(index: int, df: pd.DataFrame):
+def batch_processing(sheet_index: int, df: pd.DataFrame):
     df_results = df['url'].dropna().apply(
         lambda url: get_facebook_info(url=url)
     )
     df_results = pd.DataFrame(df_results.tolist())
 
     df = df.reset_index()
-    df = df.drop('index', axis=1)
 
     todays_date = datetime.datetime.now().date()
     monthly = f'{todays_date.year}-{todays_date.month}'
@@ -138,6 +143,10 @@ def batch_processing(index: int, df: pd.DataFrame):
         'members_count',
     ]
 
+    sheet_index_df = df['index'].loc[0]
+    assert sheet_index == sheet_index_df
+    df = df.drop('index', axis=1)
+
     # add all other dates
     df_columns = df.columns.tolist()
     columns.extend(
@@ -153,20 +162,18 @@ def batch_processing(index: int, df: pd.DataFrame):
     df = df.loc[:, columns]
     df = df.fillna(np.nan).replace([np.nan], [None])
 
-    sheet_index = index + 2
-
     update_columns = sheets_client.update(
-        range=f'Automated Count WIP!A1:Z',
+        range=f'{SHEET_NAME}!A1:Z',
         values=[columns],
     )
 
     update = sheets_client.update(
-        range=f'Automated Count WIP!A{sheet_index}:Z',
+        range=f'{SHEET_NAME}!A{sheet_index_df}:Z',
         values=[x for x in df.values.tolist()]
     )
 
     log.info(
-        f'{[x for x in df.values.tolist()]}'
+        f'{sheet_index_df}: {[x for x in df.values.tolist()]}'
     )
 
     return df
@@ -204,9 +211,20 @@ def main():
     if not sheets_client.authenticate():
         return
 
+    # merge urls from audit sheet
+    # df_audit = merge_urls()
+    # df_audit = df_audit.fillna(np.nan).replace([np.nan], [None])
+    # rows = []
+    # rows.append(df_audit.columns.tolist())
+    # rows.extend([x for x in df_audit.values.tolist()])
+    # update = sheets_client.update(
+    #     range=f'{SHEET_NAME}!A:Z',
+    #     values=rows
+    # )
+
     # start processing
     sheets_client.get_values(
-        range='Automated Count WIP!A:Z'
+        range=f'{SHEET_NAME}!A:Z'
     )
 
     sheet_values = sheets_client.values
@@ -215,29 +233,81 @@ def main():
 
     df = pd.DataFrame(data=sheet_data, columns=sheet_columns)
     df = df.dropna(subset=['url'])
+    # set df index to match google sheet index numbering
+    df.index = df.index + 2
 
-    todays_date = datetime.datetime.now().date()
-    last_updated = f'{todays_date.year}-{todays_date.month}'
+    # drop duplicates
+    df_duplicates_to_delete = df[
+        (df.url.duplicated(keep='first'))
+    ]
 
-    BATCH_SIZE = 1
+    for duplicate in df_duplicates_to_delete.iterrows():
+        duplicate_index, duplicate_row = duplicate
 
-    i = 0
-    while i < len(df):
-        df_batch = df[i:i + BATCH_SIZE]
+        # clear row in sheet
+        range = f'{SHEET_NAME}!{duplicate_index}:{duplicate_index}'
+        result = sheets_client.clear(range=range)
+        # max 60/min
+        Sleeper.seconds(f'WriteRequestsPerMinutePerUser', seconds=1)
+        log.info(result)
+        df = df.drop(duplicate_index)
 
-        # skip if last_updated is in current month
-        if not df_batch['last_updated'].iloc[0] == last_updated:
+    # ingest urls from SHEET_NAME_INGEST
+    sheets_client.get_values(
+        range=f'{SHEET_NAME_INGEST}!A:Z'
+    )
+    ingest_sheet_values = sheets_client.values
+    if ingest_sheet_values:
+        ingest_sheet_values = [x[0] if x else [] for x in ingest_sheet_values]
+        ingest_sheet_values = [url_cleaner(x) for x in ingest_sheet_values]
+    df_ingest_sheet_values = pd.DataFrame(ingest_sheet_values)
+    df_ingest_sheet_values.index = df_ingest_sheet_values.index + 1
 
-            try:
-                df_batch = batch_processing(index=i, df=df_batch)
-                df_memory = memory_profiler()
-            except Exception as e:
-                df_memory = memory_profiler()
-                pass
+    for ingest_data in df_ingest_sheet_values.iterrows():
+        ingest_index, ingest_url = ingest_data
+        ingest_url = ingest_url[0]
 
-        i += 1
+        if ingest_url not in df['url'].values:
+            ingest_series = pd.Series({'url': ingest_url}).to_frame().T
+            index_add_url = df.index[-1] + 1
+            df.loc[index_add_url] = {'url': ingest_url}
 
-        pass
+            df.loc[index_add_url] = df.loc[index_add_url].fillna(np.nan).replace([np.nan], [None])
+
+            values = [[x for x in df.loc[index_add_url].values.tolist()]]
+
+            update = sheets_client.update(
+                range=f'{SHEET_NAME}!A{index_add_url}:Z',
+                values=values
+            )
+
+            log.info(
+                f'{index_add_url}: {values}'
+            )
+
+        # clear url from ingest sheet
+        range = f'{SHEET_NAME_INGEST}!{ingest_index}:{ingest_index}'
+        clear = sheets_client.clear(range=range)
+        log.info(f'{clear}')
+
+    # start updating
+    for data in df.iterrows():
+        data_index, data_row = data
+
+        df_batch = df.loc[data_index:data_index]
+
+        # skip if last_updated is the current month
+        todays_date = datetime.datetime.now().date()
+        last_updated = f'{todays_date.year}-{todays_date.month}'
+        if df_batch['last_updated'].iloc[0] == last_updated:
+            continue
+
+        try:
+            batch_result = batch_processing(sheet_index=data_index, df=df_batch)
+            df_memory = memory_profiler()
+        except Exception as e:
+            df_memory = memory_profiler()
+            pass
 
     pass
 

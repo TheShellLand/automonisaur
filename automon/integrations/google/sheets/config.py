@@ -26,3 +26,5 @@ class GoogleSheetsConfig(GoogleAuthConfig):
         self.version = 'v4'
 
         self.spreadsheetId = spreadsheetId or environ('GOOGLE_SHEET_ID')
+
+        log.debug(f'{self}')
