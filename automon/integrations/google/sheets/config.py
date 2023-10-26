@@ -27,4 +27,4 @@ class GoogleSheetsConfig(GoogleAuthConfig):
 
         self.spreadsheetId = spreadsheetId or environ('GOOGLE_SHEET_ID')
 
-        log.debug(f'{self}')
+        log.info(f'{self}')

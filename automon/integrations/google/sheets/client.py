@@ -95,8 +95,7 @@ class GoogleSheetsClient(GoogleAuthClient):
                 fields=fields,
                 **kwargs,
             ).execute()
-            # too verbose
-            # log.debug(f'{self.response}')
+            log.info(f'{self.worksheet}!{self.range} ({self.config.spreadsheetId})')
         except Exception as e:
             log.error(f'{e}')
 
@@ -115,8 +114,7 @@ class GoogleSheetsClient(GoogleAuthClient):
                 range=range or f'{self.worksheet}!{self.range}',
                 **kwargs,
             ).execute()
-            # too verbose
-            # log.debug(f'{self.response}')
+            log.info(f'{self.worksheet}!{self.range} ({self.config.spreadsheetId})')
         except Exception as e:
             log.error(f'{e}')
 

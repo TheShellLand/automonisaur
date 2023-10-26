@@ -172,9 +172,7 @@ def batch_processing(sheet_index: int, df: pd.DataFrame):
         values=[x for x in df.values.tolist()]
     )
 
-    log.info(
-        f'{sheet_index_df}: {[x for x in df.values.tolist()]}'
-    )
+    log.info(f'{sheet_index_df}: {[x for x in df.values.tolist()]}')
 
     return df
 
@@ -300,14 +298,17 @@ def main():
         todays_date = datetime.datetime.now().date()
         last_updated = f'{todays_date.year}-{todays_date.month}'
         if df_batch['last_updated'].iloc[0] == last_updated:
+            # log.debug(f'skipping {data_index}, {data_row.to_dict()}')
             continue
+
+        batch_result = batch_processing(sheet_index=data_index, df=df_batch)
 
         try:
             batch_result = batch_processing(sheet_index=data_index, df=df_batch)
             df_memory = memory_profiler()
         except Exception as e:
             df_memory = memory_profiler()
-            pass
+            log.error(f'{e}')
 
     pass
 
