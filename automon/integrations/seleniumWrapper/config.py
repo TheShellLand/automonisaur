@@ -27,7 +27,7 @@ class SeleniumConfig(object):
 
     @property
     def webdriver(self):
-        if self.set_webdriver.webdriver:
-            return self.set_webdriver.webdriver
-        else:
-            log.debug('waiting for driver')
+        if self.set_webdriver:
+            if self.set_webdriver.webdriver:
+                return self.set_webdriver.webdriver
+        log.error('waiting for driver')

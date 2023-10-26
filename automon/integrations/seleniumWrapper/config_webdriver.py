@@ -62,6 +62,7 @@ class ConfigWebdriver(object):
 
         """
         self._webdriver_wrapper = self._chrome
+        log.info(f'{self._webdriver_wrapper}')
         return self._webdriver_wrapper
 
     def Edge(self):
@@ -81,7 +82,7 @@ class ConfigWebdriver(object):
         try:
             return self.webdriver_wrapper.run()
         except Exception as e:
-            log.error(f'failed to run: {e}')
+            log.error(f'{e}')
 
     def start(self):
         """alias to run"""

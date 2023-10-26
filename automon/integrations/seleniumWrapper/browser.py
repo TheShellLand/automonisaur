@@ -84,9 +84,15 @@ class SeleniumBrowser(object):
 
     @property
     def url(self):
-        if self.webdriver.current_url == 'data:,':
-            return ''
-        return self.webdriver.current_url
+        if self.webdriver:
+            if self.webdriver.current_url == 'data:,':
+                log.info(f'')
+                return ''
+            log.info(f'{self.webdriver.current_url}')
+            return self.webdriver.current_url
+
+        log.info(f'')
+        return ''
 
     @property
     def window_size(self):
@@ -303,7 +309,7 @@ class SeleniumBrowser(object):
             self,
             value: str or list,
             by: By = By.XPATH,
-            retries: int = 3,
+            retries: int = 5,
             **kwargs) -> str or False:
         """wait for something"""
         retry = 1
@@ -330,7 +336,7 @@ class SeleniumBrowser(object):
                     return value
             except Exception as error:
                 log.error(f'not found {by}: {self.url} {value}, {error}')
-                Sleeper.seconds(f'wait for', 1)
+                # Sleeper.seconds(f'wait for', 1)
 
             retry += 1
 
