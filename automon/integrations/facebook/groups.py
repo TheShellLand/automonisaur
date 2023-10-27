@@ -77,7 +77,7 @@ class FacebookGroups(object):
     def content_unavailable(self):
         """This content isn't available right now"""
         if not self._browser:
-            self.start()
+            return
 
         if not self._content_unavailable:
             try:
@@ -91,7 +91,7 @@ class FacebookGroups(object):
     @property
     def creation_date(self):
         if not self._browser:
-            self.start()
+            return
 
         if not self._creation_date:
             try:
@@ -111,7 +111,7 @@ class FacebookGroups(object):
     @property
     def history(self):
         if not self._browser:
-            self.start()
+            return
 
         if not self._history:
             try:
@@ -125,7 +125,7 @@ class FacebookGroups(object):
     @property
     def members(self):
         if not self._browser:
-            self.start()
+            return
 
         if not self._members:
             try:
@@ -140,7 +140,7 @@ class FacebookGroups(object):
     @property
     def members_count(self):
         if not self._browser:
-            self.start()
+            return
 
         if self._members:
             count = [x for x in self._members]
@@ -153,7 +153,7 @@ class FacebookGroups(object):
     @property
     def posts_monthly(self):
         if not self._browser:
-            self.start()
+            return
 
         if not self._posts_monthly:
             try:
@@ -167,7 +167,7 @@ class FacebookGroups(object):
     @property
     def posts_monthly_count(self):
         if not self._browser:
-            self.start()
+            return
 
         if self._posts_monthly:
             count = [x for x in self._posts_monthly]
@@ -180,7 +180,7 @@ class FacebookGroups(object):
     @property
     def posts_today(self):
         if not self._browser:
-            self.start()
+            return
 
         if not self._posts_today:
             try:
@@ -194,7 +194,7 @@ class FacebookGroups(object):
     @property
     def posts_today_count(self):
         if not self._browser:
-            self.start()
+            return
 
         if self.posts_today:
             count = [x for x in self.posts_today]
@@ -207,7 +207,7 @@ class FacebookGroups(object):
     @property
     def privacy(self):
         if not self._browser:
-            self.start()
+            return
 
         if not self._privacy:
             try:
@@ -221,7 +221,7 @@ class FacebookGroups(object):
     @property
     def privacy_details(self):
         if not self._browser:
-            self.start()
+            return
 
         if not self._privacy_details:
             try:
@@ -235,7 +235,7 @@ class FacebookGroups(object):
     @property
     def title(self) -> str:
         if not self._browser:
-            self.start()
+            return
 
         if not self._title:
             try:
@@ -253,7 +253,7 @@ class FacebookGroups(object):
     @property
     def visible(self) -> str:
         if not self._browser:
-            self.start()
+            return
 
         if not self._visible:
             try:
@@ -267,21 +267,21 @@ class FacebookGroups(object):
     def get(self, url: str = None) -> bool:
         """get url"""
         if not self._browser:
-            self.start()
+            return
 
         if not url and not self.url:
             log.error(f'missing url')
             raise Exception(f"missing url")
 
         get = self._browser.get(url=url or self.url)
-        log.info(f'{get}')
+        log.info(f'{url} {get}')
         return get
 
     def get_about(self):
         url = f'{self.url}/about'
         log.debug(f'get {url}')
         get = self.get(url=url)
-        log.info(f'{get}')
+        log.info(f'{url} {get}')
         return get
 
     def run(self):
@@ -302,9 +302,13 @@ class FacebookGroups(object):
         self._browser = SeleniumBrowser()
 
         if headless:
-            self._browser.config.set_webdriver.Chrome().in_headless().set_locale_experimental()
+            self._browser.set_webdriver().Chrome().in_headless().set_locale_experimental()
         else:
-            self._browser.config.set_webdriver.Chrome().set_locale_experimental()
+            self._browser.set_webdriver().Chrome().set_locale_experimental()
+
+        self._browser.set_webdriver().Chrome().set_user_agent(
+            self._browser.get_random_user_agent()
+        )
 
         log.info(f'{self._browser}')
         return self._browser.run()
@@ -314,38 +318,22 @@ class FacebookGroups(object):
         return self.quit()
 
     def to_dict(self):
-        self.content_unavailable
-        self.creation_date
-        self.creation_date_timestamp
-        self.history
-        self.members
-        self.members_count
-        self.posts_monthly
-        self.posts_monthly_count
-        self.posts_today
-        self.posts_today_count
-        self.privacy
-        self.privacy_details
-        self.title
-        self.url
-        self.visible
-
         return dict(
-            content_unavailable=self._content_unavailable,
-            creation_date=self._creation_date,
-            creation_date_timestamp=self._creation_date_timestamp,
-            history=self._history,
-            members=self._members,
-            members_count=self._members_count,
-            posts_monthly=self._posts_monthly,
-            posts_monthly_count=self._posts_monthly_count,
-            posts_today=self._posts_today,
-            posts_today_count=self._posts_today_count,
-            privacy=self._privacy,
-            privacy_details=self._privacy_details,
-            title=self._title,
-            url=self._url,
-            visible=self._visible,
+            content_unavailable=self.content_unavailable,
+            creation_date=self.creation_date,
+            creation_date_timestamp=self.creation_date_timestamp,
+            history=self.history,
+            members=self.members,
+            members_count=self.members_count,
+            posts_monthly=self.posts_monthly,
+            posts_monthly_count=self.posts_monthly_count,
+            posts_today=self.posts_today,
+            posts_today_count=self.posts_today_count,
+            privacy=self.privacy,
+            privacy_details=self.privacy_details,
+            title=self.title,
+            url=self.url,
+            visible=self.visible,
             status=self._browser.status,
         )
 
