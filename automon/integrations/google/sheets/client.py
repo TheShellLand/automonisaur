@@ -114,7 +114,12 @@ class GoogleSheetsClient(GoogleAuthClient):
                 range=range or f'{self.worksheet}!{self.range}',
                 **kwargs,
             ).execute()
-            log.info(f'{self.worksheet}!{self.range} ({self.config.spreadsheetId})')
+
+            log.info(str(dict(
+                worksheet=self.worksheet,
+                range=self.range,
+                spreadsheetId=self.config.spreadsheetId,
+            )))
         except Exception as e:
             log.error(f'{e}')
 

@@ -20,7 +20,7 @@ logging.getLogger('selenium.webdriver.remote.remote_connection').setLevel(loggin
 logging.getLogger('selenium.webdriver.common.selenium_manager').setLevel(logging.ERROR)
 
 logging.getLogger('automon.integrations.seleniumWrapper.browser').setLevel(logging.DEBUG)
-logging.getLogger('automon.integrations.seleniumWrapper.config_webdriver_chrome').setLevel(logging.ERROR)
+logging.getLogger('automon.integrations.seleniumWrapper.config_webdriver_chrome').setLevel(logging.DEBUG)
 logging.getLogger('automon.integrations.facebook.groups').setLevel(logging.DEBUG)
 logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(logging.INFO)
 
