@@ -83,8 +83,14 @@ class FacebookGroups(object):
             try:
                 xpath_content_unavailble = self._browser.wait_for_xpath(self.xpath_content_unavailble)
                 self._content_unavailable = self._browser.find_xpath(xpath_content_unavailble).text
-            except Exception as e:
-                log.error(f"can't get content message {self.url}: {e}")
+            except Exception as error:
+                message, session, stacktrace = self.error_parsing(error)
+                log.error(str(dict(
+                    url=self.url,
+                    message=message,
+                    session=session,
+                    stacktrace=stacktrace,
+                )))
 
         return self._content_unavailable
 
@@ -97,8 +103,14 @@ class FacebookGroups(object):
             try:
                 xpath_creation_date = self._browser.wait_for_xpath(self.xpath_creation_date)
                 self._creation_date = self._browser.find_xpath(xpath_creation_date).text
-            except Exception as e:
-                log.error(f"can't get creation date {self.url}: {e}")
+            except Exception as error:
+                message, session, stacktrace = self.error_parsing(error)
+                log.error(str(dict(
+                    url=self.url,
+                    message=message,
+                    session=session,
+                    stacktrace=stacktrace,
+                )))
 
         return self._creation_date
 
@@ -117,8 +129,14 @@ class FacebookGroups(object):
             try:
                 xpath_history = self._browser.wait_for_xpath(self.xpath_history)
                 self._history = self._browser.find_xpath(xpath_history).text
-            except Exception as e:
-                log.error(f"can't get history {self.url}: {e}")
+            except Exception as error:
+                message, session, stacktrace = self.error_parsing(error)
+                log.error(str(dict(
+                    url=self.url,
+                    message=message,
+                    session=session,
+                    stacktrace=stacktrace,
+                )))
 
         return self._history
 
@@ -132,8 +150,14 @@ class FacebookGroups(object):
                 xpath_members = self._browser.wait_for_xpath(self.xpath_members)
                 self._members = self._browser.find_xpath(xpath_members).text
                 # TODO: need to clean up string from members and remove bad chars
-            except Exception as e:
-                log.error(f"can't get member count {self.url}: {e}")
+            except Exception as error:
+                message, session, stacktrace = self.error_parsing(error)
+                log.error(str(dict(
+                    url=self.url,
+                    message=message,
+                    session=session,
+                    stacktrace=stacktrace,
+                )))
 
         return self._members
 
@@ -159,8 +183,14 @@ class FacebookGroups(object):
             try:
                 xpath_monthly_posts = self._browser.wait_for_xpath(self.xpath_posts_monthly)
                 self._posts_monthly = self._browser.find_xpath(xpath_monthly_posts).text
-            except Exception as e:
-                log.error(f"can't get monthly posts {self.url}: {e}")
+            except Exception as error:
+                message, session, stacktrace = self.error_parsing(error)
+                log.error(str(dict(
+                    url=self.url,
+                    message=message,
+                    session=session,
+                    stacktrace=stacktrace,
+                )))
 
         return self._posts_monthly
 
@@ -186,8 +216,14 @@ class FacebookGroups(object):
             try:
                 xpath_posts_today = self._browser.wait_for_xpath(self.xpath_posts_today)
                 self._posts_today = self._browser.find_xpath(xpath_posts_today).text
-            except Exception as e:
-                log.error(f"can't get today's posts {self.url}: {e}")
+            except Exception as error:
+                message, session, stacktrace = self.error_parsing(error)
+                log.error(str(dict(
+                    url=self.url,
+                    message=message,
+                    session=session,
+                    stacktrace=stacktrace,
+                )))
 
         return self._posts_today
 
@@ -213,8 +249,14 @@ class FacebookGroups(object):
             try:
                 xpath_privacy = self._browser.wait_for_xpath(self.xpath_privacy)
                 self._privacy = self._browser.find_xpath(xpath_privacy).text
-            except Exception as e:
-                log.error(f"can't get privacy {self.url}: {e}")
+            except Exception as error:
+                message, session, stacktrace = self.error_parsing(error)
+                log.error(str(dict(
+                    url=self.url,
+                    message=message,
+                    session=session,
+                    stacktrace=stacktrace,
+                )))
 
         return self._privacy
 
@@ -227,8 +269,14 @@ class FacebookGroups(object):
             try:
                 xpath_privacy_details = self._browser.wait_for_xpath(self.xpath_privacy_details)
                 self._privacy_details = self._browser.find_xpath(xpath_privacy_details).text
-            except Exception as e:
-                log.error(f"can't get privacy details {self.url}: {e}")
+            except Exception as error:
+                message, session, stacktrace = self.error_parsing(error)
+                log.error(str(dict(
+                    url=self.url,
+                    message=message,
+                    session=session,
+                    stacktrace=stacktrace,
+                )))
 
         return self._privacy_details
 
@@ -241,8 +289,14 @@ class FacebookGroups(object):
             try:
                 xpath_title = self._browser.wait_for_xpath(self.xpath_title)
                 self._title = self._browser.find_xpath(xpath_title).text
-            except Exception as e:
-                log.error(f"can't get title {self.url}: {e}")
+            except Exception as error:
+                message, session, stacktrace = self.error_parsing(error)
+                log.error(str(dict(
+                    url=self.url,
+                    message=message,
+                    session=session,
+                    stacktrace=stacktrace,
+                )))
 
         return self._title
 
@@ -259,10 +313,27 @@ class FacebookGroups(object):
             try:
                 xpath_visible = self._browser.wait_for_xpath(self.xpath_visible)
                 self._visible = self._browser.find_xpath(xpath_visible).text
-            except Exception as e:
-                log.error(f"can't get visible {self.url}: {e}")
+            except Exception as error:
+                message, session, stacktrace = self.error_parsing(error)
+                log.error(str(dict(
+                    url=self.url,
+                    message=message,
+                    session=session,
+                    stacktrace=stacktrace,
+                )))
 
         return self._visible
+
+    @staticmethod
+    def error_parsing(error) -> tuple:
+        error_parsed = f'{error}'.splitlines()
+        error_parsed = [f'{x}'.strip() for x in error_parsed]
+        message = error_parsed[0]
+        session = error_parsed[1]
+        stacktrace = error_parsed[2:]
+        stacktrace = ' '.join(stacktrace)
+
+        return message, session, stacktrace
 
     def get(self, url: str = None) -> bool:
         """get url"""
@@ -279,7 +350,7 @@ class FacebookGroups(object):
 
     def get_about(self):
         url = f'{self.url}/about'
-        log.debug(f'get {url}')
+        log.debug(f'{url}')
         get = self.get(url=url)
         log.info(f'{url} {get}')
         return get
