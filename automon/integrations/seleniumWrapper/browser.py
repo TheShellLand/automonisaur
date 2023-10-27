@@ -180,14 +180,22 @@ class SeleniumBrowser(object):
             **kwargs):
         """find element"""
         element = self.webdriver.find_element(value=value, by=by, **kwargs)
-        log.debug(f'found element: {self.url} {element.text}')
+        log.info(str(dict(
+            url=self.url,
+            text=element.text,
+            value=value,
+        )))
         return element
 
     @_is_running
     def find_xpath(self, value: str, by: By = By.XPATH, **kwargs):
         """find xpath"""
         xpath = self.find_element(value=value, by=by, **kwargs)
-        log.debug(f'found xpath: {self.url} {xpath.text}')
+        log.info(str(dict(
+            url=self.url,
+            text=xpath.text,
+            value=value,
+        )))
         return xpath
 
     @_is_running
@@ -331,7 +339,7 @@ class SeleniumBrowser(object):
             retries: int = 5,
             **kwargs) -> str or False:
         """wait for something"""
-        retry = 1
+        retry = 0
         while True:
             try:
                 if isinstance(value, list):
@@ -342,25 +350,45 @@ class SeleniumBrowser(object):
                                 by=by,
                                 value=value,
                                 **kwargs)
-                            log.debug(f'waiting for {by}: {self.url} {value}')
+                            log.debug(str(dict(
+                                by=by,
+                                url=self.url,
+                                value=value,
+                            )))
                             return value
                         except:
-                            log.error(f'{by} not found: {self.url} {value}')
+                            log.error(str(dict(
+                                by=by,
+                                url=self.url,
+                                value=value,
+                            )))
                 else:
                     self.find_element(
                         by=by,
                         value=value,
                         **kwargs)
-                    log.debug(f'waiting for {by}: {self.url} {value}')
+                    log.debug(str(dict(
+                        by=by,
+                        url=self.url,
+                        value=value,
+                    )))
                     return value
             except Exception as error:
-                log.error(f'not found {by}: {self.url} {value}, {error}')
+                log.error(str(dict(
+                    by=by,
+                    url=self.url,
+                    value=value,
+                    error=error,
+                )))
                 # Sleeper.seconds(f'wait for', 1)
 
             retry += 1
 
-            if retry > retries:
-                log.error(f'max wait reached: {self.url}')
+            if retry == retries:
+                log.error(str(dict(
+                    url=self.url,
+                    retry=f'{retry}/{retries}',
+                )))
                 break
         return False
 
