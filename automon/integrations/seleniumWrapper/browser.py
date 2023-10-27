@@ -38,7 +38,7 @@ class SeleniumBrowser(object):
         if self.webdriver:
             return str(dict(
                 webdriver=self.webdriver.name or None,
-                status=self.status,
+                request_status=self.request_status,
                 current_url=self.webdriver.current_url,
                 window_size=self.window_size,
             ))
@@ -77,7 +77,7 @@ class SeleniumBrowser(object):
         return selenium.webdriver.common.keys.Keys
 
     @property
-    def status(self):
+    def request_status(self):
         if self.request is not None:
             try:
                 return self.request.results.status_code
@@ -197,15 +197,19 @@ class SeleniumBrowser(object):
             self.webdriver.get(url, **kwargs)
             self.request = RequestsClient(url=url)
 
-            msg = f'{self.webdriver.current_url} {self.status}'
-            if kwargs:
-                msg += f', {kwargs}'
-            log.debug(msg)
+            log.info(str(dict(
+                url=url,
+                current_url=self.webdriver.current_url,
+                request_status=self.request_status,
+                kwargs=kwargs
+            )))
             return True
-        except Exception as e:
+        except Exception as error:
             self.request = RequestsClient(url=url)
-            msg = f'{self.status}: {e}'
-            log.error(msg)
+            log.error(str(dict(
+                error=error,
+                request_status=self.request_status
+            )))
 
         return False
 

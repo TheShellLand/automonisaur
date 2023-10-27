@@ -334,7 +334,7 @@ class FacebookGroups(object):
             title=self.title,
             url=self.url,
             visible=self.visible,
-            status=self._browser.status,
+            status=self._browser.request_status,
         )
 
     def quit(self):
