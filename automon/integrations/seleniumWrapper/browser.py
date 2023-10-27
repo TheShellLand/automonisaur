@@ -35,9 +35,15 @@ class SeleniumBrowser(object):
         self.request = None
 
     def __repr__(self):
-        if self.url:
-            return f'{self.webdriver.name} {self.status} {self.webdriver.current_url} {self.window_size}'
-        return f'{self.webdriver}'
+        if self.webdriver:
+            return str(dict(
+                webdriver=self.webdriver.name or None,
+                status=self.status,
+                current_url=self.webdriver.current_url,
+                window_size=self.window_size,
+            ))
+
+        return f'{__class__}'
 
     @property
     def by(self) -> By:
@@ -85,23 +91,26 @@ class SeleniumBrowser(object):
     @property
     def url(self):
         if self.webdriver:
+            log.info(str(dict(
+                current_url=self.webdriver.current_url
+            )))
             if self.webdriver.current_url == 'data:,':
-                log.info(f'')
                 return ''
-            log.info(f'{self.webdriver.current_url}')
             return self.webdriver.current_url
 
-        log.info(f'')
+        log.info(str(dict(
+            current_url=None
+        )))
         return ''
 
     @property
     def window_size(self):
-        return self.config.set_webdriver.window_size
+        return self.config.set_webdriver().window_size
 
     def _is_running(func) -> functools.wraps:
         @functools.wraps(func)
         def wrapped(self, *args, **kwargs):
-            if self.webdriver is not None:
+            if self.is_running():
                 return func(self, *args, **kwargs)
             return False
 
@@ -240,10 +249,13 @@ class SeleniumBrowser(object):
     def get_user_agent(self):
         return self.webdriver.execute_script("return navigator.userAgent")
 
-    @_is_running
     def is_running(self) -> bool:
         """browser is running"""
-        return True
+        if self.webdriver:
+            log.info(f'{True}')
+            return True
+        log.error(f'{False}')
+        return False
 
     @_is_running
     def quit(self) -> bool:
@@ -285,13 +297,16 @@ class SeleniumBrowser(object):
 
         return False
 
+    def set_webdriver(self):
+        return self.config
+
     @_is_running
     def set_window_size(self, width=1920, height=1080, device_type=None) -> bool:
         """set browser resolution"""
 
         try:
-            self.config.set_webdriver.webdriver_wrapper.set_window_size(width=width, height=height,
-                                                                        device_type=device_type)
+            self.config.set_webdriver().webdriver_wrapper.set_window_size(width=width, height=height,
+                                                                          device_type=device_type)
         except Exception as error:
             log.error(f'failed to set resolution. {error}')
             return False
@@ -299,7 +314,7 @@ class SeleniumBrowser(object):
 
     def run(self):
         """run browser"""
-        return self.config.set_webdriver.run()
+        return self.config.run()
 
     def start(self):
         """alias to run"""

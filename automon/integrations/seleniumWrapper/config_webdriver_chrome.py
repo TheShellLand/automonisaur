@@ -25,15 +25,14 @@ class ConfigChrome(object):
         self._window_size = set_window_size()
 
     def __repr__(self):
-        repr = [f'{__class__.__name__}', ]
+        if self._webdriver:
+            return str(dict(
+                module=__class__.__name__,
+                webdriver=self.webdriver,
+                chromedriver=self.chromedriver,
+            ))
 
-        if self.webdriver:
-            repr.append(f'{self.webdriver}')
-
-        if self.chromedriver:
-            repr.append(f'{self.chromedriver}')
-
-        return ' '.join(repr)
+        return f'{__class__}'
 
     @property
     def chrome_options(self):
@@ -62,17 +61,23 @@ class ConfigChrome(object):
     def disable_certificate_verification(self):
         log.warning('Certificates are not verified')
         self.chrome_options.add_argument('--ignore-certificate-errors')
-        log.debug(f'--ignore-certificate-errors')
+        log.debug(str(dict(
+            add_argument='--ignore-certificate-errors'
+        )))
         return self
 
     def disable_extensions(self):
         self.chrome_options.add_argument("--disable-extensions")
-        log.debug(f'--disable-extensions')
+        log.debug(str(dict(
+            add_argument=f'--disable-extensions'
+        )))
         return self
 
     def disable_infobars(self):
         self.chrome_options.add_argument("--disable-infobars")
-        log.debug(f'--disable-infobars')
+        log.debug(str(dict(
+            add_argument=f'--disable-infobars'
+        )))
         return self
 
     def disable_notifications(self):
@@ -82,18 +87,25 @@ class ConfigChrome(object):
         self.chrome_options.add_experimental_option(
             "prefs", {"profile.default_content_setting_values.notifications": 2}
         )
-        log.debug(f'''"prefs", {"profile.default_content_setting_values.notifications": 2}''')
+
+        log.debug(str(dict(
+            add_experimental_option=("prefs", {"profile.default_content_setting_values.notifications": 2})
+        )))
         return self
 
     def disable_sandbox(self):
         self.chrome_options.add_argument('--no-sandbox')
-        log.debug(f'--no-sandbox')
+        log.debug(str(dict(
+            add_argument=f'--no-sandbox'
+        )))
         return self
 
     def disable_shm(self):
         log.warning('Disabled shm will use disk I/O, and will be slow')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
-        log.debug(f'--disable-dev-shm-usage')
+        log.debug(str(dict(
+            add_argument=f'--disable-dev-shm-usage'
+        )))
         return self
 
     def enable_bigshm(self):
@@ -106,12 +118,16 @@ class ConfigChrome(object):
 
     def enable_fullscreen(self):
         self.chrome_options.add_argument("--start-fullscreen")
-        log.debug(f'--start-fullscreen')
+        log.debug(str(dict(
+            add_argument=f'--start-fullscreen'
+        )))
         return self
 
     def enable_headless(self):
         self.chrome_options.add_argument('headless')
-        log.debug(f'headless')
+        log.debug(str(dict(
+            add_argument='headless'
+        )))
         return self
 
     def enable_notifications(self):
@@ -121,12 +137,16 @@ class ConfigChrome(object):
         self.chrome_options.add_experimental_option(
             "prefs", {"profile.default_content_setting_values.notifications": 1}
         )
-        log.debug(f'''"prefs", {"profile.default_content_setting_values.notifications": 1}''')
+        log.debug(str(dict(
+            add_experimental_option=("prefs", {"profile.default_content_setting_values.notifications": 1})
+        )))
         return self
 
     def enable_maximized(self):
         self.chrome_options.add_argument('--start-maximized')
-        log.debug(f'--start-maximized')
+        log.debug(str(dict(
+            add_argument='--start-maximized'
+        )))
         return self
 
     def enable_translate(self, native_language: str = 'en'):
@@ -138,7 +158,13 @@ class ConfigChrome(object):
             name="prefs",
             value=prefs,
         )
-        log.debug(f'{prefs}')
+
+        log.debug(str(dict(
+            add_experimental_option=dict(
+                name="prefs",
+                value=prefs,
+            )
+        )))
         return self
 
     def close(self):
@@ -261,27 +287,27 @@ class ConfigChrome(object):
         return self
 
     def run(self) -> selenium.webdriver.Chrome:
-        log.info(f'{self}')
         try:
             if self.chromedriver:
                 self._ChromeService = selenium.webdriver.ChromeService(
                     executable_path=self.chromedriver
                 )
-                log.debug(f'{self._ChromeService}')
+                log.debug(f'{self.ChromeService}')
 
                 self._webdriver = selenium.webdriver.Chrome(
-                    service=self._ChromeService,
+                    service=self.ChromeService,
                     options=self.chrome_options
                 )
-                log.debug(f'{self._webdriver}')
+                log.info(f'{self}')
 
                 return self.webdriver
 
             self._webdriver = selenium.webdriver.Chrome(options=self.chrome_options)
-            log.info(f'{self.webdriver}')
+            log.info(f'{self}')
+
             return self.webdriver
-        except Exception as e:
-            log.error(f'Browser not set. {e}')
+        except Exception as error:
+            log.error(f'{error}')
 
     def set_chromedriver(self, chromedriver: str):
         log.debug(f'{chromedriver}')
@@ -291,7 +317,9 @@ class ConfigChrome(object):
 
     def set_locale(self, locale: str = 'en'):
         self.chrome_options.add_argument(f"--lang={locale}")
-        log.debug(f"--lang={locale}")
+        log.debug(str(dict(
+            add_argument=f"--lang={locale}"
+        )))
         return self
 
     def set_locale_experimental(self, locale: str = 'en-US'):
@@ -299,12 +327,20 @@ class ConfigChrome(object):
             name='prefs',
             value={'intl.accept_languages': locale}
         )
-        log.debug(f'''{{'intl.accept_languages': {locale}}}''')
+
+        log.debug(str(dict(
+            add_experimental_option=dict(
+                name='prefs',
+                value={'intl.accept_languages': locale}
+            )
+        )))
         return self
 
     def set_user_agent(self, user_agent: str):
         self.chrome_options.add_argument(f"user-agent={user_agent}")
-        log.debug(f"user-agent={user_agent}")
+        log.debug(str(dict(
+            add_argument=f"user-agent={user_agent}"
+        )))
         return self
 
     def set_window_size(self, *args, **kwargs):
@@ -332,7 +368,9 @@ class ConfigChrome(object):
         if self.chromedriver:
             if self.chromedriver not in os.getenv('PATH'):
                 os.environ['PATH'] = f"{os.getenv('PATH')}:{self._chromedriver}"
-                log.debug(f'''{os.environ['PATH']}''')
+                log.debug(str(dict(
+                    PATH=os.environ['PATH']
+                )))
 
     def quit(self):
         """quit

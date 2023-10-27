@@ -3,7 +3,7 @@ import unittest
 from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
 
 browser = SeleniumBrowser()
-browser.config.set_webdriver.Chrome().enable_defaults().enable_headless()
+browser.config.set_webdriver().Chrome().enable_defaults().enable_headless()
 
 
 class SeleniumClientTest(unittest.TestCase):
