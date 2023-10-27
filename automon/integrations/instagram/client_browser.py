@@ -11,7 +11,7 @@ from .urls import Urls
 from .xpaths import XPaths
 
 log = logger.logging.getLogger(__name__)
-log.setLevel(logger.INFO)
+log.setLevel(logger.DEBUG)
 
 
 class InstagramBrowserClient:
@@ -32,9 +32,9 @@ class InstagramBrowserClient:
         useragent = self.browser.get_random_user_agent()
 
         if headless:
-            self.browser.config.set_webdriver.Chrome().in_headless().set_user_agent(useragent)
+            self.browser.set_webdriver().Chrome().in_headless().set_user_agent(useragent)
         else:
-            self.browser.config.set_webdriver.Chrome().in_headless()
+            self.browser.set_webdriver().Chrome().in_headless()
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -42,10 +42,9 @@ class InstagramBrowserClient:
     def _is_running(func):
         @functools.wraps(func)
         def wrapped(self, *args, **kwargs):
-            if self.config.is_configured:
-                if self.browser.is_running():
-                    return func(self, *args, **kwargs)
-                return False
+            if self.is_running():
+                return func(self, *args, **kwargs)
+            return False
 
         return wrapped
 
@@ -215,9 +214,13 @@ class InstagramBrowserClient:
     def is_authenticated(self):
         return True
 
-    @_is_running
     def is_running(self) -> bool:
-        return True
+        if self.config.is_configured:
+            if self.browser.is_running():
+                log.info(f'{True}')
+                return True
+        log.error(f'{False}')
+        return False
 
     @property
     def login(self) -> str:
