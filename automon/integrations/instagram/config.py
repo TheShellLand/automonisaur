@@ -12,17 +12,23 @@ class InstagramConfig(object):
         self._login = login or environ('INSTAGRAM_LOGIN', '')
         self._password = password or environ('INSTAGRAM_PASSWORD', '')
 
+    def __repr__(self):
+        return str(dict(
+            login=self.login,
+            password="*" * len(self.password) if self.password else ''
+        ))
+
     @property
     def login(self):
-        if self._login:
-            return self._login
-        log.error(f'INSTAGRAM_LOGIN')
+        if not self._login:
+            log.error(f'INSTAGRAM_LOGIN')
+        return self._login
 
     @property
     def password(self):
-        if self._password:
-            return self._password
-        log.error(f'INSTAGRAM_PASSWORD')
+        if not self._password:
+            log.error(f'INSTAGRAM_PASSWORD')
+        return self._password
 
     @property
     def is_configured(self):
@@ -31,6 +37,3 @@ class InstagramConfig(object):
             return True
         log.error(f'{False}')
         return False
-
-    def __repr__(self):
-        return f'{self.login} {"*" * len(self.password)}'
