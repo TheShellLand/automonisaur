@@ -175,7 +175,7 @@ class InstagramBrowserClient:
         # password
         login_pass = self.browser.wait_for_xpath(self.xpaths.login_pass)
         self.browser.action_click(login_pass, 'login')
-        self.browser.action_type(self.config.password, secret=True)
+        self.browser.action_type(self.config.password)
         self.browser.action_type(self.browser.keys.ENTER)
 
         # login
