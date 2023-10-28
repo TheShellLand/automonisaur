@@ -140,10 +140,16 @@ class SeleniumBrowser(object):
             click = self.find_element(value=xpath, by=self.by.XPATH)
             click.click()
             if note:
-                log.debug(f'({note}) {xpath}')
+                log.debug(str(dict(
+                    note=note,
+                    xpath=xpath,
+                )))
             else:
-                log.debug(f'{xpath}')
+                log.debug(str(dict(
+                    xpath=xpath,
+                )))
             return click
+
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             log.error(str(dict(
@@ -167,13 +173,16 @@ class SeleniumBrowser(object):
             if secret:
                 key = f'*' * len(key)
 
-            log.debug(f'{key}')
+            log.debug(str(dict(
+                send_keys=key,
+            )))
             return True
+
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             log.error(str(dict(
                 url=self.url,
-                key=key,
+                send_keys=key,
                 message=message,
                 session=session,
                 stacktrace=stacktrace,
