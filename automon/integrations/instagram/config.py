@@ -16,13 +16,13 @@ class InstagramConfig(object):
     def login(self):
         if self._login:
             return self._login
-        log.error(f'missing INSTAGRAM_LOGIN')
+        log.error(f'INSTAGRAM_LOGIN')
 
     @property
     def password(self):
         if self._password:
             return self._password
-        log.error(f'missin INSTAGRAM_PASSWORD')
+        log.error(f'INSTAGRAM_PASSWORD')
 
     @property
     def is_configured(self):
