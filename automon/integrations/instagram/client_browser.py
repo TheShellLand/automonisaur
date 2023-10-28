@@ -51,7 +51,7 @@ class InstagramBrowserClient:
     def _is_authenticated(func):
         @functools.wraps(func)
         def wrapped(self, *args, **kwargs):
-            if self.browser.find_xpath(self.xpaths.profile_picture):
+            if self.is_authenticated():
                 return func(self, *args, **kwargs)
             return False
 
@@ -212,7 +212,11 @@ class InstagramBrowserClient:
     @_is_running
     @_is_authenticated
     def is_authenticated(self):
-        return True
+        if self.browser.find_xpath(self.xpaths.profile_picture):
+            log.info(f'{True}')
+            return True
+        log.error(f'{False}')
+        return False
 
     def is_running(self) -> bool:
         if self.config.is_configured:
