@@ -144,8 +144,15 @@ class SeleniumBrowser(object):
             else:
                 log.debug(f'{xpath}')
             return click
-        except Exception as e:
-            log.error(f'failed {xpath}, {e}')
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                xpath=xpath,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
         return False
 
     @_is_running
@@ -162,8 +169,15 @@ class SeleniumBrowser(object):
 
             log.debug(f'{key}')
             return True
-        except Exception as e:
-            log.error(f'failed {key}, {e}')
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                key=key,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
         return False
 
     @_is_running
@@ -171,6 +185,17 @@ class SeleniumBrowser(object):
         """close browser"""
         log.info(f'closed')
         self.webdriver.close()
+
+    @staticmethod
+    def error_parsing(error) -> tuple:
+        error_parsed = f'{error}'.splitlines()
+        error_parsed = [f'{x}'.strip() for x in error_parsed]
+        message = error_parsed[0]
+        session = error_parsed[1]
+        stacktrace = error_parsed[2:]
+        stacktrace = ' '.join(stacktrace)
+
+        return message, session, stacktrace
 
     @_is_running
     def find_element(
@@ -277,7 +302,12 @@ class SeleniumBrowser(object):
             self.webdriver.quit()
             self.webdriver.stop_client()
         except Exception as error:
-            log.error(f'failed to quit browser. {error}')
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
             return False
         return True
 
@@ -320,7 +350,12 @@ class SeleniumBrowser(object):
             self.config.set_webdriver().webdriver_wrapper.set_window_size(width=width, height=height,
                                                                           device_type=device_type)
         except Exception as error:
-            log.error(f'failed to set resolution. {error}')
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
             return False
         return True
 
@@ -336,7 +371,7 @@ class SeleniumBrowser(object):
             self,
             value: str or list,
             by: By = By.XPATH,
-            retries: int = 5,
+            retries: int = 15,
             **kwargs) -> str or False:
         """wait for something"""
         retry = 0
@@ -384,12 +419,14 @@ class SeleniumBrowser(object):
 
             retry += 1
 
+            log.error(str(dict(
+                url=self.url,
+                retry=f'{retry}/{retries}',
+            )))
+
             if retry == retries:
-                log.error(str(dict(
-                    url=self.url,
-                    retry=f'{retry}/{retries}',
-                )))
                 break
+
         return False
 
     def wait_for_element(self, element: str or list, **kwargs) -> str or False:
