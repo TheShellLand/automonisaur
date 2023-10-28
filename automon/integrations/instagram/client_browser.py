@@ -34,7 +34,7 @@ class InstagramBrowserClient:
         if headless:
             self.browser.set_webdriver().Chrome().in_headless().set_user_agent(useragent)
         else:
-            self.browser.set_webdriver().Chrome().in_headless()
+            self.browser.set_webdriver().Chrome().set_user_agent(useragent)
 
     def __repr__(self):
         return f'{self.__dict__}'
