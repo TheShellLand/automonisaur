@@ -156,7 +156,7 @@ class SeleniumBrowser(object):
         return False
 
     @_is_running
-    def action_type(self, key: str or Keys, secret: bool = False):
+    def action_type(self, key: str or Keys, secret: bool = True):
         """perform keyboard command"""
         try:
             actions = selenium.webdriver.common.action_chains.ActionChains(
