@@ -218,7 +218,8 @@ class InstagramBrowserClient:
     @_is_running
     def is_authenticated(self):
         try:
-            self.browser.get(self.urls.login_page)
+            if self.urls.domain not in self.browser.url:
+                self.browser.get(self.urls.domain)
             self.remove_notifications_not_now()
             self.remove_not_now()
             profile_picture = self.browser.wait_for_xpath(self.xpaths.profile_picture)

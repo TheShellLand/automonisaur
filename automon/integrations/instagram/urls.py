@@ -4,13 +4,15 @@ class Urls(object):
         return f'Instagram URLs'
 
     @property
+    def domain(self):
+        return 'https://www.instagram.com'
+
+    @property
     def login_page(self):
-        return 'https://www.instagram.com/accounts/login/?source=auth_switcher'
+        return f'{self.domain}/accounts/login/?source=auth_switcher'
 
-    @staticmethod
-    def followers(account: str):
-        return f'https://www.instagram.com/{account}/followers/'
+    def followers(self, account: str):
+        return f'{self.domain}/{account}/followers/'
 
-    @staticmethod
-    def following(account: str):
-        return f'https://www.instagram.com/{account}/following/'
+    def following(self, account: str):
+        return f'{self.domain}/{account}/following/'

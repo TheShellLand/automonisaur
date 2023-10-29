@@ -45,6 +45,8 @@ class XPaths(object):
     def profile_picture(self):
         return [
             '/html/body/div[2]/div/div/div[2]/div/div/div/div[1]/div[1]/div[2]/section/main/div[1]/div[2]/div/div[1]/div/div/div/div/div/div[1]/div/div/a/img',
+            '/html/body/div[2]/div/div/div[2]/div/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[8]/div/span/div/a/div/div[1]/div/div/span/img',
+            '/html/body/div[2]/div/div/div[2]/div/div/div/div[1]/div[1]/div[1]/div/div/div/div/div/div[6]/div/span/div/a/div/div/div/div/span/img',
             '/html/body/div[2]/div/div/div[2]/div/div/div/div[1]/div[1]/div[2]/section/main/div[1]/section/div[3]/div[1]/div/div/div/div/div/div[1]/div/div/span/img',
             '/html/body/div[2]/div/div/div[2]/div/div/div/div[1]/div[1]/div[2]/section/main/div[1]/section/div/div[2]/div/div/div/div/ul/li[3]/div/button/div[1]/span/img',
         ]
