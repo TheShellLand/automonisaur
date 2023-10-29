@@ -207,11 +207,11 @@ class SeleniumBrowser(object):
                 for cookie in json.loads(cookies_file.read()):
                     self.add_cookie(cookie_dict=cookie)
                     self.get_cookies()
+            return True
         else:
             log.error(f'{file}')
-            return False
 
-        return True
+        return False
 
     def delete_all_cookies(self) -> None:
         result = self.webdriver.delete_all_cookies()
@@ -383,7 +383,12 @@ class SeleniumBrowser(object):
                 json.dumps(self.get_cookies())
             )
 
-        log.info(f'{os.path.abspath(file)} ({os.stat(file).st_size} B)')
+        if os.path.exists(file):
+            log.info(f'{os.path.abspath(file)} ({os.stat(file).st_size} B)')
+            return True
+
+        log.error(f'{file}')
+        return False
 
     @_is_running
     def save_screenshot(
