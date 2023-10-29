@@ -1,4 +1,6 @@
 import os
+import json
+import datetime
 import tempfile
 import functools
 import selenium
@@ -189,6 +191,57 @@ class SeleniumBrowser(object):
             )))
         return False
 
+    def add_cookie(self, cookie_dict: dict):
+        result = self.webdriver.add_cookie(cookie_dict=cookie_dict)
+        log.info(f'{result}')
+        return result
+
+    def add_cookie_from_file(self, file: str = 'cookies.txt') -> [dict]:
+        if os.path.exists(file):
+            log.debug(f'{file}')
+            with open(file, 'r') as cookies_file:
+                for cookie in json.loads(cookies_file.read()):
+                    self.add_cookie(cookie_dict=cookie)
+                    self.get_cookies()
+        else:
+            log.error(f'{file}')
+            return False
+
+        return True
+
+    def delete_all_cookies(self) -> None:
+        result = self.webdriver.delete_all_cookies()
+        log.info(f'{True}')
+        return result
+
+    def get_cookie(self, name: str) -> dict:
+        result = self.webdriver.get_cookie(name=name)
+        log.info(f'{result}')
+        return result
+
+    def get_cookies(self) -> [dict]:
+        result = self.webdriver.get_cookies()
+        summary = {}
+        if result:
+            for cookie in result:
+                cookie = dict(cookie)
+                domain = cookie.get('domain')
+                name = cookie.get('name')
+                expiry = cookie.get('expiry')
+
+                if domain in summary.keys():
+                    if expiry:
+                        summary[domain].append({
+                            f'{name}': f'{datetime.datetime.fromtimestamp(expiry)}'
+                        })
+                    else:
+                        summary[domain].append(name)
+                else:
+                    summary[domain] = [name]
+
+        log.info(f'{summary}')
+        return result
+
     @_is_running
     def close(self):
         """close browser"""
@@ -320,6 +373,14 @@ class SeleniumBrowser(object):
             return False
         return True
 
+    def save_cookies_to_file(self, file: str = 'cookies.txt'):
+        with open(file, 'w') as cookies:
+            cookies.write(
+                json.dumps(self.get_cookies())
+            )
+
+        log.info(f'{os.path.abspath(file)} ({os.stat(file).st_size} B)')
+
     @_is_running
     def save_screenshot(
             self,
@@ -368,6 +429,12 @@ class SeleniumBrowser(object):
             return False
         return True
 
+    def set_window_position(self, x: int = 0, y: int = 0):
+        """set browser position"""
+        result = self.webdriver.set_window_position(x, y)
+        log.info(f'{result}')
+        return result
+
     def run(self):
         """run browser"""
         return self.config.run()
@@ -380,9 +447,13 @@ class SeleniumBrowser(object):
             self,
             value: str or list,
             by: By = By.XPATH,
-            retries: int = 15,
+            retries: int = 5,
+            fail_on_error: bool = True,
             **kwargs) -> str or False:
         """wait for something"""
+        if not retries:
+            retries = 5
+
         retry = 0
         while True:
             try:
@@ -424,7 +495,7 @@ class SeleniumBrowser(object):
                     value=value,
                     error=error,
                 )))
-                # Sleeper.seconds(f'wait for', 1)
+                Sleeper.seconds(f'wait for', 0.2)
 
             retry += 1
 
@@ -436,12 +507,39 @@ class SeleniumBrowser(object):
             if retry == retries:
                 break
 
+        if fail_on_error:
+            raise Exception(f'{value}')
+
         return False
 
-    def wait_for_element(self, element: str or list, **kwargs) -> str or False:
+    def wait_for_element(
+            self,
+            element: str or list,
+            retries: int = None,
+            fail_on_error: bool = True,
+            **kwargs
+    ) -> str or False:
         """wait for an element"""
-        return self.wait_for(value=element, by=self.by.ID, **kwargs)
+        return self.wait_for(
+            value=element,
+            by=self.by.ID,
+            retries=retries,
+            fail_on_error=fail_on_error,
+            **kwargs
+        )
 
-    def wait_for_xpath(self, xpath: str or list, **kwargs) -> str or False:
+    def wait_for_xpath(
+            self,
+            xpath: str or list,
+            retries: int = None,
+            fail_on_error: bool = True,
+            **kwargs
+    ) -> str or False:
         """wait for an xpath"""
-        return self.wait_for(value=xpath, by=self.by.XPATH, **kwargs)
+        return self.wait_for(
+            value=xpath,
+            by=self.by.XPATH,
+            retries=retries,
+            fail_on_error=fail_on_error,
+            **kwargs
+        )
