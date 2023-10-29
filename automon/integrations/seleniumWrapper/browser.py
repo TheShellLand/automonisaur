@@ -78,6 +78,10 @@ class SeleniumBrowser(object):
         """Set of special keys codes"""
         return selenium.webdriver.common.keys.Keys
 
+    def refresh(self):
+        self.webdriver.refresh()
+        log.info(f'{True}')
+
     @property
     def request_status(self):
         if self.request is not None:

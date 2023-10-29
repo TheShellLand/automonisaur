@@ -8,7 +8,10 @@ class InstagramClientTest(unittest.TestCase):
     c.browser.run()
 
     if c.is_running():
-        if c.authenticate():
+        c.browser.get(c.urls.domain)
+        c.browser.add_cookie_from_file()
+        c.browser.refresh()
+        if c.is_authenticated():
             def test_authenticate(self):
                 self.assertTrue(self.c.is_authenticated())
                 self.c.browser.quit()
