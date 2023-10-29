@@ -9,7 +9,7 @@ class InstagramClientTest(unittest.TestCase):
 
     if c.is_running():
         c.browser.get(c.urls.domain)
-        c.browser.add_cookie_from_file()
+        c.browser.add_cookie_from_base64()
         c.browser.refresh()
         if c.is_authenticated():
             def test_authenticate(self):

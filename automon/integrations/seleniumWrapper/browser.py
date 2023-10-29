@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 import datetime
 import tempfile
 import functools
@@ -195,22 +196,54 @@ class SeleniumBrowser(object):
             )))
         return False
 
-    def add_cookie(self, cookie_dict: dict):
+    def add_cookie(self, cookie_dict: dict) -> bool:
         result = self.webdriver.add_cookie(cookie_dict=cookie_dict)
-        log.info(f'{result}')
-        return result
 
-    def add_cookie_from_file(self, file: str = 'cookies.txt') -> [dict]:
+        if result is None:
+            log.debug(f'{True}')
+            return True
+
+        log.error(f'{False}')
+        return False
+
+    def add_cookies(self, cookies_list: list):
+        for cookie in cookies_list:
+            self.add_cookie(cookie_dict=cookie)
+            self.get_cookies_summary()
+
+        log.debug(f'{True}')
+        return True
+
+    def add_cookie_from_file(self, file: str = None) -> bool:
+        if not file and self.config.cookies_file:
+            file = self.config.cookies_file
+        else:
+            file = 'cookies.txt'
+
         if os.path.exists(file):
             log.debug(f'{file}')
             with open(file, 'r') as cookies_file:
-                for cookie in json.loads(cookies_file.read()):
-                    self.add_cookie(cookie_dict=cookie)
-                    self.get_cookies()
+                self.add_cookies(
+                    json.loads(cookies_file.read())
+                )
             return True
         else:
             log.error(f'{file}')
 
+        return False
+
+    def add_cookie_from_base64(self, base64_str: str = None):
+        if not base64_str and self.config.cookies_base64:
+            base64_str = self.config.cookies_base64
+
+        if base64_str:
+            self.add_cookies(
+                json.loads(base64.b64decode(base64_str))
+            )
+            log.debug(f'{True}')
+            return True
+
+        log.error(f'{False}')
         return False
 
     def delete_all_cookies(self) -> None:
@@ -225,6 +258,18 @@ class SeleniumBrowser(object):
 
     def get_cookies(self) -> [dict]:
         result = self.webdriver.get_cookies()
+        log.debug(f'{True}')
+        return result
+
+    def get_cookies_base64(self) -> base64:
+        result = self.get_cookies()
+        log.debug(f'{True}')
+        return base64.b64encode(
+            json.dumps(result).encode()
+        ).decode()
+
+    def get_cookies_summary(self):
+        result = self.get_cookies()
         summary = {}
         if result:
             for cookie in result:
@@ -243,8 +288,8 @@ class SeleniumBrowser(object):
                 else:
                     summary[domain] = [name]
 
-        log.info(f'{summary}')
-        return result
+        log.debug(f'{summary}')
+        return summary
 
     @_is_running
     def close(self):

@@ -1,6 +1,7 @@
 import selenium.webdriver
 
 from automon.log import logger
+from automon.helpers.osWrapper import environ
 
 from .config_webdriver_chrome import ConfigChrome
 
@@ -12,6 +13,9 @@ class SeleniumConfig(object):
     def __init__(self):
         self._webdriver = None
         self._webdriver_wrapper = None
+
+        self._cookies_base64 = environ('SELENIUM_COOKIES_BASE64')
+        self._cookies_file = environ('SELENIUM_COOKIES_FILE')
 
         self._chrome = ConfigChrome()
         self._edge = NotImplemented
@@ -35,6 +39,16 @@ class SeleniumConfig(object):
         """
         if self.webdriver_wrapper:
             return self.webdriver_wrapper.window_size
+
+    @property
+    def cookies_base64(self):
+        log.debug(f'{len(self._cookies_base64)}')
+        return self._cookies_base64
+
+    @property
+    def cookies_file(self):
+        log.info(f'{self._cookies_file}')
+        return self._cookies_file
 
     def Chrome(self):
         """selenium Chrome webdriver
