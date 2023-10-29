@@ -4,7 +4,7 @@ from automon.integrations.instagram.client_browser import InstagramBrowserClient
 
 
 class InstagramClientTest(unittest.TestCase):
-    c = InstagramBrowserClient(headless=False)
+    c = InstagramBrowserClient(headless=True)
     c.browser.run()
 
     if c.is_running():
