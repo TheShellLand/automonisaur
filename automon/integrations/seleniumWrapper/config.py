@@ -24,16 +24,6 @@ class SeleniumConfig(object):
         except:
             return self._webdriver
 
-    def set_webdriver(self):
-        return self
-
-    @property
-    def webdriver(self) -> selenium.webdriver:
-        """selenium webdriver
-
-        """
-        return self._webdriver
-
     @property
     def webdriver_wrapper(self):
         return self._webdriver_wrapper
@@ -72,6 +62,9 @@ class SeleniumConfig(object):
         self._webdriver = self.webdriver_wrapper.webdriver
         log.info(f'{self.webdriver}')
         return run
+
+    def set_webdriver(self):
+        return self
 
     def start(self):
         """alias to run"""
