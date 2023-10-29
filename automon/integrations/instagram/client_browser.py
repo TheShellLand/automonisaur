@@ -29,12 +29,12 @@ class InstagramBrowserClient:
         self.config = config or InstagramConfig(login=login, password=password)
         self.browser = SeleniumBrowser()
 
-        useragent = self.browser.get_random_user_agent()
+        self.useragent = self.browser.get_random_user_agent()
 
         if headless:
-            self.browser.set_webdriver().Chrome().in_headless().set_user_agent(useragent)
+            self.browser.set_webdriver().Chrome().in_headless().set_user_agent(self.useragent)
         else:
-            self.browser.set_webdriver().Chrome().set_user_agent(useragent)
+            self.browser.set_webdriver().Chrome().set_user_agent(self.useragent)
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -130,6 +130,27 @@ class InstagramBrowserClient:
             log.debug('[_next_story] no more stories')
             raise Exception
 
+    def remove_not_now(self):
+        """check for "save your login info" dialogue"""
+        not_now = self.browser.wait_for_xpath(
+            self.xpaths.save_info_not_now_div,
+            fail_on_error=False
+        )
+        if not_now:
+            self.browser.action_type(self.browser.keys.TAB)
+            self.browser.action_type(self.browser.keys.TAB)
+            self.browser.action_type(self.browser.keys.ENTER)
+            # self.browser.action_click(not_now, 'dont save login info')
+
+    def remove_notifications_not_now(self):
+        """check for "notifications" dialogue"""
+        notifications_not_now = self.browser.wait_for_xpath(
+            self.xpaths.turn_on_notifications_not_now,
+            fail_on_error=False
+        )
+        if notifications_not_now:
+            self.browser.action_click(notifications_not_now, 'no notifications')
+
     def run_stories(self, limit=None):
         """Run
         """
@@ -178,29 +199,14 @@ class InstagramBrowserClient:
         self.browser.action_type(self.config.password)
         self.browser.action_type(self.browser.keys.ENTER)
 
-        # login
-        # login_btn = self.browser.wait_for_xpath(self.xpaths.login_btn)
-        # self.browser.action_click(login_btn, 'login button')
+        self.remove_notifications_not_now()
+        self.remove_not_now()
 
-        # check for "save your login info" dialogue
-        not_now = self.browser.wait_for_xpath(self.xpaths.save_info_not_now_div)
-        self.browser.action_type(self.browser.keys.TAB)
-        self.browser.action_type(self.browser.keys.TAB)
-        self.browser.action_type(self.browser.keys.ENTER)
-        # self.browser.action_click(not_now, 'dont save login info')
-
-        # check for "notifications" dialogue
-        notifications_not_now = self.browser.wait_for_xpath(self.xpaths.turn_on_notifications_not_now)
-        self.browser.action_click(notifications_not_now, 'no notifications')
-
-        log.debug(
-            f'[authenticated browser] [{self.browser.browser.name}] '
-            f'{self.browser.browser.title} '
-            f'session: {self.browser.browser.session_id}')
-
-        if self.browser.wait_for_xpath(self.xpaths.profile_picture):
+        if self.is_authenticated():
+            log.info(f'{True}')
             return True
 
+        log.error(f'{False}')
         return False
 
     @_is_running
@@ -210,12 +216,17 @@ class InstagramBrowserClient:
         self.browser.get(url)
 
     @_is_running
-    @_is_authenticated
     def is_authenticated(self):
-        if self.browser.find_xpath(self.xpaths.profile_picture):
-            log.info(f'{True}')
-            return True
-        log.error(f'{False}')
+        try:
+            self.browser.get(self.urls.login_page)
+            self.remove_notifications_not_now()
+            self.remove_not_now()
+            profile_picture = self.browser.wait_for_xpath(self.xpaths.profile_picture)
+            if profile_picture:
+                log.info(f'{True}')
+                return True
+        except Exception as error:
+            log.error(f'{error}')
         return False
 
     def is_running(self) -> bool:
