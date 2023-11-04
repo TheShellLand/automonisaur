@@ -329,9 +329,12 @@ class FacebookGroups(object):
         error_parsed = f'{error}'.splitlines()
         error_parsed = [f'{x}'.strip() for x in error_parsed]
         message = error_parsed[0]
-        session = error_parsed[1]
-        stacktrace = error_parsed[2:]
-        stacktrace = ' '.join(stacktrace)
+        session = None
+        stacktrace = None
+        if len(error_parsed) > 1:
+            session = error_parsed[1]
+            stacktrace = error_parsed[2:]
+            stacktrace = ' '.join(stacktrace)
 
         return message, session, stacktrace
 
