@@ -17,7 +17,7 @@ class ConfigChrome(object):
     def __init__(self):
         self._webdriver = None
         self._chrome_options = selenium.webdriver.ChromeOptions()
-        self._chromedriver = environ('SELENIUM_CHROMEDRIVER_PATH')
+        self._chromedriver_path = environ('SELENIUM_CHROMEDRIVER_PATH')
         self._ChromeService = None
 
         self.update_paths()
@@ -28,13 +28,18 @@ class ConfigChrome(object):
         if self._webdriver:
             return str(dict(
                 name=self.webdriver.name,
-                browserVersion=self.webdriver.capabilities.get('browserVersion'),
-                chromedriverVersion=self.webdriver.capabilities.get('chrome').get('chromedriverVersion'),
-                chromedriver=self.chromedriver,
+                browserVersion=self.browserVersion,
+                chromedriverVersion=self.chromedriverVersion,
+                chromedriver_path=self.chromedriver_path,
                 webdriver=self.webdriver,
             ))
 
         return f'{__class__}'
+
+    @property
+    def browserVersion(self):
+        if self.webdriver:
+            return self.webdriver.capabilities.get('browserVersion')
 
     @property
     def chrome_options(self):
@@ -45,8 +50,13 @@ class ConfigChrome(object):
         return self.chrome_options.arguments
 
     @property
-    def chromedriver(self):
-        return self._chromedriver
+    def chromedriver_path(self):
+        return self._chromedriver_path
+
+    @property
+    def chromedriverVersion(self):
+        if self.webdriver:
+            return self.webdriver.capabilities.get('chrome').get('chromedriverVersion')
 
     @property
     def ChromeService(self):
@@ -290,9 +300,9 @@ class ConfigChrome(object):
 
     def run(self) -> selenium.webdriver.Chrome:
         try:
-            if self.chromedriver:
+            if self.chromedriver_path:
                 self._ChromeService = selenium.webdriver.ChromeService(
-                    executable_path=self.chromedriver
+                    executable_path=self.chromedriver_path
                 )
                 log.debug(f'{self.ChromeService}')
 
@@ -311,9 +321,9 @@ class ConfigChrome(object):
         except Exception as error:
             log.error(f'{error}')
 
-    def set_chromedriver(self, chromedriver: str):
-        log.debug(f'{chromedriver}')
-        self._chromedriver = chromedriver
+    def set_chromedriver(self, chromedriver_path: str):
+        log.debug(f'{chromedriver_path}')
+        self._chromedriver_path = chromedriver_path
         self.update_paths()
         return self
 
@@ -367,9 +377,9 @@ class ConfigChrome(object):
         return result
 
     def update_paths(self):
-        if self.chromedriver:
-            if self.chromedriver not in os.getenv('PATH'):
-                os.environ['PATH'] = f"{os.getenv('PATH')}:{self._chromedriver}"
+        if self.chromedriver_path:
+            if self.chromedriver_path not in os.getenv('PATH'):
+                os.environ['PATH'] = f"{os.getenv('PATH')}:{self._chromedriver_path}"
                 log.debug(str(dict(
                     PATH=os.environ['PATH']
                 )))
