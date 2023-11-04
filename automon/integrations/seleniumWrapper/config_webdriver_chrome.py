@@ -27,9 +27,11 @@ class ConfigChrome(object):
     def __repr__(self):
         if self._webdriver:
             return str(dict(
-                module=__class__.__name__,
-                webdriver=self.webdriver,
+                name=self.webdriver.name,
+                browserVersion=self.webdriver.capabilities.get('browserVersion'),
+                chromedriverVersion=self.webdriver.capabilities.get('chrome').get('chromedriverVersion'),
                 chromedriver=self.chromedriver,
+                webdriver=self.webdriver,
             ))
 
         return f'{__class__}'
