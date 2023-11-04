@@ -325,7 +325,7 @@ class FacebookGroups(object):
         return self._visible
 
     @staticmethod
-    def error_parsing(error) -> tuple:
+    def error_parsing(error, enabble_stacktrace: bool = False) -> tuple:
         error_parsed = f'{error}'.splitlines()
         error_parsed = [f'{x}'.strip() for x in error_parsed]
         message = error_parsed[0]
@@ -336,7 +336,10 @@ class FacebookGroups(object):
             stacktrace = error_parsed[2:]
             stacktrace = ' '.join(stacktrace)
 
-        return message, session, stacktrace
+        if enabble_stacktrace:
+            return message, session, stacktrace
+
+        return message, session, 'disabled'
 
     def get(self, url: str = None) -> bool:
         """get url"""
