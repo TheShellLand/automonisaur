@@ -78,7 +78,7 @@ class FacebookGroups(object):
 
         if not self._content_unavailable:
             try:
-                xpath_content_unavailble = self._browser.wait_for_xpath(self.xpath_content_unavailble)
+                xpath_content_unavailble = self._browser.wait_for_xpath(self._xpath_content_unavailble)
                 self._content_unavailable = self._browser.find_xpath(xpath_content_unavailble).text
             except Exception as error:
                 message, session, stacktrace = self.error_parsing(error)
@@ -98,7 +98,7 @@ class FacebookGroups(object):
 
         if not self._creation_date:
             try:
-                xpath_creation_date = self._browser.wait_for_xpath(self.xpath_creation_date)
+                xpath_creation_date = self._browser.wait_for_xpath(self._xpath_creation_date)
                 self._creation_date = self._browser.find_xpath(xpath_creation_date).text
             except Exception as error:
                 message, session, stacktrace = self.error_parsing(error)
@@ -124,7 +124,7 @@ class FacebookGroups(object):
 
         if not self._history:
             try:
-                xpath_history = self._browser.wait_for_xpath(self.xpath_history)
+                xpath_history = self._browser.wait_for_xpath(self._xpath_history)
                 self._history = self._browser.find_xpath(xpath_history).text
             except Exception as error:
                 message, session, stacktrace = self.error_parsing(error)
@@ -144,7 +144,7 @@ class FacebookGroups(object):
 
         if not self._members:
             try:
-                xpath_members = self._browser.wait_for_xpath(self.xpath_members)
+                xpath_members = self._browser.wait_for_xpath(self._xpath_members)
                 self._members = self._browser.find_xpath(xpath_members).text
                 # TODO: need to clean up string from members and remove bad chars
             except Exception as error:
@@ -178,7 +178,7 @@ class FacebookGroups(object):
 
         if not self._posts_monthly:
             try:
-                xpath_monthly_posts = self._browser.wait_for_xpath(self.xpath_posts_monthly)
+                xpath_monthly_posts = self._browser.wait_for_xpath(self._xpath_posts_monthly)
                 self._posts_monthly = self._browser.find_xpath(xpath_monthly_posts).text
             except Exception as error:
                 message, session, stacktrace = self.error_parsing(error)
@@ -211,7 +211,7 @@ class FacebookGroups(object):
 
         if not self._posts_today:
             try:
-                xpath_posts_today = self._browser.wait_for_xpath(self.xpath_posts_today)
+                xpath_posts_today = self._browser.wait_for_xpath(self._xpath_posts_today)
                 self._posts_today = self._browser.find_xpath(xpath_posts_today).text
             except Exception as error:
                 message, session, stacktrace = self.error_parsing(error)
@@ -244,7 +244,7 @@ class FacebookGroups(object):
 
         if not self._privacy:
             try:
-                xpath_privacy = self._browser.wait_for_xpath(self.xpath_privacy)
+                xpath_privacy = self._browser.wait_for_xpath(self._xpath_privacy)
                 self._privacy = self._browser.find_xpath(xpath_privacy).text
             except Exception as error:
                 message, session, stacktrace = self.error_parsing(error)
@@ -264,7 +264,7 @@ class FacebookGroups(object):
 
         if not self._privacy_details:
             try:
-                xpath_privacy_details = self._browser.wait_for_xpath(self.xpath_privacy_details)
+                xpath_privacy_details = self._browser.wait_for_xpath(self._xpath_privacy_details)
                 self._privacy_details = self._browser.find_xpath(xpath_privacy_details).text
             except Exception as error:
                 message, session, stacktrace = self.error_parsing(error)
@@ -284,7 +284,7 @@ class FacebookGroups(object):
 
         if not self._title:
             try:
-                xpath_title = self._browser.wait_for_xpath(self.xpath_title)
+                xpath_title = self._browser.wait_for_xpath(self._xpath_title)
                 self._title = self._browser.find_xpath(xpath_title).text
             except Exception as error:
                 message, session, stacktrace = self.error_parsing(error)
@@ -308,7 +308,7 @@ class FacebookGroups(object):
 
         if not self._visible:
             try:
-                xpath_visible = self._browser.wait_for_xpath(self.xpath_visible)
+                xpath_visible = self._browser.wait_for_xpath(self._xpath_visible)
                 self._visible = self._browser.find_xpath(xpath_visible).text
             except Exception as error:
                 message, session, stacktrace = self.error_parsing(error)
