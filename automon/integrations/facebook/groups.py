@@ -8,43 +8,43 @@ log.setLevel(logger.DEBUG)
 
 
 class FacebookGroups(object):
-    xpath_about = [
+    _xpath_about = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[3]/div/div/div/div/div/div/div[1]/div/div/div/div/div[2]/a[1]/div[1]/span',
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[3]/div/div/div/div/div/div/div[1]/div/div/div/div/div[1]/div[1]/span',
     ]
-    xpath_popup_close = [
+    _xpath_popup_close = [
         '/html/body/div[1]/div/div[1]/div/div[5]/div/div/div[1]/div/div[2]/div/div/div/div[1]/div/i',
     ]
-    xpath_content_unavailble = [
+    _xpath_content_unavailble = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div[1]/span',
     ]
-    xpath_creation_date = [
+    _xpath_creation_date = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div/div[2]/div/div/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div/div/span',
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div/div/span',
     ]
-    xpath_history = [
+    _xpath_history = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[4]/div/div/div[2]/div/div[2]/span/span',
     ]
-    xpath_title = [
+    _xpath_title = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[1]/div[2]/div/div/div/div/div[1]/div/div/div/div/div/div[1]/h1/span/a',
     ]
-    xpath_members = [
+    _xpath_members = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div/div[2]/div/div/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]/span',
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]/span',
     ]
-    xpath_posts_today = [
+    _xpath_posts_today = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/span',
     ]
-    xpath_posts_monthly = [
+    _xpath_posts_monthly = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[2]/span',
     ]
-    xpath_privacy = [
+    _xpath_privacy = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div/div[1]/span/span',
     ]
-    xpath_privacy_details = [
+    _xpath_privacy_details = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div/div[2]/span/span',
     ]
-    xpath_visible = [
+    _xpath_visible = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[3]/div/div/div[2]/div/div[2]/span/span',
     ]
 
@@ -69,9 +69,6 @@ class FacebookGroups(object):
         self._visible = None
 
         self._browser = None
-
-    def __repr__(self):
-        return f'{self.__dict__}'
 
     @property
     def content_unavailable(self):
@@ -374,7 +371,7 @@ class FacebookGroups(object):
         log.info(f'{self._browser}')
         return self.start()
 
-    def start(self, headless: bool = True):
+    def start(self, headless: bool = True, random_user_agent: bool = False, set_user_agent: str = None):
         """start new instance of selenium"""
         self._browser = SeleniumBrowser()
 
@@ -383,9 +380,14 @@ class FacebookGroups(object):
         else:
             self._browser.set_webdriver().Chrome().set_locale_experimental()
 
-        self._browser.set_webdriver().Chrome().set_user_agent(
-            self._browser.get_random_user_agent()
-        )
+        if random_user_agent:
+            self._browser.set_webdriver().Chrome().set_user_agent(
+                self._browser.get_random_user_agent()
+            )
+        elif set_user_agent:
+            self._browser.set_webdriver().Chrome().set_user_agent(
+                set_user_agent
+            )
 
         log.info(f'{self._browser}')
         return self._browser.run()
