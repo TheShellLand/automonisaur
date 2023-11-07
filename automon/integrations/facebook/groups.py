@@ -28,6 +28,10 @@ class FacebookGroups(object):
     _xpath_title = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[1]/div[2]/div/div/div/div/div[1]/div/div/div/div/div/div[1]/h1/span/a',
     ]
+    _xpath_temporarily_blocked = [
+        '/html/body/div[1]/div[2]/div[1]/div/div/div[1]/div/div[2]/h2',
+        '/html/body/div[1]/div[2]/div[1]/div/div/div[1]/div/div[2]',
+    ]
     _xpath_members = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div/div[2]/div/div/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]/span',
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]/span',
@@ -64,6 +68,7 @@ class FacebookGroups(object):
         self._posts_today_count = None
         self._privacy = None
         self._privacy_details = None
+        self._temporarily_blocked = None
         self._title = None
         self._url = url
         self._visible = None
@@ -136,6 +141,28 @@ class FacebookGroups(object):
                 )))
 
         return self._history
+
+    def is_temporarily_blocked(self):
+        if not self._browser:
+            return
+
+        try:
+            xpath_temporarily_blocked = self._browser.wait_for_xpath(
+                self._xpath_temporarily_blocked
+            )
+            self._temporarily_blocked = self._browser.find_xpath(
+                xpath_temporarily_blocked
+            ).text
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+
+        return self._temporarily_blocked
 
     @property
     def members(self):
