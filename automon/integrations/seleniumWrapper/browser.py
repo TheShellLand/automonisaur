@@ -378,17 +378,32 @@ class SeleniumBrowser(object):
         return SeleniumUserAgentBuilder().get_random(filter=filter, case_sensitive=case_sensitive)
 
     @_is_running
-    def get_screenshot_as_png(self, **kwargs):
-        """screenshot as png"""
-        screenshot = self.webdriver.get_screenshot_as_png(**kwargs)
+    def get_screenshot_as_base64(self, **kwargs):
+        """screenshot as base64"""
+        screenshot = self.webdriver.get_screenshot_as_base64(**kwargs)
         log.debug(f'{round(len(screenshot) / 1024)} KB')
 
         return screenshot
 
+    def get_screenshot_as_file(
+            self,
+            filename: str = None,
+            prefix: str = None,
+            folder: str = None,
+            **kwargs
+    ) -> bool:
+        return self.save_screenshot(
+            self,
+            filename=filename,
+            prefix=prefix,
+            folder=folder,
+            **kwargs
+        )
+
     @_is_running
-    def get_screenshot_as_base64(self, **kwargs):
-        """screenshot as base64"""
-        screenshot = self.webdriver.get_screenshot_as_base64(**kwargs)
+    def get_screenshot_as_png(self, **kwargs):
+        """screenshot as png"""
+        screenshot = self.webdriver.get_screenshot_as_png(**kwargs)
         log.debug(f'{round(len(screenshot) / 1024)} KB')
 
         return screenshot
