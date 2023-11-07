@@ -21,6 +21,10 @@ class SeleniumConfig(object):
         self._edge = NotImplemented
         self._firefox = NotImplemented
 
+    def __repr__(self):
+        if self.webdriver_wrapper:
+            return self.webdriver_wrapper
+
     @property
     def webdriver(self):
         try:
