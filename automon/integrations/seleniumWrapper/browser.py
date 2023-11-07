@@ -38,13 +38,14 @@ class SeleniumBrowser(object):
         self.request = None
 
     def __repr__(self):
-        if self.webdriver:
+        try:
             return str(dict(
                 webdriver=self.webdriver.name or None,
                 request_status=self.request_status,
-                current_url=self.webdriver.current_url,
                 window_size=self.window_size,
             ))
+        except Exception as error:
+            pass
 
         return f'{__class__}'
 
@@ -56,6 +57,14 @@ class SeleniumBrowser(object):
     @property
     def config(self):
         return self._config
+
+    @property
+    def _current_url(self):
+        try:
+            self.webdriver.current_url
+            return self.webdriver.current_url
+        except Exception as error:
+            return
 
     @property
     def webdriver(self):
@@ -99,11 +108,11 @@ class SeleniumBrowser(object):
     def url(self):
         if self.webdriver:
             log.info(str(dict(
-                current_url=self.webdriver.current_url
+                current_url=self._current_url
             )))
-            if self.webdriver.current_url == 'data:,':
+            if self._current_url == 'data:,':
                 return ''
-            return self.webdriver.current_url
+            return self._current_url
 
         log.info(str(dict(
             current_url=None
@@ -114,20 +123,11 @@ class SeleniumBrowser(object):
     def window_size(self):
         return self.config.set_webdriver().window_size
 
-    def _is_running(func) -> functools.wraps:
-        @functools.wraps(func)
-        def wrapped(self, *args, **kwargs):
-            if self.is_running():
-                return func(self, *args, **kwargs)
-            return False
-
-        return wrapped
-
     def _screenshot_name(self, prefix=None):
         """Generate a unique filename"""
 
         title = self.webdriver.title
-        url = self.webdriver.current_url
+        url = self._current_url
         hostname = urlparse(url).hostname
 
         hostname_ = Sanitation.ascii_numeric_only(hostname)
@@ -140,7 +140,6 @@ class SeleniumBrowser(object):
 
         return f'{hostname_}_{title_}_{timestamp}.png'
 
-    @_is_running
     def action_click(self, xpath: str, note: str = None) -> str or False:
         """perform mouse command"""
         try:
@@ -168,7 +167,6 @@ class SeleniumBrowser(object):
             )))
         return False
 
-    @_is_running
     def action_type(self, key: str or Keys, secret: bool = True):
         """perform keyboard command"""
         try:
@@ -291,7 +289,6 @@ class SeleniumBrowser(object):
         log.debug(f'{summary}')
         return summary
 
-    @_is_running
     def close(self):
         """close browser"""
         log.info(f'closed')
@@ -308,7 +305,6 @@ class SeleniumBrowser(object):
 
         return message, session, stacktrace
 
-    @_is_running
     def find_element(
             self,
             value: str,
@@ -323,7 +319,6 @@ class SeleniumBrowser(object):
         )))
         return element
 
-    @_is_running
     def find_xpath(self, value: str, by: By = By.XPATH, **kwargs):
         """find xpath"""
         xpath = self.find_element(value=value, by=by, **kwargs)
@@ -334,19 +329,18 @@ class SeleniumBrowser(object):
         )))
         return xpath
 
-    @_is_running
     def get(self, url: str, **kwargs) -> bool:
         """get url"""
         try:
-            self.webdriver.get(url, **kwargs)
-            self.request = RequestsClient(url=url)
+            if self.webdriver.get(url, **kwargs) is None:
+                self.request = RequestsClient(url=url)
 
-            log.info(str(dict(
-                url=url,
-                current_url=self.webdriver.current_url,
-                request_status=self.request_status,
-                kwargs=kwargs
-            )))
+                log.info(str(dict(
+                    url=url,
+                    current_url=self._current_url,
+                    request_status=self.request_status,
+                    kwargs=kwargs
+                )))
             return True
         except Exception as error:
             self.request = RequestsClient(url=url)
@@ -357,17 +351,14 @@ class SeleniumBrowser(object):
 
         return False
 
-    @_is_running
     def get_page(self, *args, **kwargs):
         """alias to get"""
         return self.get(*args, **kwargs)
 
-    @_is_running
     def get_page_source(self) -> str:
         """get page source"""
         return self.webdriver.page_source
 
-    @_is_running
     def get_page_source_beautifulsoup(self, markdup: str = None, features: str = 'lxml') -> BeautifulSoup:
         """read page source with beautifulsoup"""
         if not markdup:
@@ -377,7 +368,6 @@ class SeleniumBrowser(object):
     def get_random_user_agent(self, filter: list or str = None, case_sensitive: bool = False) -> list:
         return SeleniumUserAgentBuilder().get_random(filter=filter, case_sensitive=case_sensitive)
 
-    @_is_running
     def get_screenshot_as_base64(self, **kwargs):
         """screenshot as base64"""
         screenshot = self.webdriver.get_screenshot_as_base64(**kwargs)
@@ -400,7 +390,6 @@ class SeleniumBrowser(object):
             **kwargs
         )
 
-    @_is_running
     def get_screenshot_as_png(self, **kwargs):
         """screenshot as png"""
         screenshot = self.webdriver.get_screenshot_as_png(**kwargs)
@@ -408,7 +397,6 @@ class SeleniumBrowser(object):
 
         return screenshot
 
-    @_is_running
     def get_user_agent(self):
         return self.webdriver.execute_script("return navigator.userAgent")
 
@@ -420,7 +408,6 @@ class SeleniumBrowser(object):
         log.error(f'{False}')
         return False
 
-    @_is_running
     def quit(self) -> bool:
         """gracefully quit browser"""
         try:
@@ -450,7 +437,6 @@ class SeleniumBrowser(object):
         log.error(f'{file}')
         return False
 
-    @_is_running
     def save_screenshot(
             self,
             filename: str = None,
@@ -481,7 +467,6 @@ class SeleniumBrowser(object):
     def set_webdriver(self):
         return self.config
 
-    @_is_running
     def set_window_size(self, width=1920, height=1080, device_type=None) -> bool:
         """set browser resolution"""
 
@@ -564,7 +549,7 @@ class SeleniumBrowser(object):
                     value=value,
                     error=error,
                 )))
-                Sleeper.seconds(f'wait for', 0.2)
+                Sleeper.seconds(__name__, 0.2)
 
             retry += 1
 
@@ -577,7 +562,11 @@ class SeleniumBrowser(object):
                 break
 
         if fail_on_error:
-            raise Exception(f'{value}')
+            raise Exception(str(dict(
+                by=by,
+                url=self.url,
+                value=value,
+            )))
 
         return False
 
