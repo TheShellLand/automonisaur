@@ -1,6 +1,7 @@
 import datetime
 
 from automon.log import logger
+from automon.helpers.sleeper import Sleeper
 from automon.integrations.seleniumWrapper import SeleniumBrowser
 
 log = logger.logging.getLogger(__name__)
@@ -75,6 +76,9 @@ class FacebookGroups(object):
 
         self._browser = None
 
+        self._timeout = 60
+        self._timeout_max = 360
+
     @property
     def content_unavailable(self):
         """This content isn't available right now"""
@@ -142,10 +146,7 @@ class FacebookGroups(object):
 
         return self._history
 
-    def is_temporarily_blocked(self):
-        if not self._browser:
-            return
-
+    def temporarily_blocked(self):
         try:
             xpath_temporarily_blocked = self._browser.wait_for_xpath(
                 self._xpath_temporarily_blocked
@@ -365,25 +366,66 @@ class FacebookGroups(object):
 
         return message, session, 'disabled'
 
-    def get(self, url: str = None) -> bool:
+    def get(self, url: str) -> bool:
         """get url"""
-        if not self._browser:
-            return
+        result = self._browser.get(url=url)
+        log.info(str(dict(
+            url=url,
+            result=result,
+        )))
+        return result
 
-        if not url and not self.url:
-            log.error(f'missing url')
-            raise Exception(f"missing url")
-
-        get = self._browser.get(url=url or self.url)
-        log.info(f'{url} {get}')
-        return get
-
-    def get_about(self):
+    def get_about(self, rate_limiting: bool = True):
+        """get about page"""
         url = f'{self.url}/about'
-        log.debug(f'{url}')
-        get = self.get(url=url)
-        log.info(f'{url} {get}')
-        return get
+
+        if rate_limiting:
+            result = self.get_with_rate_limiter(url=url)
+        else:
+            result = self.get(url=url)
+
+        log.info(str(dict(
+            url=url,
+            result=result,
+        )))
+        return result
+
+    def get_with_rate_limiter(
+            self,
+            url: str,
+            timeout: int = 60,
+            timeout_max: int = 360
+    ):
+        """get with rate dynamic limit"""
+        self._timeout = timeout
+        self._timeout_max = timeout_max
+
+        while self._timeout < self._timeout_max:
+            result = self.get(url=url)
+
+            if self.rate_limited():
+                Sleeper.time_range(caller=__name__, seconds=self._timeout)
+                self._timeout = self._timeout * 1.6
+                log.info(str(dict(
+                    url=url,
+                    timeout=self._timeout,
+                    timeout_max=self._timeout_max,
+                )))
+            else:
+                log.info(f'{result}')
+                return result
+
+        log.error(f'{url}')
+        return result
+
+    def rate_limited(self):
+        """rate limit checker"""
+        if self.temporarily_blocked():
+            log.info(True)
+            return True
+
+        log.error(False)
+        return False
 
     def run(self):
         """run selenium browser"""
@@ -416,7 +458,9 @@ class FacebookGroups(object):
                 set_user_agent
             )
 
-        log.info(f'{self._browser}')
+        log.info(str(dict(
+            browser=self._browser
+        )))
         return self._browser.run()
 
     def stop(self):
