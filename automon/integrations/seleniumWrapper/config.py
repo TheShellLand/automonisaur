@@ -59,7 +59,9 @@ class SeleniumConfig(object):
 
         """
         self._webdriver_wrapper = self._chrome
-        log.info(f'{self._webdriver_wrapper}')
+        log.info(str(dict(
+            webdriver_wrapper=self._webdriver_wrapper
+        )))
         return self.webdriver_wrapper
 
     def Edge(self):
@@ -78,7 +80,9 @@ class SeleniumConfig(object):
         """run webdriver"""
         run = self.webdriver_wrapper.run()
         self._webdriver = self.webdriver_wrapper.webdriver
-        log.info(f'{self.webdriver}')
+        log.info(str(dict(
+            webdriver=self.webdriver
+        )))
         return run
 
     def set_webdriver(self):

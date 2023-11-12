@@ -304,7 +304,9 @@ class ConfigChrome(object):
                 self._ChromeService = selenium.webdriver.ChromeService(
                     executable_path=self.chromedriver_path
                 )
-                log.debug(f'{self.ChromeService}')
+                log.debug(str(dict(
+                    ChromeService=self.ChromeService
+                )))
 
                 self._webdriver = selenium.webdriver.Chrome(
                     service=self.ChromeService,
