@@ -405,7 +405,7 @@ class FacebookGroups(object):
 
             if self.rate_limited():
                 Sleeper.time_range(caller=__name__, seconds=self._timeout)
-                self._timeout = self._timeout * 1.6
+                self._timeout = round(self._timeout * 1.6)
                 log.info(str(dict(
                     url=url,
                     timeout=self._timeout,
