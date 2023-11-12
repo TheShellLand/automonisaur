@@ -37,6 +37,9 @@ class FacebookGroups(object):
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div/div[2]/div/div/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]/span',
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]/span',
     ]
+    _xpath_must_login = [
+        '/html/body/div[1]/div[1]/div[1]/div/div[2]/div/div',
+    ]
     _xpath_posts_today = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/span',
     ]
@@ -63,6 +66,7 @@ class FacebookGroups(object):
         self._history = None
         self._members = None
         self._members_count = None
+        self._must_login = None
         self._posts_monthly = None
         self._posts_monthly_count = None
         self._posts_today = None
@@ -198,6 +202,25 @@ class FacebookGroups(object):
                 self._members_count = int(''.join(count)) if count else 0
 
         return self._members_count
+
+    def must_login(self):
+        try:
+            xpath_must_login = self._browser.wait_for_xpath(
+                self._xpath_must_login
+            )
+            self._must_login = self._browser.find_xpath(
+                xpath_must_login
+            ).text
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+
+        return self._must_login
 
     @property
     def posts_monthly(self):
@@ -420,7 +443,7 @@ class FacebookGroups(object):
 
     def rate_limited(self):
         """rate limit checker"""
-        if self.temporarily_blocked():
+        if self.temporarily_blocked() or self.must_login():
             log.info(True)
             return True
 
