@@ -208,7 +208,7 @@ def run(minio_config: MinioConfig, openvpn_config):
 
         log.logging.info('[build client configs] Finshed building all OpenVPN clients')
         log.logging.debug('[ClientConfig] sleeping')
-        Sleeper.day('openvpn')
+        Sleeper.day()
 
 
 def test_run(minio_config: MinioConfig, openvpn_config):

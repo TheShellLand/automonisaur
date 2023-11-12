@@ -246,7 +246,7 @@ def main():
         range = f'{SHEET_NAME}!{duplicate_index}:{duplicate_index}'
         result = sheets_client.clear(range=range)
         # max 60/min
-        Sleeper.seconds(f'WriteRequestsPerMinutePerUser', seconds=1)
+        Sleeper.seconds(seconds=1)
         log.info(result)
         df = df.drop(duplicate_index)
 

@@ -443,7 +443,7 @@ class FacebookGroups(object):
             result = self.get(url=url)
 
             if self.rate_limited():
-                Sleeper.time_range(caller=__name__, seconds=self._timeout)
+                Sleeper.time_range(seconds=self._timeout)
                 self._timeout = round(self._timeout * 1.6)
                 log.info(str(dict(
                     url=url,

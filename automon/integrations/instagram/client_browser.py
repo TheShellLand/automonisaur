@@ -83,7 +83,7 @@ class InstagramBrowserClient:
             log.debug(f'[get_stories] no stories for {account}')
             return num_of_stories
 
-        Sleeper.seconds('instagram', 2)
+        Sleeper.seconds(2)
 
         while True:
             try:
@@ -97,7 +97,7 @@ class InstagramBrowserClient:
                 num_of_stories += 1
                 browser.save_screenshot_to_minio(bucket_name='screenshots',
                                                  prefix='instagram/' + account)
-                Sleeper.seconds('watch the story for a bit', 1)
+                Sleeper.seconds(1)
                 browser.save_screenshot_to_minio(bucket_name='screenshots',
                                                  prefix='instagram/' + account)
             except Exception as error:

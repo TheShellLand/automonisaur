@@ -41,14 +41,14 @@ def authenticate(username, password, minio_client=None, retries=None):
 
         log.logging.debug('[authenticate] {}'.format(login_page))
 
-        Sleeper.seconds('instagram get page', 1)
+        Sleeper.seconds(1)
 
         actions = ActionChains(browser.browser)
         actions.send_keys(Keys.TAB)
         actions.send_keys(username)
         actions.perform()
 
-        Sleeper.seconds('instagram get page', 1)
+        Sleeper.seconds(1)
 
         # the password field is sometimes div[3] and div[4]
         login_pass_xpaths = [
@@ -70,7 +70,7 @@ def authenticate(username, password, minio_client=None, retries=None):
             except:
                 pass
 
-        Sleeper.seconds('instagram get page', 2)
+        Sleeper.seconds(2)
 
         found_btn = False
         for xpath in login_btn_xpaths:
@@ -90,12 +90,12 @@ def authenticate(username, password, minio_client=None, retries=None):
                 '[browser] Found password field: {} Found login button: {}'.format(browser.browser.name, found_pass,
                                                                                    found_btn))
 
-            Sleeper.minute("instagram can't authenticate")
+            Sleeper.minute()
 
     login_pass.send_keys(password)
     login_btn.click()
 
-    Sleeper.seconds('wait for instagram to log in', 5)
+    Sleeper.seconds(5)
 
     log.logging.debug(
         '[authenticated browser] [{}] {} session: {}'.format(browser.browser.name, browser.browser.title,
@@ -123,7 +123,7 @@ def get_stories(authenticated_browser, account):
         log.logging.debug('[get_stories] no stories for {}'.format(account))
         return num_of_stories
 
-    Sleeper.seconds('instagram', 2)
+    Sleeper.seconds(2)
 
     while True:
         try:
@@ -134,7 +134,7 @@ def get_stories(authenticated_browser, account):
                 log.logging.debug(('[get_stories] {} end of stories'.format(account)))
                 raise Exception
             num_of_stories += 1
-            Sleeper.seconds('watch the story for a bit', 1)
+            Sleeper.seconds(1)
             browser.save_screenshot_to_minio(prefix=account)
         except:
             # TODO: disable browser proxy when done
@@ -204,7 +204,7 @@ def run(config):
                     else:
                         browser = authenticate(login, password, client)
 
-        Sleeper.hour('instagram')
+        Sleeper.hour()
 
 
 def runrun(browser, account):

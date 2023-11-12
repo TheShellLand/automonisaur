@@ -549,7 +549,7 @@ class SeleniumBrowser(object):
                     value=value,
                     error=error,
                 )))
-                Sleeper.seconds(__name__, 0.2)
+                Sleeper.seconds(0.2)
 
             retry += 1
 
