@@ -450,6 +450,7 @@ class FacebookGroups(object):
                     timeout=self._timeout,
                     timeout_max=self._timeout_max,
                 )))
+                result = False
             else:
                 log.info(f'{result}')
                 return result
