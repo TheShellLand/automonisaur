@@ -102,6 +102,7 @@ class FacebookGroups(object):
                     stacktrace=stacktrace,
                 )))
 
+        log.debug(self._content_unavailable)
         return self._content_unavailable
 
     @property
@@ -122,12 +123,14 @@ class FacebookGroups(object):
                     stacktrace=stacktrace,
                 )))
 
+        log.debug(self._creation_date)
         return self._creation_date
 
     @property
     def creation_date_timestamp(self):
         if self._creation_date:
             # TODO: convert date to datetime timestamp
+            log.debug(self._creation_date_timestamp)
             return self._creation_date_timestamp
 
     @property
@@ -148,6 +151,7 @@ class FacebookGroups(object):
                     stacktrace=stacktrace,
                 )))
 
+        log.debug(self._history)
         return self._history
 
     def temporarily_blocked(self):
@@ -167,6 +171,7 @@ class FacebookGroups(object):
                 stacktrace=stacktrace,
             )))
 
+        log.debug(self._temporarily_blocked)
         return self._temporarily_blocked
 
     @property
@@ -188,6 +193,7 @@ class FacebookGroups(object):
                     stacktrace=stacktrace,
                 )))
 
+        log.debug(self._members)
         return self._members
 
     @property
@@ -201,6 +207,7 @@ class FacebookGroups(object):
             if count:
                 self._members_count = int(''.join(count)) if count else 0
 
+        log.debug(self._members_count)
         return self._members_count
 
     def must_login(self):
@@ -220,6 +227,7 @@ class FacebookGroups(object):
                 stacktrace=stacktrace,
             )))
 
+        log.debug(self._must_login)
         return self._must_login
 
     @property
@@ -240,6 +248,7 @@ class FacebookGroups(object):
                     stacktrace=stacktrace,
                 )))
 
+        log.debug(self._posts_monthly)
         return self._posts_monthly
 
     @property
@@ -253,6 +262,7 @@ class FacebookGroups(object):
             if count:
                 self._posts_monthly_count = int(''.join(count)) if count else 0
 
+        log.debug(self._posts_monthly_count)
         return self._posts_monthly_count
 
     @property
@@ -273,6 +283,7 @@ class FacebookGroups(object):
                     stacktrace=stacktrace,
                 )))
 
+        log.debug(self._posts_today)
         return self._posts_today
 
     @property
@@ -286,6 +297,7 @@ class FacebookGroups(object):
             if count:
                 self._posts_today_count = int(''.join(count)) if count else 0
 
+        log.debug(self._posts_today_count)
         return self._posts_today_count
 
     @property
@@ -306,6 +318,7 @@ class FacebookGroups(object):
                     stacktrace=stacktrace,
                 )))
 
+        log.debug(self._privacy)
         return self._privacy
 
     @property
@@ -326,6 +339,7 @@ class FacebookGroups(object):
                     stacktrace=stacktrace,
                 )))
 
+        log.debug(self._privacy_details)
         return self._privacy_details
 
     @property
@@ -346,6 +360,7 @@ class FacebookGroups(object):
                     stacktrace=stacktrace,
                 )))
 
+        log.debug(self._title)
         return self._title
 
     @property
@@ -370,6 +385,7 @@ class FacebookGroups(object):
                     stacktrace=stacktrace,
                 )))
 
+        log.debug(self._visible)
         return self._visible
 
     @staticmethod
