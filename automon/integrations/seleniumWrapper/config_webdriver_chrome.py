@@ -28,6 +28,7 @@ class ConfigChrome(object):
         if self._webdriver:
             return str(dict(
                 name=self.webdriver.name,
+                window_size=self.window_size,
                 browserVersion=self.browserVersion,
                 chromedriverVersion=self.chromedriverVersion,
                 chromedriver_path=self.chromedriver_path,
