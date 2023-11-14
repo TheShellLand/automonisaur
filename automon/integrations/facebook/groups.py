@@ -1,3 +1,4 @@
+import random
 import datetime
 
 from automon.log import logger
@@ -76,12 +77,11 @@ class FacebookGroups(object):
         self._temporarily_blocked = None
         self._title = None
         self._url = url
+        self._url = url
         self._visible = None
 
         self._browser = None
-
-        self._timeout = 60
-        self._timeout_max = 360
+        self.rate_limit_wait_seconds = random.choice(range(0, 300))
 
     @property
     def content_unavailable(self):
@@ -365,7 +365,16 @@ class FacebookGroups(object):
 
     @property
     def url(self) -> str:
-        return self._url
+        return self.url_cleaner(self._url)
+
+    @staticmethod
+    def url_cleaner(url: str):
+        """simple url cleaner"""
+        if not url:
+            return
+        if url[-1] == '/':
+            url = url[:-1]
+        return url
 
     @property
     def visible(self) -> str:
@@ -390,6 +399,7 @@ class FacebookGroups(object):
 
     @staticmethod
     def error_parsing(error, enabble_stacktrace: bool = False) -> tuple:
+        """parses selenium exeption error"""
         error_parsed = f'{error}'.splitlines()
         error_parsed = [f'{x}'.strip() for x in error_parsed]
         message = error_parsed[0]
@@ -432,31 +442,53 @@ class FacebookGroups(object):
     def get_with_rate_limiter(
             self,
             url: str,
-            timeout: int = 60,
-            timeout_max: int = 360
+            retries: int = 5,
+            rate_limit_wait_seconds: int = None,
     ):
         """get with rate dynamic limit"""
-        self._timeout = timeout
-        self._timeout_max = timeout_max
+        if rate_limit_wait_seconds:
+            self.rate_limit_wait_seconds = rate_limit_wait_seconds
 
-        while self._timeout < self._timeout_max:
+        retry = 0
+        result = None
+        while retry < retries:
             result = self.get(url=url)
 
             if self.rate_limited():
-                Sleeper.time_range(seconds=self._timeout)
-                self._timeout = round(self._timeout * 1.6)
-                log.info(str(dict(
-                    url=url,
-                    timeout=self._timeout,
-                    timeout_max=self._timeout_max,
-                )))
+                Sleeper.seconds(seconds=self.rate_limit_wait_seconds)
+                self.rate_limit_increase()
                 result = False
             else:
+                self.rate_limit_decrease()
                 log.info(f'{result}')
                 return result
 
+            retry = retry + 1
+
         log.error(f'{url}')
         return result
+
+    def rate_limit_decrease(self, multiplier: int = 0.4):
+        before = self.rate_limit_wait_seconds
+        self.rate_limit_wait_seconds = round(self.rate_limit_wait_seconds * 0.4)
+
+        log.info(str(dict(
+            before=before,
+            after=self.rate_limit_wait_seconds,
+            multiplier=multiplier,
+        )))
+        return self.rate_limit_wait_seconds
+
+    def rate_limit_increase(self, multiplier: int = 2):
+        before = self.rate_limit_wait_seconds
+        self.rate_limit_wait_seconds = self.rate_limit_wait_seconds * multiplier
+
+        log.info(str(dict(
+            before=before,
+            after=self.rate_limit_wait_seconds,
+            multiplier=multiplier,
+        )))
+        return self.rate_limit_wait_seconds
 
     def rate_limited(self):
         """rate limit checker"""
@@ -479,6 +511,11 @@ class FacebookGroups(object):
             self.quit()
         log.info(f'{self._browser}')
         return self.start()
+
+    def set_url(self, url: str) -> str:
+        """set new url"""
+        self._url = url
+        return self.url
 
     def start(self, headless: bool = True, random_user_agent: bool = False, set_user_agent: str = None):
         """start new instance of selenium"""
