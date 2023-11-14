@@ -81,7 +81,7 @@ class FacebookGroups(object):
         self._visible = None
 
         self._browser = None
-        self.rate_limit_wait_seconds = random.choice(range(0, 300))
+        self.rate_limit_wait_seconds = random.choice(range(0, 60))
 
     @property
     def content_unavailable(self):
@@ -469,12 +469,12 @@ class FacebookGroups(object):
             result = self.get(url=url)
 
             if self.rate_limited():
-                Sleeper.seconds(seconds=self.rate_limit_wait_seconds)
                 self.rate_limit_increase()
+                Sleeper.seconds(seconds=self.rate_limit_wait_seconds)
                 result = False
             else:
-                self.rate_limit_decrease()
                 log.info(f'{result}')
+                self.rate_limit_decrease()
                 self.screenshot_success()
                 return result
 
@@ -484,9 +484,9 @@ class FacebookGroups(object):
         self.screenshot_error()
         return result
 
-    def rate_limit_decrease(self, multiplier: int = 0.4):
+    def rate_limit_decrease(self, multiplier: int = 0.5):
         before = self.rate_limit_wait_seconds
-        self.rate_limit_wait_seconds = round(self.rate_limit_wait_seconds * 0.4)
+        self.rate_limit_wait_seconds = int(self.rate_limit_wait_seconds * 0.4)
 
         log.info(str(dict(
             before=before,
@@ -495,9 +495,9 @@ class FacebookGroups(object):
         )))
         return self.rate_limit_wait_seconds
 
-    def rate_limit_increase(self, multiplier: int = 2):
+    def rate_limit_increase(self, multiplier: int = 1.5):
         before = self.rate_limit_wait_seconds
-        self.rate_limit_wait_seconds = self.rate_limit_wait_seconds * multiplier
+        self.rate_limit_wait_seconds = int(self.rate_limit_wait_seconds * multiplier)
 
         log.info(str(dict(
             before=before,
