@@ -101,6 +101,7 @@ class FacebookGroups(object):
                     session=session,
                     stacktrace=stacktrace,
                 )))
+                self.screenshot_error()
 
         log.debug(self._content_unavailable)
         return self._content_unavailable
@@ -122,6 +123,7 @@ class FacebookGroups(object):
                     session=session,
                     stacktrace=stacktrace,
                 )))
+                self.screenshot_error()
 
         log.debug(self._creation_date)
         return self._creation_date
@@ -150,6 +152,7 @@ class FacebookGroups(object):
                     session=session,
                     stacktrace=stacktrace,
                 )))
+                self.screenshot_error()
 
         log.debug(self._history)
         return self._history
@@ -170,6 +173,7 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
+            self.screenshot_error()
 
         log.debug(self._temporarily_blocked)
         return self._temporarily_blocked
@@ -192,6 +196,7 @@ class FacebookGroups(object):
                     session=session,
                     stacktrace=stacktrace,
                 )))
+                self.screenshot_error()
 
         log.debug(self._members)
         return self._members
@@ -226,6 +231,7 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
+            self.screenshot_error()
 
         log.debug(self._must_login)
         return self._must_login
@@ -247,6 +253,7 @@ class FacebookGroups(object):
                     session=session,
                     stacktrace=stacktrace,
                 )))
+                self.screenshot_error()
 
         log.debug(self._posts_monthly)
         return self._posts_monthly
@@ -282,6 +289,7 @@ class FacebookGroups(object):
                     session=session,
                     stacktrace=stacktrace,
                 )))
+                self.screenshot_error()
 
         log.debug(self._posts_today)
         return self._posts_today
@@ -317,6 +325,7 @@ class FacebookGroups(object):
                     session=session,
                     stacktrace=stacktrace,
                 )))
+                self.screenshot_error()
 
         log.debug(self._privacy)
         return self._privacy
@@ -338,6 +347,7 @@ class FacebookGroups(object):
                     session=session,
                     stacktrace=stacktrace,
                 )))
+                self.screenshot_error()
 
         log.debug(self._privacy_details)
         return self._privacy_details
@@ -359,6 +369,7 @@ class FacebookGroups(object):
                     session=session,
                     stacktrace=stacktrace,
                 )))
+                self.screenshot_error()
 
         log.debug(self._title)
         return self._title
@@ -393,6 +404,7 @@ class FacebookGroups(object):
                     session=session,
                     stacktrace=stacktrace,
                 )))
+                self.screenshot_error()
 
         log.debug(self._visible)
         return self._visible
@@ -422,6 +434,7 @@ class FacebookGroups(object):
             url=url,
             result=result,
         )))
+        self.screenshot()
         return result
 
     def get_about(self, rate_limiting: bool = True):
@@ -437,6 +450,7 @@ class FacebookGroups(object):
             url=url,
             result=result,
         )))
+        self.screenshot()
         return result
 
     def get_with_rate_limiter(
@@ -461,11 +475,13 @@ class FacebookGroups(object):
             else:
                 self.rate_limit_decrease()
                 log.info(f'{result}')
+                self.screenshot_success()
                 return result
 
             retry = retry + 1
 
         log.error(f'{url}')
+        self.screenshot_error()
         return result
 
     def rate_limit_decrease(self, multiplier: int = 0.4):
@@ -494,9 +510,11 @@ class FacebookGroups(object):
         """rate limit checker"""
         if self.temporarily_blocked() or self.must_login():
             log.info(True)
+            self.screenshot_error()
             return True
 
         log.error(False)
+        self.screenshot_error()
         return False
 
     def run(self):
@@ -512,6 +530,23 @@ class FacebookGroups(object):
         log.info(f'{self._browser}')
         return self.start()
 
+    def screenshot(self, filename: str = 'screenshot.png'):
+        screenshot = self._browser.save_screenshot(filename=filename, folder='.')
+        log.info(f'{screenshot}')
+        return screenshot
+
+    def screenshot_error(self):
+        """get error screenshot"""
+        screenshot = self.screenshot(filename='error.png')
+        log.info(f'{screenshot}')
+        return screenshot
+
+    def screenshot_success(self):
+        """get success screenshot"""
+        screenshot = self.screenshot(filename='success.png')
+        log.info(f'{screenshot}')
+        return screenshot
+
     def set_url(self, url: str) -> str:
         """set new url"""
         self._url = url
@@ -523,6 +558,7 @@ class FacebookGroups(object):
 
         if headless:
             self._browser.set_webdriver().Chrome().in_headless().set_locale_experimental()
+            # self._browser.set_webdriver().Chrome().enable_headless().set_locale_experimental()
         else:
             self._browser.set_webdriver().Chrome().set_locale_experimental()
 
@@ -538,7 +574,9 @@ class FacebookGroups(object):
         log.info(str(dict(
             browser=self._browser
         )))
-        return self._browser.run()
+        browser = self._browser.run()
+        self._browser.set_webdriver().Chrome().set_window_size(width=1920 * 0.6, height=1080)
+        return browser
 
     def stop(self):
         """alias to quit"""
