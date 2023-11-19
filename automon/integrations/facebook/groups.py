@@ -62,24 +62,7 @@ class FacebookGroups(object):
         """Facebook Groups object
 
         Depends on Selenium"""
-        self._content_unavailable = None
-        self._creation_date = None
-        self._creation_date_timestamp = None
-        self._history = None
-        self._members = None
-        self._members_count = None
-        self._must_login = None
-        self._posts_monthly = None
-        self._posts_monthly_count = None
-        self._posts_today = None
-        self._posts_today_count = None
-        self._privacy = None
-        self._privacy_details = None
-        self._temporarily_blocked = None
-        self._title = None
         self._url = url
-        self._url = url
-        self._visible = None
 
         self._browser = None
 
@@ -93,51 +76,46 @@ class FacebookGroups(object):
         if not self._browser:
             return
 
-        if not self._content_unavailable:
-            try:
-                xpath_content_unavailble = self._browser.wait_for_xpath(self._xpath_content_unavailble)
-                self._content_unavailable = self._browser.find_xpath(xpath_content_unavailble).text
-            except Exception as error:
-                message, session, stacktrace = self.error_parsing(error)
-                log.error(str(dict(
-                    url=self.url,
-                    message=message,
-                    session=session,
-                    stacktrace=stacktrace,
-                )))
-                self.screenshot_error()
-
-        log.debug(self._content_unavailable)
-        return self._content_unavailable
+        try:
+            xpath_content_unavailble = self._browser.wait_for_xpath(self._xpath_content_unavailble)
+            content_unavailable = self._browser.find_xpath(xpath_content_unavailble).text
+            log.debug(content_unavailable)
+            return content_unavailable
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+            self.screenshot_error()
 
     @property
     def creation_date(self):
         if not self._browser:
             return
 
-        if not self._creation_date:
-            try:
-                xpath_creation_date = self._browser.wait_for_xpath(self._xpath_creation_date)
-                self._creation_date = self._browser.find_xpath(xpath_creation_date).text
-            except Exception as error:
-                message, session, stacktrace = self.error_parsing(error)
-                log.error(str(dict(
-                    url=self.url,
-                    message=message,
-                    session=session,
-                    stacktrace=stacktrace,
-                )))
-                self.screenshot_error()
-
-        log.debug(self._creation_date)
-        return self._creation_date
+        try:
+            xpath_creation_date = self._browser.wait_for_xpath(self._xpath_creation_date)
+            creation_date = self._browser.find_xpath(xpath_creation_date).text
+            log.debug(creation_date)
+            return creation_date
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+            self.screenshot_error()
 
     @property
     def creation_date_timestamp(self):
-        if self._creation_date:
+        if self.creation_date:
             # TODO: convert date to datetime timestamp
-            log.debug(self._creation_date_timestamp)
-            return self._creation_date_timestamp
+            return
 
     def current_rate_too_fast(self):
         if self.average_rate() == 0 or len(self._rate_counter) < 2:
@@ -171,31 +149,31 @@ class FacebookGroups(object):
         if not self._browser:
             return
 
-        if not self._history:
-            try:
-                xpath_history = self._browser.wait_for_xpath(self._xpath_history)
-                self._history = self._browser.find_xpath(xpath_history).text
-            except Exception as error:
-                message, session, stacktrace = self.error_parsing(error)
-                log.error(str(dict(
-                    url=self.url,
-                    message=message,
-                    session=session,
-                    stacktrace=stacktrace,
-                )))
-                self.screenshot_error()
-
-        log.debug(self._history)
-        return self._history
+        try:
+            xpath_history = self._browser.wait_for_xpath(self._xpath_history)
+            history = self._browser.find_xpath(xpath_history).text
+            log.debug(history)
+            return history
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+            self.screenshot_error()
 
     def temporarily_blocked(self):
         try:
             xpath_temporarily_blocked = self._browser.wait_for_xpath(
                 self._xpath_temporarily_blocked
             )
-            self._temporarily_blocked = self._browser.find_xpath(
+            temporarily_blocked = self._browser.find_xpath(
                 xpath_temporarily_blocked
             ).text
+            log.debug(temporarily_blocked)
+            return temporarily_blocked
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             log.error(str(dict(
@@ -205,55 +183,18 @@ class FacebookGroups(object):
                 stacktrace=stacktrace,
             )))
             self.screenshot_error()
-
-        log.debug(self._temporarily_blocked)
-        return self._temporarily_blocked
 
     @property
     def members(self):
         if not self._browser:
             return
 
-        if not self._members:
-            try:
-                xpath_members = self._browser.wait_for_xpath(self._xpath_members)
-                self._members = self._browser.find_xpath(xpath_members).text
-                # TODO: need to clean up string from members and remove bad chars
-            except Exception as error:
-                message, session, stacktrace = self.error_parsing(error)
-                log.error(str(dict(
-                    url=self.url,
-                    message=message,
-                    session=session,
-                    stacktrace=stacktrace,
-                )))
-                self.screenshot_error()
-
-        log.debug(self._members)
-        return self._members
-
-    @property
-    def members_count(self):
-        if not self._browser:
-            return
-
-        if self._members:
-            count = [x for x in self._members]
-            count = [x for x in count if x in [str(x) for x in range(0, 10)]]
-            if count:
-                self._members_count = int(''.join(count)) if count else 0
-
-        log.debug(self._members_count)
-        return self._members_count
-
-    def must_login(self):
         try:
-            xpath_must_login = self._browser.wait_for_xpath(
-                self._xpath_must_login
-            )
-            self._must_login = self._browser.find_xpath(
-                xpath_must_login
-            ).text
+            xpath_members = self._browser.wait_for_xpath(self._xpath_members)
+            members = self._browser.find_xpath(xpath_members).text
+            log.debug(members)
+            return members
+            # TODO: need to clean up string from members and remove bad chars
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             log.error(str(dict(
@@ -264,66 +205,93 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-        log.debug(self._must_login)
-        return self._must_login
+    @property
+    def members_count(self):
+        if not self._browser:
+            return
+
+        if self.members:
+            count = [x for x in self.members]
+            count = [x for x in count if x in [str(x) for x in range(0, 10)]]
+            if count:
+                members_count = int(''.join(count)) if count else 0
+
+            log.debug(members_count)
+            return members_count
+
+    def must_login(self):
+        try:
+            xpath_must_login = self._browser.wait_for_xpath(
+                self._xpath_must_login
+            )
+            must_login = self._browser.find_xpath(
+                xpath_must_login
+            ).text
+            log.debug(must_login)
+            return must_login
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+            self.screenshot_error()
 
     @property
     def posts_monthly(self):
         if not self._browser:
             return
 
-        if not self._posts_monthly:
-            try:
-                xpath_monthly_posts = self._browser.wait_for_xpath(self._xpath_posts_monthly)
-                self._posts_monthly = self._browser.find_xpath(xpath_monthly_posts).text
-            except Exception as error:
-                message, session, stacktrace = self.error_parsing(error)
-                log.error(str(dict(
-                    url=self.url,
-                    message=message,
-                    session=session,
-                    stacktrace=stacktrace,
-                )))
-                self.screenshot_error()
-
-        log.debug(self._posts_monthly)
-        return self._posts_monthly
+        try:
+            xpath_monthly_posts = self._browser.wait_for_xpath(self._xpath_posts_monthly)
+            posts_monthly = self._browser.find_xpath(xpath_monthly_posts).text
+            log.debug(posts_monthly)
+            return posts_monthly
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+            self.screenshot_error()
 
     @property
     def posts_monthly_count(self):
         if not self._browser:
             return
 
-        if self._posts_monthly:
-            count = [x for x in self._posts_monthly]
+        if self.posts_monthly:
+            count = [x for x in self.posts_monthly]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
-                self._posts_monthly_count = int(''.join(count)) if count else 0
+                posts_monthly_count = int(''.join(count)) if count else 0
 
-        log.debug(self._posts_monthly_count)
-        return self._posts_monthly_count
+                log.debug(posts_monthly_count)
+                return posts_monthly_count
 
     @property
     def posts_today(self):
         if not self._browser:
             return
 
-        if not self._posts_today:
-            try:
-                xpath_posts_today = self._browser.wait_for_xpath(self._xpath_posts_today)
-                self._posts_today = self._browser.find_xpath(xpath_posts_today).text
-            except Exception as error:
-                message, session, stacktrace = self.error_parsing(error)
-                log.error(str(dict(
-                    url=self.url,
-                    message=message,
-                    session=session,
-                    stacktrace=stacktrace,
-                )))
-                self.screenshot_error()
-
-        log.debug(self._posts_today)
-        return self._posts_today
+        try:
+            xpath_posts_today = self._browser.wait_for_xpath(self._xpath_posts_today)
+            posts_today = self._browser.find_xpath(xpath_posts_today).text
+            log.debug(posts_today)
+            return posts_today
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+            self.screenshot_error()
 
     @property
     def posts_today_count(self):
@@ -334,76 +302,70 @@ class FacebookGroups(object):
             count = [x for x in self.posts_today]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
-                self._posts_today_count = int(''.join(count)) if count else 0
+                posts_today_count = int(''.join(count)) if count else 0
 
-        log.debug(self._posts_today_count)
-        return self._posts_today_count
+                log.debug(posts_today_count)
+                return posts_today_count
 
     @property
     def privacy(self):
         if not self._browser:
             return
 
-        if not self._privacy:
-            try:
-                xpath_privacy = self._browser.wait_for_xpath(self._xpath_privacy)
-                self._privacy = self._browser.find_xpath(xpath_privacy).text
-            except Exception as error:
-                message, session, stacktrace = self.error_parsing(error)
-                log.error(str(dict(
-                    url=self.url,
-                    message=message,
-                    session=session,
-                    stacktrace=stacktrace,
-                )))
-                self.screenshot_error()
-
-        log.debug(self._privacy)
-        return self._privacy
+        try:
+            xpath_privacy = self._browser.wait_for_xpath(self._xpath_privacy)
+            privacy = self._browser.find_xpath(xpath_privacy).text
+            log.debug(privacy)
+            return privacy
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+            self.screenshot_error()
 
     @property
     def privacy_details(self):
         if not self._browser:
             return
 
-        if not self._privacy_details:
-            try:
-                xpath_privacy_details = self._browser.wait_for_xpath(self._xpath_privacy_details)
-                self._privacy_details = self._browser.find_xpath(xpath_privacy_details).text
-            except Exception as error:
-                message, session, stacktrace = self.error_parsing(error)
-                log.error(str(dict(
-                    url=self.url,
-                    message=message,
-                    session=session,
-                    stacktrace=stacktrace,
-                )))
-                self.screenshot_error()
-
-        log.debug(self._privacy_details)
-        return self._privacy_details
+        try:
+            xpath_privacy_details = self._browser.wait_for_xpath(self._xpath_privacy_details)
+            privacy_details = self._browser.find_xpath(xpath_privacy_details).text
+            log.debug(privacy_details)
+            return privacy_details
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+            self.screenshot_error()
 
     @property
     def title(self) -> str:
         if not self._browser:
             return
 
-        if not self._title:
-            try:
-                xpath_title = self._browser.wait_for_xpath(self._xpath_title)
-                self._title = self._browser.find_xpath(xpath_title).text
-            except Exception as error:
-                message, session, stacktrace = self.error_parsing(error)
-                log.error(str(dict(
-                    url=self.url,
-                    message=message,
-                    session=session,
-                    stacktrace=stacktrace,
-                )))
-                self.screenshot_error()
-
-        log.debug(self._title)
-        return self._title
+        try:
+            xpath_title = self._browser.wait_for_xpath(self._xpath_title)
+            title = self._browser.find_xpath(xpath_title).text
+            log.debug(title)
+            return title
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+            self.screenshot_error()
 
     @property
     def url(self) -> str:
@@ -423,22 +385,20 @@ class FacebookGroups(object):
         if not self._browser:
             return
 
-        if not self._visible:
-            try:
-                xpath_visible = self._browser.wait_for_xpath(self._xpath_visible)
-                self._visible = self._browser.find_xpath(xpath_visible).text
-            except Exception as error:
-                message, session, stacktrace = self.error_parsing(error)
-                log.error(str(dict(
-                    url=self.url,
-                    message=message,
-                    session=session,
-                    stacktrace=stacktrace,
-                )))
-                self.screenshot_error()
-
-        log.debug(self._visible)
-        return self._visible
+        try:
+            xpath_visible = self._browser.wait_for_xpath(self._xpath_visible)
+            visible = self._browser.find_xpath(xpath_visible).text
+            log.debug(visible)
+            return visible
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            log.error(str(dict(
+                url=self.url,
+                message=message,
+                session=session,
+                stacktrace=stacktrace,
+            )))
+            self.screenshot_error()
 
     @staticmethod
     def error_parsing(error, enabble_stacktrace: bool = False) -> tuple:
@@ -596,13 +556,13 @@ class FacebookGroups(object):
 
     def screenshot_error(self):
         """get error screenshot"""
-        screenshot = self.screenshot(filename='error.png')
+        screenshot = self.screenshot(filename='screenshot-error.png')
         log.info(f'{screenshot}')
         return screenshot
 
     def screenshot_success(self):
         """get success screenshot"""
-        screenshot = self.screenshot(filename='success.png')
+        screenshot = self.screenshot(filename='screenshot-success.png')
         log.info(f'{screenshot}')
         return screenshot
 
