@@ -1,5 +1,6 @@
 import random
 import datetime
+import statistics
 
 from automon.log import logger
 from automon.helpers.sleeper import Sleeper
@@ -81,7 +82,10 @@ class FacebookGroups(object):
         self._visible = None
 
         self._browser = None
-        self.rate_limit_wait_seconds = random.choice(range(0, 60))
+
+        self._rate_per_minute = 2
+        self._rate_counter = []
+        self._wait_between_retries = random.choice(range(0, 60))
 
     @property
     def content_unavailable(self):
@@ -134,6 +138,33 @@ class FacebookGroups(object):
             # TODO: convert date to datetime timestamp
             log.debug(self._creation_date_timestamp)
             return self._creation_date_timestamp
+
+    def current_rate_too_fast(self):
+        if self.average_rate() == 0 or len(self._rate_counter) < 2:
+            log.info(False)
+            return False
+
+        if self.average_rate() < self.rate_per_minute():
+            log.info(True)
+            return True
+
+        return False
+
+    def rate_per_minute(self) -> int:
+        rate = int(60 / self._rate_per_minute)
+        log.info(str(dict(
+            seconds=rate,
+        )))
+        return rate
+
+    def average_rate(self):
+        if self._rate_counter:
+            rate = int(statistics.mean(self._rate_counter))
+            log.info(str(dict(
+                seconds=rate,
+            )))
+            return rate
+        return 0
 
     @property
     def history(self):
@@ -429,12 +460,25 @@ class FacebookGroups(object):
 
     def get(self, url: str) -> bool:
         """get url"""
+
+        start = datetime.datetime.now().timestamp()
+
         result = self._browser.get(url=url)
         log.info(str(dict(
             url=url,
             result=result,
         )))
         self.screenshot()
+
+        end = datetime.datetime.now().timestamp()
+        seconds_elapsed = int(end - start)
+
+        log.info(str(dict(
+            seconds_elapsed=seconds_elapsed,
+            result=result,
+        )))
+        self._rate_counter.append(seconds_elapsed)
+
         return result
 
     def get_about(self, rate_limiting: bool = True):
@@ -456,27 +500,32 @@ class FacebookGroups(object):
     def get_with_rate_limiter(
             self,
             url: str,
+            retry: int = 0,
             retries: int = 5,
-            rate_limit_wait_seconds: int = None,
-    ):
+            wait_between_retries: int = None,
+            rate_per_minute: int = None,
+    ) -> bool:
         """get with rate dynamic limit"""
-        if rate_limit_wait_seconds:
-            self.rate_limit_wait_seconds = rate_limit_wait_seconds
+        if wait_between_retries:
+            self._wait_between_retries = wait_between_retries
 
-        retry = 0
         result = None
         while retry < retries:
-            result = self.get(url=url)
 
-            if self.rate_limited():
-                self.rate_limit_increase()
-                Sleeper.seconds(seconds=self.rate_limit_wait_seconds)
-                result = False
-            else:
-                log.info(f'{result}')
-                self.rate_limit_decrease()
-                self.screenshot_success()
-                return result
+            if not self.rate_limited():
+
+                result = self.get(url=url)
+
+                if self.rate_limited():
+                    self.rate_limit_increase()
+                    result = False
+                    self._rate_counter.append(self._wait_between_retries)
+                    Sleeper.seconds(seconds=self._wait_between_retries)
+                else:
+                    log.info(f'{result}')
+                    self.rate_limit_decrease()
+                    self.screenshot_success()
+                    return result
 
             retry = retry + 1
 
@@ -485,32 +534,37 @@ class FacebookGroups(object):
         return result
 
     def rate_limit_decrease(self, multiplier: int = 0.5):
-        before = self.rate_limit_wait_seconds
-        self.rate_limit_wait_seconds = int(self.rate_limit_wait_seconds * 0.4)
+        before = self._wait_between_retries
+        self._wait_between_retries = int(self._wait_between_retries * multiplier)
 
         log.info(str(dict(
             before=before,
-            after=self.rate_limit_wait_seconds,
+            after=self._wait_between_retries,
             multiplier=multiplier,
         )))
-        return self.rate_limit_wait_seconds
+        return self._wait_between_retries
 
     def rate_limit_increase(self, multiplier: int = 1.5):
-        before = self.rate_limit_wait_seconds
-        self.rate_limit_wait_seconds = int(self.rate_limit_wait_seconds * multiplier)
+        before = self._wait_between_retries
+        self._wait_between_retries = int(self._wait_between_retries * multiplier)
 
         log.info(str(dict(
             before=before,
-            after=self.rate_limit_wait_seconds,
+            after=self._wait_between_retries,
             multiplier=multiplier,
         )))
-        return self.rate_limit_wait_seconds
+        return self._wait_between_retries
 
     def rate_limited(self):
         """rate limit checker"""
+        if self.current_rate_too_fast():
+            log.info(True)
+            self.screenshot()
+            return True
+
         if self.temporarily_blocked() or self.must_login():
             log.info(True)
-            self.screenshot_error()
+            self.screenshot()
             return True
 
         log.error(False)
@@ -522,6 +576,11 @@ class FacebookGroups(object):
         if self._browser:
             log.info(f'{self._browser}')
             return self._browser.run()
+
+    def reset_rate_counter(self):
+        self._rate_counter = []
+        log.info(self._rate_counter)
+        return self._rate_counter
 
     def restart(self):
         """quit and start new instance of selenium"""
