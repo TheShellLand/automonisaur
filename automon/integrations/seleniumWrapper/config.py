@@ -21,10 +21,6 @@ class SeleniumConfig(object):
         self._edge = NotImplemented
         self._firefox = NotImplemented
 
-    def __repr__(self):
-        if self.webdriver_wrapper:
-            return self.webdriver_wrapper
-
     @property
     def webdriver(self):
         try:
@@ -46,7 +42,7 @@ class SeleniumConfig(object):
 
     @property
     def cookies_base64(self):
-        log.debug(f'{len(self._cookies_base64)}')
+        log.debug(f'{len(self._cookies_base64) if self._cookies_base64 else None}')
         return self._cookies_base64
 
     @property
