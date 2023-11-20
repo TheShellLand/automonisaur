@@ -472,20 +472,23 @@ class FacebookGroups(object):
         result = None
         while retry < retries:
 
-            if not self.rate_limited():
+            if self.rate_limited():
+                self.rate_limit_increase()
 
-                result = self.get(url=url)
+                self._rate_counter.append(self._wait_between_retries)
+                Sleeper.seconds(seconds=self._wait_between_retries)
+                log.error(str(dict(
+                    url=url,
+                    retry=retry,
+                    retries=retries,
+                )))
+                continue
 
-                if self.rate_limited():
-                    self.rate_limit_increase()
-                    result = False
-                    self._rate_counter.append(self._wait_between_retries)
-                    Sleeper.seconds(seconds=self._wait_between_retries)
-                else:
-                    log.info(f'{result}')
-                    self.rate_limit_decrease()
-                    self.screenshot_success()
-                    return result
+            result = self.get(url=url)
+            log.info(f'{result}')
+            self.rate_limit_decrease()
+            self.screenshot_success()
+            return result
 
             retry = retry + 1
 
@@ -493,9 +496,9 @@ class FacebookGroups(object):
         self.screenshot_error()
         return result
 
-    def rate_limit_decrease(self, multiplier: int = 0.5):
+    def rate_limit_decrease(self, multiplier: int = 0.25):
         before = self._wait_between_retries
-        self._wait_between_retries = int(self._wait_between_retries * multiplier)
+        self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
 
         log.info(str(dict(
             before=before,
@@ -504,9 +507,9 @@ class FacebookGroups(object):
         )))
         return self._wait_between_retries
 
-    def rate_limit_increase(self, multiplier: int = 1.5):
+    def rate_limit_increase(self, multiplier: int = 2):
         before = self._wait_between_retries
-        self._wait_between_retries = int(self._wait_between_retries * multiplier)
+        self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
 
         log.info(str(dict(
             before=before,
