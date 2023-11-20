@@ -472,20 +472,23 @@ class FacebookGroups(object):
         result = None
         while retry < retries:
 
-            if not self.rate_limited():
+            if self.rate_limited():
+                self.rate_limit_increase()
 
-                result = self.get(url=url)
+                self._rate_counter.append(self._wait_between_retries)
+                Sleeper.seconds(seconds=self._wait_between_retries)
+                log.error(str(dict(
+                    url=url,
+                    retry=retry,
+                    retries=retries,
+                )))
+                continue
 
-                if self.rate_limited():
-                    self.rate_limit_increase()
-                    result = False
-                    self._rate_counter.append(self._wait_between_retries)
-                    Sleeper.seconds(seconds=self._wait_between_retries)
-                else:
-                    log.info(f'{result}')
-                    self.rate_limit_decrease()
-                    self.screenshot_success()
-                    return result
+            result = self.get(url=url)
+            log.info(f'{result}')
+            self.rate_limit_decrease()
+            self.screenshot_success()
+            return result
 
             retry = retry + 1
 
