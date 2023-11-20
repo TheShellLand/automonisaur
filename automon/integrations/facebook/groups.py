@@ -493,9 +493,9 @@ class FacebookGroups(object):
         self.screenshot_error()
         return result
 
-    def rate_limit_decrease(self, multiplier: int = 0.5):
+    def rate_limit_decrease(self, multiplier: int = 0.25):
         before = self._wait_between_retries
-        self._wait_between_retries = int(self._wait_between_retries * multiplier)
+        self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
 
         log.info(str(dict(
             before=before,
@@ -504,9 +504,9 @@ class FacebookGroups(object):
         )))
         return self._wait_between_retries
 
-    def rate_limit_increase(self, multiplier: int = 1.5):
+    def rate_limit_increase(self, multiplier: int = 2):
         before = self._wait_between_retries
-        self._wait_between_retries = int(self._wait_between_retries * multiplier)
+        self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
 
         log.info(str(dict(
             before=before,
