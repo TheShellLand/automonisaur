@@ -106,17 +106,17 @@ class SeleniumBrowser(object):
 
     @property
     def url(self):
+        return self.current_url
+
+    @property
+    def current_url(self):
         if self.webdriver:
-            log.info(str(dict(
-                current_url=self._current_url
-            )))
+            log.debug(self._current_url)
             if self._current_url == 'data:,':
                 return ''
             return self._current_url
 
-        log.info(str(dict(
-            current_url=None
-        )))
+        log.info(None)
         return ''
 
     @property
