@@ -68,7 +68,7 @@ class FacebookGroups(object):
 
         self._rate_per_minute = 2
         self._rate_counter = []
-        self._wait_between_retries = random.choice(range(0, 60))
+        self._wait_between_retries = random.choice(range(1, 60))
 
     @property
     def content_unavailable(self):
@@ -483,11 +483,12 @@ class FacebookGroups(object):
                     retries=retries,
                 )))
                 continue
+            else:
+                self.rate_limit_decrease()
 
             result = self.get(url=url)
+            self.screenshot()
             log.info(f'{result}')
-            self.rate_limit_decrease()
-            self.screenshot_success()
             return result
 
             retry = retry + 1
@@ -496,9 +497,12 @@ class FacebookGroups(object):
         self.screenshot_error()
         return result
 
-    def rate_limit_decrease(self, multiplier: int = 0.25):
+    def rate_limit_decrease(self, multiplier: int = 0.75):
         before = self._wait_between_retries
         self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
+
+        if self._wait_between_retries == 0:
+            self._wait_between_retries = 1
 
         log.info(str(dict(
             before=before,
