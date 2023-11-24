@@ -70,7 +70,6 @@ class FacebookGroups(object):
         self._rate_counter = []
         self._wait_between_retries = random.choice(range(1, 60))
 
-    @property
     def content_unavailable(self):
         """This content isn't available right now"""
         if not self._browser:
@@ -91,7 +90,6 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    @property
     def creation_date(self):
         if not self._browser:
             return
@@ -111,7 +109,6 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    @property
     def creation_date_timestamp(self):
         if self.creation_date:
             # TODO: convert date to datetime timestamp
@@ -144,7 +141,6 @@ class FacebookGroups(object):
             return rate
         return 0
 
-    @property
     def history(self):
         if not self._browser:
             return
@@ -184,7 +180,6 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    @property
     def members(self):
         if not self._browser:
             return
@@ -205,13 +200,12 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    @property
     def members_count(self):
         if not self._browser:
             return
 
         if self.members:
-            count = [x for x in self.members]
+            count = [x for x in self.members()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
                 members_count = int(''.join(count)) if count else 0
@@ -239,7 +233,6 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    @property
     def posts_monthly(self):
         if not self._browser:
             return
@@ -259,13 +252,12 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    @property
     def posts_monthly_count(self):
         if not self._browser:
             return
 
         if self.posts_monthly:
-            count = [x for x in self.posts_monthly]
+            count = [x for x in self.posts_monthly()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
                 posts_monthly_count = int(''.join(count)) if count else 0
@@ -273,7 +265,6 @@ class FacebookGroups(object):
                 log.debug(posts_monthly_count)
                 return posts_monthly_count
 
-    @property
     def posts_today(self):
         if not self._browser:
             return
@@ -293,13 +284,12 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    @property
     def posts_today_count(self):
         if not self._browser:
             return
 
         if self.posts_today:
-            count = [x for x in self.posts_today]
+            count = [x for x in self.posts_today()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
                 posts_today_count = int(''.join(count)) if count else 0
@@ -307,7 +297,6 @@ class FacebookGroups(object):
                 log.debug(posts_today_count)
                 return posts_today_count
 
-    @property
     def privacy(self):
         if not self._browser:
             return
@@ -327,7 +316,6 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    @property
     def privacy_details(self):
         if not self._browser:
             return
@@ -347,7 +335,6 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    @property
     def title(self) -> str:
         if not self._browser:
             return
@@ -380,7 +367,6 @@ class FacebookGroups(object):
             url = url[:-1]
         return url
 
-    @property
     def visible(self) -> str:
         if not self._browser:
             return
@@ -610,21 +596,21 @@ class FacebookGroups(object):
 
     def to_dict(self):
         return dict(
-            content_unavailable=self.content_unavailable,
-            creation_date=self.creation_date,
-            creation_date_timestamp=self.creation_date_timestamp,
-            history=self.history,
-            members=self.members,
-            members_count=self.members_count,
-            posts_monthly=self.posts_monthly,
-            posts_monthly_count=self.posts_monthly_count,
-            posts_today=self.posts_today,
-            posts_today_count=self.posts_today_count,
-            privacy=self.privacy,
-            privacy_details=self.privacy_details,
-            title=self.title,
+            content_unavailable=self.content_unavailable(),
+            creation_date=self.creation_date(),
+            creation_date_timestamp=self.creation_date_timestamp(),
+            history=self.history(),
+            members=self.members(),
+            members_count=self.members_count(),
+            posts_monthly=self.posts_monthly(),
+            posts_monthly_count=self.posts_monthly_count(),
+            posts_today=self.posts_today(),
+            posts_today_count=self.posts_today_count(),
+            privacy=self.privacy(),
+            privacy_details=self.privacy_details(),
+            title=self.title(),
             url=self.url,
-            visible=self.visible,
+            visible=self.visible(),
             status=self._browser.request_status,
         )
 
