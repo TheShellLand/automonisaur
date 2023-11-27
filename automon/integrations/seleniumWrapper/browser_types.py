@@ -49,8 +49,8 @@ class SeleniumBrowserType(object):
 
         try:
             if self.chromedriver:
-                return self.webdriver.Chrome(executable_path=self.chromedriver, options=chrome_options)
-            return self.webdriver.Chrome(options=chrome_options)
+                return self.webdriver.ChromeWrapper(executable_path=self.chromedriver, options=chrome_options)
+            return self.webdriver.ChromeWrapper(options=chrome_options)
         except Exception as e:
             log.error(f'Browser not set. {e}')
 
@@ -77,8 +77,8 @@ class SeleniumBrowserType(object):
 
         try:
             if self.chromedriver:
-                return self.webdriver.Chrome(self.chromedriver, options=chrome_options, **kwargs)
-            return self.webdriver.Chrome(options=chrome_options, **kwargs)
+                return self.webdriver.ChromeWrapper(self.chromedriver, options=chrome_options, **kwargs)
+            return self.webdriver.ChromeWrapper(options=chrome_options, **kwargs)
         except Exception as e:
             log.error(f'Browser not set. {e}')
 

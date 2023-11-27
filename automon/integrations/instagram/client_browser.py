@@ -2,6 +2,7 @@ import functools
 
 from automon.log import logger
 from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
+from automon.integrations.seleniumWrapper.config_webdriver_chrome import ChromeWrapper
 
 from automon.helpers.sleeper import Sleeper
 # from automon.integrations.minioWrapper import MinioClient
@@ -28,13 +29,14 @@ class InstagramBrowserClient:
         """Instagram Browser Client"""
         self.config = config or InstagramConfig(login=login, password=password)
         self.browser = SeleniumBrowser()
+        self.browser.config.webdriver_wrapper = ChromeWrapper()
 
         self.useragent = self.browser.get_random_user_agent()
 
         if headless:
-            self.browser.set_webdriver().Chrome().in_headless().set_user_agent(self.useragent)
+            self.browser.config.webdriver_wrapper.in_headless().set_user_agent(self.useragent)
         else:
-            self.browser.set_webdriver().Chrome().set_user_agent(self.useragent)
+            self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
 
     def __repr__(self):
         return f'{self.__dict__}'

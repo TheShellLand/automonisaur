@@ -5,6 +5,7 @@ import statistics
 from automon.log import logger
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.seleniumWrapper import SeleniumBrowser
+from automon.integrations.seleniumWrapper.config_webdriver_chrome import ChromeWrapper
 
 log = logger.logging.getLogger(__name__)
 log.setLevel(logger.DEBUG)
@@ -64,7 +65,7 @@ class FacebookGroups(object):
         Depends on Selenium"""
         self._url = url
 
-        self._browser = None
+        self._browser = SeleniumBrowser()
 
         self._rate_per_minute = 2
         self._rate_counter = []
@@ -72,8 +73,6 @@ class FacebookGroups(object):
 
     def content_unavailable(self):
         """This content isn't available right now"""
-        if not self._browser:
-            return
 
         try:
             xpath_content_unavailble = self._browser.wait_for_xpath(self._xpath_content_unavailble)
@@ -91,8 +90,6 @@ class FacebookGroups(object):
             self.screenshot_error()
 
     def creation_date(self):
-        if not self._browser:
-            return
 
         try:
             xpath_creation_date = self._browser.wait_for_xpath(self._xpath_creation_date)
@@ -142,8 +139,6 @@ class FacebookGroups(object):
         return 0
 
     def history(self):
-        if not self._browser:
-            return
 
         try:
             xpath_history = self._browser.wait_for_xpath(self._xpath_history)
@@ -181,8 +176,6 @@ class FacebookGroups(object):
             self.screenshot_error()
 
     def members(self):
-        if not self._browser:
-            return
 
         try:
             xpath_members = self._browser.wait_for_xpath(self._xpath_members)
@@ -201,8 +194,6 @@ class FacebookGroups(object):
             self.screenshot_error()
 
     def members_count(self):
-        if not self._browser:
-            return
 
         if self.members:
             count = [x for x in self.members()]
@@ -234,8 +225,6 @@ class FacebookGroups(object):
             self.screenshot_error()
 
     def posts_monthly(self):
-        if not self._browser:
-            return
 
         try:
             xpath_monthly_posts = self._browser.wait_for_xpath(self._xpath_posts_monthly)
@@ -253,8 +242,6 @@ class FacebookGroups(object):
             self.screenshot_error()
 
     def posts_monthly_count(self):
-        if not self._browser:
-            return
 
         if self.posts_monthly:
             count = [x for x in self.posts_monthly()]
@@ -266,8 +253,6 @@ class FacebookGroups(object):
                 return posts_monthly_count
 
     def posts_today(self):
-        if not self._browser:
-            return
 
         try:
             xpath_posts_today = self._browser.wait_for_xpath(self._xpath_posts_today)
@@ -285,8 +270,6 @@ class FacebookGroups(object):
             self.screenshot_error()
 
     def posts_today_count(self):
-        if not self._browser:
-            return
 
         if self.posts_today:
             count = [x for x in self.posts_today()]
@@ -298,8 +281,6 @@ class FacebookGroups(object):
                 return posts_today_count
 
     def privacy(self):
-        if not self._browser:
-            return
 
         try:
             xpath_privacy = self._browser.wait_for_xpath(self._xpath_privacy)
@@ -317,8 +298,6 @@ class FacebookGroups(object):
             self.screenshot_error()
 
     def privacy_details(self):
-        if not self._browser:
-            return
 
         try:
             xpath_privacy_details = self._browser.wait_for_xpath(self._xpath_privacy_details)
@@ -336,8 +315,6 @@ class FacebookGroups(object):
             self.screenshot_error()
 
     def title(self) -> str:
-        if not self._browser:
-            return
 
         try:
             xpath_title = self._browser.wait_for_xpath(self._xpath_title)
@@ -368,8 +345,6 @@ class FacebookGroups(object):
         return url
 
     def visible(self) -> str:
-        if not self._browser:
-            return
 
         try:
             xpath_visible = self._browser.wait_for_xpath(self._xpath_visible)
@@ -566,20 +541,19 @@ class FacebookGroups(object):
 
     def start(self, headless: bool = True, random_user_agent: bool = False, set_user_agent: str = None):
         """start new instance of selenium"""
-        self._browser = SeleniumBrowser()
+        self._browser.config.webdriver_wrapper = ChromeWrapper()
 
         if headless:
-            self._browser.set_webdriver().Chrome().in_headless().set_locale_experimental()
-            # self._browser.set_webdriver().Chrome().enable_headless().set_locale_experimental()
+            self._browser.config.webdriver_wrapper.enable_headless().set_locale_experimental()
         else:
-            self._browser.set_webdriver().Chrome().set_locale_experimental()
+            self._browser.config.webdriver_wrapper.set_locale_experimental()
 
         if random_user_agent:
-            self._browser.set_webdriver().Chrome().set_user_agent(
+            self._browser.config.webdriver_wrapper.set_user_agent(
                 self._browser.get_random_user_agent()
             )
         elif set_user_agent:
-            self._browser.set_webdriver().Chrome().set_user_agent(
+            self._browser.config.webdriver_wrapper.set_user_agent(
                 set_user_agent
             )
 
@@ -587,7 +561,7 @@ class FacebookGroups(object):
             browser=self._browser
         )))
         browser = self._browser.run()
-        self._browser.set_webdriver().Chrome().set_window_size(width=1920 * 0.6, height=1080)
+        self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
         return browser
 
     def stop(self):

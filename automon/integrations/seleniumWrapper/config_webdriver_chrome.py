@@ -12,7 +12,7 @@ log = logger.logging.getLogger(__name__)
 log.setLevel(logger.DEBUG)
 
 
-class ConfigChrome(object):
+class ChromeWrapper(object):
 
     def __init__(self):
         self._webdriver = None

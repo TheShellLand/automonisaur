@@ -1,9 +1,11 @@
 import unittest
 
 from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
+from automon.integrations.seleniumWrapper.config_webdriver_chrome import ChromeWrapper
 
 browser = SeleniumBrowser()
-browser.config.set_webdriver().Chrome().enable_defaults().enable_headless()
+browser.config.webdriver_wrapper = ChromeWrapper()
+browser.config.webdriver_wrapper.enable_defaults().enable_headless()
 
 
 class SeleniumClientTest(unittest.TestCase):

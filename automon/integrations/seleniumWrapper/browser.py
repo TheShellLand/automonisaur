@@ -3,7 +3,6 @@ import json
 import base64
 import datetime
 import tempfile
-import functools
 import selenium
 import selenium.webdriver
 
@@ -19,7 +18,6 @@ from automon.helpers.sanitation import Sanitation
 from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import SeleniumConfig
-from .browser_types import SeleniumBrowserType
 from .user_agents import SeleniumUserAgentBuilder
 
 log = logger.logging.getLogger(__name__)
@@ -100,10 +98,6 @@ class SeleniumBrowser(object):
             except:
                 pass
 
-    # @property
-    # def type(self) -> SeleniumBrowserType:
-    #     return SeleniumBrowserType(self.config)
-
     @property
     def url(self):
         return self.current_url
@@ -121,7 +115,7 @@ class SeleniumBrowser(object):
 
     @property
     def window_size(self):
-        return self.config.set_webdriver().window_size
+        return self.config.webdriver_wrapper.window_size
 
     def _screenshot_name(self, prefix=None):
         """Generate a unique filename"""
@@ -365,7 +359,7 @@ class SeleniumBrowser(object):
             markdup = self.get_page_source()
         return BeautifulSoup(markup=markdup, features=features)
 
-    def get_random_user_agent(self, filter: list or str = None, case_sensitive: bool = False) -> list:
+    def get_random_user_agent(self, filter: list or str = None, case_sensitive: bool = False) -> str:
         return SeleniumUserAgentBuilder().get_random(filter=filter, case_sensitive=case_sensitive)
 
     def get_screenshot_as_base64(self, **kwargs):
@@ -464,15 +458,12 @@ class SeleniumBrowser(object):
 
         return False
 
-    def set_webdriver(self):
-        return self.config
-
     def set_window_size(self, width=1920, height=1080, device_type=None) -> bool:
         """set browser resolution"""
 
         try:
-            self.config.set_webdriver().webdriver_wrapper.set_window_size(width=width, height=height,
-                                                                          device_type=device_type)
+            self.config.webdriver_wrapper.set_window_size(width=width, height=height,
+                                                          device_type=device_type)
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             log.error(str(dict(
