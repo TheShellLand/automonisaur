@@ -15,7 +15,7 @@ browser.config.webdriver_wrapper.set_user_agent(agent)
 class SeleniumClientTest(unittest.TestCase):
     if browser.run():
         def test_user_agent(self):
-            self.assertEqual(browser.get_user_agent(), agent)
+            self.assertEqual(browser.user_agent, agent)
 
             browser.quit()
 

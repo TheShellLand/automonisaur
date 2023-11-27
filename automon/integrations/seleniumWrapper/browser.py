@@ -92,6 +92,13 @@ class SeleniumBrowser(object):
         return self.current_url
 
     @property
+    def user_agent(self):
+        try:
+            return self.webdriver.execute_script("return navigator.userAgent")
+        except:
+            return None
+
+    @property
     def current_url(self):
         if self.webdriver:
             log.debug(self._current_url)
@@ -374,9 +381,6 @@ class SeleniumBrowser(object):
         log.debug(f'{round(len(screenshot) / 1024)} KB')
 
         return screenshot
-
-    def get_user_agent(self):
-        return self.webdriver.execute_script("return navigator.userAgent")
 
     def is_running(self) -> bool:
         """browser is running"""
