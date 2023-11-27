@@ -15,7 +15,6 @@ from automon.log import logger
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
-from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import SeleniumConfig
 from .user_agents import SeleniumUserAgentBuilder
@@ -33,13 +32,11 @@ class SeleniumBrowser(object):
         """A selenium wrapper"""
 
         self._config = config or SeleniumConfig()
-        self.request = None
 
     def __repr__(self):
         try:
             return str(dict(
                 webdriver=self.webdriver.name or None,
-                request_status=self.request_status,
                 window_size=self.window_size,
             ))
         except Exception as error:
@@ -89,14 +86,6 @@ class SeleniumBrowser(object):
     def refresh(self):
         self.webdriver.refresh()
         log.info(f'{True}')
-
-    @property
-    def request_status(self):
-        if self.request is not None:
-            try:
-                return self.request.results.status_code
-            except:
-                pass
 
     @property
     def url(self):
@@ -327,20 +316,15 @@ class SeleniumBrowser(object):
         """get url"""
         try:
             if self.webdriver.get(url, **kwargs) is None:
-                self.request = RequestsClient(url=url)
-
                 log.info(str(dict(
                     url=url,
                     current_url=self._current_url,
-                    request_status=self.request_status,
                     kwargs=kwargs
                 )))
             return True
         except Exception as error:
-            self.request = RequestsClient(url=url)
             log.error(str(dict(
                 error=error,
-                request_status=self.request_status
             )))
 
         return False
