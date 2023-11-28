@@ -53,6 +53,11 @@ class SeleniumBrowser(object):
     def config(self):
         return self._config
 
+    def cookie_file_to_dict(self, file: str = 'cookies.txt'):
+        log.debug(f'{file}')
+        with open(file, 'r') as file:
+            return json.loads(file.read())
+
     @property
     def _current_url(self):
         try:
@@ -188,56 +193,66 @@ class SeleniumBrowser(object):
         result = self.webdriver.add_cookie(cookie_dict=cookie_dict)
 
         if result is None:
-            log.debug(f'{True}')
+            log.debug(f'{cookie_dict}')
             return True
 
-        log.error(f'{False}')
+        log.error(f'{cookie_dict}')
         return False
 
-    def add_cookies(self, cookies_list: list):
+    def add_cookie_from_file(self, file: str) -> bool:
+        """add cookies from file"""
+        if os.path.exists(file):
+            self.add_cookies_from_list(
+                self.cookie_file_to_dict(file=file)
+            )
+            return True
+
+        log.error(f'{file}')
+        return False
+
+    def add_cookies_from_list(self, cookies_list: list):
         for cookie in cookies_list:
             self.add_cookie(cookie_dict=cookie)
-            self.get_cookies_summary()
 
         log.debug(f'{True}')
         return True
 
-    def add_cookie_from_file(self, file: str = None) -> bool:
-        if not file and self.config.cookies_file:
-            file = self.config.cookies_file
-        else:
-            file = 'cookies.txt'
+    def add_cookie_from_current_url(self):
+        log.info(f'{self.url}')
+        return self.add_cookie_from_url(self.url)
 
-        if os.path.exists(file):
-            log.debug(f'{file}')
-            with open(file, 'r') as cookies_file:
-                self.add_cookies(
-                    json.loads(cookies_file.read())
-                )
-            return True
-        else:
-            log.error(f'{file}')
+    def add_cookie_from_url(self, url: str):
+        """add cookies from matching hostname"""
+        cookie_file = self._url_filename(url=url)
 
-        return False
+        if os.path.exists(cookie_file):
+            log.info(f'{cookie_file}')
+            return self.add_cookie_from_file(file=cookie_file)
 
-    def add_cookie_from_base64(self, base64_str: str = None):
-        if not base64_str and self.config.cookies_base64:
-            base64_str = self.config.cookies_base64
+        log.error(f'{cookie_file}')
 
+    def add_cookie_from_base64(self, base64_str: str):
         if base64_str:
-            self.add_cookies(
+            self.add_cookies_from_list(
                 json.loads(base64.b64decode(base64_str))
             )
             log.debug(f'{True}')
             return True
 
-        log.error(f'{False}')
+        log.error(f'{base64_str}')
         return False
 
     def delete_all_cookies(self) -> None:
         result = self.webdriver.delete_all_cookies()
         log.info(f'{True}')
         return result
+
+    def _url_filename(self, url: str):
+        parsed = self.urlparse(url)
+        hostname = parsed.hostname
+        cookie_file = f'cookies-{hostname}.txt'
+        log.info(f'{cookie_file}')
+        return cookie_file
 
     def get_cookie(self, name: str) -> dict:
         result = self.webdriver.get_cookie(name=name)
@@ -256,6 +271,11 @@ class SeleniumBrowser(object):
             json.dumps(result).encode()
         ).decode()
 
+    def get_cookies_json(self) -> json.dumps:
+        cookies = self.get_cookies()
+        log.debug(f'{True}')
+        return json.dumps(cookies)
+
     def get_cookies_summary(self):
         result = self.get_cookies()
         summary = {}
@@ -267,14 +287,9 @@ class SeleniumBrowser(object):
                 expiry = cookie.get('expiry')
 
                 if domain in summary.keys():
-                    if expiry:
-                        summary[domain].append({
-                            f'{name}': f'{datetime.datetime.fromtimestamp(expiry)}'
-                        })
-                    else:
-                        summary[domain].append(name)
+                    summary[domain].append(cookie)
                 else:
-                    summary[domain] = [name]
+                    summary[domain] = [cookie]
 
         log.debug(f'{summary}')
         return summary
@@ -351,7 +366,7 @@ class SeleniumBrowser(object):
         return BeautifulSoup(markup=markdup, features=features)
 
     def get_random_user_agent(self, filter: list or str = None, case_sensitive: bool = False) -> str:
-        return SeleniumUserAgentBuilder().get_random(filter=filter, case_sensitive=case_sensitive)
+        return SeleniumUserAgentBuilder().get_random_agent(filter=filter, case_sensitive=case_sensitive)
 
     def get_screenshot_as_base64(self, **kwargs):
         """screenshot as base64"""
@@ -390,6 +405,11 @@ class SeleniumBrowser(object):
         log.error(f'{False}')
         return False
 
+    def urlparse(self, url: str):
+        parsed = urlparse(url=url)
+        log.debug(f'{parsed}')
+        return parsed
+
     def quit(self) -> bool:
         """gracefully quit browser"""
         try:
@@ -406,10 +426,19 @@ class SeleniumBrowser(object):
             return False
         return True
 
-    def save_cookies_to_file(self, file: str = 'cookies.txt'):
+    def run(self):
+        """run browser"""
+        return self.config.run()
+
+    def save_cookies_for_current_url(self):
+        filename = self._url_filename(url=self.url)
+        log.info(f'{filename}')
+        return self.save_cookies_to_file(file=filename)
+
+    def save_cookies_to_file(self, file: str):
         with open(file, 'w') as cookies:
             cookies.write(
-                json.dumps(self.get_cookies())
+                self.get_cookies_json()
             )
 
         if os.path.exists(file):
@@ -467,10 +496,6 @@ class SeleniumBrowser(object):
         result = self.webdriver.set_window_position(x, y)
         log.info(f'{result}')
         return result
-
-    def run(self):
-        """run browser"""
-        return self.config.run()
 
     def start(self):
         """alias to run"""
