@@ -1,0 +1,4095 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RecvMessage",
+  "oneOf": [
+    {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "Control"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "$ref": "#/definitions/VeilidState"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "GetState"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "Attach"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "Detach"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "$ref": "#/definitions/NewPrivateRouteResult"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "NewPrivateRoute"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "$ref": "#/definitions/NewPrivateRouteResult"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "NewCustomPrivateRoute"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "ImportRemotePrivateRoute"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "ReleasePrivateRoute"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "AppCallReply"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0.0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "NewRoutingContext"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "InvalidId"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "Release"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "integer",
+                      "format": "uint32",
+                      "minimum": 0.0
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "WithDefaultSafety"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "integer",
+                      "format": "uint32",
+                      "minimum": 0.0
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "WithSafety"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "rc_op",
+                "value"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "WithSequencing"
+                  ]
+                },
+                "value": {
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0.0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "rc_op",
+                "value"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "Safety"
+                  ]
+                },
+                "value": {
+                  "$ref": "#/definitions/SafetySelection"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "AppCall"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "AppMessage"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "$ref": "#/definitions/DHTRecordDescriptor"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "CreateDhtRecord"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "$ref": "#/definitions/DHTRecordDescriptor"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "OpenDhtRecord"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "CloseDhtRecord"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "DeleteDhtRecord"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/definitions/ValueData"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "GetDhtValue"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/definitions/ValueData"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "SetDhtValue"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "WatchDhtValues"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "rc_op"
+              ],
+              "properties": {
+                "rc_op": {
+                  "type": "string",
+                  "enum": [
+                    "CancelDhtWatch"
+                  ]
+                }
+              }
+            }
+          ],
+          "required": [
+            "op",
+            "rc_id"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "RoutingContext"
+              ]
+            },
+            "rc_id": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0.0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "OpenTableDb"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "DeleteTableDb"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "db_op"
+              ],
+              "properties": {
+                "db_op": {
+                  "type": "string",
+                  "enum": [
+                    "InvalidId"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "db_op"
+              ],
+              "properties": {
+                "db_op": {
+                  "type": "string",
+                  "enum": [
+                    "Release"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "integer",
+                      "format": "uint32",
+                      "minimum": 0.0
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "db_op"
+              ],
+              "properties": {
+                "db_op": {
+                  "type": "string",
+                  "enum": [
+                    "GetColumnCount"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "db_op"
+              ],
+              "properties": {
+                "db_op": {
+                  "type": "string",
+                  "enum": [
+                    "GetKeys"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "db_op",
+                "value"
+              ],
+              "properties": {
+                "db_op": {
+                  "type": "string",
+                  "enum": [
+                    "Transact"
+                  ]
+                },
+                "value": {
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0.0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "db_op"
+              ],
+              "properties": {
+                "db_op": {
+                  "type": "string",
+                  "enum": [
+                    "Store"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "db_op"
+              ],
+              "properties": {
+                "db_op": {
+                  "type": "string",
+                  "enum": [
+                    "Load"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "db_op"
+              ],
+              "properties": {
+                "db_op": {
+                  "type": "string",
+                  "enum": [
+                    "Delete"
+                  ]
+                }
+              }
+            }
+          ],
+          "required": [
+            "db_id",
+            "op"
+          ],
+          "properties": {
+            "db_id": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "op": {
+              "type": "string",
+              "enum": [
+                "TableDb"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "tx_op"
+              ],
+              "properties": {
+                "tx_op": {
+                  "type": "string",
+                  "enum": [
+                    "InvalidId"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "tx_op"
+              ],
+              "properties": {
+                "tx_op": {
+                  "type": "string",
+                  "enum": [
+                    "Commit"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "tx_op"
+              ],
+              "properties": {
+                "tx_op": {
+                  "type": "string",
+                  "enum": [
+                    "Rollback"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "tx_op"
+              ],
+              "properties": {
+                "tx_op": {
+                  "type": "string",
+                  "enum": [
+                    "Store"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "tx_op"
+              ],
+              "properties": {
+                "tx_op": {
+                  "type": "string",
+                  "enum": [
+                    "Delete"
+                  ]
+                }
+              }
+            }
+          ],
+          "required": [
+            "op",
+            "tx_id"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "TableDbTransaction"
+              ]
+            },
+            "tx_id": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0.0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "GetCryptoSystem"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0.0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "BestCryptoSystem"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "InvalidId"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "Release"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "CachedDh"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "ComputeDh"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "RandomBytes"
+                  ]
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "DefaultSaltLength"
+                  ]
+                },
+                "value": {
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0.0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "HashPassword"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "VerifyPassword"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "DeriveSharedSecret"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "RandomNonce"
+                  ]
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "RandomSharedSecret"
+                  ]
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "GenerateKeyPair"
+                  ]
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "GenerateHash"
+                  ]
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "ValidateKeyPair"
+                  ]
+                },
+                "value": {
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "ValidateHash"
+                  ]
+                },
+                "value": {
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "Distance"
+                  ]
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "Sign"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "Verify"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "AeadOverhead"
+                  ]
+                },
+                "value": {
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0.0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "DecryptAead"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "$ref": "#/definitions/VeilidAPIError"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "cs_op"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "EncryptAead"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "cs_op",
+                "value"
+              ],
+              "properties": {
+                "cs_op": {
+                  "type": "string",
+                  "enum": [
+                    "CryptNoAuth"
+                  ]
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          ],
+          "required": [
+            "cs_id",
+            "op"
+          ],
+          "properties": {
+            "cs_id": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "op": {
+              "type": "string",
+              "enum": [
+                "CryptoSystem"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "VerifySignatures"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "GenerateSignatures"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "GenerateKeyPair"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "value"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "Now"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "$ref": "#/definitions/VeilidAPIError"
+                }
+              }
+            }
+          ],
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "Debug"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "value"
+          ],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "VeilidVersionString"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "major",
+            "minor",
+            "op",
+            "patch"
+          ],
+          "properties": {
+            "major": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "minor": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "op": {
+              "type": "string",
+              "enum": [
+                "VeilidVersion"
+              ]
+            },
+            "patch": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        }
+      ],
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "description": "Operation Id (pairs with Request, or empty if unidirectional)",
+          "default": 0,
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "Response"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "oneOf": [
+        {
+          "description": "A VeilidCore log message with optional backtrace",
+          "type": "object",
+          "required": [
+            "kind",
+            "log_level",
+            "message"
+          ],
+          "properties": {
+            "backtrace": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Log"
+              ]
+            },
+            "log_level": {
+              "$ref": "#/definitions/VeilidLogLevel"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Direct statement blob passed to hosting application for processing",
+          "type": "object",
+          "required": [
+            "kind",
+            "message"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "AppMessage"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "sender": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Direct question blob passed to hosting application for processing to send an eventual AppReply",
+          "type": "object",
+          "required": [
+            "call_id",
+            "kind",
+            "message"
+          ],
+          "properties": {
+            "call_id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "AppCall"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "sender": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "local_network_ready",
+            "public_internet_ready",
+            "state"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Attachment"
+              ]
+            },
+            "local_network_ready": {
+              "type": "boolean"
+            },
+            "public_internet_ready": {
+              "type": "boolean"
+            },
+            "state": {
+              "$ref": "#/definitions/AttachmentState"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "bps_down",
+            "bps_up",
+            "kind",
+            "peers",
+            "started"
+          ],
+          "properties": {
+            "bps_down": {
+              "type": "string"
+            },
+            "bps_up": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Network"
+              ]
+            },
+            "peers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PeerTableData"
+              }
+            },
+            "started": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "config",
+            "kind"
+          ],
+          "properties": {
+            "config": {
+              "$ref": "#/definitions/VeilidConfigInner"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Config"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "dead_remote_routes",
+            "dead_routes",
+            "kind"
+          ],
+          "properties": {
+            "dead_remote_routes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "dead_routes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "RouteChange"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "count",
+            "key",
+            "kind",
+            "subkeys",
+            "value"
+          ],
+          "properties": {
+            "count": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "key": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "ValueChange"
+              ]
+            },
+            "subkeys": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint32",
+                "minimum": 0.0
+              }
+            },
+            "value": {
+              "$ref": "#/definitions/ValueData"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Shutdown"
+              ]
+            }
+          }
+        }
+      ],
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "Update"
+          ]
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "AttachmentState": {
+      "description": "Attachment abstraction for network 'signal strength'",
+      "type": "string",
+      "enum": [
+        "Detached",
+        "Attaching",
+        "AttachedWeak",
+        "AttachedGood",
+        "AttachedStrong",
+        "FullyAttached",
+        "OverAttached",
+        "Detaching"
+      ]
+    },
+    "DHTRecordDescriptor": {
+      "description": "DHT Record Descriptor",
+      "type": "object",
+      "required": [
+        "key",
+        "owner",
+        "schema"
+      ],
+      "properties": {
+        "key": {
+          "description": "DHT Key = Hash(ownerKeyKind) of: [ ownerKeyValue, schema ]",
+          "type": "string"
+        },
+        "owner": {
+          "description": "The public key of the owner",
+          "type": "string"
+        },
+        "owner_secret": {
+          "description": "If this key is being created: Some(the secret key of the owner) If this key is just being opened: None",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schema": {
+          "description": "The schema in use associated with the key",
+          "allOf": [
+            {
+              "$ref": "#/definitions/DHTSchema"
+            }
+          ]
+        }
+      }
+    },
+    "DHTSchema": {
+      "description": "Enum over all the supported DHT Schemas",
+      "oneOf": [
+        {
+          "description": "Default DHT Schema (DFLT)",
+          "type": "object",
+          "required": [
+            "kind",
+            "o_cnt"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "DFLT"
+              ]
+            },
+            "o_cnt": {
+              "description": "Owner subkey count",
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "description": "Simple DHT Schema (SMPL)",
+          "type": "object",
+          "required": [
+            "kind",
+            "members",
+            "o_cnt"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "SMPL"
+              ]
+            },
+            "members": {
+              "description": "Members",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DHTSchemaSMPLMember"
+              }
+            },
+            "o_cnt": {
+              "description": "Owner subkey count",
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            }
+          }
+        }
+      ]
+    },
+    "DHTSchemaSMPLMember": {
+      "description": "Simple DHT Schema (SMPL) Member",
+      "type": "object",
+      "required": [
+        "m_cnt",
+        "m_key"
+      ],
+      "properties": {
+        "m_cnt": {
+          "description": "Member subkey count",
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "m_key": {
+          "description": "Member key",
+          "type": "string"
+        }
+      }
+    },
+    "FourCC": {
+      "description": "FOURCC code",
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "format": "uint8",
+        "minimum": 0.0
+      },
+      "maxItems": 4,
+      "minItems": 4
+    },
+    "LatencyStats": {
+      "type": "object",
+      "required": [
+        "average",
+        "fastest",
+        "slowest"
+      ],
+      "properties": {
+        "average": {
+          "type": "string"
+        },
+        "fastest": {
+          "type": "string"
+        },
+        "slowest": {
+          "type": "string"
+        }
+      }
+    },
+    "NewPrivateRouteResult": {
+      "type": "object",
+      "required": [
+        "blob",
+        "route_id"
+      ],
+      "properties": {
+        "blob": {
+          "type": "string"
+        },
+        "route_id": {
+          "type": "string"
+        }
+      }
+    },
+    "PeerStats": {
+      "type": "object",
+      "required": [
+        "rpc_stats",
+        "time_added",
+        "transfer"
+      ],
+      "properties": {
+        "latency": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LatencyStats"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rpc_stats": {
+          "$ref": "#/definitions/RPCStats"
+        },
+        "time_added": {
+          "type": "string"
+        },
+        "transfer": {
+          "$ref": "#/definitions/TransferStatsDownUp"
+        }
+      }
+    },
+    "PeerTableData": {
+      "type": "object",
+      "required": [
+        "node_ids",
+        "peer_address",
+        "peer_stats"
+      ],
+      "properties": {
+        "node_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "peer_address": {
+          "type": "string"
+        },
+        "peer_stats": {
+          "$ref": "#/definitions/PeerStats"
+        }
+      }
+    },
+    "RPCStats": {
+      "type": "object",
+      "required": [
+        "failed_to_send",
+        "messages_rcvd",
+        "messages_sent",
+        "questions_in_flight",
+        "recent_lost_answers"
+      ],
+      "properties": {
+        "failed_to_send": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "first_consecutive_seen_ts": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_question_ts": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_seen_ts": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "messages_rcvd": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "messages_sent": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "questions_in_flight": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "recent_lost_answers": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "SafetySelection": {
+      "description": "The choice of safety route to include in compiled routes",
+      "oneOf": [
+        {
+          "description": "Don't use a safety route, only specify the sequencing preference",
+          "type": "object",
+          "required": [
+            "Unsafe"
+          ],
+          "properties": {
+            "Unsafe": {
+              "$ref": "#/definitions/Sequencing"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Use a safety route and parameters specified by a SafetySpec",
+          "type": "object",
+          "required": [
+            "Safe"
+          ],
+          "properties": {
+            "Safe": {
+              "$ref": "#/definitions/SafetySpec"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SafetySpec": {
+      "description": "Options for safety routes (sender privacy)",
+      "type": "object",
+      "required": [
+        "hop_count",
+        "sequencing",
+        "stability"
+      ],
+      "properties": {
+        "hop_count": {
+          "description": "must be greater than 0",
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0.0
+        },
+        "preferred_route": {
+          "description": "preferred safety route set id if it still exists",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sequencing": {
+          "description": "prefer connection-oriented sequenced protocols",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Sequencing"
+            }
+          ]
+        },
+        "stability": {
+          "description": "prefer reliability over speed",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Stability"
+            }
+          ]
+        }
+      }
+    },
+    "Sequencing": {
+      "type": "string",
+      "enum": [
+        "NoPreference",
+        "PreferOrdered",
+        "EnsureOrdered"
+      ]
+    },
+    "Stability": {
+      "type": "string",
+      "enum": [
+        "LowLatency",
+        "Reliable"
+      ]
+    },
+    "TransferStats": {
+      "type": "object",
+      "required": [
+        "average",
+        "maximum",
+        "minimum",
+        "total"
+      ],
+      "properties": {
+        "average": {
+          "type": "string"
+        },
+        "maximum": {
+          "type": "string"
+        },
+        "minimum": {
+          "type": "string"
+        },
+        "total": {
+          "type": "string"
+        }
+      }
+    },
+    "TransferStatsDownUp": {
+      "type": "object",
+      "required": [
+        "down",
+        "up"
+      ],
+      "properties": {
+        "down": {
+          "$ref": "#/definitions/TransferStats"
+        },
+        "up": {
+          "$ref": "#/definitions/TransferStats"
+        }
+      }
+    },
+    "ValueData": {
+      "type": "object",
+      "required": [
+        "data",
+        "seq",
+        "writer"
+      ],
+      "properties": {
+        "data": {
+          "description": "The contents of a DHT Record",
+          "type": "string"
+        },
+        "seq": {
+          "description": "An increasing sequence number to time-order the DHT record changes",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "writer": {
+          "description": "The public identity key of the writer of the data",
+          "type": "string"
+        }
+      }
+    },
+    "VeilidAPIError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "NotInitialized"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "AlreadyInitialized"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Timeout"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "message"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "TryAgain"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Shutdown"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "message"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "InvalidTarget"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "message"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "NoConnection"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "key",
+            "kind"
+          ],
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "KeyNotFound"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "message"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Internal"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "message"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Unimplemented"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "message",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "ParseError"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "argument",
+            "context",
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "argument": {
+              "type": "string"
+            },
+            "context": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "InvalidArgument"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "argument",
+            "context",
+            "kind"
+          ],
+          "properties": {
+            "argument": {
+              "type": "string"
+            },
+            "context": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "MissingArgument"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "message"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Generic"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "VeilidConfigApplication": {
+      "description": "Application configuration\n\nConfigure web access to the Progressive Web App (PWA)\n\nTo be implemented...",
+      "type": "object",
+      "required": [
+        "http",
+        "https"
+      ],
+      "properties": {
+        "http": {
+          "$ref": "#/definitions/VeilidConfigHTTP"
+        },
+        "https": {
+          "$ref": "#/definitions/VeilidConfigHTTPS"
+        }
+      }
+    },
+    "VeilidConfigBlockStore": {
+      "type": "object",
+      "required": [
+        "delete",
+        "directory"
+      ],
+      "properties": {
+        "delete": {
+          "type": "boolean"
+        },
+        "directory": {
+          "type": "string"
+        }
+      }
+    },
+    "VeilidConfigCapabilities": {
+      "type": "object",
+      "required": [
+        "disable"
+      ],
+      "properties": {
+        "disable": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FourCC"
+          }
+        }
+      }
+    },
+    "VeilidConfigDHT": {
+      "description": "Configure the Distributed Hash Table (DHT)",
+      "type": "object",
+      "required": [
+        "get_value_count",
+        "get_value_fanout",
+        "get_value_timeout_ms",
+        "local_max_subkey_cache_memory_mb",
+        "local_subkey_cache_size",
+        "max_find_node_count",
+        "min_peer_count",
+        "min_peer_refresh_time_ms",
+        "remote_max_records",
+        "remote_max_storage_space_mb",
+        "remote_max_subkey_cache_memory_mb",
+        "remote_subkey_cache_size",
+        "resolve_node_count",
+        "resolve_node_fanout",
+        "resolve_node_timeout_ms",
+        "set_value_count",
+        "set_value_fanout",
+        "set_value_timeout_ms",
+        "validate_dial_info_receipt_time_ms"
+      ],
+      "properties": {
+        "get_value_count": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "get_value_fanout": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "get_value_timeout_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "local_max_subkey_cache_memory_mb": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "local_subkey_cache_size": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "max_find_node_count": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "min_peer_count": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "min_peer_refresh_time_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "remote_max_records": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "remote_max_storage_space_mb": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "remote_max_subkey_cache_memory_mb": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "remote_subkey_cache_size": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "resolve_node_count": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "resolve_node_fanout": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "resolve_node_timeout_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "set_value_count": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "set_value_fanout": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "set_value_timeout_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "validate_dial_info_receipt_time_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "VeilidConfigHTTP": {
+      "description": "Enable and configure HTTP access to the Veilid node\n\n```yaml http: enabled: false listen_address: ':5150' path: 'app\" url: 'https://localhost:5150' ```",
+      "type": "object",
+      "required": [
+        "enabled",
+        "listen_address",
+        "path"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "listen_address": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "VeilidConfigHTTPS": {
+      "description": "Enable and configure HTTPS access to the Veilid node\n\n```yaml https: enabled: false listen_address: ':5150' path: 'app' url: 'https://localhost:5150' ```",
+      "type": "object",
+      "required": [
+        "enabled",
+        "listen_address",
+        "path"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "listen_address": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "VeilidConfigInner": {
+      "type": "object",
+      "required": [
+        "block_store",
+        "capabilities",
+        "namespace",
+        "network",
+        "program_name",
+        "protected_store",
+        "table_store"
+      ],
+      "properties": {
+        "block_store": {
+          "$ref": "#/definitions/VeilidConfigBlockStore"
+        },
+        "capabilities": {
+          "$ref": "#/definitions/VeilidConfigCapabilities"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "network": {
+          "$ref": "#/definitions/VeilidConfigNetwork"
+        },
+        "program_name": {
+          "type": "string"
+        },
+        "protected_store": {
+          "$ref": "#/definitions/VeilidConfigProtectedStore"
+        },
+        "table_store": {
+          "$ref": "#/definitions/VeilidConfigTableStore"
+        }
+      }
+    },
+    "VeilidConfigNetwork": {
+      "type": "object",
+      "required": [
+        "application",
+        "client_allowlist_timeout_ms",
+        "connection_inactivity_timeout_ms",
+        "connection_initial_timeout_ms",
+        "detect_address_changes",
+        "dht",
+        "hole_punch_receipt_time_ms",
+        "max_connection_frequency_per_min",
+        "max_connections_per_ip4",
+        "max_connections_per_ip6_prefix",
+        "max_connections_per_ip6_prefix_size",
+        "protocol",
+        "restricted_nat_retries",
+        "reverse_connection_receipt_time_ms",
+        "routing_table",
+        "rpc",
+        "tls",
+        "upnp"
+      ],
+      "properties": {
+        "application": {
+          "$ref": "#/definitions/VeilidConfigApplication"
+        },
+        "client_allowlist_timeout_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "connection_inactivity_timeout_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "connection_initial_timeout_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "detect_address_changes": {
+          "type": "boolean"
+        },
+        "dht": {
+          "$ref": "#/definitions/VeilidConfigDHT"
+        },
+        "hole_punch_receipt_time_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "max_connection_frequency_per_min": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "max_connections_per_ip4": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "max_connections_per_ip6_prefix": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "max_connections_per_ip6_prefix_size": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "network_key_password": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "protocol": {
+          "$ref": "#/definitions/VeilidConfigProtocol"
+        },
+        "restricted_nat_retries": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "reverse_connection_receipt_time_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "routing_table": {
+          "$ref": "#/definitions/VeilidConfigRoutingTable"
+        },
+        "rpc": {
+          "$ref": "#/definitions/VeilidConfigRPC"
+        },
+        "tls": {
+          "$ref": "#/definitions/VeilidConfigTLS"
+        },
+        "upnp": {
+          "type": "boolean"
+        }
+      }
+    },
+    "VeilidConfigProtectedStore": {
+      "type": "object",
+      "required": [
+        "allow_insecure_fallback",
+        "always_use_insecure_storage",
+        "delete",
+        "device_encryption_key_password",
+        "directory"
+      ],
+      "properties": {
+        "allow_insecure_fallback": {
+          "type": "boolean"
+        },
+        "always_use_insecure_storage": {
+          "type": "boolean"
+        },
+        "delete": {
+          "type": "boolean"
+        },
+        "device_encryption_key_password": {
+          "type": "string"
+        },
+        "directory": {
+          "type": "string"
+        },
+        "new_device_encryption_key_password": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "VeilidConfigProtocol": {
+      "description": "Configure Network Protocols\n\nVeilid can communicate over UDP, TCP, and Web Sockets.\n\nAll protocols are available by default, and the Veilid node will sort out which protocol is used for each peer connection.",
+      "type": "object",
+      "required": [
+        "tcp",
+        "udp",
+        "ws",
+        "wss"
+      ],
+      "properties": {
+        "tcp": {
+          "$ref": "#/definitions/VeilidConfigTCP"
+        },
+        "udp": {
+          "$ref": "#/definitions/VeilidConfigUDP"
+        },
+        "ws": {
+          "$ref": "#/definitions/VeilidConfigWS"
+        },
+        "wss": {
+          "$ref": "#/definitions/VeilidConfigWSS"
+        }
+      }
+    },
+    "VeilidConfigRPC": {
+      "description": "Configure RPC",
+      "type": "object",
+      "required": [
+        "concurrency",
+        "default_route_hop_count",
+        "max_route_hop_count",
+        "queue_size",
+        "timeout_ms"
+      ],
+      "properties": {
+        "concurrency": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "default_route_hop_count": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "max_route_hop_count": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "max_timestamp_ahead_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "max_timestamp_behind_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "queue_size": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "VeilidConfigRoutingTable": {
+      "description": "Configure the network routing table",
+      "type": "object",
+      "required": [
+        "bootstrap",
+        "limit_attached_good",
+        "limit_attached_strong",
+        "limit_attached_weak",
+        "limit_fully_attached",
+        "limit_over_attached",
+        "node_id",
+        "node_id_secret"
+      ],
+      "properties": {
+        "bootstrap": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "limit_attached_good": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "limit_attached_strong": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "limit_attached_weak": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "limit_fully_attached": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "limit_over_attached": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "node_id": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "node_id_secret": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "VeilidConfigTCP": {
+      "description": "Enable and configure TCP\n\n```yaml tcp: connect: true listen: true max_connections: 32 listen_address: ':5150' public_address: ''",
+      "type": "object",
+      "required": [
+        "connect",
+        "listen",
+        "listen_address",
+        "max_connections"
+      ],
+      "properties": {
+        "connect": {
+          "type": "boolean"
+        },
+        "listen": {
+          "type": "boolean"
+        },
+        "listen_address": {
+          "type": "string"
+        },
+        "max_connections": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "public_address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "VeilidConfigTLS": {
+      "description": "Configure TLS\n\n```yaml tls: certificate_path: /path/to/cert private_key_path: /path/to/private/key connection_initial_timeout_ms: 2000",
+      "type": "object",
+      "required": [
+        "certificate_path",
+        "connection_initial_timeout_ms",
+        "private_key_path"
+      ],
+      "properties": {
+        "certificate_path": {
+          "type": "string"
+        },
+        "connection_initial_timeout_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "private_key_path": {
+          "type": "string"
+        }
+      }
+    },
+    "VeilidConfigTableStore": {
+      "type": "object",
+      "required": [
+        "delete",
+        "directory"
+      ],
+      "properties": {
+        "delete": {
+          "type": "boolean"
+        },
+        "directory": {
+          "type": "string"
+        }
+      }
+    },
+    "VeilidConfigUDP": {
+      "description": "Enable and configure UDP\n\n```yaml udp: enabled: true socket_pool_size: 0 listen_address: ':5150' public_address: '' ```",
+      "type": "object",
+      "required": [
+        "enabled",
+        "listen_address",
+        "socket_pool_size"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "listen_address": {
+          "type": "string"
+        },
+        "public_address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "socket_pool_size": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "VeilidConfigWS": {
+      "description": "Enable and configure Web Sockets\n\n```yaml ws: connect: true listen: true max_connections: 16 listen_address: ':5150' path: 'ws' url: 'ws://localhost:5150/ws'",
+      "type": "object",
+      "required": [
+        "connect",
+        "listen",
+        "listen_address",
+        "max_connections",
+        "path"
+      ],
+      "properties": {
+        "connect": {
+          "type": "boolean"
+        },
+        "listen": {
+          "type": "boolean"
+        },
+        "listen_address": {
+          "type": "string"
+        },
+        "max_connections": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "path": {
+          "type": "string"
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "VeilidConfigWSS": {
+      "description": "Enable and configure Secure Web Sockets\n\n```yaml wss: connect: true listen: false max_connections: 16 listen_address: ':5150' path: 'ws' url: ''",
+      "type": "object",
+      "required": [
+        "connect",
+        "listen",
+        "listen_address",
+        "max_connections",
+        "path"
+      ],
+      "properties": {
+        "connect": {
+          "type": "boolean"
+        },
+        "listen": {
+          "type": "boolean"
+        },
+        "listen_address": {
+          "type": "string"
+        },
+        "max_connections": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "path": {
+          "type": "string"
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "VeilidLogLevel": {
+      "description": "Log level for VeilidCore",
+      "type": "string",
+      "enum": [
+        "Error",
+        "Warn",
+        "Info",
+        "Debug",
+        "Trace"
+      ]
+    },
+    "VeilidState": {
+      "type": "object",
+      "required": [
+        "attachment",
+        "config",
+        "network"
+      ],
+      "properties": {
+        "attachment": {
+          "$ref": "#/definitions/VeilidStateAttachment"
+        },
+        "config": {
+          "$ref": "#/definitions/VeilidStateConfig"
+        },
+        "network": {
+          "$ref": "#/definitions/VeilidStateNetwork"
+        }
+      }
+    },
+    "VeilidStateAttachment": {
+      "type": "object",
+      "required": [
+        "local_network_ready",
+        "public_internet_ready",
+        "state"
+      ],
+      "properties": {
+        "local_network_ready": {
+          "type": "boolean"
+        },
+        "public_internet_ready": {
+          "type": "boolean"
+        },
+        "state": {
+          "$ref": "#/definitions/AttachmentState"
+        }
+      }
+    },
+    "VeilidStateConfig": {
+      "type": "object",
+      "required": [
+        "config"
+      ],
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/VeilidConfigInner"
+        }
+      }
+    },
+    "VeilidStateNetwork": {
+      "type": "object",
+      "required": [
+        "bps_down",
+        "bps_up",
+        "peers",
+        "started"
+      ],
+      "properties": {
+        "bps_down": {
+          "type": "string"
+        },
+        "bps_up": {
+          "type": "string"
+        },
+        "peers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PeerTableData"
+          }
+        },
+        "started": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
