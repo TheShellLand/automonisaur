@@ -107,7 +107,7 @@ class FacebookGroups(object):
             self.screenshot_error()
 
     def creation_date_timestamp(self):
-        if self.creation_date:
+        if self.creation_date():
             # TODO: convert date to datetime timestamp
             return
 
@@ -195,7 +195,7 @@ class FacebookGroups(object):
 
     def members_count(self):
 
-        if self.members:
+        if self.members():
             count = [x for x in self.members()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
@@ -243,7 +243,7 @@ class FacebookGroups(object):
 
     def posts_monthly_count(self):
 
-        if self.posts_monthly:
+        if self.posts_monthly():
             count = [x for x in self.posts_monthly()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
@@ -271,7 +271,7 @@ class FacebookGroups(object):
 
     def posts_today_count(self):
 
-        if self.posts_today:
+        if self.posts_today():
             count = [x for x in self.posts_today()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
