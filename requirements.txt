@@ -68,6 +68,10 @@ setuptools
 wheel
 twine
 
+# veilid
+veilid>=0.2.5
+pytest-asyncio>=0.21.1
+
 psutil>=5.8.0
 urllib3>=1.26.6
 

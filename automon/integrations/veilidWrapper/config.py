@@ -1,0 +1,2 @@
+class VeilidConfig(object):
+    pass
