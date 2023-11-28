@@ -15,11 +15,11 @@ class MyTestCase(unittest.TestCase):
 
     def test_random(self):
         test = SeleniumUserAgentBuilder()
-        self.assertTrue(test.get_random('applewebkit'))
-        self.assertTrue(test.get_random('AppleWebKit', case_sensitive=True))
+        self.assertTrue(test.get_random_agent('applewebkit'))
+        self.assertTrue(test.get_random_agent('AppleWebKit', case_sensitive=True))
 
-        self.assertFalse(test.get_random('xxxxx'))
-        self.assertFalse(test.get_random('xxxxx', case_sensitive=True))
+        self.assertFalse(test.get_random_agent('xxxxx'))
+        self.assertFalse(test.get_random_agent('xxxxx', case_sensitive=True))
 
 
 if __name__ == '__main__':
