@@ -525,13 +525,13 @@ class FacebookGroups(object):
     def screenshot_error(self):
         """get error screenshot"""
         screenshot = self.screenshot(filename='screenshot-error.png')
-        log.info(f'{screenshot}')
+        log.debug(f'{screenshot}')
         return screenshot
 
     def screenshot_success(self):
         """get success screenshot"""
         screenshot = self.screenshot(filename='screenshot-success.png')
-        log.info(f'{screenshot}')
+        log.debug(f'{screenshot}')
         return screenshot
 
     def set_url(self, url: str) -> str:
