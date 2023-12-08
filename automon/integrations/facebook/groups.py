@@ -201,8 +201,8 @@ class FacebookGroups(object):
             if count:
                 members_count = int(''.join(count)) if count else 0
 
-            log.debug(members_count)
-            return members_count
+                log.debug(members_count)
+                return members_count
 
     def must_login(self):
         try:
