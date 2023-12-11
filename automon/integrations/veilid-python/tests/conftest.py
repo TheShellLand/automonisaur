@@ -10,8 +10,6 @@ import veilid
 
 from .api import VeilidTestConnectionError, api_connector
 
-pytest_plugins = ("pytest_asyncio",)
-
 
 async def simple_update_callback(update: veilid.VeilidUpdate):
     print(f"VeilidUpdate: {update}")
