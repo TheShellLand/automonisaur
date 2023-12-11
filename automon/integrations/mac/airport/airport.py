@@ -77,7 +77,7 @@ class Airport:
     def create_psk(self, ssid: str, passphrase: str):
         """Create PSK from specified pass phrase and SSID."""
         if self.run(args=f'-P --ssid={ssid} --password={passphrase}'):
-            return f'{self._scan_output}'.strip()
+            return f'{bytes(self._scan_output).decode()}'.strip()
         return False
 
     def disassociate(self):
