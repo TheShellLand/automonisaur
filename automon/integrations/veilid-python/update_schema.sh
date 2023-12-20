@@ -4,7 +4,7 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # If $VEILID_SERVER is set, use that, otherwise find a valid Veilid server by looking in the usual places
 if [ -z "${VEILID_SERVER}" ]; then
-    for VEILID_SERVER_CANDIDATE in ${SCRIPTDIR}/../target/debug/veilid-server; do
+    for VEILID_SERVER_CANDIDATE in "${SCRIPTDIR}"/../target/debug/veilid-server; do
         echo -n "Trying Veilid server at ${VEILID_SERVER_CANDIDATE}..."
         if [ -f "${VEILID_SERVER_CANDIDATE}" ]; then
             echo " found!"
