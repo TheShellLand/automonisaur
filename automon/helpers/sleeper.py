@@ -1,10 +1,11 @@
 import time
 import random
 
-from automon.log import logger
+from automon.log import logging
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 class Sleeper:
