@@ -428,7 +428,10 @@ class SeleniumBrowser(object):
 
     def run(self):
         """run browser"""
-        return self.config.run()
+        try:
+            self.config.run()
+        except:
+            return False
 
     def save_cookies_for_current_url(self):
         filename = self._url_filename(url=self.url)
