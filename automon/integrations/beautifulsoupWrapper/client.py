@@ -1,8 +1,9 @@
 from bs4 import BeautifulSoup
 
-from automon.log import Logging
+from automon import log
 
-log = Logging(name='BeautifulSoupClient', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class BeautifulSoupClient(object):
@@ -17,8 +18,8 @@ class BeautifulSoupClient(object):
                 markup=markup or self.markup,
                 features=features
             )
-            log.info(f'read_markup success ({len(markup)} B)')
+            logger.info(f'read_markup success ({len(markup)} B)')
         except Exception as e:
-            log.error(f'read_markup failed ({len(markup)} B): {e}')
+            logger.error(f'read_markup failed ({len(markup)} B): {e}')
 
         return self

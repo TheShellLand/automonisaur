@@ -1,9 +1,9 @@
 import os
 
-from automon.log import logger
+from automon import log
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.ERROR)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.ERROR)
 
 
 class SlackConfig(object):
@@ -32,7 +32,7 @@ class SlackConfig(object):
         self.SLACK_TEST_CHANNEL = os.getenv('SLACK_TEST_CHANNEL') or ''
 
         if not self.token:
-            log.warning(f'missing SLACK_TOKEN')
+            logger.warning(f'missing SLACK_TOKEN')
 
 
 class ConfigSlack:
@@ -53,7 +53,7 @@ class ConfigSlack:
     SLACK_TEST_CHANNEL = os.getenv('SLACK_TEST_CHANNEL') or ''
 
     if not slack_token:
-        log.warning(f'missing SLACK_TOKEN')
+        logger.warning(f'missing SLACK_TOKEN')
 
     def __init__(self, slack_name: str = ''):
         self.slack_name = os.getenv('SLACK_USER') or slack_name or ''

@@ -1,21 +1,21 @@
 import unittest
 
-from automon.log import Logging
+from automon import log
 from automon.integrations.sentryio.client import SentryClient
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class CallbackTest(unittest.TestCase):
     sentry = SentryClient()
-    log = Logging(name=__name__, level=Logging.DEBUG)
-    log.callbacks.append(sentry)
 
     def test_sentry(self):
-        self.assertTrue(self.log)
-        self.assertTrue(self.log.info('test'))
-        self.assertTrue(self.log.debug('test'))
-        self.assertTrue(self.log.error('test'))
-        self.assertTrue(self.log.warning('test'))
-        self.assertTrue(self.log.critical('test'))
+        self.assertIsNone(logger.info('test'))
+        self.assertIsNone(logger.debug('test'))
+        self.assertIsNone(logger.error('test'))
+        self.assertIsNone(logger.warning('test'))
+        self.assertIsNone(logger.critical('test'))
 
 
 if __name__ == '__main__':

@@ -9,7 +9,10 @@ from .config import VdsConfig
 
 from queue import Queue
 
-from automon.log import Logging
+from automon import log
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.INFO)
 
 # disable insecure ssl warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -29,8 +32,6 @@ class VdsRestClient(object):
 
         # test connection
         self.connected = self.check_connection()
-
-        self._log = Logging(name=VdsRestClient.__name__, level=Logging.INFO)
 
     @staticmethod
     def check_connection():
@@ -84,7 +85,7 @@ class VdsRestClient(object):
 
             [self.records.put_nowait(x) for x in records['resources']]
 
-            self._log.info(f'Records: {self.records.qsize()}')
+            logger.info(f'Records: {self.records.qsize()}')
 
             # need to fix cookie 'hostname' to reflect vds config server
             # otherwise get request fails to match hostname to ssl hostname
@@ -141,20 +142,20 @@ class VdsRestClient(object):
 
         url = f'{self.config.uri}/{self.config.basedn}{ldap_filter}'
 
-        self._log.debug(f'query: {url}')
+        logger.debug(f'query: {url}')
 
         try:
             r = requests.get(url, headers=headers, **kwargs)
         except Exception as e:
             raise Exception(e)
 
-        [self._log.debug(f'results: {x}') for x in r.__dict__.items()]
+        [logger.debug(f'results: {x}') for x in r.__dict__.items()]
 
         if r.status_code != 200:
-            self._log.error(f'{url} {r.status_code} {r.reason}\n\n{r.content.decode()}')
+            logger.error(f'{url} {r.status_code} {r.reason}\n\n{r.content.decode()}')
             ldap_result = False
         else:
-            self._log.debug(f'{r.status_code} {r.reason} {url}')
+            logger.debug(f'{r.status_code} {r.reason} {url}')
             ldap_result = json.loads(r.content.decode())
 
         return ldap_result

@@ -1,8 +1,9 @@
 import scrapy
 
-from automon.log import Logging
+from automon import log
 
-log = Logging(name='ScrapyClient', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class ScrapyClient(object):

@@ -1,9 +1,9 @@
 import requests
 
-from automon.log import logger
+from automon import log
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.INFO)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.INFO)
 
 
 class RequestsConfig(object):

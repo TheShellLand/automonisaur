@@ -1,6 +1,7 @@
-from automon.log import Logging
+from automon import log
 
-log = Logging(name='GooglePeopleUrls', level=Logging.ERROR)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class GooglePeopleUrls:
@@ -52,5 +53,5 @@ class GooglePeopleUrls:
         return ','.join(self.personFields)
 
     def resourceName(self) -> str:
-        log.warning(msg=f'resourceName is deprecieated. Only people/me is valid.')
+        logger.warning(msg=f'resourceName is deprecieated. Only people/me is valid.')
         return f'{self.RESOURCE_NAME}/me'

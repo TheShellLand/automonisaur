@@ -1,9 +1,9 @@
-from automon.log import logger
+from automon import log
 
 from automon.helpers.osWrapper.environ import environ
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class InstagramConfig(object):
@@ -21,19 +21,19 @@ class InstagramConfig(object):
     @property
     def login(self):
         if not self._login:
-            log.error(f'INSTAGRAM_LOGIN')
+            logger.error(f'INSTAGRAM_LOGIN')
         return self._login
 
     @property
     def password(self):
         if not self._password:
-            log.error(f'INSTAGRAM_PASSWORD')
+            logger.error(f'INSTAGRAM_PASSWORD')
         return self._password
 
     @property
     def is_configured(self):
         if self.login and self.password:
-            log.info(f'{True}')
+            logger.info(f'{True}')
             return True
-        log.error(f'{False}')
+        logger.error(f'{False}')
         return False

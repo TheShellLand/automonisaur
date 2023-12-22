@@ -10,10 +10,11 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from automon.log import Logging
+from automon import log
 from automon.helpers import environ
 
-log = Logging(name='GooglePeopleConfig', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class GooglePeopleConfig:
@@ -191,7 +192,7 @@ class GooglePeopleConfig:
                 )
             }
 
-        log.warning(f'Missing client_type')
+        logger.warning(f'Missing client_type')
         return False
 
     def from_authorized_user_file(self, file: str) -> Credentials:
@@ -204,7 +205,7 @@ class GooglePeopleConfig:
         if self.oauth_dict():
             return True
 
-        log.warning(f'config is not ready')
+        logger.warning(f'config is not ready')
         return False
 
     def load_oauth(self, oauth: dict) -> Credentials:
@@ -219,7 +220,7 @@ class GooglePeopleConfig:
             return self.update(oauth)
 
         else:
-            log.error(msg=f'Unsupported or not an Oauth token. {oauth}', raise_exception=True)
+            logger.error(msg=f'Unsupported or not an Oauth token. {oauth}', raise_exception=True)
 
         return self.Credentials
 

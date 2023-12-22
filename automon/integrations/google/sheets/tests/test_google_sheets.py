@@ -6,7 +6,7 @@ import tracemalloc
 import pandas as pd
 import numpy as np
 
-from automon.log import logger
+from automon import log
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.facebook import FacebookGroups
 from automon.integrations.google.sheets import GoogleSheetsClient
@@ -26,8 +26,8 @@ logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(loggin
 
 tracemalloc.start()
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 SHEET_NAME = 'Automated Count DO NOT EDIT'
 SHEET_NAME_INGEST = 'URLS TO INGEST'
@@ -172,7 +172,7 @@ def batch_processing(sheet_index: int, df: pd.DataFrame):
         values=[x for x in df.values.tolist()]
     )
 
-    log.info(f'{sheet_index_df}: {[x for x in df.values.tolist()]}')
+    logger.info(f'{sheet_index_df}: {[x for x in df.values.tolist()]}')
 
     return df
 
@@ -196,7 +196,7 @@ def memory_profiler():
     cols.sort()
     df_memory_profile = df_memory_profile.loc[:, cols]
 
-    log.debug(
+    logger.debug(
         f"total memory used: {df_memory_profile['size_MB'].sum()} MB; "
         f'most memory used: '
         f'{df_memory_profile.iloc[0].to_dict()}'
@@ -247,7 +247,7 @@ def main():
         result = sheets_client.clear(range=range)
         # max 60/min
         Sleeper.seconds(seconds=1)
-        log.info(result)
+        logger.info(result)
         df = df.drop(duplicate_index)
 
     # ingest urls from SHEET_NAME_INGEST
@@ -279,14 +279,14 @@ def main():
                 values=values
             )
 
-            log.info(
+            logger.info(
                 f'{index_add_url}: {values}'
             )
 
         # clear url from ingest sheet
         range = f'{SHEET_NAME_INGEST}!{ingest_index}:{ingest_index}'
         clear = sheets_client.clear(range=range)
-        log.info(f'{clear}')
+        logger.info(f'{clear}')
 
     # start updating
     for data in df.iterrows():
@@ -298,7 +298,7 @@ def main():
         todays_date = datetime.datetime.now().date()
         last_updated = f'{todays_date.year}-{todays_date.month}'
         if df_batch['last_updated'].iloc[0] == last_updated:
-            # log.debug(f'skipping {data_index}, {data_row.to_dict()}')
+            # logger.debug(f'skipping {data_index}, {data_row.to_dict()}')
             continue
 
         batch_result = batch_processing(sheet_index=data_index, df=df_batch)
@@ -308,7 +308,7 @@ def main():
             df_memory = memory_profiler()
         except Exception as e:
             df_memory = memory_profiler()
-            log.error(f'{e}')
+            logger.error(f'{e}')
 
     pass
 

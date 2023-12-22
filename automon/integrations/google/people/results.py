@@ -1,8 +1,9 @@
-from automon.log import Logging
+from automon import log
 
 from .person import Person
 
-log = Logging(name='GooglePeopleResults', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class ConnectionsResults:
@@ -36,7 +37,7 @@ class ConnectionsResults:
 
         self.__dict__.update(result)
 
-        log.debug(msg=f'{self}')
+        logger.debug(msg=f'{self}')
 
     def __repr__(self):
         return f'totalPeople: {self.totalPeople}, totalItems: {self.totalItems}, contacts: {len(self.contacts)}'

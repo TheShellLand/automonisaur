@@ -1,6 +1,9 @@
 import os
 
-from automon.log import Logging
+from automon import log
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class SwiftConfig:
@@ -17,39 +20,38 @@ class SwiftConfig:
     SWIFTCLIENT_INSECURE = os.getenv('SWIFTCLIENT_INSECURE') or 'True'
 
     def __init__(self):
-        self.log = Logging(name=SwiftConfig.__name__, level=Logging.DEBUG)
 
         if not self.OPENSTACK_USERNAME:
-            self.log.warning(f'missing OPENSTACK_USERNAME')
+            logger.warning(f'missing OPENSTACK_USERNAME')
         if not self.OPENSTACK_PASSWORD:
-            self.log.warning(f'missing OPENSTACK_PASSWORD')
+            logger.warning(f'missing OPENSTACK_PASSWORD')
         if not self.OPENSTACK_AUTH_URL:
-            self.log.warning(f'missing OPENSTACK_AUTH_URL')
+            logger.warning(f'missing OPENSTACK_AUTH_URL')
         if not self.OPENSTACK_PROJECT_ID:
-            self.log.warning(f'missing OPENSTACK_PROJECT_ID')
+            logger.warning(f'missing OPENSTACK_PROJECT_ID')
         if not self.OPENSTACK_PROJECT_NAME:
-            self.log.warning(f'missing OPENSTACK_PROJECT_NAME')
+            logger.warning(f'missing OPENSTACK_PROJECT_NAME')
         if not self.OPENSTACK_USER_DOMAIN_NAME:
-            self.log.warning(f'missing OPENSTACK_USER_DOMAIN_NAME')
+            logger.warning(f'missing OPENSTACK_USER_DOMAIN_NAME')
         if not self.OPENSTACK_PROJECT_DOMAIN_ID:
-            self.log.warning(f'missing OPENSTACK_PROJECT_DOMAIN_ID')
+            logger.warning(f'missing OPENSTACK_PROJECT_DOMAIN_ID')
         if not self.OPENSTACK_REGION_NAME:
-            self.log.warning(f'missing OPENSTACK_REGION_NAME')
+            logger.warning(f'missing OPENSTACK_REGION_NAME')
         if not self.OPENSTACK_INTERFACE:
-            self.log.warning(f'missing OPENSTACK_INTERFACE')
+            logger.warning(f'missing OPENSTACK_INTERFACE')
         if not self.OPENSTACK_IDENTITY_API_VERSION:
-            self.log.warning(f'missing OPENSTACK_IDENTITY_API_VERSION')
+            logger.warning(f'missing OPENSTACK_IDENTITY_API_VERSION')
         if not self.SWIFTCLIENT_INSECURE:
-            self.log.warning(f'missing SWIFTCLIENT_INSECURE')
+            logger.warning(f'missing SWIFTCLIENT_INSECURE')
 
     def __eq__(self, other):
         if not isinstance(other, SwiftConfig):
-            self.log.warning(f'Not implemented')
+            logger.warning(f'Not implemented')
             return NotImplemented
 
         return self.OPENSTACK_USERNAME == other.OPENSTACK_USERNAME and \
-               self.OPENSTACK_PASSWORD == other.OPENSTACK_PASSWORD and \
-               self.OPENSTACK_AUTH_URL == other.OPENSTACK_AUTH_URL and \
-               self.OPENSTACK_PROJECT_ID == other.OPENSTACK_PROJECT_ID and \
-               self.OPENSTACK_PROJECT_NAME == other.OPENSTACK_PROJECT_NAME and \
-               self.OPENSTACK_PROJECT_DOMAIN_ID == other.OPENSTACK_PROJECT_DOMAIN_ID
+            self.OPENSTACK_PASSWORD == other.OPENSTACK_PASSWORD and \
+            self.OPENSTACK_AUTH_URL == other.OPENSTACK_AUTH_URL and \
+            self.OPENSTACK_PROJECT_ID == other.OPENSTACK_PROJECT_ID and \
+            self.OPENSTACK_PROJECT_NAME == other.OPENSTACK_PROJECT_NAME and \
+            self.OPENSTACK_PROJECT_DOMAIN_ID == other.OPENSTACK_PROJECT_DOMAIN_ID

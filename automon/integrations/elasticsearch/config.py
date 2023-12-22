@@ -1,8 +1,11 @@
 import os
 import logging
 
-from automon.log import Logging
+from automon import log
 from automon.helpers.sanitation import Sanitation as S
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 logging.getLogger('elasticsearch').setLevel(logging.ERROR)
 logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
@@ -22,8 +25,6 @@ class ElasticsearchConfig:
                  verify_certs: bool = True,
                  proxy=None):
         """elasticsearch config"""
-
-        self._log = Logging(ElasticsearchConfig.__name__, Logging.DEBUG)
 
         # hosts
         self.ELASTICSEARCH_HOST = host or os.getenv('ELASTICSEARCH_HOSTS')
@@ -56,7 +57,7 @@ class ElasticsearchConfig:
 
     def __eq__(self, other):
         if not isinstance(other, ElasticsearchConfig):
-            self._log.warn(f'Not implemented')
+            logger.warning(f'Not implemented')
             return NotImplemented
 
         return self.ELASTICSEARCH_HOST == other.ELASTICSEARCH_HOST

@@ -11,7 +11,7 @@ from selenium.webdriver.common.keys import Keys
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
-from automon.log import logger
+from automon import log
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
@@ -19,8 +19,8 @@ from automon.helpers.sanitation import Sanitation
 from .config import SeleniumConfig
 from .user_agents import SeleniumUserAgentBuilder
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class SeleniumBrowser(object):
@@ -54,7 +54,7 @@ class SeleniumBrowser(object):
         return self._config
 
     def cookie_file_to_dict(self, file: str = 'cookies.txt'):
-        log.debug(f'{file}')
+        logger.debug(f'{file}')
         with open(file, 'r') as file:
             return json.loads(file.read())
 
@@ -90,7 +90,7 @@ class SeleniumBrowser(object):
 
     def refresh(self):
         self.webdriver.refresh()
-        log.info(f'{True}')
+        logger.info(f'{True}')
 
     @property
     def url(self):
@@ -106,12 +106,12 @@ class SeleniumBrowser(object):
     @property
     def current_url(self):
         if self.webdriver:
-            log.debug(self._current_url)
+            logger.debug(self._current_url)
             if self._current_url == 'data:,':
                 return ''
             return self._current_url
 
-        log.info(None)
+        logger.info(None)
         return ''
 
     @property
@@ -141,19 +141,19 @@ class SeleniumBrowser(object):
             click = self.find_element(value=xpath, by=self.by.XPATH)
             click.click()
             if note:
-                log.debug(str(dict(
+                logger.debug(str(dict(
                     note=note,
                     xpath=xpath,
                 )))
             else:
-                log.debug(str(dict(
+                logger.debug(str(dict(
                     xpath=xpath,
                 )))
             return click
 
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 xpath=xpath,
                 message=message,
@@ -173,14 +173,14 @@ class SeleniumBrowser(object):
             if secret:
                 key = f'*' * len(key)
 
-            log.debug(str(dict(
+            logger.debug(str(dict(
                 send_keys=key,
             )))
             return True
 
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 send_keys=key,
                 message=message,
@@ -193,10 +193,10 @@ class SeleniumBrowser(object):
         result = self.webdriver.add_cookie(cookie_dict=cookie_dict)
 
         if result is None:
-            log.debug(f'{cookie_dict}')
+            logger.debug(f'{cookie_dict}')
             return True
 
-        log.error(f'{cookie_dict}')
+        logger.error(f'{cookie_dict}')
         return False
 
     def add_cookie_from_file(self, file: str) -> bool:
@@ -207,18 +207,18 @@ class SeleniumBrowser(object):
             )
             return True
 
-        log.error(f'{file}')
+        logger.error(f'{file}')
         return False
 
     def add_cookies_from_list(self, cookies_list: list):
         for cookie in cookies_list:
             self.add_cookie(cookie_dict=cookie)
 
-        log.debug(f'{True}')
+        logger.debug(f'{True}')
         return True
 
     def add_cookie_from_current_url(self):
-        log.info(f'{self.url}')
+        logger.info(f'{self.url}')
         return self.add_cookie_from_url(self.url)
 
     def add_cookie_from_url(self, url: str):
@@ -226,54 +226,54 @@ class SeleniumBrowser(object):
         cookie_file = self._url_filename(url=url)
 
         if os.path.exists(cookie_file):
-            log.info(f'{cookie_file}')
+            logger.info(f'{cookie_file}')
             return self.add_cookie_from_file(file=cookie_file)
 
-        log.error(f'{cookie_file}')
+        logger.error(f'{cookie_file}')
 
     def add_cookie_from_base64(self, base64_str: str):
         if base64_str:
             self.add_cookies_from_list(
                 json.loads(base64.b64decode(base64_str))
             )
-            log.debug(f'{True}')
+            logger.debug(f'{True}')
             return True
 
-        log.error(f'{base64_str}')
+        logger.error(f'{base64_str}')
         return False
 
     def delete_all_cookies(self) -> None:
         result = self.webdriver.delete_all_cookies()
-        log.info(f'{True}')
+        logger.info(f'{True}')
         return result
 
     def _url_filename(self, url: str):
         parsed = self.urlparse(url)
         hostname = parsed.hostname
         cookie_file = f'cookies-{hostname}.txt'
-        log.info(f'{cookie_file}')
+        logger.info(f'{cookie_file}')
         return cookie_file
 
     def get_cookie(self, name: str) -> dict:
         result = self.webdriver.get_cookie(name=name)
-        log.info(f'{result}')
+        logger.info(f'{result}')
         return result
 
     def get_cookies(self) -> [dict]:
         result = self.webdriver.get_cookies()
-        log.debug(f'{True}')
+        logger.debug(f'{True}')
         return result
 
     def get_cookies_base64(self) -> base64:
         result = self.get_cookies()
-        log.debug(f'{True}')
+        logger.debug(f'{True}')
         return base64.b64encode(
             json.dumps(result).encode()
         ).decode()
 
     def get_cookies_json(self) -> json.dumps:
         cookies = self.get_cookies()
-        log.debug(f'{True}')
+        logger.debug(f'{True}')
         return json.dumps(cookies)
 
     def get_cookies_summary(self):
@@ -291,12 +291,12 @@ class SeleniumBrowser(object):
                 else:
                     summary[domain] = [cookie]
 
-        log.debug(f'{summary}')
+        logger.debug(f'{summary}')
         return summary
 
     def close(self):
         """close browser"""
-        log.info(f'closed')
+        logger.info(f'closed')
         self.webdriver.close()
 
     @staticmethod
@@ -317,7 +317,7 @@ class SeleniumBrowser(object):
             **kwargs):
         """find element"""
         element = self.webdriver.find_element(value=value, by=by, **kwargs)
-        log.info(str(dict(
+        logger.info(str(dict(
             url=self.url,
             text=element.text,
             value=value,
@@ -327,7 +327,7 @@ class SeleniumBrowser(object):
     def find_xpath(self, value: str, by: By = By.XPATH, **kwargs):
         """find xpath"""
         xpath = self.find_element(value=value, by=by, **kwargs)
-        log.info(str(dict(
+        logger.info(str(dict(
             url=self.url,
             text=xpath.text,
             value=value,
@@ -338,14 +338,14 @@ class SeleniumBrowser(object):
         """get url"""
         try:
             if self.webdriver.get(url, **kwargs) is None:
-                log.info(str(dict(
+                logger.info(str(dict(
                     url=url,
                     current_url=self._current_url,
                     kwargs=kwargs
                 )))
             return True
         except Exception as error:
-            log.error(str(dict(
+            logger.error(str(dict(
                 error=error,
             )))
 
@@ -371,7 +371,7 @@ class SeleniumBrowser(object):
     def get_screenshot_as_base64(self, **kwargs):
         """screenshot as base64"""
         screenshot = self.webdriver.get_screenshot_as_base64(**kwargs)
-        log.debug(f'{round(len(screenshot) / 1024)} KB')
+        logger.debug(f'{round(len(screenshot) / 1024)} KB')
 
         return screenshot
 
@@ -393,21 +393,21 @@ class SeleniumBrowser(object):
     def get_screenshot_as_png(self, **kwargs):
         """screenshot as png"""
         screenshot = self.webdriver.get_screenshot_as_png(**kwargs)
-        log.debug(f'{round(len(screenshot) / 1024)} KB')
+        logger.debug(f'{round(len(screenshot) / 1024)} KB')
 
         return screenshot
 
     def is_running(self) -> bool:
         """browser is running"""
         if self.webdriver:
-            log.info(f'{True}')
+            logger.info(f'{True}')
             return True
-        log.error(f'{False}')
+        logger.error(f'{False}')
         return False
 
     def urlparse(self, url: str):
         parsed = urlparse(url=url)
-        log.debug(f'{parsed}')
+        logger.debug(f'{parsed}')
         return parsed
 
     def quit(self) -> bool:
@@ -418,7 +418,7 @@ class SeleniumBrowser(object):
             self.webdriver.stop_client()
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 message=message,
                 session=session,
                 stacktrace=stacktrace,
@@ -432,7 +432,7 @@ class SeleniumBrowser(object):
 
     def save_cookies_for_current_url(self):
         filename = self._url_filename(url=self.url)
-        log.info(f'{filename}')
+        logger.info(f'{filename}')
         return self.save_cookies_to_file(file=filename)
 
     def save_cookies_to_file(self, file: str):
@@ -442,10 +442,10 @@ class SeleniumBrowser(object):
             )
 
         if os.path.exists(file):
-            log.info(f'{os.path.abspath(file)} ({os.stat(file).st_size} B)')
+            logger.info(f'{os.path.abspath(file)} ({os.stat(file).st_size} B)')
             return True
 
-        log.error(f'{file}')
+        logger.error(f'{file}')
         return False
 
     def save_screenshot(
@@ -470,7 +470,7 @@ class SeleniumBrowser(object):
         save = os.path.join(path, filename)
 
         if self.webdriver.save_screenshot(save, **kwargs):
-            log.info(f'Saving screenshot to: {save} ({round(os.stat(save).st_size / 1024)} KB)')
+            logger.info(f'Saving screenshot to: {save} ({round(os.stat(save).st_size / 1024)} KB)')
             return True
 
         return False
@@ -483,7 +483,7 @@ class SeleniumBrowser(object):
                                                           device_type=device_type)
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 message=message,
                 session=session,
                 stacktrace=stacktrace,
@@ -494,7 +494,7 @@ class SeleniumBrowser(object):
     def set_window_position(self, x: int = 0, y: int = 0):
         """set browser position"""
         result = self.webdriver.set_window_position(x, y)
-        log.info(f'{result}')
+        logger.info(f'{result}')
         return result
 
     def start(self):
@@ -523,14 +523,14 @@ class SeleniumBrowser(object):
                                 by=by,
                                 value=value,
                                 **kwargs)
-                            log.debug(str(dict(
+                            logger.debug(str(dict(
                                 by=by,
                                 url=self.url,
                                 value=value,
                             )))
                             return value
                         except:
-                            log.error(str(dict(
+                            logger.error(str(dict(
                                 by=by,
                                 url=self.url,
                                 value=value,
@@ -540,14 +540,14 @@ class SeleniumBrowser(object):
                         by=by,
                         value=value,
                         **kwargs)
-                    log.debug(str(dict(
+                    logger.debug(str(dict(
                         by=by,
                         url=self.url,
                         value=value,
                     )))
                     return value
             except Exception as error:
-                log.error(str(dict(
+                logger.error(str(dict(
                     by=by,
                     url=self.url,
                     value=value,
@@ -557,7 +557,7 @@ class SeleniumBrowser(object):
 
             retry += 1
 
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 retry=f'{retry}/{retries}',
             )))

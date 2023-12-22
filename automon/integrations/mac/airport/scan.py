@@ -1,11 +1,11 @@
 from bs4 import BeautifulSoup
 
-from automon.log import logger
+from automon import log
 
 from .ssid import Ssid
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class ScanXml:
@@ -75,7 +75,7 @@ class ScanXml:
             bssids = xml.contents[1].contents[0].contents
             scan = [self._bs2dict(x) for x in bssids]
         except:
-            log.error(f'No BSSIDs')
+            logger.error(f'No BSSIDs')
 
         if scan:
             ssids = [Ssid(ssid) for ssid in scan]
@@ -103,5 +103,5 @@ class ScanXml:
             summary['SSID'][ssid.SSID] = count
         summary['SSID'] = {k: v for k, v in sorted(summary['SSID'].items())}
 
-        log.info(f'Total SSID: {summary["Total SSID"]}')
+        logger.info(f'Total SSID: {summary["Total SSID"]}')
         return summary

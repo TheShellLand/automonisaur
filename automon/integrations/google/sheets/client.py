@@ -1,10 +1,10 @@
-from automon.log import logger
+from automon import log
 from automon.integrations.google.auth import GoogleAuthClient
 
 from .config import GoogleSheetsConfig
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Fields:
@@ -67,11 +67,11 @@ class GoogleSheetsClient(GoogleAuthClient):
                 **kwargs,
             ).execute()
 
-            log.info(f'{result}')
-            log.info(f"{result.get('clearedRange')} cells cleared.")
+            logger.info(f'{result}')
+            logger.info(f"{result.get('clearedRange')} cells cleared.")
             return result
         except Exception as error:
-            log.error(f"An error occurred: {error}")
+            logger.error(f"An error occurred: {error}")
             return error
 
     def spreadsheets(self):
@@ -95,9 +95,9 @@ class GoogleSheetsClient(GoogleAuthClient):
                 fields=fields,
                 **kwargs,
             ).execute()
-            log.info(f'{self.worksheet}!{self.range} ({self.config.spreadsheetId})')
+            logger.info(f'{self.worksheet}!{self.range} ({self.config.spreadsheetId})')
         except Exception as e:
-            log.error(f'{e}')
+            logger.error(f'{e}')
 
         return self
 
@@ -115,19 +115,19 @@ class GoogleSheetsClient(GoogleAuthClient):
                 **kwargs,
             ).execute()
 
-            log.info(str(dict(
+            logger.info(str(dict(
                 worksheet=self.worksheet,
                 range=self.range,
                 spreadsheetId=self.config.spreadsheetId,
             )))
         except Exception as e:
-            log.error(f'{e}')
+            logger.error(f'{e}')
 
         return self
 
     def list(self):
         # list(pageSize=1).execute()
-        log.warning(f'{NotImplemented}')
+        logger.warning(f'{NotImplemented}')
         return
 
     def update(
@@ -144,7 +144,7 @@ class GoogleSheetsClient(GoogleAuthClient):
                 'values': values
             }
 
-            log.debug(f'{body}')
+            logger.debug(f'{body}')
 
             result = self.spreadsheets().values().update(
                 spreadsheetId=spreadsheetId or self.config.spreadsheetId,
@@ -153,9 +153,9 @@ class GoogleSheetsClient(GoogleAuthClient):
                 body=body
             ).execute()
 
-            log.info(f'{result}')
-            log.info(f"{result.get('updatedCells')} cells updated.")
+            logger.info(f'{result}')
+            logger.info(f"{result.get('updatedCells')} cells updated.")
             return result
         except Exception as error:
-            log.error(f"An error occurred: {error}")
+            logger.error(f"An error occurred: {error}")
             return error

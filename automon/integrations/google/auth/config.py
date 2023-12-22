@@ -9,10 +9,11 @@ import google.oauth2.service_account
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-from automon.log import Logging
+from automon import log
 from automon.helpers import environ
 
-log = Logging(name='GoogleAuthConfig', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class GoogleAuthConfig(object):
@@ -58,7 +59,7 @@ class GoogleAuthConfig(object):
         except:
             pass
 
-        log.error(f'Missing GOOGLE_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64', enable_traceback=False)
+        logger.error(f'Missing GOOGLE_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64')
 
     @property
     def _GOOGLE_CREDENTIALS(self):

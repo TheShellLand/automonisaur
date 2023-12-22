@@ -3,13 +3,13 @@ import warnings
 import selenium
 import selenium.webdriver
 
-from automon.log import logger
+from automon import log
 from automon.helpers.osWrapper.environ import environ
 
 from .config_window_size import set_window_size
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class ChromeWrapper(object):
@@ -72,23 +72,23 @@ class ChromeWrapper(object):
         return self._window_size
 
     def disable_certificate_verification(self):
-        log.warning('Certificates are not verified')
+        logger.warning('Certificates are not verified')
         self.chrome_options.add_argument('--ignore-certificate-errors')
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_argument='--ignore-certificate-errors'
         )))
         return self
 
     def disable_extensions(self):
         self.chrome_options.add_argument("--disable-extensions")
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_argument=f'--disable-extensions'
         )))
         return self
 
     def disable_infobars(self):
         self.chrome_options.add_argument("--disable-infobars")
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_argument=f'--disable-infobars'
         )))
         return self
@@ -101,28 +101,28 @@ class ChromeWrapper(object):
             "prefs", {"profile.default_content_setting_values.notifications": 2}
         )
 
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_experimental_option=("prefs", {"profile.default_content_setting_values.notifications": 2})
         )))
         return self
 
     def disable_sandbox(self):
         self.chrome_options.add_argument('--no-sandbox')
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_argument=f'--no-sandbox'
         )))
         return self
 
     def disable_shm(self):
-        log.warning('Disabled shm will use disk I/O, and will be slow')
+        logger.warning('Disabled shm will use disk I/O, and will be slow')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_argument=f'--disable-dev-shm-usage'
         )))
         return self
 
     def enable_bigshm(self):
-        log.warning('Big shm not yet implemented')
+        logger.warning('Big shm not yet implemented')
         return self
 
     def enable_defaults(self):
@@ -131,14 +131,14 @@ class ChromeWrapper(object):
 
     def enable_fullscreen(self):
         self.chrome_options.add_argument("--start-fullscreen")
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_argument=f'--start-fullscreen'
         )))
         return self
 
     def enable_headless(self):
         self.chrome_options.add_argument('headless')
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_argument='headless'
         )))
         return self
@@ -150,14 +150,14 @@ class ChromeWrapper(object):
         self.chrome_options.add_experimental_option(
             "prefs", {"profile.default_content_setting_values.notifications": 1}
         )
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_experimental_option=("prefs", {"profile.default_content_setting_values.notifications": 1})
         )))
         return self
 
     def enable_maximized(self):
         self.chrome_options.add_argument('--start-maximized')
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_argument='--start-maximized'
         )))
         return self
@@ -172,7 +172,7 @@ class ChromeWrapper(object):
             value=prefs,
         )
 
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_experimental_option=dict(
                 name="prefs",
                 value=prefs,
@@ -185,7 +185,7 @@ class ChromeWrapper(object):
 
         """
         result = self.webdriver.close()
-        log.info(f'{result}')
+        logger.info(f'{result}')
         return result
 
     def in_docker(self):
@@ -210,7 +210,7 @@ class ChromeWrapper(object):
         """Headless Chrome with sandbox enabled
 
         """
-        log.warning(
+        logger.warning(
             'Docker does not support sandbox option. '
             'Default shm size is 64m, which will cause chrome driver to crash.'
         )
@@ -223,7 +223,7 @@ class ChromeWrapper(object):
         """Headless Chrome with sandbox disabled
 
         """
-        log.warning('Default shm size is 64m, which will cause chrome driver to crash.')
+        logger.warning('Default shm size is 64m, which will cause chrome driver to crash.')
 
         self.enable_defaults()
         self.enable_headless()
@@ -234,7 +234,7 @@ class ChromeWrapper(object):
         """Headless Chrome with sandbox disabled with no certificate verification
 
         """
-        log.warning('Default shm size is 64m, which will cause chrome driver to crash.')
+        logger.warning('Default shm size is 64m, which will cause chrome driver to crash.')
 
         self.enable_defaults()
         self.enable_headless()
@@ -256,7 +256,7 @@ class ChromeWrapper(object):
         """Headless Chrome with sandbox disabled
 
         """
-        log.warning('Larger shm option is not implemented')
+        logger.warning('Larger shm option is not implemented')
 
         self.enable_defaults()
         self.enable_headless()
@@ -268,7 +268,7 @@ class ChromeWrapper(object):
         """Remote Selenium
 
         """
-        log.info(
+        logger.info(
             f'Remote WebDriver Hub URL: http://{host}:{port}{executor_path}/static/resource/hub.html')
 
         selenium.webdriver.Remote(
@@ -281,7 +281,7 @@ class ChromeWrapper(object):
         """Chrome with sandbox enabled
 
         """
-        log.warning(
+        logger.warning(
             'Docker does not support sandbox option. '
             'Default shm size is 64m, which will cause chrome driver to crash.'
         )
@@ -293,7 +293,7 @@ class ChromeWrapper(object):
         """Chrome with sandbox disabled
 
         """
-        log.warning('Default shm size is 64m, which will cause chrome driver to crash.')
+        logger.warning('Default shm size is 64m, which will cause chrome driver to crash.')
 
         self.enable_defaults()
         self.disable_sandbox()
@@ -305,7 +305,7 @@ class ChromeWrapper(object):
                 self._ChromeService = selenium.webdriver.ChromeService(
                     executable_path=self.chromedriver_path
                 )
-                log.debug(str(dict(
+                logger.debug(str(dict(
                     ChromeService=self.ChromeService
                 )))
 
@@ -313,26 +313,27 @@ class ChromeWrapper(object):
                     service=self.ChromeService,
                     options=self.chrome_options
                 )
-                log.info(f'{self}')
+                logger.info(f'{self}')
 
                 return self.webdriver
 
             self._webdriver = selenium.webdriver.Chrome(options=self.chrome_options)
-            log.info(f'{self}')
+            logger.info(f'{self}')
 
             return self.webdriver
         except Exception as error:
-            log.error(f'{error}')
+            logger.error(f'{error}')
+            raise Exception(error)
 
     def set_chromedriver(self, chromedriver_path: str):
-        log.debug(f'{chromedriver_path}')
+        logger.debug(f'{chromedriver_path}')
         self._chromedriver_path = chromedriver_path
         self.update_paths()
         return self
 
     def set_locale(self, locale: str = 'en'):
         self.chrome_options.add_argument(f"--lang={locale}")
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_argument=f"--lang={locale}"
         )))
         return self
@@ -343,7 +344,7 @@ class ChromeWrapper(object):
             value={'intl.accept_languages': locale}
         )
 
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_experimental_option=dict(
                 name='prefs',
                 value={'intl.accept_languages': locale}
@@ -353,7 +354,7 @@ class ChromeWrapper(object):
 
     def set_user_agent(self, user_agent: str):
         self.chrome_options.add_argument(f"user-agent={user_agent}")
-        log.debug(str(dict(
+        logger.debug(str(dict(
             add_argument=f"user-agent={user_agent}"
         )))
         return self
@@ -362,7 +363,7 @@ class ChromeWrapper(object):
         self._window_size = set_window_size(*args, **kwargs)
         width, height = self.window_size
         self.webdriver.set_window_size(width=width, height=height)
-        log.debug(f'{width}, {height}')
+        logger.debug(f'{width}, {height}')
         return self
 
     def start(self):
@@ -376,14 +377,14 @@ class ChromeWrapper(object):
 
         """
         result = self.webdriver.stop_client()
-        log.info(f'{result}')
+        logger.info(f'{result}')
         return result
 
     def update_paths(self):
         if self.chromedriver_path:
             if self.chromedriver_path not in os.getenv('PATH'):
                 os.environ['PATH'] = f"{os.getenv('PATH')}:{self._chromedriver_path}"
-                log.debug(str(dict(
+                logger.debug(str(dict(
                     PATH=os.environ['PATH']
                 )))
 
@@ -392,7 +393,7 @@ class ChromeWrapper(object):
 
         """
         result = self.webdriver.quit()
-        log.info(f'{result}')
+        logger.info(f'{result}')
         return result
 
     def quit_gracefully(self):
@@ -404,6 +405,6 @@ class ChromeWrapper(object):
             self.quit()
             self.stop_client()
         except Exception as error:
-            log.error(f'failed to gracefully quit. {error}')
+            logger.error(f'failed to gracefully quit. {error}')
             return False
         return True

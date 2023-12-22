@@ -3,10 +3,10 @@ import re
 from urllib.parse import urlencode
 from datetime import datetime, timezone
 
-from automon.log import logger
+from automon import log
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Node:
@@ -62,14 +62,14 @@ class Cypher:
             return ''
 
         if re.search('[:]', label):
-            log.warning(f"Invalid label '{label}': Colon is not needed here")
+            logger.warning(f"Invalid label '{label}': Colon is not needed here")
             label = label.replace(':', '')
 
         if re.search('[`]', label):
             label = label.replace('`', '')
 
         if not re.search('[a-zA-Z]', label[0]):  # First letter of a label must be a letter
-            log.error(f"Invalid label '{label}': First character of Neo4j :LABEL must be a letter")
+            logger.error(f"Invalid label '{label}': First character of Neo4j :LABEL must be a letter")
         else:
             return f':`{label}`'  # :`LABEL`
 

@@ -1,10 +1,10 @@
 import selenium.webdriver
 
-from automon.log import logger
+from automon import log
 from automon.helpers.osWrapper import environ
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class SeleniumConfig(object):
@@ -32,19 +32,19 @@ class SeleniumConfig(object):
 
     @property
     def cookies_base64(self):
-        log.debug(f'{len(self._cookies_base64) if self._cookies_base64 else None}')
+        logger.debug(f'{len(self._cookies_base64) if self._cookies_base64 else None}')
         return self._cookies_base64
 
     @property
     def cookies_file(self):
-        log.info(f'{self._cookies_file}')
+        logger.info(f'{self._cookies_file}')
         return self._cookies_file
 
     def run(self):
         """run webdriver"""
         run = self.webdriver_wrapper.run()
         self._webdriver = self.webdriver_wrapper.webdriver
-        log.info(str(dict(
+        logger.info(str(dict(
             webdriver=self.webdriver
         )))
         return run

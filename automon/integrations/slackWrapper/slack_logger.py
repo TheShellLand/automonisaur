@@ -8,7 +8,11 @@ from automon.helpers.nest_asyncioWrapper import AsyncStarter
 from automon.integrations.slackWrapper.client import SlackClient
 
 from automon.integrations.slackWrapper.slack_formatting import Emoji, Chat, Format
-from automon.log import Logging, INFO, ERROR, WARN, CRITICAL, DEBUG
+from automon import log
+from automon.log import INFO, ERROR, WARN, CRITICAL, DEBUG, TEST
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class AsyncSlackLogging(SlackClient):
@@ -156,7 +160,7 @@ class AsyncSlackLogging(SlackClient):
                 await self._error(channel, text)
             elif level is CRITICAL:
                 await self._critical(channel, text)
-            elif level == Logging.TEST:
+            elif level == TEST:
                 await self._test(channel, text)
 
             if self._stop:
@@ -199,7 +203,7 @@ class AsyncSlackLogging(SlackClient):
         asyncio.run(self._put_queue(CRITICAL, self.critical_channel, msg))
 
     def test(self, msg: str or list or dict or tuple) -> asyncio.tasks:
-        asyncio.run(self._put_queue(Logging.TEST, self.test_channel, msg))
+        asyncio.run(self._put_queue(TEST, self.test_channel, msg))
 
     async def _warn(self, channel: str, msg: str or list or dict or tuple):
         self.set_slack_config(WARN)
@@ -249,7 +253,7 @@ class AsyncSlackLogging(SlackClient):
         # self.set_slack_config()
 
     async def _test(self, channel: str, msg: str):
-        self.set_slack_config(Logging.TEST)
+        self.set_slack_config(TEST)
         await self.slack.chat_postMessage(channel, self._msg(msg))
         # self.set_slack_config()
 
@@ -287,7 +291,7 @@ class AsyncSlackLogging(SlackClient):
             self.slack.icon_url = self._critical_url
             self.slack.channel = self.critical_channel
 
-        elif level == Logging.TEST:
+        elif level == TEST:
             self.slack.username = f'{self.slack.username}{self._test_suffix}'
             self.slack.icon_emoji = self._test_icon
             self.slack.icon_url = self._test_url

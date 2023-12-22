@@ -1,14 +1,14 @@
 import os
 import slack
 
-from automon.log import logger
+from automon import log
 
 from .config import SlackConfig
 from .bots import BotInfo
 from .error import SlackError
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.ERROR)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.ERROR)
 
 
 class SlackClient(SlackConfig):
@@ -44,11 +44,11 @@ class SlackClient(SlackConfig):
 
         try:
             name = BotInfo(self.client.bots_info()).name
-            log.debug(f'Bot name: {name}')
+            logger.debug(f'Bot name: {name}')
             return name
         except Exception as e:
             error = SlackError(e)
-            log.error(
+            logger.error(
                 f'''[{self._get_bot_info.__name__}]\tCouldn't get bot name, missing permission: {error.needed}''')
             return ''
 
@@ -63,7 +63,7 @@ class SlackClient(SlackConfig):
             return SyntaxError
 
         msg = f'{channel} @{self.username}: {text}'
-        log.debug(msg)
+        logger.debug(msg)
 
         try:
             response = self.client.chat_postMessage(
@@ -72,7 +72,7 @@ class SlackClient(SlackConfig):
             assert response["ok"]
             return response
         except Exception as e:
-            log.error(e)
+            logger.error(e)
 
         return False
 
@@ -96,8 +96,8 @@ class SlackClient(SlackConfig):
 
         # check if file exists
         if not os.path.isfile(file):
-            log.error(f'File not found: {file}')
-            log.error(f'Working dir: {os.getcwd()}')
+            logger.error(f'File not found: {file}')
+            logger.error(f'Working dir: {os.getcwd()}')
             return False
 
         # get filename
@@ -116,6 +116,6 @@ class SlackClient(SlackConfig):
             file=file, filename=filename, title=title, username=self.username, channels=self.channel)
 
         assert response["ok"]
-        log.debug(f'File uploaded: {file} ({file_size}B) ({self.username}')
+        logger.debug(f'File uploaded: {file} ({file_size}B) ({self.username}')
 
         return response

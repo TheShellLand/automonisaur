@@ -3,11 +3,11 @@ import subprocess
 from pprint import pprint
 from subprocess import PIPE
 
-from automon.log import logger
+from automon import log
 from automon.helpers.dates import Dates
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Run:
@@ -77,7 +77,7 @@ class Run:
             if sanitize_command:
                 command = self._command(self.command)
 
-        log.debug(f'[command] {command}')
+        logger.debug(f'[command] {command}')
 
         try:
             if inBackground:
@@ -116,17 +116,17 @@ class Run:
                 self.returncode = self.call.returncode
 
                 if self.stdout:
-                    log.debug(f'[stdout] {stdout}')
+                    logger.debug(f'[stdout] {stdout}')
 
                 if self.stderr:
-                    log.error(f'[stderr] {stderr}')
+                    logger.error(f'[stderr] {stderr}')
 
                 if self.returncode == 0:
                     return True
 
         except Exception as e:
             self.stderr = f'{e}'.encode()
-            log.error(f'{e}')
+            logger.error(f'{e}')
 
         return False
 
@@ -139,7 +139,7 @@ class Run:
 
             for arg in split_command:
                 if '|' in arg:
-                    log.warning(f'Pipes are not supported! {split_command}')
+                    logger.warning(f'Pipes are not supported! {split_command}')
 
         return self.command
 

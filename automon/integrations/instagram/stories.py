@@ -1,15 +1,15 @@
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
-from automon.log import logger
+from automon import log
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.seleniumWrapper.config import SeleniumConfig
 from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
 
 from automon.integrations.minioWrapper import MinioClient
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 def authenticate(username, password, minio_client=None, retries=None):
@@ -39,7 +39,7 @@ def authenticate(username, password, minio_client=None, retries=None):
 
         browser.browser.get(login_page)
 
-        log.logging.debug('[authenticate] {}'.format(login_page))
+        logger.debug('[authenticate] {}'.format(login_page))
 
         Sleeper.seconds(1)
 
@@ -84,9 +84,9 @@ def authenticate(username, password, minio_client=None, retries=None):
         if found_pass and found_btn:
             break
         else:
-            log.logging.error('[browser] Authentication failed')
+            logger.error('[browser] Authentication failed')
 
-            log.logging.debug(
+            logger.debug(
                 '[browser] Found password field: {} Found login button: {}'.format(browser.browser.name, found_pass,
                                                                                    found_btn))
 
@@ -97,7 +97,7 @@ def authenticate(username, password, minio_client=None, retries=None):
 
     Sleeper.seconds(5)
 
-    log.logging.debug(
+    logger.debug(
         '[authenticated browser] [{}] {} session: {}'.format(browser.browser.name, browser.browser.title,
                                                              browser.browser.session_id))
     browser.save_screenshot_to_minio()
@@ -114,13 +114,13 @@ def get_stories(authenticated_browser, account):
     # TODO: check if account exists
     browser = authenticated_browser
 
-    log.logging.debug('[get_stories] {}'.format(story))
+    logger.debug('[get_stories] {}'.format(story))
 
     browser.browser.get(story)
     browser.save_screenshot_to_minio(prefix=account)
 
     if 'Page Not Found' in browser.browser.title:
-        log.logging.debug('[get_stories] no stories for {}'.format(account))
+        logger.debug('[get_stories] no stories for {}'.format(account))
         return num_of_stories
 
     Sleeper.seconds(2)
@@ -131,14 +131,14 @@ def get_stories(authenticated_browser, account):
 
             title = browser.browser.title
             if title == 'Instagram':
-                log.logging.debug(('[get_stories] {} end of stories'.format(account)))
+                logger.debug(('[get_stories] {} end of stories'.format(account)))
                 raise Exception
             num_of_stories += 1
             Sleeper.seconds(1)
             browser.save_screenshot_to_minio(prefix=account)
         except:
             # TODO: disable browser proxy when done
-            log.logging.debug('[get_stories] done: {}'.format(account))
+            logger.debug('[get_stories] done: {}'.format(account))
             return num_of_stories
 
 
@@ -157,14 +157,14 @@ def next_story(authenticated_browser):
             browser = authenticated_browser
             button = browser.browser.find_element_by_xpath(xpath)
             found_btn = True
-            log.logging.debug('[next_story] next story')
+            logger.debug('[next_story] next story')
             return button.click()
         except:
             pass
 
     if not found_btn:
         # no more stories. exit
-        log.logging.debug('[next_story] no more stories')
+        logger.debug('[next_story] no more stories')
         raise Exception
 
 
@@ -172,7 +172,7 @@ def get_page(authenticated_browser, account):
     """ Get page
     """
     # TODO: need to download page
-    log.logging.debug('[get_page] getting {}'.format(account))
+    logger.debug('[get_page] getting {}'.format(account))
     page = 'https://instagram.com/{}'.format(account)
     browser = authenticated_browser
     return browser.browser.get(page)
@@ -186,9 +186,9 @@ def run(config):
     password = instagram_config['login']['password']
     accounts = instagram_config['following']
 
-    log.logging.debug('[login] {}'.format(login))
-    log.logging.info('Running...')
-    log.logging.info('[accounts] {}'.format(len(accounts)))
+    logger.debug('[login] {}'.format(login))
+    logger.info('Running...')
+    logger.info('[accounts] {}'.format(len(accounts)))
 
     while True:
 
@@ -208,13 +208,13 @@ def run(config):
 
 
 def runrun(browser, account):
-    log.logging.debug(
+    logger.debug(
         '[runrun] [{}] {} session: {}'.format(browser.browser.name, browser.browser.title,
                                               browser.browser.session_id))
 
     num_of_stories = get_stories(browser, account)
 
-    log.logging.info('[{}] {} stories'.format(account, num_of_stories))
+    logger.info('[{}] {} stories'.format(account, num_of_stories))
 
     # Sleeper.minute('instagram')
 
@@ -229,9 +229,9 @@ def test_run(config):
     password = instagram_config['login']['password']
     accounts = instagram_config['following']
 
-    log.logging.debug('[login] {}'.format(login))
-    log.logging.info('Running...')
-    log.logging.info('[accounts] {}'.format(len(accounts)))
+    logger.debug('[login] {}'.format(login))
+    logger.info('Running...')
+    logger.info('[accounts] {}'.format(len(accounts)))
 
     while True:
 

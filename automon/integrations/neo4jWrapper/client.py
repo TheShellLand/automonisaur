@@ -4,15 +4,15 @@ import logging
 from neo4j import GraphDatabase
 from queue import Queue
 
-from automon.log import logger
+from automon import log
 from automon.integrations.neo4jWrapper.cypher import Cypher
 
 from .config import Neo4jConfig
 from .results import Results
 
-logger.logging.getLogger('neo4j').setLevel(logging.ERROR)
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+log.logging.getLogger('neo4j').setLevel(logging.ERROR)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Neo4jClient:
@@ -50,11 +50,11 @@ class Neo4jClient:
             client = GraphDatabase.driver(
                 uri=self._config.NEO4J_HOST,
                 auth=(self._config.NEO4J_USER, self._config.NEO4J_PASSWORD))
-            log.info(f'Connected to neo4j server: {self._config.NEO4J_HOST}')
+            logger.info(f'Connected to neo4j server: {self._config.NEO4J_HOST}')
             return client
 
         except Exception as e:
-            log.error(f'Cannot connect to neo4j server: {self._config.NEO4J_HOST}, {e}')
+            logger.error(f'Cannot connect to neo4j server: {self._config.NEO4J_HOST}, {e}')
 
         return False
 
@@ -165,7 +165,7 @@ class Neo4jClient:
 
         cypher = self._Cypher.merge_dict(label=label, data=data)
 
-        # log.debug(f'{final_cypher}')
+        # logger.debug(f'{final_cypher}')
 
         return self._send(cypher)
 
@@ -180,12 +180,12 @@ class Neo4jClient:
             response = self._session.run(cypher)
             self.results = Results(response)
 
-            log.info(f'cypher: {cypher}')
-            log.debug(f'Results: {self.results}')
+            logger.info(f'cypher: {cypher}')
+            logger.debug(f'Results: {self.results}')
 
             return True
         except Exception as e:
-            log.error(f"{e}")
+            logger.error(f"{e}")
 
         return False
 

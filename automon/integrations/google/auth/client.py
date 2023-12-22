@@ -3,11 +3,12 @@ import googleapiclient.http
 import googleapiclient.discovery
 import google.auth.transport.requests
 
-from automon.log import Logging
+from automon import log
 
 from .config import GoogleAuthConfig
 
-log = Logging(name='GoogleAuthClient', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class GoogleAuthClient(object):
@@ -68,14 +69,14 @@ class GoogleAuthClient(object):
         if refresh_token:
             try:
                 creds.refresh(google.auth.transport.requests.Request())
-                log.info(f'token refresh success')
+                logger.info(f'token refresh success')
                 return True
             except Exception as e:
-                log.error(msg=f'token refresh failed: {e}', enable_traceback=False)
+                logger.error(msg=f'token refresh failed: {e}')
 
         else:
             # TODO: add google flow() authentication here
-            log.info(f'flow login success')
+            logger.info(f'flow login success')
             return True
 
         return False

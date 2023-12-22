@@ -1,7 +1,7 @@
-from automon.log import logger
+from automon import log
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.INFO)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.INFO)
 
 
 def set_window_size(width: int = 1920, height: int = 1080, device_type: str = None) -> (int, int):
@@ -51,6 +51,6 @@ def set_window_size(width: int = 1920, height: int = 1080, device_type: str = No
         width = 1920
         height = 1080
 
-    log.debug(f'{int(width)}, {int(height)}')
+    logger.debug(f'{int(width)}, {int(height)}')
 
     return int(width), int(height)

@@ -2,13 +2,13 @@ import mmap
 import xmltodict
 import pandas as pd
 
-from automon.log import logger
+from automon import log
 from pandas import DataFrame
 from automon.helpers import Run
 from automon.integrations.datascience import Pandas
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.INFO)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.INFO)
 
 
 class NmapResult(object):
@@ -57,11 +57,11 @@ class NmapResult(object):
             self.summary = self._runstats.loc[:, 'finished.@summary'][0]
             self.time_finished = self._runstats.loc[:, 'finished.@time'][0]
 
-            log.info(f'hosts up: {self.hosts_up}')
-            log.info(f'hosts down: {self.hosts_down}')
-            # log.info(f'hosts total: {self.hosts_total}')
-            log.info(f'{self.summary}')
-            log.info(f'finished {self.file} ({round(df.memory_usage().sum() / 1024, 2)} Kb)')
+            logger.info(f'hosts up: {self.hosts_up}')
+            logger.info(f'hosts down: {self.hosts_down}')
+            # logger.info(f'hosts total: {self.hosts_total}')
+            logger.info(f'{self.summary}')
+            logger.info(f'finished {self.file} ({round(df.memory_usage().sum() / 1024, 2)} Kb)')
 
     def __repr__(self):
         msg = f'{self.summary} '
@@ -117,7 +117,7 @@ class NmapResult(object):
                     else:
                         df_host[port].update(status)
 
-                    log.debug(f"{df_host.loc[:, ['address.@addr'] + [x for x in scanned_ports if x in df_host]]}")
+                    logger.debug(f"{df_host.loc[:, ['address.@addr'] + [x for x in scanned_ports if x in df_host]]}")
 
                 i += 1
 

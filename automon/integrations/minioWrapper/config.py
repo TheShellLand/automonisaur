@@ -1,10 +1,11 @@
 import os
 import urllib3
 
-from automon.log import Logging
+from automon import log
 from automon.helpers import environ
 
-log = Logging(name='MinioConfig', level=Logging.ERROR)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class MinioConfig(object):
@@ -34,13 +35,13 @@ class MinioConfig(object):
         self._http_client = http_client or environ('MINIO_HTTP_CLIENT')
 
         if not self.endpoint:
-            log.warning(f'missing MINIO_ENDPOINT')
+            logger.warning(f'missing MINIO_ENDPOINT')
 
         if not self.access_key:
-            log.warning(f'missing MINIO_ACCESS_KEY')
+            logger.warning(f'missing MINIO_ACCESS_KEY')
 
         if not self.secret_key:
-            log.warning(f'missing MINIO_SECRET_KEY')
+            logger.warning(f'missing MINIO_SECRET_KEY')
 
     @property
     def access_key(self):

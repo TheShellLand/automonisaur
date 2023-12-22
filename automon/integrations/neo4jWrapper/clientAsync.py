@@ -4,15 +4,15 @@ import asyncio
 from neo4j import GraphDatabase
 from queue import Queue
 
-from automon.log import logger
+from automon import log
 from automon.integrations.neo4jWrapper.cypher import Cypher
 
 from .config import Neo4jConfig
 from .results import Results
 
-logger.logging.getLogger('neo4j').setLevel(logger.ERROR)
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+log.logging.getLogger('neo4j').setLevel(logger.ERROR)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Neo4jAsyncClient:
@@ -56,11 +56,11 @@ class Neo4jAsyncClient:
             client = GraphDatabase.driver(
                 uri=self.config.NEO4J_HOST,
                 auth=(self.config.NEO4J_USER, self.config.NEO4J_PASSWORD))
-            log.info(f'Connected to neo4j server: {self.config.NEO4J_HOST}')
+            logger.info(f'Connected to neo4j server: {self.config.NEO4J_HOST}')
             return client
 
         except Exception as e:
-            log.error(f'Cannot connect to neo4j server: {self.config.NEO4J_HOST}, {e}')
+            logger.error(f'Cannot connect to neo4j server: {self.config.NEO4J_HOST}, {e}')
 
         return False
 
@@ -78,10 +78,10 @@ class Neo4jAsyncClient:
         try:
             while not self.cypher.empty():
                 cypher = self.cypher.get_nowait()
-                log.debug(f'cypher: {cypher}')
+                logger.debug(f'cypher: {cypher}')
                 self.session.run(cypher)
             return True
         except Exception as e:
-            log.error(f'{e}')
+            logger.error(f'{e}')
 
         return False

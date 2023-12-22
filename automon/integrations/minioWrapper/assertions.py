@@ -1,6 +1,7 @@
-from automon.log import Logging
+from automon import log
 
-log = Logging(name='MinioAssertions', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class MinioAssertions:
@@ -9,5 +10,5 @@ class MinioAssertions:
     def bucket_name(bucket: str) -> bool:
         if bucket == f'{bucket}'.lower():
             return f'{bucket}'
-        log.warning(msg=f'bucket name "{bucket}" must be lower')
+        logger.warning(msg=f'bucket name "{bucket}" must be lower')
         return f'{bucket}'.lower()

@@ -2,13 +2,13 @@ import random
 import datetime
 import statistics
 
-from automon.log import logger
+from automon import log
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.seleniumWrapper import SeleniumBrowser
 from automon.integrations.seleniumWrapper.config_webdriver_chrome import ChromeWrapper
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class FacebookGroups(object):
@@ -87,11 +87,11 @@ class FacebookGroups(object):
         try:
             xpath_content_unavailble = self._browser.wait_for_xpath(self._xpath_content_unavailble)
             content_unavailable = self._browser.find_xpath(xpath_content_unavailble).text
-            log.debug(content_unavailable)
+            logger.debug(content_unavailable)
             return content_unavailable
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -104,11 +104,11 @@ class FacebookGroups(object):
         try:
             xpath_creation_date = self._browser.wait_for_xpath(self._xpath_creation_date)
             creation_date = self._browser.find_xpath(xpath_creation_date).text
-            log.debug(creation_date)
+            logger.debug(creation_date)
             return creation_date
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -123,18 +123,18 @@ class FacebookGroups(object):
 
     def current_rate_too_fast(self):
         if self.average_rate() == 0 or len(self._rate_counter) < 2:
-            log.info(False)
+            logger.info(False)
             return False
 
         if self.average_rate() < self.rate_per_minute():
-            log.info(True)
+            logger.info(True)
             return True
 
         return False
 
     def rate_per_minute(self) -> int:
         rate = int(60 / self._rate_per_minute)
-        log.info(str(dict(
+        logger.info(str(dict(
             seconds=rate,
         )))
         return rate
@@ -142,7 +142,7 @@ class FacebookGroups(object):
     def average_rate(self):
         if self._rate_counter:
             rate = int(statistics.mean(self._rate_counter))
-            log.info(str(dict(
+            logger.info(str(dict(
                 seconds=rate,
             )))
             return rate
@@ -153,11 +153,11 @@ class FacebookGroups(object):
         try:
             xpath_history = self._browser.wait_for_xpath(self._xpath_history)
             history = self._browser.find_xpath(xpath_history).text
-            log.debug(history)
+            logger.debug(history)
             return history
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -173,11 +173,11 @@ class FacebookGroups(object):
             temporarily_blocked = self._browser.find_xpath(
                 xpath_temporarily_blocked
             ).text
-            log.debug(temporarily_blocked)
+            logger.debug(temporarily_blocked)
             return temporarily_blocked
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -190,12 +190,12 @@ class FacebookGroups(object):
         try:
             xpath_members = self._browser.wait_for_xpath(self._xpath_members)
             members = self._browser.find_xpath(xpath_members).text
-            log.debug(members)
+            logger.debug(members)
             return members
             # TODO: need to clean up string from members and remove bad chars
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -211,7 +211,7 @@ class FacebookGroups(object):
             if count:
                 members_count = int(''.join(count)) if count else 0
 
-                log.debug(members_count)
+                logger.debug(members_count)
                 return members_count
 
     def must_login(self):
@@ -222,11 +222,11 @@ class FacebookGroups(object):
             must_login = self._browser.find_xpath(
                 xpath_must_login
             ).text
-            log.debug(must_login)
+            logger.debug(must_login)
             return must_login
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -239,11 +239,11 @@ class FacebookGroups(object):
         try:
             xpath_monthly_posts = self._browser.wait_for_xpath(self._xpath_posts_monthly)
             posts_monthly = self._browser.find_xpath(xpath_monthly_posts).text
-            log.debug(posts_monthly)
+            logger.debug(posts_monthly)
             return posts_monthly
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -259,7 +259,7 @@ class FacebookGroups(object):
             if count:
                 posts_monthly_count = int(''.join(count)) if count else 0
 
-                log.debug(posts_monthly_count)
+                logger.debug(posts_monthly_count)
                 return posts_monthly_count
 
     def posts_today(self):
@@ -267,11 +267,11 @@ class FacebookGroups(object):
         try:
             xpath_posts_today = self._browser.wait_for_xpath(self._xpath_posts_today)
             posts_today = self._browser.find_xpath(xpath_posts_today).text
-            log.debug(posts_today)
+            logger.debug(posts_today)
             return posts_today
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -287,7 +287,7 @@ class FacebookGroups(object):
             if count:
                 posts_today_count = int(''.join(count)) if count else 0
 
-                log.debug(posts_today_count)
+                logger.debug(posts_today_count)
                 return posts_today_count
 
     def privacy(self):
@@ -295,11 +295,11 @@ class FacebookGroups(object):
         try:
             xpath_privacy = self._browser.wait_for_xpath(self._xpath_privacy)
             privacy = self._browser.find_xpath(xpath_privacy).text
-            log.debug(privacy)
+            logger.debug(privacy)
             return privacy
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -312,11 +312,11 @@ class FacebookGroups(object):
         try:
             xpath_privacy_details = self._browser.wait_for_xpath(self._xpath_privacy_details)
             privacy_details = self._browser.find_xpath(xpath_privacy_details).text
-            log.debug(privacy_details)
+            logger.debug(privacy_details)
             return privacy_details
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -329,11 +329,11 @@ class FacebookGroups(object):
         try:
             xpath_title = self._browser.wait_for_xpath(self._xpath_title)
             title = self._browser.find_xpath(xpath_title).text
-            log.debug(title)
+            logger.debug(title)
             return title
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -359,11 +359,11 @@ class FacebookGroups(object):
         try:
             xpath_visible = self._browser.wait_for_xpath(self._xpath_visible)
             visible = self._browser.find_xpath(xpath_visible).text
-            log.debug(visible)
+            logger.debug(visible)
             return visible
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            log.error(str(dict(
+            logger.error(str(dict(
                 url=self.url,
                 message=message,
                 session=session,
@@ -395,7 +395,7 @@ class FacebookGroups(object):
         start = datetime.datetime.now().timestamp()
 
         result = self._browser.get(url=url)
-        log.info(str(dict(
+        logger.info(str(dict(
             url=url,
             result=result,
         )))
@@ -404,7 +404,7 @@ class FacebookGroups(object):
         end = datetime.datetime.now().timestamp()
         seconds_elapsed = int(end - start)
 
-        log.info(str(dict(
+        logger.info(str(dict(
             seconds_elapsed=seconds_elapsed,
             result=result,
         )))
@@ -421,7 +421,7 @@ class FacebookGroups(object):
         else:
             result = self.get(url=url)
 
-        log.info(str(dict(
+        logger.info(str(dict(
             url=url,
             result=result,
         )))
@@ -448,7 +448,7 @@ class FacebookGroups(object):
 
                 self._rate_counter.append(self._wait_between_retries)
                 Sleeper.seconds(seconds=self._wait_between_retries)
-                log.error(str(dict(
+                logger.error(str(dict(
                     url=url,
                     retry=retry,
                     retries=retries,
@@ -459,12 +459,12 @@ class FacebookGroups(object):
 
             result = self.get(url=url)
             self.screenshot()
-            log.info(f'{result}')
+            logger.info(f'{result}')
             return result
 
             retry = retry + 1
 
-        log.error(f'{url}')
+        logger.error(f'{url}')
         self.screenshot_error()
         return result
 
@@ -475,7 +475,7 @@ class FacebookGroups(object):
         if self._wait_between_retries == 0:
             self._wait_between_retries = 1
 
-        log.info(str(dict(
+        logger.info(str(dict(
             before=before,
             after=self._wait_between_retries,
             multiplier=multiplier,
@@ -486,7 +486,7 @@ class FacebookGroups(object):
         before = self._wait_between_retries
         self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
 
-        log.info(str(dict(
+        logger.info(str(dict(
             before=before,
             after=self._wait_between_retries,
             multiplier=multiplier,
@@ -496,52 +496,52 @@ class FacebookGroups(object):
     def rate_limited(self):
         """rate limit checker"""
         if self.current_rate_too_fast():
-            log.info(True)
+            logger.info(True)
             self.screenshot()
             return True
 
         if self.temporarily_blocked() or self.must_login():
-            log.info(True)
+            logger.info(True)
             self.screenshot()
             return True
 
-        log.error(False)
+        logger.error(False)
         self.screenshot_error()
         return False
 
     def run(self):
         """run selenium browser"""
         if self._browser:
-            log.info(f'{self._browser}')
+            logger.info(f'{self._browser}')
             return self._browser.run()
 
     def reset_rate_counter(self):
         self._rate_counter = []
-        log.info(self._rate_counter)
+        logger.info(self._rate_counter)
         return self._rate_counter
 
     def restart(self):
         """quit and start new instance of selenium"""
         if self._browser:
             self.quit()
-        log.info(f'{self._browser}')
+        logger.info(f'{self._browser}')
         return self.start()
 
     def screenshot(self, filename: str = 'screenshot.png'):
         screenshot = self._browser.save_screenshot(filename=filename, folder='.')
-        log.info(f'{screenshot}')
+        logger.info(f'{screenshot}')
         return screenshot
 
     def screenshot_error(self):
         """get error screenshot"""
         screenshot = self.screenshot(filename='screenshot-error.png')
-        log.debug(f'{screenshot}')
+        logger.debug(f'{screenshot}')
         return screenshot
 
     def screenshot_success(self):
         """get success screenshot"""
         screenshot = self.screenshot(filename='screenshot-success.png')
-        log.debug(f'{screenshot}')
+        logger.debug(f'{screenshot}')
         return screenshot
 
     def set_url(self, url: str) -> str:
@@ -567,7 +567,7 @@ class FacebookGroups(object):
                 set_user_agent
             )
 
-        log.info(str(dict(
+        logger.info(str(dict(
             browser=self._browser
         )))
         browser = self._browser.run()
@@ -600,5 +600,5 @@ class FacebookGroups(object):
     def quit(self):
         """quit selenium"""
         if self._browser:
-            log.info(f'{self._browser}')
+            logger.info(f'{self._browser}')
             return self._browser.quit()

@@ -15,7 +15,7 @@ class Sleeper:
         """Sleep for this many seconds"""
 
         sleep = seconds
-        log.debug(f'{sleep}')
+        logger.debug(f'{sleep}')
         return time.sleep(sleep)
 
     @staticmethod

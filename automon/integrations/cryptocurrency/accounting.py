@@ -1,16 +1,18 @@
 import os
 
-from automon.log import Logging
+from automon import log
 
 from .robinhood import Robinhood
 from .coinbase import Coinbase
 from .other import Other
 
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
+
 
 class CryptoAccounting:
 
     def __init__(self, csvs: str = None):
-        self._log = Logging(name=CryptoAccounting.__name__, level=Logging.DEBUG)
 
         self.accounts = []
 
@@ -28,17 +30,17 @@ class CryptoAccounting:
                         self.auto_detect(file_path)
 
     def auto_detect(self, csv):
-        self._log.debug(f'supported exchanges: {self.supported_exchanges}')
+        logger.debug(f'supported exchanges: {self.supported_exchanges}')
         for exchange in self.supported_exchanges:
-            self._log.debug(f'reading exchange: {exchange}')
+            logger.debug(f'reading exchange: {exchange}')
             x = exchange(csv)
             if x.is_match:
-                self._log.debug(f'exchange matched: {exchange}')
+                logger.debug(f'exchange matched: {exchange}')
                 if x not in self.accounts:
-                    self._log.info(f'added {x}')
+                    logger.info(f'added {x}')
                     self.accounts.append(x)
                     return True
-                self._log.debug(f'already added: {x}')
+                logger.debug(f'already added: {x}')
         else:
             o = Other(csv)
             if o not in self.accounts:

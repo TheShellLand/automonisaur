@@ -7,9 +7,10 @@ import xmltodict
 import subprocess
 
 from automon.integrations.slackWrapper.slack_formatting import Chat
-from automon.log import Logging
+from automon import log
 
-log = Logging(__name__, level=Logging.INFO)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.INFO)
 
 
 class SmidumpFormat:
@@ -92,10 +93,10 @@ class MibFile:
         self.filename = os.path.split(path)[-1]
 
         if os.path.isfile(path):
-            log.debug(f'found MIB {path}')
+            logger.debug(f'found MIB {path}')
         else:
             msg = f'{MibFile} {path} not found'
-            log.error(msg)
+            logger.error(msg)
             raise
 
     def __str__(self):
@@ -164,14 +165,14 @@ class RequiredSmidump:
 
     def check(self) -> True or False:
         if os.system(f'which {self.requires}') == 0:
-            log.debug(f'{self.requires} OK')
+            logger.debug(f'{self.requires} OK')
             return True
         else:
             msg = (
                 f'missing {self.requires}, '
                 f'please install {self.requires}, '
                 f'`apt install smitools`')
-            log.error(msg)
+            logger.error(msg)
             return False
 
 
@@ -317,7 +318,7 @@ class MIBS:
                         mib = MibFile(device, path_to_mib_file)
                         self.mibs.append(mib)
                 else:
-                    log.error(f'not found MIB {path_to_mib_file}')
+                    logger.error(f'not found MIB {path_to_mib_file}')
 
     def _mib_generator(self) -> MibFile:
         for mib in self.mibs:
@@ -380,7 +381,7 @@ class MIBS:
             if isinstance(item, dict):
                 tuple_oids.extend(self._dict_walk(item))
             else:
-                log.critical(f'{self._list_walk} {NotImplemented}')
+                logger.critical(f'{self._list_walk} {NotImplemented}')
 
         return tuple_oids
 
@@ -399,7 +400,7 @@ class MIBS:
             elif isinstance(value, list):
                 tuple_oids.extend(self._list_walk(value))
             elif not isinstance(value, str) and value is not None:
-                log.critical(f'{self._dict_walk} {NotImplemented}')
+                logger.critical(f'{self._dict_walk} {NotImplemented}')
 
             oid_and_description = self._create_oid_tuple(object)
 
@@ -417,7 +418,7 @@ class MIBS:
         elif isinstance(xml, list):
             tuple_oids.extend(self._list_walk(xml))
         else:
-            log.critical(f'{self._xml_walk} {NotImplemented}')
+            logger.critical(f'{self._xml_walk} {NotImplemented}')
 
         return tuple_oids
 
@@ -430,7 +431,7 @@ class MIBS:
             device = mibmap.device
 
             list_of_oid_tuples = self._xml_walk(xml)
-            # log.debug(list_of_oid_tuples)
+            # logger.debug(list_of_oid_tuples)
 
             if not list_of_oid_tuples:
                 continue
@@ -470,7 +471,7 @@ class MIBS:
             data_err = run.stderr.decode()
 
             if data_err:
-                log.error(f'{data_err}')
+                logger.error(f'{data_err}')
 
             map_ = MibMap(mib, data)
             self.maps.append(map_)
@@ -478,7 +479,7 @@ class MIBS:
             if create_file:
                 with open(map_.path, 'wb') as f:
                     f.write(map_._data)
-                    log.debug(f'Wrote {map_.path} ({map_.len} B)')
+                    logger.debug(f'Wrote {map_.path} ({map_.len} B)')
 
             return True
 
@@ -502,7 +503,7 @@ class MIBS:
 
                 cmd = f'smidump {opts} {preload} {mib}'
 
-                log.debug(cmd)
+                logger.debug(cmd)
                 #
                 smidump_run(cmd)
 
@@ -516,7 +517,7 @@ class MIBS:
                     cmd = f'smidump {opts} {preload} {mib}'
                     # cmd = f'{self.smidump} {self.opts} {mib}'
 
-                    log.debug(cmd)
+                    logger.debug(cmd)
                     #
                     smidump_run(cmd)
 
@@ -524,4 +525,4 @@ class MIBS:
 # m.generate_map(SmidumpFormat().xml)
 # yml = m.generate_prometheus_config()
 #
-# log.info('Done')
+# logger.info('Done')

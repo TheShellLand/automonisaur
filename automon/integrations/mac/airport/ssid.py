@@ -1,7 +1,7 @@
-from automon.log import logger
+from automon import log
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Ssid:
@@ -59,5 +59,5 @@ class Ssid:
                   f'[noise: {self.NOISE}] ' \
                   f'[age: {self.AGE}] '
 
-        log.debug(f'{summary}')
+        logger.debug(f'{summary}')
         return summary

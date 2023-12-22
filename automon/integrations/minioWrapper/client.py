@@ -5,14 +5,15 @@ import functools
 
 from typing import Optional
 
-from automon.log import Logging
+from automon import log
 
 from .bucket import Bucket
 from .object import Object, DeleteObject
 from .config import MinioConfig
 from .assertions import MinioAssertions
 
-log = Logging(name='MinioClient', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class MinioClient(object):
@@ -57,7 +58,7 @@ class MinioClient(object):
                 # if not self._sessionExpired() or self.client.list_buckets():
                 return func(self, *args, **kwargs)
             except Exception as e:
-                log.error(f'Minio client not connected. {e}')
+                logger.error(f'Minio client not connected. {e}')
             return False
 
         return _wrapper
@@ -68,7 +69,7 @@ class MinioClient(object):
         """
         bucket_name = MinioAssertions.bucket_name(bucket_name)
 
-        log.debug(f'[downloader] Downloading: {bucket_name}/{file.object_name}')
+        logger.debug(f'[downloader] Downloading: {bucket_name}/{file.object_name}')
         return self.client.get_object(bucket_name, file.object_name)
 
     @_is_connected
@@ -82,14 +83,14 @@ class MinioClient(object):
             bucket_index = buckets.index(bucket_name)
             return buckets[bucket_index]
 
-        log.info(msg=f'Get bucket: "{bucket_name}" does not exist')
+        logger.info(msg=f'Get bucket: "{bucket_name}" does not exist')
         return
 
     @_is_connected
     def is_connected(self):
         """Check if MinioClient is connected
         """
-        log.info(f'Minio client connected')
+        logger.info(f'Minio client connected')
         return True
 
     @_is_connected
@@ -99,7 +100,7 @@ class MinioClient(object):
         buckets = self.client.list_buckets(**kwargs)
         buckets = [Bucket(x) for x in buckets]
 
-        log.info(f'List buckets: {len(buckets)}')
+        logger.info(f'List buckets: {len(buckets)}')
         return buckets
 
     @_is_connected
@@ -126,11 +127,11 @@ class MinioClient(object):
             if prefix:
                 msg += f' Prefix: "{prefix}"'
 
-            log.info(msg)
+            logger.info(msg)
             return objects
 
         except Exception as error:
-            log.error(f'failed to list objects. {error}', enable_traceback=False)
+            logger.error(f'failed to list objects. {error}')
 
         return []
 
@@ -149,7 +150,7 @@ class MinioClient(object):
             return objects
 
         except Exception as e:
-            log.error(f'failed to list objects. {e}')
+            logger.error(f'failed to list objects. {e}')
 
         return []
 
@@ -161,11 +162,11 @@ class MinioClient(object):
 
         try:
             self.client.remove_bucket(bucket_name, **kwargs)
-            log.info(f'Removed bucket: "{bucket_name}"')
+            logger.info(f'Removed bucket: "{bucket_name}"')
             return True
 
         except Exception as e:
-            log.error(f'Remove bucket: "{bucket_name}" failed. {e}', enable_traceback=False)
+            logger.error(f'Remove bucket: "{bucket_name}" failed. {e}')
 
         return False
 
@@ -178,11 +179,11 @@ class MinioClient(object):
         delete_objects = [DeleteObject(x) for x in objects]
 
         if not delete_objects:
-            log.info(f'Bucket is empty: "{bucket_name}"')
+            logger.info(f'Bucket is empty: "{bucket_name}"')
             return True
 
         errors = list(self.client.remove_objects(bucket_name, delete_objects, **kwargs))
-        log.info(f'Removed {len(delete_objects)} objects in bucket "{bucket_name}"')
+        logger.info(f'Removed {len(delete_objects)} objects in bucket "{bucket_name}"')
 
         if self.list_objects(bucket_name, prefix):
             return self.remove_objects(bucket_name, prefix=prefix)
@@ -196,10 +197,10 @@ class MinioClient(object):
         bucket_name = MinioAssertions.bucket_name(bucket_name)
         try:
             self.client.make_bucket(bucket_name)
-            log.info(f'Created bucket: "{bucket_name}"')
+            logger.info(f'Created bucket: "{bucket_name}"')
 
         except Exception as e:
-            log.warning(f'Bucket exists: "{bucket_name}". {e}')
+            logger.warning(f'Bucket exists: "{bucket_name}". {e}')
 
         return self.get_bucket(bucket_name)
 
@@ -213,7 +214,7 @@ class MinioClient(object):
         bucket_name = MinioAssertions.bucket_name(bucket_name)
         length = length or data.getvalue().__len__()
 
-        log.debug(f'[{self.put_object.__name__}] Uploading: {object_name}')
+        logger.debug(f'[{self.put_object.__name__}] Uploading: {object_name}')
 
         try:
             put = self.client.put_object(
@@ -224,7 +225,7 @@ class MinioClient(object):
                 metadata=metadata, sse=sse,
                 progress=progress)
 
-            log.info(
+            logger.info(
                 f'[put_object] Saved to: '
                 f'{self.config.endpoint}/{bucket_name}/{object_name}'
             )
@@ -232,7 +233,7 @@ class MinioClient(object):
             return put
 
         except Exception as e:
-            log.error(
+            logger.error(
                 f'[{self.put_object.__name__}] Unable to save: '
                 f'{self.config.endpoint}/{bucket_name}/{bucket_name} '
                 f'{e}',
@@ -253,5 +254,5 @@ def check_connection(host, port):
         s.close()
         return True
     except Exception as e:
-        log.error(e, enable_traceback=False)
+        logger.error(e)
         return False

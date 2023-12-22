@@ -2,15 +2,17 @@ import asyncio
 import logging
 import nest_asyncio
 
-from automon.log import Logging
+from automon import log
 
-logging.getLogger("asyncio").setLevel(Logging.ERROR)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.ERROR)
+
+log.logging.getLogger("asyncio").setLevel(log.ERROR)
 
 
 class AsyncStarter:
 
     def __init__(self) -> asyncio.get_event_loop:
-        self._log = Logging(name=AsyncStarter.__name__, level=Logging.DEBUG)
 
         self.event_loop = asyncio.get_event_loop()
         self.maxqueue = 1000

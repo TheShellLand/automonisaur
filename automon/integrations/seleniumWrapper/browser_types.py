@@ -10,7 +10,7 @@ from selenium.webdriver import Remote
 from selenium.webdriver import Safari
 from selenium.webdriver import WebKitGTK
 
-from automon.log import logger
+from automon import log
 
 from .config import SeleniumConfig
 
@@ -23,8 +23,8 @@ except:
     from selenium.webdriver import Chrome as ChromiumEdge
     from selenium.webdriver import Chrome as WPEWebKit
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 class SeleniumBrowserType(object):
     config: SeleniumConfig
@@ -39,7 +39,7 @@ class SeleniumBrowserType(object):
 
     def chrome(self, options: list = None) -> Chrome:
         """Chrome"""
-        log.info(f'Browser set as Chrome')
+        logger.info(f'Browser set as Chrome')
 
         chrome_options = selenium.webdriver.chrome.options.Options()
 
@@ -52,7 +52,7 @@ class SeleniumBrowserType(object):
                 return self.webdriver.ChromeWrapper(executable_path=self.chromedriver, options=chrome_options)
             return self.webdriver.ChromeWrapper(options=chrome_options)
         except Exception as e:
-            log.error(f'Browser not set. {e}')
+            logger.error(f'Browser not set. {e}')
 
     def chrome_headless(self, options: list = None, **kwargs) -> Chrome:
         """Chrome headless
@@ -66,7 +66,7 @@ class SeleniumBrowserType(object):
         chrome_options.headless = True # also works
 
         """
-        log.info(f'Browser set as Chrome Headless')
+        logger.info(f'Browser set as Chrome Headless')
 
         chrome_options = selenium.webdriver.chrome.options.Options()
         chrome_options.headless = True
@@ -80,12 +80,12 @@ class SeleniumBrowserType(object):
                 return self.webdriver.ChromeWrapper(self.chromedriver, options=chrome_options, **kwargs)
             return self.webdriver.ChromeWrapper(options=chrome_options, **kwargs)
         except Exception as e:
-            log.error(f'Browser not set. {e}')
+            logger.error(f'Browser not set. {e}')
 
     @property
     def chromium_edge(self, options: list = None, **kwargs) -> ChromiumEdge:
         """Chromium"""
-        log.info(f'Browser set as Chromium Edge')
+        logger.info(f'Browser set as Chromium Edge')
 
         chromium_options = selenium.webdriver.chromium.options.ChromiumOptions()
 
@@ -98,52 +98,52 @@ class SeleniumBrowserType(object):
                 return self.webdriver.ChromiumEdge(self.chromedriver, options=chromium_options, **kwargs)
             return self.webdriver.ChromiumEdge(options=chromium_options, **kwargs)
         except Exception as e:
-            log.error(f'Browser not set. {e}')
+            logger.error(f'Browser not set. {e}')
 
     def edge(self, **kwargs) -> Edge:
         """Edge"""
-        log.info(f'Browser set as Edge')
+        logger.info(f'Browser set as Edge')
         return self.webdriver.Edge(**kwargs)
 
     def firefox(self, **kwargs) -> Firefox:
         """Firefox"""
-        log.info(f'Browser set as Firefox')
+        logger.info(f'Browser set as Firefox')
         return self.webdriver.Firefox(**kwargs)
 
     def ie(self, **kwargs) -> Ie:
         """Internet Explorer"""
-        log.info(f'Browser set as Internet Explorer')
+        logger.info(f'Browser set as Internet Explorer')
         return self.webdriver.Ie(**kwargs)
 
     def opera(self):
         """Depreciated: Opera"""
-        log.warning(f'Opera is depreciated')
+        logger.warning(f'Opera is depreciated')
 
     def proxy(self, **kwargs) -> Proxy:
         """Proxy"""
-        log.info(f'Browser using proxy')
+        logger.info(f'Browser using proxy')
         return self.webdriver.Proxy(**kwargs)
 
     def phantomjs(self):
         """PhantomJS"""
-        log.warning(f'PhantomJS not supported')
+        logger.warning(f'PhantomJS not supported')
 
     def remote(self, **kwargs) -> Remote:
         """Remote"""
-        log.info(f'Browser using remote browser')
+        logger.info(f'Browser using remote browser')
         return self.webdriver.Remote(**kwargs)
 
     def safari(self, **kwargs) -> Safari:
         """Safari"""
-        log.info(f'Browser set as Safari')
+        logger.info(f'Browser set as Safari')
         return self.webdriver.Safari(**kwargs)
 
     def webkit_gtk(self, **kwargs) -> WebKitGTK:
         """WebKit GTK"""
-        log.info(f'Browser set as WebKitGTK')
+        logger.info(f'Browser set as WebKitGTK')
         return self.webdriver.WebKitGTK(**kwargs)
 
     def wpewebkit(self, **kwargs) -> WPEWebKit:
         """WPE WebKit"""
-        log.info(f'Browser set as WPEWebKit')
+        logger.info(f'Browser set as WPEWebKit')
         return self.webdriver.WPEWebKit(**kwargs)

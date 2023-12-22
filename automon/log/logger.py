@@ -14,14 +14,8 @@ ERROR = logging.ERROR
 CRITICAL = logging.CRITICAL
 NOTSET = logging.NOTSET
 
-logging.getLogger(__name__).setLevel(CRITICAL)
-
-TIMESTAMP = True
-DEFAULT_LEVEL = INFO
-
-log_format = LogRecordAttribute(timestamp=TIMESTAMP).levelname().name_and_lineno().funcName().message()
-log_format = f'{log_format}'
-logging.basicConfig(level=DEFAULT_LEVEL, format=log_format)
+logger = logging.getLogger(__name__)
+logger.setLevel(CRITICAL)
 
 
 class Callback(object):
@@ -30,7 +24,6 @@ class Callback(object):
         """Log to callbacks
         """
 
-        self.log = Logging(name=Callback.__name__, level=Logging.DEBUG)
         self.callbacks = callbacks
 
     def call(self, type: str, msg: str, *args, **kwargs) -> True:

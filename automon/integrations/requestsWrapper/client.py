@@ -1,11 +1,11 @@
 import json
 import requests
 
-from automon.log import logger
+from automon import log
 from .config import RequestsConfig
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class RequestsClient(object):
@@ -42,7 +42,7 @@ class RequestsClient(object):
                 self.results.status_code,
             ]
             msg = ' '.join(msg)
-            return log.debug(msg)
+            return logger.debug(msg)
 
         msg = [
             self.results.request.method,
@@ -53,7 +53,7 @@ class RequestsClient(object):
         ]
 
         msg = ' '.join(msg)
-        return log.error(msg)
+        return logger.error(msg)
 
     def _params(self, url, data, headers):
         if url is None:
@@ -94,7 +94,7 @@ class RequestsClient(object):
             return True
         except Exception as e:
             self.errors = e
-            log.error(f'delete failed. {e}')
+            logger.error(f'delete failed. {e}')
         return False
 
     def get(self,
@@ -108,7 +108,7 @@ class RequestsClient(object):
         try:
             self.results = requests.get(url=url, data=data, headers=headers, **kwargs)
 
-            log.debug(
+            logger.debug(
                 f'{self.results.url} '
                 f'{round(len(self.results.content) / 1024, 2)} KB '
                 f'{self.results.status_code}'
@@ -117,7 +117,7 @@ class RequestsClient(object):
             return True
         except Exception as e:
             self.errors = e
-            log.error(f'{e}')
+            logger.error(f'{e}')
         return False
 
     def patch(self,
@@ -131,7 +131,7 @@ class RequestsClient(object):
         try:
             self.results = requests.patch(url=url, data=data, headers=headers, **kwargs)
 
-            log.debug(
+            logger.debug(
                 f'{self.results.url} '
                 f'{round(len(self.results.content) / 1024, 2)} KB '
                 f'{self.results.status_code}'
@@ -140,7 +140,7 @@ class RequestsClient(object):
             return True
         except Exception as e:
             self.errors = e
-            log.error(f'patch failed. {e}')
+            logger.error(f'patch failed. {e}')
         return False
 
     def post(self,
@@ -154,7 +154,7 @@ class RequestsClient(object):
         try:
             self.results = requests.post(url=url, data=data, headers=headers, **kwargs)
 
-            log.debug(
+            logger.debug(
                 f'{self.results.url} '
                 f'{round(len(self.results.content) / 1024, 2)} KB '
                 f'{self.results.status_code}'
@@ -163,7 +163,7 @@ class RequestsClient(object):
             return True
         except Exception as e:
             self.errors = e
-            log.error(f'post failed. {e}')
+            logger.error(f'post failed. {e}')
         return False
 
     def put(self,
@@ -177,7 +177,7 @@ class RequestsClient(object):
         try:
             self.results = requests.put(url=url, data=data, headers=headers, **kwargs)
 
-            log.debug(
+            logger.debug(
                 f'{self.results.url} '
                 f'{round(len(self.results.content) / 1024, 2)} KB '
                 f'{self.results.status_code}'
@@ -186,7 +186,7 @@ class RequestsClient(object):
             return True
         except Exception as e:
             self.errors = e
-            log.error(f'put failed. {e}')
+            logger.error(f'put failed. {e}')
         return False
 
     def to_dict(self):

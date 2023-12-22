@@ -1,8 +1,9 @@
 from os import getenv
 
-from automon.log import Logging
+from automon import log
 
-log = Logging(name='GoogleGmailConfig', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class GoogleGmailConfig:

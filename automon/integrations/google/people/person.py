@@ -1,13 +1,14 @@
 from enum import Enum
 
-from automon.log import Logging
+from automon import log
 
-log = Logging(name='GooglePeople', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class AgeRange(Enum):
     """Please use person.ageRanges instead"""
-    log.warning(DeprecationWarning)
+    logger.warning(DeprecationWarning)
 
     AGE_RANGE_UNSPECIFIED = 'AGE_RANGE_UNSPECIFIED'
     LESS_THAN_EIGHTEEN = 'LESS_THAN_EIGHTEEN'
@@ -393,7 +394,7 @@ class Relation(object):
 
 
 class RelationshipInterest(object):
-    log.warning(DeprecationWarning)
+    logger.warning(DeprecationWarning)
 
     metadata: {
         FieldMetadata
@@ -403,7 +404,7 @@ class RelationshipInterest(object):
 
 
 class RelationshipStatus(object):
-    log.warning(DeprecationWarning)
+    logger.warning(DeprecationWarning)
 
     metadata: {
         FieldMetadata
@@ -413,7 +414,7 @@ class RelationshipStatus(object):
 
 
 class Residence(object):
-    log.warning(DeprecationWarning)
+    logger.warning(DeprecationWarning)
 
     metadata: {
         FieldMetadata
@@ -439,7 +440,7 @@ class Skill(object):
 
 
 class Tagline(object):
-    log.warning(DeprecationWarning)
+    logger.warning(DeprecationWarning)
 
     metadata: {
         FieldMetadata

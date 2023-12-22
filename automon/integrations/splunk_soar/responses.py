@@ -3,13 +3,13 @@ import json
 from dateutil import parser
 from typing import Optional
 
-from automon.log import logger
+from automon import log
 
 from .container import Container
 from .vault import Vault
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class GeneralResponse:
@@ -134,7 +134,7 @@ class PlaybookRun(GeneralResponse):
         try:
             return json.loads(self.message)
         except Exception as e:
-            log.warning(f'message is not json. {e}')
+            logger.warning(f'message is not json. {e}')
 
     @property
     def playbook_name(self):

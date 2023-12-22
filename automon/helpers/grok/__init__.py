@@ -2,12 +2,14 @@ import os
 import warnings
 import pandas as pd
 
-from automon.log import Logging
+from automon import log
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.ERROR)
 
 
 class Grok:
     def __init__(self):
-        self._log = Logging(name=Grok.__name__, level=Logging.DEBUG)
 
         p = 'logstash-patterns-core/patterns'
         l = f'{os.path.join(os.path.split(os.path.realpath(__file__))[0])}'
@@ -49,7 +51,7 @@ class Grok:
         #         if k not in big_dict.keys():
         #             big_dict[k] = v
         #         else:
-        #             self._log.info(f'skipping existing, {k}')
+        #             logger.info(f'skipping existing, {k}')
 
         df = pd.DataFrame(pd.concat(patterns))
         return df
@@ -202,7 +204,6 @@ class GrokLegacy:
         'LOGLEVEL'] = '([Aa]lert|ALERT|[Tt]race|TRACE|[Dd]ebug|DEBUG|[Nn]otice|NOTICE|[Ii]nfo|INFO|[Ww]arn?(?:ing)?|WARN?(?:ING)?|[Ee]rr?(?:or)?|ERR?(?:OR)?|[Cc]rit?(?:ical)?|CRIT?(?:ICAL)?|[Ff]atal|FATAL|[Ss]evere|SEVERE|EMERG(?:ENCY)?|[Ee]merg(?:ency)?)'
 
     def __init__(self):
-        self._log = Logging(GrokLegacy.__name__, Logging.DEBUG)
 
         self.url = 'https://raw.githubusercontent.com/logstash-plugins/logstash-patterns-core/master/patterns/grok-patterns'
         # self.file = f'{os.path.split(os.path.realpath(__file__))[0]}/grok-patterns.txt'
@@ -223,7 +224,7 @@ class GrokLegacy:
         #         else:
         #             section.append(line)
         #
-        #         self._log.debug(line)
+        #         logger.debug(line)
 
         # build dict from file
 

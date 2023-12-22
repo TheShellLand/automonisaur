@@ -1,6 +1,6 @@
 import functools
 
-from automon.log import logger
+from automon import log
 from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
 from automon.integrations.seleniumWrapper.config_webdriver_chrome import ChromeWrapper
 
@@ -11,8 +11,8 @@ from .config import InstagramConfig
 from .urls import Urls
 from .xpaths import XPaths
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class InstagramBrowserClient:
@@ -62,7 +62,7 @@ class InstagramBrowserClient:
     def get_page(self, account: str):
         """ Get page
         """
-        log.debug(f'[get_page] getting {account}')
+        logger.debug(f'[get_page] getting {account}')
 
         page = f'https://instagram.com/{account}'
         browser = self.authenticated_browser
@@ -74,7 +74,7 @@ class InstagramBrowserClient:
         story = f'https://www.instagram.com/stories/{account}/'
         num_of_stories = 0
 
-        log.debug(f'[get_stories] {story}')
+        logger.debug(f'[get_stories] {story}')
 
         browser = self.authenticated_browser
         browser.get(story)
@@ -82,7 +82,7 @@ class InstagramBrowserClient:
                                                  prefix='instagram/' + account)
 
         if 'Page Not Found' in browser.browser.title:
-            log.debug(f'[get_stories] no stories for {account}')
+            logger.debug(f'[get_stories] no stories for {account}')
             return num_of_stories
 
         Sleeper.seconds(2)
@@ -93,7 +93,7 @@ class InstagramBrowserClient:
 
                 title = browser.browser.title
                 if title == 'Instagram':
-                    log.debug(
+                    logger.debug(
                         ('[get_stories] {} end of stories'.format(account)))
                     raise Exception
                 num_of_stories += 1
@@ -104,7 +104,7 @@ class InstagramBrowserClient:
                                                  prefix='instagram/' + account)
             except Exception as error:
                 # TODO: disable browser proxy when done
-                log.debug(f'[get_stories] done: {account}, {error}')
+                logger.debug(f'[get_stories] done: {account}, {error}')
                 return num_of_stories
 
     def _next_story(self, authenticated_browser):
@@ -122,14 +122,14 @@ class InstagramBrowserClient:
                 browser = authenticated_browser
                 button = browser.browser.find_element_by_xpath(xpath)
                 found_btn = True
-                log.debug('[next_story] next story')
+                logger.debug('[next_story] next story')
                 return button.click()
             except Exception as error:
-                log.error(f'{error}')
+                logger.error(f'{error}')
 
         if not found_btn:
             # no more stories. exit
-            log.debug('[_next_story] no more stories')
+            logger.debug('[_next_story] no more stories')
             raise Exception
 
     def remove_not_now(self):
@@ -157,7 +157,7 @@ class InstagramBrowserClient:
         """Run
         """
 
-        log.debug('[login] {}'.format(self.login))
+        logger.debug('[login] {}'.format(self.login))
 
         self.authenticated_browser = self.authenticate()
 
@@ -167,7 +167,7 @@ class InstagramBrowserClient:
         #     if limit:
         #
         #         for account in self.following:
-        #             hevlog.logging.debug(
+        #             hevlogger.debug(
         #                 '[runrun] [{}] {} session: {}'.format(self.authenticated_browser.browser.name,
         #                                                       self.authenticated_browser.browser.title,
         #                                                       self.authenticated_browser.browser.session_id))
@@ -205,10 +205,10 @@ class InstagramBrowserClient:
         self.remove_not_now()
 
         if self.is_authenticated():
-            log.info(f'{True}')
+            logger.info(f'{True}')
             return True
 
-        log.error(f'{False}')
+        logger.error(f'{False}')
         return False
 
     @_is_running
@@ -226,18 +226,18 @@ class InstagramBrowserClient:
             self.remove_not_now()
             profile_picture = self.browser.wait_for_xpath(self.xpaths.profile_picture)
             if profile_picture:
-                log.info(f'{True}')
+                logger.info(f'{True}')
                 return True
         except Exception as error:
-            log.error(f'{error}')
+            logger.error(f'{error}')
         return False
 
     def is_running(self) -> bool:
         if self.config.is_configured:
             if self.browser.is_running():
-                log.info(f'{True}')
+                logger.info(f'{True}')
                 return True
-        log.error(f'{False}')
+        logger.error(f'{False}')
         return False
 
     @property

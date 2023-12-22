@@ -1,14 +1,14 @@
 import os
 
-from automon.log import logger
+from automon import log
 from automon.helpers import Run
 from automon.helpers.dates import Dates
 
 from .config import NmapConfig
 from .output import NmapResult
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.INFO)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.INFO)
 
 
 class Nmap(object):
@@ -55,7 +55,7 @@ class Nmap(object):
     def run(self, command: str, output: bool = True, cleanup: bool = True, **kwargs) -> bool:
 
         if not self.isReady():
-            log.error(msg=f'nmap not found')
+            logger.error(msg=f'nmap not found')
             return False
 
         nmap_command = f'{self.config.nmap} '
@@ -66,9 +66,9 @@ class Nmap(object):
 
         nmap_command += f'{command}'
 
-        log.info(f'running {nmap_command}')
+        logger.info(f'running {nmap_command}')
         self._runner.run(nmap_command, **kwargs)
-        log.debug(f'finished')
+        logger.debug(f'finished')
 
         self.command = nmap_command
         self._stdout = self._runner.stdout
@@ -82,10 +82,10 @@ class Nmap(object):
 
             if cleanup:
                 os.remove(self.output_file)
-                log.info(f'deleted {self.output_file}')
+                logger.info(f'deleted {self.output_file}')
 
         if self._stderr:
-            log.error(msg=f'{self._stderr.decode()}')
+            logger.error(msg=f'{self._stderr.decode()}')
             return False
 
         return True

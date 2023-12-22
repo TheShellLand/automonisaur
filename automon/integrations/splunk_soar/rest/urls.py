@@ -1,10 +1,10 @@
-from automon.log import logger
+from automon import log
 from ..config import SplunkSoarConfig
 
 config = SplunkSoarConfig()
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Urls:
