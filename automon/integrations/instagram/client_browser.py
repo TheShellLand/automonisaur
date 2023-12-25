@@ -1,8 +1,7 @@
 import functools
 
 from automon import log
-from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
-from automon.integrations.seleniumWrapper.config_webdriver_chrome import ChromeWrapper
+from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
 from automon.helpers.sleeper import Sleeper
 # from automon.integrations.minioWrapper import MinioClient

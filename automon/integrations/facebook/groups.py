@@ -5,8 +5,7 @@ import statistics
 
 from automon import log
 from automon.helpers.sleeper import Sleeper
-from automon.integrations.seleniumWrapper import SeleniumBrowser
-from automon.integrations.seleniumWrapper.config_webdriver_chrome import ChromeWrapper
+from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
 logger = log.logging.getLogger(__name__)
 logger.setLevel(log.DEBUG)

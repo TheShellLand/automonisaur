@@ -1,7 +1,6 @@
 import unittest
 
-from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
-from automon.integrations.seleniumWrapper.config_webdriver_chrome import ChromeWrapper
+from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
 browser = SeleniumBrowser()
 browser.config.webdriver_wrapper = ChromeWrapper()
