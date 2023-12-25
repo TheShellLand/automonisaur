@@ -383,7 +383,7 @@ class ChromeWrapper(object):
         return result
 
     def update_paths(self, path: str):
-        if os.path.exists(path):
+        if path and os.path.exists(path):
             if path not in os.getenv('PATH'):
                 if sys.platform == 'win32':
                     os.environ['PATH'] = f"{os.getenv('PATH')};{path}"
