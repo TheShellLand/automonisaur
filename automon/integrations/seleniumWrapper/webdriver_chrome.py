@@ -1,10 +1,11 @@
 import os
+import sys
 import warnings
 import selenium
 import selenium.webdriver
 
 from automon import log
-from automon.helpers.osWrapper.environ import environ
+from automon.helpers.osWrapper.environ import environ_list
 
 from .config_window_size import set_window_size
 
@@ -17,12 +18,11 @@ class ChromeWrapper(object):
     def __init__(self):
         self._webdriver = None
         self._chrome_options = selenium.webdriver.ChromeOptions()
-        self._chromedriver_path = environ('SELENIUM_CHROMEDRIVER_PATH')
+        self._chromedriver_path = environ_list('SELENIUM_CHROMEDRIVER_PATH')
         self._ChromeService = None
-
-        self.update_paths()
-
         self._window_size = set_window_size()
+
+        self.update_paths(self.chromedriver_path)
 
     def __repr__(self):
         if self._webdriver:
@@ -52,7 +52,9 @@ class ChromeWrapper(object):
 
     @property
     def chromedriver_path(self):
-        return self._chromedriver_path
+        for path in self._chromedriver_path:
+            if os.path.exists(path):
+                return path
 
     @property
     def chromedriverVersion(self):
@@ -327,8 +329,8 @@ class ChromeWrapper(object):
 
     def set_chromedriver(self, chromedriver_path: str):
         logger.debug(f'{chromedriver_path}')
-        self._chromedriver_path = chromedriver_path
-        self.update_paths()
+        self._chromedriver_path.append(chromedriver_path)
+        self.update_paths(chromedriver_path)
         return self
 
     def set_locale(self, locale: str = 'en'):
@@ -380,13 +382,20 @@ class ChromeWrapper(object):
         logger.info(f'{result}')
         return result
 
-    def update_paths(self):
-        if self.chromedriver_path:
-            if self.chromedriver_path not in os.getenv('PATH'):
-                os.environ['PATH'] = f"{os.getenv('PATH')}:{self._chromedriver_path}"
+    def update_paths(self, path: str):
+        if os.path.exists(path):
+            if path not in os.getenv('PATH'):
+                if sys.platform == 'win32':
+                    os.environ['PATH'] = f"{os.getenv('PATH')};{path}"
+                else:
+                    os.environ['PATH'] = f"{os.getenv('PATH')}:{path}"
+
                 logger.debug(str(dict(
+                    SELENIUM_CHROMEDRIVER_PATH=path,
                     PATH=os.environ['PATH']
                 )))
+
+        logger.error(f'not found: {path}')
 
     def quit(self):
         """quit
