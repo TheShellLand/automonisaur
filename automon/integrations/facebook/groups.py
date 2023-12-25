@@ -20,7 +20,7 @@ class FacebookGroups(object):
     _xpath_popup_close = [
         '/html/body/div[1]/div/div[1]/div/div[5]/div/div/div[1]/div/div[2]/div/div/div/div[1]/div/i',
     ]
-    _xpath_content_unavailble = [
+    _xpath_content_unavailable = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div[1]/span',
     ]
     _xpath_creation_date = [
@@ -85,8 +85,8 @@ class FacebookGroups(object):
         """This content isn't available right now"""
 
         try:
-            xpath_content_unavailble = self._browser.wait_for_xpath(self._xpath_content_unavailble)
-            content_unavailable = self._browser.find_xpath(xpath_content_unavailble).text
+            xpath_content_unavailable = self._browser.wait_for_xpath(self._xpath_content_unavailable)
+            content_unavailable = self._browser.find_xpath(xpath_content_unavailable).text
             logger.debug(content_unavailable)
             return content_unavailable
         except Exception as error:
