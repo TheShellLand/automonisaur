@@ -1,4 +1,5 @@
 import random
+import asyncio
 import datetime
 import statistics
 
@@ -22,6 +23,7 @@ class FacebookGroups(object):
     ]
     _xpath_content_unavailable = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div[1]/span',
+        '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div[1]/span',
     ]
     _xpath_creation_date = [
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div/div[2]/div/div/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div/div/span',
@@ -81,7 +83,7 @@ class FacebookGroups(object):
         self._rate_counter = []
         self._wait_between_retries = random.choice(range(1, 60))
 
-    def content_unavailable(self):
+    async def content_unavailable(self):
         """This content isn't available right now"""
 
         try:
@@ -99,7 +101,7 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    def creation_date(self):
+    async def creation_date(self):
 
         try:
             xpath_creation_date = self._browser.wait_for_xpath(self._xpath_creation_date)
@@ -116,8 +118,8 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    def creation_date_timestamp(self):
-        if self.creation_date():
+    async def creation_date_timestamp(self):
+        if await self.creation_date():
             # TODO: convert date to datetime timestamp
             return
 
@@ -148,7 +150,7 @@ class FacebookGroups(object):
             return rate
         return 0
 
-    def history(self):
+    async def history(self):
 
         try:
             xpath_history = self._browser.wait_for_xpath(self._xpath_history)
@@ -185,7 +187,7 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    def members(self):
+    async def members(self):
 
         try:
             xpath_members = self._browser.wait_for_xpath(self._xpath_members)
@@ -203,10 +205,10 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    def members_count(self):
+    async def members_count(self):
 
-        if self.members():
-            count = [x for x in self.members()]
+        if await self.members():
+            count = [x for x in await self.members()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
                 members_count = int(''.join(count)) if count else 0
@@ -234,7 +236,7 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    def posts_monthly(self):
+    async def posts_monthly(self):
 
         try:
             xpath_monthly_posts = self._browser.wait_for_xpath(self._xpath_posts_monthly)
@@ -251,10 +253,10 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    def posts_monthly_count(self):
+    async def posts_monthly_count(self):
 
-        if self.posts_monthly():
-            count = [x for x in self.posts_monthly()]
+        if await self.posts_monthly():
+            count = [x for x in await self.posts_monthly()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
                 posts_monthly_count = int(''.join(count)) if count else 0
@@ -262,7 +264,7 @@ class FacebookGroups(object):
                 logger.debug(posts_monthly_count)
                 return posts_monthly_count
 
-    def posts_today(self):
+    async def posts_today(self):
 
         try:
             xpath_posts_today = self._browser.wait_for_xpath(self._xpath_posts_today)
@@ -279,10 +281,10 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    def posts_today_count(self):
+    async def posts_today_count(self):
 
-        if self.posts_today():
-            count = [x for x in self.posts_today()]
+        if await self.posts_today():
+            count = [x for x in await self.posts_today()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
                 posts_today_count = int(''.join(count)) if count else 0
@@ -290,7 +292,7 @@ class FacebookGroups(object):
                 logger.debug(posts_today_count)
                 return posts_today_count
 
-    def privacy(self):
+    async def privacy(self):
 
         try:
             xpath_privacy = self._browser.wait_for_xpath(self._xpath_privacy)
@@ -307,7 +309,7 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    def privacy_details(self):
+    async def privacy_details(self):
 
         try:
             xpath_privacy_details = self._browser.wait_for_xpath(self._xpath_privacy_details)
@@ -324,7 +326,7 @@ class FacebookGroups(object):
             )))
             self.screenshot_error()
 
-    def title(self) -> str:
+    async def title(self) -> str:
 
         try:
             xpath_title = self._browser.wait_for_xpath(self._xpath_title)
@@ -354,7 +356,7 @@ class FacebookGroups(object):
             url = url[:-1]
         return url
 
-    def visible(self) -> str:
+    async def visible(self) -> str:
 
         try:
             xpath_visible = self._browser.wait_for_xpath(self._xpath_visible)
@@ -578,23 +580,23 @@ class FacebookGroups(object):
         """alias to quit"""
         return self.quit()
 
-    def to_dict(self):
+    async def to_dict(self):
         return dict(
-            content_unavailable=self.content_unavailable(),
-            creation_date=self.creation_date(),
-            creation_date_timestamp=self.creation_date_timestamp(),
-            history=self.history(),
-            members=self.members(),
-            members_count=self.members_count(),
-            posts_monthly=self.posts_monthly(),
-            posts_monthly_count=self.posts_monthly_count(),
-            posts_today=self.posts_today(),
-            posts_today_count=self.posts_today_count(),
-            privacy=self.privacy(),
-            privacy_details=self.privacy_details(),
-            title=self.title(),
+            content_unavailable=await self.content_unavailable(),
+            creation_date=await self.creation_date(),
+            creation_date_timestamp=await self.creation_date_timestamp(),
+            history=await self.history(),
+            members=await self.members(),
+            members_count=await self.members_count(),
+            posts_monthly=await self.posts_monthly(),
+            posts_monthly_count=await self.posts_monthly_count(),
+            posts_today=await self.posts_today(),
+            posts_today_count=await self.posts_today_count(),
+            privacy=await self.privacy(),
+            privacy_details=await self.privacy_details(),
+            title=await self.title(),
             url=self.url,
-            visible=self.visible(),
+            visible=await self.visible(),
         )
 
     def quit(self):
