@@ -395,6 +395,8 @@ class ChromeWrapper(object):
                     PATH=os.environ['PATH']
                 )))
 
+                return True
+
         logger.error(f'not found: {path}')
 
     def quit(self):
