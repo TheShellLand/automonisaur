@@ -301,14 +301,20 @@ class SeleniumBrowser(object):
 
     @staticmethod
     def error_parsing(error) -> tuple:
-        error_parsed = f'{error}'.splitlines()
-        error_parsed = [f'{x}'.strip() for x in error_parsed]
-        message = error_parsed[0]
-        session = error_parsed[1]
-        stacktrace = error_parsed[2:]
-        stacktrace = ' '.join(stacktrace)
+        try:
+            error_parsed = f'{error}'.splitlines()
+            error_parsed = [f'{x}'.strip() for x in error_parsed]
+            message = error_parsed[0]
+            session = error_parsed[1]
+            stacktrace = error_parsed[2:]
+            stacktrace = ' '.join(stacktrace)
 
-        return message, session, stacktrace
+            return message, session, stacktrace
+
+        except Exception as e:
+            logger.error(e)
+
+        return error, None, None
 
     def find_element(
             self,
