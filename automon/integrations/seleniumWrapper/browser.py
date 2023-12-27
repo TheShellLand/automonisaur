@@ -19,6 +19,7 @@ from automon.helpers.sanitation import Sanitation
 
 from .config import SeleniumConfig
 from .user_agents import SeleniumUserAgentBuilder
+from .exceptions import *
 
 logger = log.logging.getLogger(__name__)
 logger.setLevel(log.DEBUG)
@@ -153,15 +154,7 @@ class SeleniumBrowser(object):
             return click
 
         except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                xpath=xpath,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
-        return False
+            raise Exception(error)
 
     def action_type(self, key: str or Keys, secret: bool = True):
         """perform keyboard command"""
@@ -180,15 +173,7 @@ class SeleniumBrowser(object):
             return True
 
         except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                send_keys=key,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
-        return False
+            raise Exception(error)
 
     def add_cookie(self, cookie_dict: dict) -> bool:
         result = self.webdriver.add_cookie(cookie_dict=cookie_dict)
@@ -312,8 +297,8 @@ class SeleniumBrowser(object):
 
             return message, session, stacktrace
 
-        except Exception as e:
-            logger.error(e)
+        except Exception as error:
+            logger.error(error)
 
         return error, None, None
 
@@ -576,7 +561,7 @@ class SeleniumBrowser(object):
                 value=value,
             )))
 
-        return False
+        raise NoSuchElementException(values)
 
     def wait_for_element(
             self,
