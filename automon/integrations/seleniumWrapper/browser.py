@@ -496,99 +496,82 @@ class SeleniumBrowser(object):
 
     def wait_for(
             self,
-            value: str or list,
+            value: str,
             by: By = By.XPATH,
-            timeout: int = 3,
-            fail_on_error: bool = True,
-            **kwargs) -> str or False:
-        """wait for something"""
+            timeout: int = 1,
+            **kwargs) -> selenium.webdriver.Chrome.find_element:
+        """wait for an element"""
         timeout_start = time.time()
         timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
         while timeout_elapsed < timeout:
+
+            logger.debug(str(dict(
+                timeout=f'{timeout_elapsed}/{timeout}',
+                by=by,
+                current_url=self.current_url,
+                value=value,
+            )))
+
             try:
-                if isinstance(value, list):
-                    values = value
-                    for value in values:
-                        try:
-                            self.find_element(
-                                by=by,
-                                value=value,
-                                **kwargs)
-                            logger.debug(str(dict(
-                                by=by,
-                                url=self.url,
-                                value=value,
-                            )))
-                            return value
-                        except:
-                            logger.error(str(dict(
-                                by=by,
-                                url=self.url,
-                                value=value,
-                            )))
-                else:
-                    self.find_element(
-                        by=by,
-                        value=value,
-                        **kwargs)
-                    logger.debug(str(dict(
-                        by=by,
-                        url=self.url,
-                        value=value,
-                    )))
-                    return value
-            except Exception as error:
-                logger.error(str(dict(
-                    timeout=f'{timeout_elapsed}/{timeout}',
-                    error=error,
+                return self.find_element(
                     by=by,
-                    url=self.url,
                     value=value,
-                )))
-                Sleeper.seconds(0.1)
-                import asyncio
-                # await asyncio.sleep(0.1)
+                    **kwargs)
+            except Exception as error:
+                logger.error(error)
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
-        if fail_on_error:
-            raise Exception(str(dict(
-                by=by,
-                url=self.url,
-                value=value,
-            )))
+        raise NoSuchElementException(value)
+
+    def wait_for_list(
+            self,
+            values: list,
+            by: By = By.XPATH,
+            timeout: int = 1,
+            **kwargs) -> selenium.webdriver.Chrome.find_element:
+        """wait for a list of elements"""
+        if isinstance(values, list):
+            for value in values:
+
+                logger.debug(str(dict(
+                    checking=f'{values.index(value) + 1}/{len(values)}',
+                    value=value,
+                )))
+
+                try:
+                    return self.wait_for(
+                        value=value,
+                        by=by,
+                        timeout=timeout,
+                        **kwargs,
+                    )
+                except Exception as error:
+                    logger.error(error)
 
         raise NoSuchElementException(values)
 
     def wait_for_element(
             self,
             element: str or list,
-            timeout: int = 3,
-            fail_on_error: bool = True,
-            **kwargs
-    ) -> str or False:
+            timeout: int = 1,
+            **kwargs) -> selenium.webdriver.Chrome.find_element:
         """wait for an element"""
         return self.wait_for(
             value=element,
             by=self.by.ID,
             timeout=timeout,
-            fail_on_error=fail_on_error,
-            **kwargs
-        )
+            **kwargs)
 
     def wait_for_xpath(
             self,
             xpath: str or list,
-            timeout: int = 3,
-            fail_on_error: bool = True,
-            **kwargs
-    ) -> str or False:
+            timeout: int = 1,
+            **kwargs) -> str or False:
         """wait for an xpath"""
         return self.wait_for(
             value=xpath,
             by=self.by.XPATH,
             timeout=timeout,
-            fail_on_error=fail_on_error,
-            **kwargs
-        )
+            **kwargs)
