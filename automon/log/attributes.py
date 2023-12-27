@@ -68,7 +68,7 @@ class LogRecordAttribute(object):
         self._log_pattern.append('%(funcName)s')
         return self
 
-    def funcName_and_levelno(self):
+    def funcName_and_lineno(self):
         self._log_pattern.append('%(funcName)s:%(lineno)s')
         return self
 
