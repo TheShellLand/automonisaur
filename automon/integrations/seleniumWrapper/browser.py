@@ -310,8 +310,7 @@ class SeleniumBrowser(object):
         """find element"""
         element = self.webdriver.find_element(value=value, by=by, **kwargs)
         logger.info(str(dict(
-            url=self.url,
-            text=element.text,
+            current_url=self.current_url,
             value=value,
         )))
         return element
@@ -320,8 +319,7 @@ class SeleniumBrowser(object):
         """find xpath"""
         xpath = self.find_element(value=value, by=by, **kwargs)
         logger.info(str(dict(
-            url=self.url,
-            text=xpath.text,
+            current_url=self.current_url,
             value=value,
         )))
         return xpath
@@ -332,7 +330,7 @@ class SeleniumBrowser(object):
             if self.webdriver.get(url, **kwargs) is None:
                 logger.info(str(dict(
                     url=url,
-                    current_url=self._current_url,
+                    current_url=self.current_url,
                     kwargs=kwargs
                 )))
             return True
