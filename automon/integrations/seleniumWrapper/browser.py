@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import base64
 import datetime
 import tempfile
@@ -514,15 +515,14 @@ class SeleniumBrowser(object):
             self,
             value: str or list,
             by: By = By.XPATH,
-            retries: int = 5,
+            timeout: int = 3,
             fail_on_error: bool = True,
             **kwargs) -> str or False:
         """wait for something"""
-        if not retries:
-            retries = 5
+        timeout_start = time.time()
+        timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
-        retry = 0
-        while True:
+        while timeout_elapsed < timeout:
             try:
                 if isinstance(value, list):
                     values = value
@@ -557,22 +557,17 @@ class SeleniumBrowser(object):
                     return value
             except Exception as error:
                 logger.error(str(dict(
+                    timeout=f'{timeout_elapsed}/{timeout}',
+                    error=error,
                     by=by,
                     url=self.url,
                     value=value,
-                    error=error,
                 )))
-                Sleeper.seconds(0.2)
+                Sleeper.seconds(0.1)
+                import asyncio
+                # await asyncio.sleep(0.1)
 
-            retry += 1
-
-            logger.error(str(dict(
-                url=self.url,
-                retry=f'{retry}/{retries}',
-            )))
-
-            if retry == retries:
-                break
+            timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
         if fail_on_error:
             raise Exception(str(dict(
@@ -586,7 +581,7 @@ class SeleniumBrowser(object):
     def wait_for_element(
             self,
             element: str or list,
-            retries: int = None,
+            timeout: int = 3,
             fail_on_error: bool = True,
             **kwargs
     ) -> str or False:
@@ -594,7 +589,7 @@ class SeleniumBrowser(object):
         return self.wait_for(
             value=element,
             by=self.by.ID,
-            retries=retries,
+            timeout=timeout,
             fail_on_error=fail_on_error,
             **kwargs
         )
@@ -602,7 +597,7 @@ class SeleniumBrowser(object):
     def wait_for_xpath(
             self,
             xpath: str or list,
-            retries: int = None,
+            timeout: int = 3,
             fail_on_error: bool = True,
             **kwargs
     ) -> str or False:
@@ -610,7 +605,7 @@ class SeleniumBrowser(object):
         return self.wait_for(
             value=xpath,
             by=self.by.XPATH,
-            retries=retries,
+            timeout=timeout,
             fail_on_error=fail_on_error,
             **kwargs
         )
