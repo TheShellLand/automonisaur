@@ -6,6 +6,8 @@ from subprocess import PIPE
 from automon import log
 from automon.helpers.dates import Dates
 
+from .exceptions import *
+
 logger = log.logging.getLogger(__name__)
 logger.setLevel(log.DEBUG)
 
@@ -18,8 +20,8 @@ class Run:
         self.last_run = None
         self.command = ''
 
-        self.stdout = b''
-        self.stderr = b''
+        self._stdout = b''
+        self._stderr = b''
 
         self.call = None
         self.returncode = None
@@ -42,10 +44,27 @@ class Run:
         return print(self.stdout.decode())
 
     def set_command(self, command: str) -> bool:
+        logger.debug(command)
         if command:
             self.command = command
             return True
         return False
+
+    @property
+    def stdout(self):
+        return self._stdout
+
+    @property
+    def stdout_lines(self):
+        return self.stdout.decode().splitlines()
+
+    @property
+    def stderr(self):
+        return self._stderr
+
+    @property
+    def stderr_lines(self):
+        return self.stderr.decode().splitlines()
 
     def which(self, program: str, *args, **kwargs) -> bool:
         """runs which
@@ -53,12 +72,21 @@ class Run:
         :param program:
         :return:
         """
+        logger.debug(str(dict(
+            program=program,
+            args=args,
+            kwargs=kwargs,
+        )))
         if program:
             return self.run(command=f'which {program}', *args, **kwargs)
         return False
 
     def run_command(self, *args, **kwargs) -> bool:
         """alias to run"""
+        logger.debug(str(dict(
+            args=args,
+            kwargs=kwargs,
+        )))
         return self.run(*args, **kwargs)
 
     def run(self, command: str = None,
@@ -68,16 +96,22 @@ class Run:
             sanitize_command: bool = True,
             **kwargs) -> bool:
 
-        if command:
-            if sanitize_command:
-                command = self._command(command)
+        logger.debug(str(dict(
+            command=command,
+            text=text,
+            inBackground=inBackground,
+            shell=shell,
+            sanitize_command=sanitize_command,
+            kwargs=kwargs,
+        )))
+
+        if command and sanitize_command:
+            command = self._command(command)
 
         elif self.command:
             command = self.command
             if sanitize_command:
                 command = self._command(self.command)
-
-        logger.debug(f'[command] {command}')
 
         try:
             if inBackground:
@@ -90,7 +124,6 @@ class Run:
                 if 'text' in dir(subprocess.Popen):
                     self.call = subprocess.Popen(
                         command,
-                        stdin=PIPE,
                         stdout=PIPE,
                         stderr=PIPE,
                         text=text,
@@ -99,7 +132,6 @@ class Run:
                 else:
                     self.call = subprocess.Popen(
                         command,
-                        stdin=PIPE,
                         stdout=PIPE,
                         stderr=PIPE,
                         shell=shell,
@@ -111,23 +143,26 @@ class Run:
                 timestamp = Dates.iso()
 
                 self.last_run = timestamp
-                self.stdout = stdout
-                self.stderr = stderr
+                self._stdout = stdout
+                self._stderr = stderr
                 self.returncode = self.call.returncode
 
-                if self.stdout:
-                    logger.debug(f'[stdout] {stdout}')
-
-                if self.stderr:
-                    logger.error(f'[stderr] {stderr}')
-
                 if self.returncode == 0:
+                    logger.debug(str(dict(
+                        stdout_KB=round(len(self.stdout) / 1024, 2),
+                        stderr_KB=round(len(self.stderr) / 1024, 2),
+                    )))
                     return True
 
-        except Exception as e:
-            self.stderr = f'{e}'.encode()
-            logger.error(f'{e}')
+        except Exception as error:
+            self._stderr = f'{error}'.encode()
+            logger.error(f'{error}')
+            raise RuntimeError(error)
 
+        logger.error(str(dict(
+            stdout_KB=round(len(self.stdout) / 1024, 2),
+            stderr_KB=round(len(self.stderr) / 1024, 2),
+        )))
         return False
 
     def _command(self, command: str) -> list:
@@ -135,16 +170,27 @@ class Run:
 
         if isinstance(command, str):
             split_command = f'{command}'.split(' ')
+            split_command = [str(x).strip() for x in split_command]
+            split_command = [x for x in split_command if x]
             self.command = split_command
 
             for arg in split_command:
                 if '|' in arg:
-                    logger.warning(f'Pipes are not supported! {split_command}')
+                    error = f'Pipes are not supported! {split_command}'
+                    logger.error(error)
+                    raise NotSupportedCommand(error)
 
+        logger.debug(str(dict(
+            command=self.command
+        )))
         return self.command
 
     def __repr__(self) -> str:
-        return f'{self.command} stderr: ({len(self.stderr) / 1024} Kb) stdout: ({round(len(self.stdout) / 1024, 2)} Kb)'
+        return str(dict(
+            command=self.command,
+            stdout=f'{round(len(self.stdout) / 1024, 2)} KB',
+            stderr=f'{round(len(self.stderr) / 1024, 2)} KB',
+        ))
 
     def __len__(self):
         return sum([len(self.stdout), len(self.stderr)])
