@@ -86,10 +86,9 @@ class FacebookGroups(object):
         """This content isn't available right now"""
 
         try:
-            xpath_content_unavailable = self._browser.wait_for_xpath(self._xpath_content_unavailable)
-            content_unavailable = self._browser.find_xpath(xpath_content_unavailable).text
-            logger.debug(content_unavailable)
-            return content_unavailable
+            text = self._browser.wait_for_list(self._xpath_content_unavailable).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -103,10 +102,9 @@ class FacebookGroups(object):
     async def creation_date(self):
 
         try:
-            xpath_creation_date = self._browser.wait_for_xpath(self._xpath_creation_date)
-            creation_date = self._browser.find_xpath(xpath_creation_date).text
-            logger.debug(creation_date)
-            return creation_date
+            text = self._browser.wait_for_list(self._xpath_creation_date).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -152,10 +150,9 @@ class FacebookGroups(object):
     async def history(self):
 
         try:
-            xpath_history = self._browser.wait_for_xpath(self._xpath_history)
-            history = self._browser.find_xpath(xpath_history).text
-            logger.debug(history)
-            return history
+            text = self._browser.wait_for_list(self._xpath_history).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -168,14 +165,11 @@ class FacebookGroups(object):
 
     def temporarily_blocked(self):
         try:
-            xpath_temporarily_blocked = self._browser.wait_for_xpath(
+            text = self._browser.wait_for_list(
                 self._xpath_temporarily_blocked
-            )
-            temporarily_blocked = self._browser.find_xpath(
-                xpath_temporarily_blocked
             ).text
-            logger.debug(temporarily_blocked)
-            return temporarily_blocked
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -189,11 +183,10 @@ class FacebookGroups(object):
     async def members(self):
 
         try:
-            xpath_members = self._browser.wait_for_xpath(self._xpath_members)
-            members = self._browser.find_xpath(xpath_members).text
-            logger.debug(members)
-            return members
             # TODO: need to clean up string from members and remove bad chars
+            text = self._browser.wait_for_list(self._xpath_members).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -217,14 +210,9 @@ class FacebookGroups(object):
 
     def must_login(self):
         try:
-            xpath_must_login = self._browser.wait_for_xpath(
-                self._xpath_must_login
-            )
-            must_login = self._browser.find_xpath(
-                xpath_must_login
-            ).text
-            logger.debug(must_login)
-            return must_login
+            text = self._browser.wait_for_list(self._xpath_must_login).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -238,10 +226,9 @@ class FacebookGroups(object):
     async def posts_monthly(self):
 
         try:
-            xpath_monthly_posts = self._browser.wait_for_xpath(self._xpath_posts_monthly)
-            posts_monthly = self._browser.find_xpath(xpath_monthly_posts).text
-            logger.debug(posts_monthly)
-            return posts_monthly
+            text = self._browser.wait_for_list(self._xpath_posts_monthly).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -266,10 +253,9 @@ class FacebookGroups(object):
     async def posts_today(self):
 
         try:
-            xpath_posts_today = self._browser.wait_for_xpath(self._xpath_posts_today)
-            posts_today = self._browser.find_xpath(xpath_posts_today).text
-            logger.debug(posts_today)
-            return posts_today
+            text = self._browser.wait_for_list(self._xpath_posts_today).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -294,10 +280,9 @@ class FacebookGroups(object):
     async def privacy(self):
 
         try:
-            xpath_privacy = self._browser.wait_for_xpath(self._xpath_privacy)
-            privacy = self._browser.find_xpath(xpath_privacy).text
-            logger.debug(privacy)
-            return privacy
+            text = self._browser.wait_for_list(self._xpath_privacy).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -311,10 +296,9 @@ class FacebookGroups(object):
     async def privacy_details(self):
 
         try:
-            xpath_privacy_details = self._browser.wait_for_xpath(self._xpath_privacy_details)
-            privacy_details = self._browser.find_xpath(xpath_privacy_details).text
-            logger.debug(privacy_details)
-            return privacy_details
+            text = self._browser.wait_for_list(self._xpath_privacy_details).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -328,10 +312,9 @@ class FacebookGroups(object):
     async def title(self) -> str:
 
         try:
-            xpath_title = self._browser.wait_for_xpath(self._xpath_title)
-            title = self._browser.find_xpath(xpath_title).text
-            logger.debug(title)
-            return title
+            text = self._browser.wait_for_list(self._xpath_title).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -358,10 +341,9 @@ class FacebookGroups(object):
     async def visible(self) -> str:
 
         try:
-            xpath_visible = self._browser.wait_for_xpath(self._xpath_visible)
-            visible = self._browser.find_xpath(xpath_visible).text
-            logger.debug(visible)
-            return visible
+            text = self._browser.wait_for_list(self._xpath_visible).text
+            logger.debug(text)
+            return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -373,7 +355,7 @@ class FacebookGroups(object):
             self.screenshot_error()
 
     @staticmethod
-    def error_parsing(error, enabble_stacktrace: bool = False) -> tuple:
+    def error_parsing(error, enable_stacktrace: bool = False) -> tuple:
         """parses selenium exeption error"""
         error_parsed = f'{error}'.splitlines()
         error_parsed = [f'{x}'.strip() for x in error_parsed]
@@ -385,7 +367,7 @@ class FacebookGroups(object):
             stacktrace = error_parsed[2:]
             stacktrace = ' '.join(stacktrace)
 
-        if enabble_stacktrace:
+        if enable_stacktrace:
             return message, session, stacktrace
 
         return message, session, 'disabled'
@@ -530,7 +512,7 @@ class FacebookGroups(object):
 
     def screenshot(self, filename: str = 'screenshot.png'):
         screenshot = self._browser.save_screenshot(filename=filename, folder='.')
-        logger.info(f'{screenshot}')
+        logger.debug(f'{screenshot}')
         return screenshot
 
     def screenshot_error(self):
