@@ -38,10 +38,19 @@ class Run:
         return self.run(*args, **kwargs)
 
     def pretty(self):
-        return pprint(self.stdout.decode())
+        template = f"""stdout:
+{self.stdout.decode()}
+stderr:
+{self.stderr.decode()}"""
+        pprint(template)
 
     def print(self):
-        return print(self.stdout.decode())
+        template = f"""stdout:
+{self.stdout.decode()}
+
+stderr:
+{self.stderr.decode()}"""
+        print(template)
 
     def set_command(self, command: str) -> bool:
         logger.debug(command)
