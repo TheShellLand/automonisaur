@@ -50,11 +50,11 @@ class MacChanger(object):
 
         return mac
 
-    async def set_mac(self, mac: str):
-        return await self.sudo_ifconfig('en0', 'link', mac)
+    async def set_mac(self, mac: str, stdin: str = None, **kwargs):
+        return await self.sudo_ifconfig('en0', 'link', mac, stdin=stdin, **kwargs)
 
-    async def set_mac_random(self):
-        return await self.set_mac(await self.random_mac())
+    async def set_mac_random(self, **kwargs):
+        return await self.set_mac(mac=await self.random_mac(), **kwargs)
 
     async def stdout(self):
         logger.debug(self._run.stdout)
@@ -64,6 +64,6 @@ class MacChanger(object):
         logger.debug(self._run.stderr)
         return self._run.stderr
 
-    async def sudo_ifconfig(self, *args, **kwargs):
+    async def sudo_ifconfig(self, *args, stdin: str, **kwargs):
         args = await self.args_expansion(args)
-        return self._run.run(f'sudo -S ifconfig {args}', shell=True, stdin='steakout', **kwargs)
+        return self._run.run(f'sudo -S ifconfig {args}', shell=True, stdin=stdin, **kwargs)
