@@ -137,40 +137,37 @@ class SeleniumBrowser(object):
 
         return f'{hostname_}_{title_}_{timestamp}.png'
 
-    def action_click(self, xpath: str, note: str = None) -> str or False:
+    def action_click(
+            self,
+            xpath: str, **kwargs
+    ) -> selenium.webdriver.Chrome.find_element:
         """perform mouse command"""
         try:
-            click = self.find_element(value=xpath, by=self.by.XPATH)
-            click.click()
-            if note:
-                logger.debug(str(dict(
-                    note=note,
-                    xpath=xpath,
-                )))
-            else:
-                logger.debug(str(dict(
-                    xpath=xpath,
-                )))
-            return click
+            logger.debug(str(dict(
+                xpath=xpath,
+            )))
+            return self.find_element(value=xpath, by=self.by.XPATH, **kwargs).click()
 
         except Exception as error:
             raise Exception(error)
 
-    def action_type(self, key: str or Keys, secret: bool = True):
+    def action_type(
+            self,
+            key: str or Keys,
+            secret: bool = True,
+    ) -> selenium.webdriver.common.action_chains.ActionChains:
         """perform keyboard command"""
+
+        if secret:
+            key = f'*' * len(key)
+
+        logger.debug(str(dict(
+            send_keys=key,
+        )))
+
         try:
-            actions = selenium.webdriver.common.action_chains.ActionChains(
-                self.webdriver)
-            actions.send_keys(key)
-            actions.perform()
-
-            if secret:
-                key = f'*' * len(key)
-
-            logger.debug(str(dict(
-                send_keys=key,
-            )))
-            return True
+            return selenium.webdriver.common.action_chains.ActionChains(
+                self.webdriver).send_keys(key).perform()
 
         except Exception as error:
             raise Exception(error)
@@ -196,7 +193,7 @@ class SeleniumBrowser(object):
         logger.error(f'{file}')
         return False
 
-    def add_cookies_from_list(self, cookies_list: list):
+    def add_cookies_from_list(self, cookies_list: list) -> bool:
         for cookie in cookies_list:
             self.add_cookie(cookie_dict=cookie)
 
@@ -207,7 +204,7 @@ class SeleniumBrowser(object):
         logger.info(f'{self.url}')
         return self.add_cookie_from_url(self.url)
 
-    def add_cookie_from_url(self, url: str):
+    def add_cookie_from_url(self, url: str) -> bool:
         """add cookies from matching hostname"""
         cookie_file = self._url_filename(url=url)
 
@@ -217,7 +214,7 @@ class SeleniumBrowser(object):
 
         logger.error(f'{cookie_file}')
 
-    def add_cookie_from_base64(self, base64_str: str):
+    def add_cookie_from_base64(self, base64_str: str) -> bool:
         if base64_str:
             self.add_cookies_from_list(
                 json.loads(base64.b64decode(base64_str))
@@ -306,23 +303,27 @@ class SeleniumBrowser(object):
             self,
             value: str,
             by: By.ID = By.ID,
-            **kwargs):
+            **kwargs
+    ) -> selenium.webdriver.Chrome.find_element:
         """find element"""
-        element = self.webdriver.find_element(value=value, by=by, **kwargs)
         logger.info(str(dict(
             current_url=self.current_url,
             value=value,
         )))
-        return element
+        return self.webdriver.find_element(value=value, by=by, **kwargs)
 
-    def find_xpath(self, value: str, by: By = By.XPATH, **kwargs):
+    def find_xpath(
+            self,
+            value: str,
+            by: By = By.XPATH,
+            **kwargs
+    ) -> selenium.webdriver.Chrome.find_element:
         """find xpath"""
-        xpath = self.find_element(value=value, by=by, **kwargs)
         logger.info(str(dict(
             current_url=self.current_url,
             value=value,
         )))
-        return xpath
+        return self.find_element(value=value, by=by, **kwargs)
 
     def get(self, url: str, **kwargs) -> bool:
         """get url"""
@@ -349,14 +350,24 @@ class SeleniumBrowser(object):
         """get page source"""
         return self.webdriver.page_source
 
-    def get_page_source_beautifulsoup(self, markdup: str = None, features: str = 'lxml') -> BeautifulSoup:
+    def get_page_source_beautifulsoup(
+            self,
+            markdup: str = None,
+            features: str = 'lxml') -> BeautifulSoup:
         """read page source with beautifulsoup"""
         if not markdup:
             markdup = self.get_page_source()
-        return BeautifulSoup(markup=markdup, features=features)
+        return BeautifulSoup(
+            markup=markdup,
+            features=features)
 
-    def get_random_user_agent(self, filter: list or str = None, case_sensitive: bool = False) -> str:
-        return SeleniumUserAgentBuilder().get_random_agent(filter=filter, case_sensitive=case_sensitive)
+    def get_random_user_agent(
+            self,
+            filter: list or str = None,
+            case_sensitive: bool = False) -> str:
+        return SeleniumUserAgentBuilder().get_random_agent(
+            filter=filter,
+            case_sensitive=case_sensitive)
 
     def get_screenshot_as_base64(self, **kwargs):
         """screenshot as base64"""
@@ -370,15 +381,13 @@ class SeleniumBrowser(object):
             filename: str = None,
             prefix: str = None,
             folder: str = None,
-            **kwargs
-    ) -> bool:
+            **kwargs) -> bool:
         return self.save_screenshot(
             self,
             filename=filename,
             prefix=prefix,
             folder=folder,
-            **kwargs
-        )
+            **kwargs)
 
     def get_screenshot_as_png(self, **kwargs):
         """screenshot as png"""
@@ -472,8 +481,10 @@ class SeleniumBrowser(object):
         """set browser resolution"""
 
         try:
-            self.config.webdriver_wrapper.set_window_size(width=width, height=height,
-                                                          device_type=device_type)
+            self.config.webdriver_wrapper.set_window_size(
+                width=width,
+                height=height,
+                device_type=device_type)
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(str(dict(
@@ -499,7 +510,8 @@ class SeleniumBrowser(object):
             value: str,
             by: By = By.XPATH,
             timeout: int = 1,
-            **kwargs) -> selenium.webdriver.Chrome.find_element:
+            **kwargs
+    ) -> selenium.webdriver.Chrome.find_element:
         """wait for an element"""
         timeout_start = time.time()
         timeout_elapsed = round(abs(timeout_start - time.time()), 1)
@@ -530,7 +542,8 @@ class SeleniumBrowser(object):
             values: list,
             by: By = By.XPATH,
             timeout: int = 1,
-            **kwargs) -> selenium.webdriver.Chrome.find_element:
+            **kwargs
+    ) -> selenium.webdriver.Chrome.find_element:
         """wait for a list of elements"""
         if isinstance(values, list):
             for value in values:
@@ -556,7 +569,8 @@ class SeleniumBrowser(object):
             self,
             element: str or list,
             timeout: int = 1,
-            **kwargs) -> selenium.webdriver.Chrome.find_element:
+            **kwargs
+    ) -> selenium.webdriver.Chrome.find_element:
         """wait for an element"""
         return self.wait_for(
             value=element,
