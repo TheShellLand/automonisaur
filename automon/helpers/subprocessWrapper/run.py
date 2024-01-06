@@ -1,7 +1,6 @@
 import subprocess
 
 from pprint import pprint
-from subprocess import PIPE
 
 from automon import log
 from automon.helpers.dates import Dates
@@ -13,12 +12,13 @@ logger.setLevel(log.DEBUG)
 
 
 class Run:
+    command: str
 
-    def __init__(self, command: str = None, *args, **kwargs):
+    def __init__(self, command: str = None, **kwargs):
         """Run shell"""
 
         self.last_run = None
-        self.command = ''
+        self.command = command
 
         self._stdout = b''
         self._stderr = b''
@@ -27,7 +27,7 @@ class Run:
         self.returncode = None
 
         if command:
-            self.run(command=command, *args, **kwargs)
+            self.run(command=command, **kwargs)
 
     def rc(self):
         if self.call:
@@ -98,15 +98,34 @@ stderr:
         )))
         return self.run(*args, **kwargs)
 
-    def run(self, command: str = None,
+    def run(
+            self,
+            command: str,
             text: bool = False,
             inBackground: bool = False,
             shell: bool = False,
             sanitize_command: bool = True,
-            **kwargs) -> bool:
+            **kwargs
+    ) -> bool:
+
+        self.command = command
+
+        if sanitize_command:
+            command = self.sanitize_command(command)
+
+        if not command:
+            logger.error(str(dict(
+                command=command,
+                text=text,
+                inBackground=inBackground,
+                shell=shell,
+                sanitize_command=sanitize_command,
+                kwargs=kwargs,
+            )))
+            raise SyntaxError(f'command cannot be empty, {command}')
 
         logger.debug(str(dict(
-            command=command,
+            command=self.command,
             text=text,
             inBackground=inBackground,
             shell=shell,
@@ -114,35 +133,27 @@ stderr:
             kwargs=kwargs,
         )))
 
-        if command and sanitize_command:
-            command = self._command(command)
-
-        elif self.command:
-            command = self.command
-            if sanitize_command:
-                command = self._command(self.command)
-
         try:
             if inBackground:
                 if 'text' in dir(subprocess.Popen):
-                    self.call = subprocess.Popen(command, text=text, shell=shell, **kwargs)
+                    self.call = subprocess.Popen(args=command, text=text, shell=shell, **kwargs)
                 else:
-                    self.call = subprocess.Popen(command, shell=shell, **kwargs)
+                    self.call = subprocess.Popen(args=command, shell=shell, **kwargs)
                 return True
             else:
                 if 'text' in dir(subprocess.Popen):
                     self.call = subprocess.Popen(
-                        command,
-                        stdout=PIPE,
-                        stderr=PIPE,
+                        args=command,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
                         text=text,
                         shell=shell,
                         **kwargs)
                 else:
                     self.call = subprocess.Popen(
-                        command,
-                        stdout=PIPE,
-                        stderr=PIPE,
+                        args=command,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
                         shell=shell,
                         **kwargs)
 
@@ -174,14 +185,13 @@ stderr:
         )))
         return False
 
-    def _command(self, command: str) -> list:
-        self.command = command
+    def sanitize_command(self, command: str) -> [str]:
 
         if isinstance(command, str):
             split_command = f'{command}'.split(' ')
             split_command = [str(x).strip() for x in split_command]
             split_command = [x for x in split_command if x]
-            self.command = split_command
+            command = split_command
 
             for arg in split_command:
                 if '|' in arg:
@@ -190,9 +200,9 @@ stderr:
                     raise NotSupportedCommand(error)
 
         logger.debug(str(dict(
-            command=self.command
+            command=command
         )))
-        return self.command
+        return command
 
     def __repr__(self) -> str:
         return str(dict(
