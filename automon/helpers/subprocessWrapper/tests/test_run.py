@@ -7,7 +7,11 @@ run = Run()
 
 class TestRun(unittest.TestCase):
     def test_false(self):
-        self.assertFalse(run.run(''))
+        self.assertRaises(
+            SyntaxError,
+            run.run,
+            ''
+        )
 
 
 if __name__ == '__main__':
