@@ -86,7 +86,8 @@ class FacebookGroups(object):
         """This content isn't available right now"""
 
         try:
-            text = self._browser.wait_for_list(self._xpath_content_unavailable).text
+            text = await self._browser.wait_for_list(self._xpath_content_unavailable)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -97,12 +98,13 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     async def creation_date(self):
 
         try:
-            text = self._browser.wait_for_list(self._xpath_creation_date).text
+            text = await self._browser.wait_for_list(self._xpath_creation_date)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -113,14 +115,14 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     async def creation_date_timestamp(self):
         if await self.creation_date():
             # TODO: convert date to datetime timestamp
             return
 
-    def current_rate_too_fast(self):
+    async def current_rate_too_fast(self):
         if self.average_rate() == 0 or len(self._rate_counter) < 2:
             logger.info(False)
             return False
@@ -131,14 +133,14 @@ class FacebookGroups(object):
 
         return False
 
-    def rate_per_minute(self) -> int:
+    async def rate_per_minute(self) -> int:
         rate = int(60 / self._rate_per_minute)
         logger.info(str(dict(
             seconds=rate,
         )))
         return rate
 
-    def average_rate(self):
+    async def average_rate(self):
         if self._rate_counter:
             rate = int(statistics.mean(self._rate_counter))
             logger.info(str(dict(
@@ -150,7 +152,8 @@ class FacebookGroups(object):
     async def history(self):
 
         try:
-            text = self._browser.wait_for_list(self._xpath_history).text
+            text = await self._browser.wait_for_list(self._xpath_history)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -161,13 +164,14 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
-    def temporarily_blocked(self):
+    async def temporarily_blocked(self):
         try:
-            text = self._browser.wait_for_list(
+            text = await self._browser.wait_for_list(
                 self._xpath_temporarily_blocked
-            ).text
+            )
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -178,13 +182,14 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     async def members(self):
 
         try:
             # TODO: need to clean up string from members and remove bad chars
-            text = self._browser.wait_for_list(self._xpath_members).text
+            text = await self._browser.wait_for_list(self._xpath_members)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -195,7 +200,7 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     async def members_count(self):
 
@@ -208,9 +213,10 @@ class FacebookGroups(object):
                 logger.debug(members_count)
                 return members_count
 
-    def must_login(self):
+    async def must_login(self):
         try:
-            text = self._browser.wait_for_list(self._xpath_must_login).text
+            text = await self._browser.wait_for_list(self._xpath_must_login)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -221,12 +227,13 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     async def posts_monthly(self):
 
         try:
-            text = self._browser.wait_for_list(self._xpath_posts_monthly).text
+            text = await self._browser.wait_for_list(self._xpath_posts_monthly)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -237,7 +244,7 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     async def posts_monthly_count(self):
 
@@ -253,7 +260,8 @@ class FacebookGroups(object):
     async def posts_today(self):
 
         try:
-            text = self._browser.wait_for_list(self._xpath_posts_today).text
+            text = await self._browser.wait_for_list(self._xpath_posts_today)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -264,7 +272,7 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     async def posts_today_count(self):
 
@@ -280,7 +288,8 @@ class FacebookGroups(object):
     async def privacy(self):
 
         try:
-            text = self._browser.wait_for_list(self._xpath_privacy).text
+            text = await self._browser.wait_for_list(self._xpath_privacy)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -291,12 +300,13 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     async def privacy_details(self):
 
         try:
-            text = self._browser.wait_for_list(self._xpath_privacy_details).text
+            text = await self._browser.wait_for_list(self._xpath_privacy_details)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -307,12 +317,13 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     async def title(self) -> str:
 
         try:
-            text = self._browser.wait_for_list(self._xpath_title).text
+            text = await self._browser.wait_for_list(self._xpath_title)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -323,7 +334,7 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     @property
     def url(self) -> str:
@@ -341,7 +352,8 @@ class FacebookGroups(object):
     async def visible(self) -> str:
 
         try:
-            text = self._browser.wait_for_list(self._xpath_visible).text
+            text = await self._browser.wait_for_list(self._xpath_visible)
+            text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -352,7 +364,7 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            self.screenshot_error()
+            await self.screenshot_error()
 
     @staticmethod
     def error_parsing(error, enable_stacktrace: bool = False) -> tuple:
@@ -372,17 +384,17 @@ class FacebookGroups(object):
 
         return message, session, 'disabled'
 
-    def get(self, url: str) -> bool:
+    async def get(self, url: str) -> bool:
         """get url"""
 
         start = datetime.datetime.now().timestamp()
 
-        result = self._browser.get(url=url)
+        result = await self._browser.get(url=url)
         logger.info(str(dict(
             url=url,
             result=result,
         )))
-        self.screenshot()
+        await self.screenshot()
 
         end = datetime.datetime.now().timestamp()
         seconds_elapsed = int(end - start)
@@ -395,23 +407,23 @@ class FacebookGroups(object):
 
         return result
 
-    def get_about(self, rate_limiting: bool = True):
+    async def get_about(self, rate_limiting: bool = True):
         """get about page"""
         url = f'{self.url}/about'
 
         if rate_limiting:
-            result = self.get_with_rate_limiter(url=url)
+            result = await self.get_with_rate_limiter(url=url)
         else:
-            result = self.get(url=url)
+            result = await self.get(url=url)
 
         logger.info(str(dict(
             url=url,
             result=result,
         )))
-        self.screenshot()
+        await self.screenshot()
         return result
 
-    def get_with_rate_limiter(
+    async def get_with_rate_limiter(
             self,
             url: str,
             retry: int = 0,
@@ -427,7 +439,7 @@ class FacebookGroups(object):
         while retry < retries:
 
             if self.rate_limited():
-                self.rate_limit_increase()
+                await self.rate_limit_increase()
 
                 self._rate_counter.append(self._wait_between_retries)
                 Sleeper.seconds(seconds=self._wait_between_retries)
@@ -438,20 +450,20 @@ class FacebookGroups(object):
                 )))
                 continue
             else:
-                self.rate_limit_decrease()
+                await self.rate_limit_decrease()
 
-            result = self.get(url=url)
-            self.screenshot()
+            result = await self.get(url=url)
+            await self.screenshot()
             logger.info(f'{result}')
             return result
 
             retry = retry + 1
 
         logger.error(f'{url}')
-        self.screenshot_error()
+        await self.screenshot_error()
         return result
 
-    def rate_limit_decrease(self, multiplier: int = 0.75):
+    async def rate_limit_decrease(self, multiplier: int = 0.75):
         before = self._wait_between_retries
         self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
 
@@ -465,7 +477,7 @@ class FacebookGroups(object):
         )))
         return self._wait_between_retries
 
-    def rate_limit_increase(self, multiplier: int = 2):
+    async def rate_limit_increase(self, multiplier: int = 2):
         before = self._wait_between_retries
         self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
 
@@ -476,90 +488,94 @@ class FacebookGroups(object):
         )))
         return self._wait_between_retries
 
-    def rate_limited(self):
+    async def rate_limited(self):
         """rate limit checker"""
-        if self.current_rate_too_fast():
+        if await self.current_rate_too_fast():
             logger.info(True)
-            self.screenshot()
+            await self.screenshot()
             return True
 
-        if self.temporarily_blocked() or self.must_login():
+        if await self.temporarily_blocked() or await self.must_login():
             logger.info(True)
-            self.screenshot()
+            await self.screenshot()
             return True
 
         logger.error(False)
-        self.screenshot_error()
+        await self.screenshot_error()
         return False
 
-    def run(self):
+    async def run(self):
         """run selenium browser"""
         if self._browser:
             logger.info(f'{self._browser}')
             return self._browser.run()
 
-    def reset_rate_counter(self):
+    async def reset_rate_counter(self):
         self._rate_counter = []
         logger.info(self._rate_counter)
         return self._rate_counter
 
-    def restart(self):
+    async def restart(self):
         """quit and start new instance of selenium"""
         if self._browser:
-            self.quit()
+            await self.quit()
         logger.info(f'{self._browser}')
         return self.start()
 
-    def screenshot(self, filename: str = 'screenshot.png'):
-        screenshot = self._browser.save_screenshot(filename=filename, folder='.')
-        logger.debug(f'{screenshot}')
-        return screenshot
+    async def screenshot(self, filename: str = 'screenshot.png'):
+        try:
+            screenshot = await self._browser.save_screenshot(filename=filename, folder='.')
+            logger.debug(f'{screenshot}')
+            return screenshot
+        except Exception as error:
+            raise Exception(error)
 
-    def screenshot_error(self):
+    async def screenshot_error(self):
         """get error screenshot"""
-        screenshot = self.screenshot(filename='screenshot-error.png')
+        screenshot = await self.screenshot(filename='screenshot-error.png')
         logger.debug(f'{screenshot}')
         return screenshot
 
-    def screenshot_success(self):
+    async def screenshot_success(self):
         """get success screenshot"""
-        screenshot = self.screenshot(filename='screenshot-success.png')
+        screenshot = await self.screenshot(filename='screenshot-success.png')
         logger.debug(f'{screenshot}')
         return screenshot
 
-    def set_url(self, url: str) -> str:
+    async def set_url(self, url: str) -> str:
         """set new url"""
         self._url = url
         return self.url
 
-    def start(self, headless: bool = True, random_user_agent: bool = False, set_user_agent: str = None):
+    async def start(self, headless: bool = True, random_user_agent: bool = False, set_user_agent: str = None):
         """start new instance of selenium"""
         self._browser.config.webdriver_wrapper = ChromeWrapper()
 
         if headless:
-            self._browser.config.webdriver_wrapper.enable_headless().set_locale_experimental()
+            await self._browser.config.webdriver_wrapper.enable_headless()
+            await self._browser.config.webdriver_wrapper.set_locale_experimental()
         else:
-            self._browser.config.webdriver_wrapper.set_locale_experimental()
+            await self._browser.config.webdriver_wrapper.set_locale_experimental()
 
         if random_user_agent:
-            self._browser.config.webdriver_wrapper.set_user_agent(
-                self._browser.get_random_user_agent()
+            await self._browser.config.webdriver_wrapper.set_user_agent(
+                await self._browser.get_random_user_agent()
             )
         elif set_user_agent:
-            self._browser.config.webdriver_wrapper.set_user_agent(
+            await self._browser.config.webdriver_wrapper.set_user_agent(
                 set_user_agent
             )
 
         logger.info(str(dict(
             browser=self._browser
         )))
-        browser = self._browser.run()
-        self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
+        browser = await self._browser.run()
+        await self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
         return browser
 
-    def stop(self):
+    async def stop(self):
         """alias to quit"""
-        return self.quit()
+        return await self.quit()
 
     async def to_dict(self):
         return dict(
@@ -580,8 +596,8 @@ class FacebookGroups(object):
             visible=await self.visible(),
         )
 
-    def quit(self):
+    async def quit(self):
         """quit selenium"""
         if self._browser:
             logger.info(f'{self._browser}')
-            return self._browser.quit()
+            return await self._browser.quit()
