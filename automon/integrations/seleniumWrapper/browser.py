@@ -55,7 +55,7 @@ class SeleniumBrowser(object):
     def config(self):
         return self._config
 
-    def cookie_file_to_dict(self, file: str = 'cookies.txt'):
+    async def cookie_file_to_dict(self, file: str = 'cookies.txt'):
         logger.debug(f'{file}')
         with open(file, 'r') as file:
             return json.loads(file.read())
@@ -90,7 +90,7 @@ class SeleniumBrowser(object):
         """Set of special keys codes"""
         return selenium.webdriver.common.keys.Keys
 
-    def refresh(self):
+    async def refresh(self):
         self.webdriver.refresh()
         logger.info(f'{True}')
 
@@ -137,7 +137,7 @@ class SeleniumBrowser(object):
 
         return f'{hostname_}_{title_}_{timestamp}.png'
 
-    def action_click(
+    async def action_click(
             self,
             xpath: str, **kwargs
     ) -> selenium.webdriver.Chrome.find_element:
@@ -146,12 +146,12 @@ class SeleniumBrowser(object):
             logger.debug(str(dict(
                 xpath=xpath,
             )))
-            return self.find_element(value=xpath, by=self.by.XPATH, **kwargs).click()
+            return await self.find_element(value=xpath, by=self.by.XPATH, **kwargs).click()
 
         except Exception as error:
             raise Exception(error)
 
-    def action_type(
+    async def action_type(
             self,
             key: str or Keys,
             secret: bool = True,
@@ -172,7 +172,7 @@ class SeleniumBrowser(object):
         except Exception as error:
             raise Exception(error)
 
-    def add_cookie(self, cookie_dict: dict) -> bool:
+    async def add_cookie(self, cookie_dict: dict) -> bool:
         result = self.webdriver.add_cookie(cookie_dict=cookie_dict)
 
         if result is None:
@@ -182,31 +182,31 @@ class SeleniumBrowser(object):
         logger.error(f'{cookie_dict}')
         return False
 
-    def add_cookie_from_file(self, file: str) -> bool:
+    async def add_cookie_from_file(self, file: str) -> bool:
         """add cookies from file"""
         if os.path.exists(file):
-            self.add_cookies_from_list(
-                self.cookie_file_to_dict(file=file)
+            await self.add_cookies_from_list(
+                await self.cookie_file_to_dict(file=file)
             )
             return True
 
         logger.error(f'{file}')
         return False
 
-    def add_cookies_from_list(self, cookies_list: list) -> bool:
+    async def add_cookies_from_list(self, cookies_list: list) -> bool:
         for cookie in cookies_list:
-            self.add_cookie(cookie_dict=cookie)
+            await self.add_cookie(cookie_dict=cookie)
 
         logger.debug(f'{True}')
         return True
 
-    def add_cookie_from_current_url(self):
+    async def add_cookie_from_current_url(self):
         logger.info(f'{self.url}')
         return self.add_cookie_from_url(self.url)
 
-    def add_cookie_from_url(self, url: str) -> bool:
+    async def add_cookie_from_url(self, url: str) -> bool:
         """add cookies from matching hostname"""
-        cookie_file = self._url_filename(url=url)
+        cookie_file = await self._url_filename(url=url)
 
         if os.path.exists(cookie_file):
             logger.info(f'{cookie_file}')
@@ -214,9 +214,9 @@ class SeleniumBrowser(object):
 
         logger.error(f'{cookie_file}')
 
-    def add_cookie_from_base64(self, base64_str: str) -> bool:
+    async def add_cookie_from_base64(self, base64_str: str) -> bool:
         if base64_str:
-            self.add_cookies_from_list(
+            await self.add_cookies_from_list(
                 json.loads(base64.b64decode(base64_str))
             )
             logger.debug(f'{True}')
@@ -225,41 +225,41 @@ class SeleniumBrowser(object):
         logger.error(f'{base64_str}')
         return False
 
-    def delete_all_cookies(self) -> None:
+    async def delete_all_cookies(self) -> None:
         result = self.webdriver.delete_all_cookies()
         logger.info(f'{True}')
         return result
 
-    def _url_filename(self, url: str):
-        parsed = self.urlparse(url)
+    async def _url_filename(self, url: str):
+        parsed = await self.urlparse(url)
         hostname = parsed.hostname
         cookie_file = f'cookies-{hostname}.txt'
         logger.info(f'{cookie_file}')
         return cookie_file
 
-    def get_cookie(self, name: str) -> dict:
+    async def get_cookie(self, name: str) -> dict:
         result = self.webdriver.get_cookie(name=name)
         logger.info(f'{result}')
         return result
 
-    def get_cookies(self) -> [dict]:
+    async def get_cookies(self) -> [dict]:
         result = self.webdriver.get_cookies()
         logger.debug(f'{True}')
         return result
 
-    def get_cookies_base64(self) -> base64:
+    async def get_cookies_base64(self) -> base64:
         result = self.get_cookies()
         logger.debug(f'{True}')
         return base64.b64encode(
             json.dumps(result).encode()
         ).decode()
 
-    def get_cookies_json(self) -> json.dumps:
+    async def get_cookies_json(self) -> json.dumps:
         cookies = self.get_cookies()
         logger.debug(f'{True}')
         return json.dumps(cookies)
 
-    def get_cookies_summary(self):
+    async def get_cookies_summary(self):
         result = self.get_cookies()
         summary = {}
         if result:
@@ -277,7 +277,7 @@ class SeleniumBrowser(object):
         logger.debug(f'{summary}')
         return summary
 
-    def close(self):
+    async def close(self):
         """close browser"""
         logger.info(f'closed')
         self.webdriver.close()
@@ -299,7 +299,7 @@ class SeleniumBrowser(object):
 
         return error, None, None
 
-    def find_element(
+    async def find_element(
             self,
             value: str,
             by: By.ID = By.ID,
@@ -312,7 +312,7 @@ class SeleniumBrowser(object):
         )))
         return self.webdriver.find_element(value=value, by=by, **kwargs)
 
-    def find_xpath(
+    async def find_xpath(
             self,
             value: str,
             by: By = By.XPATH,
@@ -325,7 +325,7 @@ class SeleniumBrowser(object):
         )))
         return self.find_element(value=value, by=by, **kwargs)
 
-    def get(self, url: str, **kwargs) -> bool:
+    async def get(self, url: str, **kwargs) -> bool:
         """get url"""
         try:
             if self.webdriver.get(url, **kwargs) is None:
@@ -342,15 +342,15 @@ class SeleniumBrowser(object):
 
         return False
 
-    def get_page(self, *args, **kwargs):
+    async def get_page(self, *args, **kwargs):
         """alias to get"""
         return self.get(*args, **kwargs)
 
-    def get_page_source(self) -> str:
+    async def get_page_source(self) -> str:
         """get page source"""
         return self.webdriver.page_source
 
-    def get_page_source_beautifulsoup(
+    async def get_page_source_beautifulsoup(
             self,
             markdup: str = None,
             features: str = 'lxml') -> BeautifulSoup:
@@ -361,7 +361,7 @@ class SeleniumBrowser(object):
             markup=markdup,
             features=features)
 
-    def get_random_user_agent(
+    async def get_random_user_agent(
             self,
             filter: list or str = None,
             case_sensitive: bool = False) -> str:
@@ -369,34 +369,34 @@ class SeleniumBrowser(object):
             filter=filter,
             case_sensitive=case_sensitive)
 
-    def get_screenshot_as_base64(self, **kwargs):
+    async def get_screenshot_as_base64(self, **kwargs):
         """screenshot as base64"""
         screenshot = self.webdriver.get_screenshot_as_base64(**kwargs)
         logger.debug(f'{round(len(screenshot) / 1024)} KB')
 
         return screenshot
 
-    def get_screenshot_as_file(
+    async def get_screenshot_as_file(
             self,
             filename: str = None,
             prefix: str = None,
             folder: str = None,
             **kwargs) -> bool:
-        return self.save_screenshot(
+        return await self.save_screenshot(
             self,
             filename=filename,
             prefix=prefix,
             folder=folder,
             **kwargs)
 
-    def get_screenshot_as_png(self, **kwargs):
+    async def get_screenshot_as_png(self, **kwargs):
         """screenshot as png"""
         screenshot = self.webdriver.get_screenshot_as_png(**kwargs)
         logger.debug(f'{round(len(screenshot) / 1024)} KB')
 
         return screenshot
 
-    def is_running(self) -> bool:
+    async def is_running(self) -> bool:
         """browser is running"""
         if self.webdriver:
             logger.info(f'{True}')
@@ -404,12 +404,12 @@ class SeleniumBrowser(object):
         logger.error(f'{False}')
         return False
 
-    def urlparse(self, url: str):
+    async def urlparse(self, url: str):
         parsed = urlparse(url=url)
         logger.debug(f'{parsed}')
         return parsed
 
-    def quit(self) -> bool:
+    async def quit(self) -> bool:
         """gracefully quit browser"""
         try:
             self.webdriver.close()
@@ -425,22 +425,22 @@ class SeleniumBrowser(object):
             return False
         return True
 
-    def run(self):
+    async def run(self):
         """run browser"""
         try:
-            self.config.run()
+            await self.config.run()
         except:
             return False
 
-    def save_cookies_for_current_url(self):
+    async def save_cookies_for_current_url(self):
         filename = self._url_filename(url=self.url)
         logger.info(f'{filename}')
-        return self.save_cookies_to_file(file=filename)
+        return await self.save_cookies_to_file(file=filename)
 
-    def save_cookies_to_file(self, file: str):
+    async def save_cookies_to_file(self, file: str):
         with open(file, 'w') as cookies:
             cookies.write(
-                self.get_cookies_json()
+                await self.get_cookies_json()
             )
 
         if os.path.exists(file):
@@ -450,7 +450,7 @@ class SeleniumBrowser(object):
         logger.error(f'{file}')
         return False
 
-    def save_screenshot(
+    async def save_screenshot(
             self,
             filename: str = None,
             prefix: str = None,
@@ -477,7 +477,7 @@ class SeleniumBrowser(object):
 
         return False
 
-    def set_window_size(self, width=1920, height=1080, device_type=None) -> bool:
+    async def set_window_size(self, width=1920, height=1080, device_type=None) -> bool:
         """set browser resolution"""
 
         try:
@@ -495,17 +495,17 @@ class SeleniumBrowser(object):
             return False
         return True
 
-    def set_window_position(self, x: int = 0, y: int = 0):
+    async def set_window_position(self, x: int = 0, y: int = 0):
         """set browser position"""
         result = self.webdriver.set_window_position(x, y)
         logger.info(f'{result}')
         return result
 
-    def start(self):
+    async def start(self):
         """alias to run"""
         return self.run()
 
-    def wait_for(
+    async def wait_for(
             self,
             value: str,
             by: By = By.XPATH,
@@ -526,7 +526,7 @@ class SeleniumBrowser(object):
             )))
 
             try:
-                return self.find_element(
+                return await self.find_element(
                     by=by,
                     value=value,
                     **kwargs)
@@ -537,7 +537,7 @@ class SeleniumBrowser(object):
 
         raise NoSuchElementException(value)
 
-    def wait_for_list(
+    async def wait_for_list(
             self,
             values: list,
             by: By = By.XPATH,
@@ -554,7 +554,7 @@ class SeleniumBrowser(object):
                 )))
 
                 try:
-                    return self.wait_for(
+                    return await self.wait_for(
                         value=value,
                         by=by,
                         timeout=timeout,
@@ -565,26 +565,26 @@ class SeleniumBrowser(object):
 
         raise NoSuchElementException(values)
 
-    def wait_for_element(
+    async def wait_for_element(
             self,
             element: str or list,
             timeout: int = 1,
             **kwargs
     ) -> selenium.webdriver.Chrome.find_element:
         """wait for an element"""
-        return self.wait_for(
+        return await self.wait_for(
             value=element,
             by=self.by.ID,
             timeout=timeout,
             **kwargs)
 
-    def wait_for_xpath(
+    async def wait_for_xpath(
             self,
             xpath: str or list,
             timeout: int = 1,
             **kwargs) -> str or False:
         """wait for an xpath"""
-        return self.wait_for(
+        return await self.wait_for(
             value=xpath,
             by=self.by.XPATH,
             timeout=timeout,

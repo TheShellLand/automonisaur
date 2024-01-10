@@ -4,23 +4,24 @@ from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
 browser = SeleniumBrowser()
 browser.config.webdriver_wrapper = ChromeWrapper()
-browser.config.webdriver_wrapper.enable_defaults().enable_headless()
+browser.config.webdriver_wrapper.enable_defaults()
+browser.config.webdriver_wrapper.enable_headless()
 
 
 class SeleniumClientTest(unittest.TestCase):
-    if browser.run():
-        browser.set_window_size(device_type='web-large')
 
-        def test(self):
+    async def test(self):
+        if browser.run():
+            await browser.set_window_size(device_type='web-large')
             while True:
 
                 try:
-                    if browser.get('http://bing.com'):
-                        self.assertTrue(browser.save_screenshot())
-                        self.assertTrue(browser.save_screenshot())
-                        self.assertTrue(browser.save_screenshot(folder='./'))
+                    if await browser.get('http://bing.com'):
+                        self.assertTrue(await browser.save_screenshot())
+                        self.assertTrue(await browser.save_screenshot())
+                        self.assertTrue(await browser.save_screenshot(folder='./'))
 
-                    browser.quit()
+                    await browser.quit()
                     break
 
                 except:

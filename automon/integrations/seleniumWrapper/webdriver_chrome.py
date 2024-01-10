@@ -73,7 +73,7 @@ class ChromeWrapper(object):
     def window_size(self):
         return self._window_size
 
-    def disable_certificate_verification(self):
+    async def disable_certificate_verification(self):
         logger.warning('Certificates are not verified')
         self.chrome_options.add_argument('--ignore-certificate-errors')
         logger.debug(str(dict(
@@ -81,21 +81,21 @@ class ChromeWrapper(object):
         )))
         return self
 
-    def disable_extensions(self):
+    async def disable_extensions(self):
         self.chrome_options.add_argument("--disable-extensions")
         logger.debug(str(dict(
             add_argument=f'--disable-extensions'
         )))
         return self
 
-    def disable_infobars(self):
+    async def disable_infobars(self):
         self.chrome_options.add_argument("--disable-infobars")
         logger.debug(str(dict(
             add_argument=f'--disable-infobars'
         )))
         return self
 
-    def disable_notifications(self):
+    async def disable_notifications(self):
         """Pass the argument 1 to allow and 2 to block
 
         """
@@ -108,14 +108,14 @@ class ChromeWrapper(object):
         )))
         return self
 
-    def disable_sandbox(self):
+    async def disable_sandbox(self):
         self.chrome_options.add_argument('--no-sandbox')
         logger.debug(str(dict(
             add_argument=f'--no-sandbox'
         )))
         return self
 
-    def disable_shm(self):
+    async def disable_shm(self):
         logger.warning('Disabled shm will use disk I/O, and will be slow')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
         logger.debug(str(dict(
@@ -123,29 +123,29 @@ class ChromeWrapper(object):
         )))
         return self
 
-    def enable_bigshm(self):
+    async def enable_bigshm(self):
         logger.warning('Big shm not yet implemented')
         return self
 
-    def enable_defaults(self):
-        self.enable_maximized()
+    async def enable_defaults(self):
+        await self.enable_maximized()
         return self
 
-    def enable_fullscreen(self):
+    async def enable_fullscreen(self):
         self.chrome_options.add_argument("--start-fullscreen")
         logger.debug(str(dict(
             add_argument=f'--start-fullscreen'
         )))
         return self
 
-    def enable_headless(self):
+    async def enable_headless(self):
         self.chrome_options.add_argument('headless')
         logger.debug(str(dict(
             add_argument='headless'
         )))
         return self
 
-    def enable_notifications(self):
+    async def enable_notifications(self):
         """Pass the argument 1 to allow and 2 to block
 
         """
@@ -157,14 +157,14 @@ class ChromeWrapper(object):
         )))
         return self
 
-    def enable_maximized(self):
+    async def enable_maximized(self):
         self.chrome_options.add_argument('--start-maximized')
         logger.debug(str(dict(
             add_argument='--start-maximized'
         )))
         return self
 
-    def enable_translate(self, native_language: str = 'en'):
+    async def enable_translate(self, native_language: str = 'en'):
         prefs = {
             "translate_whitelists": {"your native language": native_language},
             "translate": {"enabled": "True"}
@@ -182,7 +182,7 @@ class ChromeWrapper(object):
         )))
         return self
 
-    def close(self):
+    async def close(self):
         """close
 
         """
@@ -190,25 +190,25 @@ class ChromeWrapper(object):
         logger.info(f'{result}')
         return result
 
-    def in_docker(self):
+    async def in_docker(self):
         """Chrome best used with docker
 
         """
-        self.enable_defaults()
-        self.enable_headless()
-        self.disable_sandbox()
-        self.disable_infobars()
-        self.disable_extensions()
-        self.disable_notifications()
+        await self.enable_defaults()
+        await self.enable_headless()
+        await self.disable_sandbox()
+        await self.disable_infobars()
+        await self.disable_extensions()
+        await self.disable_notifications()
         return self
 
-    def in_headless(self):
+    async def in_headless(self):
         """alias to headless sandboxed
 
         """
-        return self.in_headless_sandboxed()
+        return await self.in_headless_sandboxed()
 
-    def in_headless_sandboxed(self):
+    async def in_headless_sandboxed(self):
         """Headless Chrome with sandbox enabled
 
         """
@@ -217,56 +217,56 @@ class ChromeWrapper(object):
             'Default shm size is 64m, which will cause chrome driver to crash.'
         )
 
-        self.enable_defaults()
-        self.enable_headless()
+        await self.enable_defaults()
+        await self.enable_headless()
         return self
 
-    def in_headless_sandbox_disabled(self):
+    async def in_headless_sandbox_disabled(self):
         """Headless Chrome with sandbox disabled
 
         """
         logger.warning('Default shm size is 64m, which will cause chrome driver to crash.')
 
-        self.enable_defaults()
-        self.enable_headless()
-        self.disable_sandbox()
+        await self.enable_defaults()
+        await self.enable_headless()
+        await self.disable_sandbox()
         return self
 
-    def in_headless_sandbox_disabled_certificate_unverified(self):
+    async def in_headless_sandbox_disabled_certificate_unverified(self):
         """Headless Chrome with sandbox disabled with no certificate verification
 
         """
         logger.warning('Default shm size is 64m, which will cause chrome driver to crash.')
 
-        self.enable_defaults()
-        self.enable_headless()
-        self.disable_sandbox()
-        self.disable_certificate_verification()
+        await self.enable_defaults()
+        await self.enable_headless()
+        await self.disable_sandbox()
+        await self.disable_certificate_verification()
         return self
 
-    def in_headless_sandbox_disabled_shm_disabled(self):
+    async def in_headless_sandbox_disabled_shm_disabled(self):
         """Headless Chrome with sandbox disabled
 
         """
-        self.enable_defaults()
-        self.enable_headless()
-        self.disable_sandbox()
-        self.disable_shm()
+        await self.enable_defaults()
+        await self.enable_headless()
+        await self.disable_sandbox()
+        await self.disable_shm()
         return self
 
-    def in_headless_sandbox_disabled_bigshm(self):
+    async def in_headless_sandbox_disabled_bigshm(self):
         """Headless Chrome with sandbox disabled
 
         """
         logger.warning('Larger shm option is not implemented')
 
-        self.enable_defaults()
-        self.enable_headless()
-        self.enable_bigshm()
-        self.disable_sandbox()
+        await self.enable_defaults()
+        await self.enable_headless()
+        await self.enable_bigshm()
+        await self.disable_sandbox()
         return self
 
-    def in_remote_driver(self, host: str = '127.0.0.1', port: str = '4444', executor_path: str = '/wd/hub'):
+    async def in_remote_driver(self, host: str = '127.0.0.1', port: str = '4444', executor_path: str = '/wd/hub'):
         """Remote Selenium
 
         """
@@ -279,7 +279,7 @@ class ChromeWrapper(object):
         )
         return self
 
-    def in_sandbox(self):
+    async def in_sandbox(self):
         """Chrome with sandbox enabled
 
         """
@@ -288,20 +288,20 @@ class ChromeWrapper(object):
             'Default shm size is 64m, which will cause chrome driver to crash.'
         )
 
-        self.enable_defaults()
+        await self.enable_defaults()
         return self
 
-    def in_sandbox_disabled(self):
+    async def in_sandbox_disabled(self):
         """Chrome with sandbox disabled
 
         """
         logger.warning('Default shm size is 64m, which will cause chrome driver to crash.')
 
-        self.enable_defaults()
-        self.disable_sandbox()
+        await self.enable_defaults()
+        await self.disable_sandbox()
         return self
 
-    def run(self) -> selenium.webdriver.Chrome:
+    async def run(self) -> selenium.webdriver.Chrome:
         try:
             if self.chromedriver_path:
                 self._ChromeService = selenium.webdriver.ChromeService(
@@ -327,20 +327,20 @@ class ChromeWrapper(object):
             logger.error(f'{error}')
             raise Exception(error)
 
-    def set_chromedriver(self, chromedriver_path: str):
+    async def set_chromedriver(self, chromedriver_path: str):
         logger.debug(f'{chromedriver_path}')
         self._chromedriver_path.append(chromedriver_path)
-        self.update_paths(chromedriver_path)
+        await self.update_paths(chromedriver_path)
         return self
 
-    def set_locale(self, locale: str = 'en'):
+    async def set_locale(self, locale: str = 'en'):
         self.chrome_options.add_argument(f"--lang={locale}")
         logger.debug(str(dict(
             add_argument=f"--lang={locale}"
         )))
         return self
 
-    def set_locale_experimental(self, locale: str = 'en-US'):
+    async def set_locale_experimental(self, locale: str = 'en-US'):
         self.chrome_options.add_experimental_option(
             name='prefs',
             value={'intl.accept_languages': locale}
@@ -354,27 +354,27 @@ class ChromeWrapper(object):
         )))
         return self
 
-    def set_user_agent(self, user_agent: str):
+    async def set_user_agent(self, user_agent: str):
         self.chrome_options.add_argument(f"user-agent={user_agent}")
         logger.debug(str(dict(
             add_argument=f"user-agent={user_agent}"
         )))
         return self
 
-    def set_window_size(self, *args, **kwargs):
+    async def set_window_size(self, *args, **kwargs):
         self._window_size = set_window_size(*args, **kwargs)
         width, height = self.window_size
         self.webdriver.set_window_size(width=width, height=height)
         logger.debug(f'{width}, {height}')
         return self
 
-    def start(self):
+    async def start(self):
         """alias to run
 
         """
         return self.run()
 
-    def stop_client(self):
+    async def stop_client(self):
         """stop client
 
         """
@@ -399,7 +399,7 @@ class ChromeWrapper(object):
 
         logger.error(f'not found: {path}')
 
-    def quit(self):
+    async def quit(self):
         """quit
 
         """
@@ -407,14 +407,14 @@ class ChromeWrapper(object):
         logger.info(f'{result}')
         return result
 
-    def quit_gracefully(self):
+    async def quit_gracefully(self):
         """gracefully quit webdriver
 
         """
         try:
-            self.close()
-            self.quit()
-            self.stop_client()
+            await self.close()
+            await self.quit()
+            await self.stop_client()
         except Exception as error:
             logger.error(f'failed to gracefully quit. {error}')
             return False
