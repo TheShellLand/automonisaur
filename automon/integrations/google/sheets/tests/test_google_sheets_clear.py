@@ -8,15 +8,15 @@ SHEET_NAME = 'Copy of Automated Count DO NOT EDIT'
 
 
 class MyTestCase(unittest.TestCase):
-    def test_authenticate(self):
+    async def test_authenticate(self):
         sheets_client = GoogleSheetsClient(
             worksheet=SHEET_NAME,
         )
 
-        if not sheets_client.authenticate():
+        if not await sheets_client.authenticate():
             return
 
-        sheets_client.get_values(
+        await sheets_client.get_values(
             range=f'{SHEET_NAME}!A:Z'
         )
 
@@ -29,7 +29,7 @@ class MyTestCase(unittest.TestCase):
         # set df index to match google sheet index numbering
         df.index = df.index + 2
 
-        sheets_client.clear(
+        await sheets_client.clear(
             range=f'{SHEET_NAME}!8:5',
         )
 

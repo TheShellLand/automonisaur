@@ -1,12 +1,13 @@
-import datetime
+import profile
+import asyncio
 import logging
-import automon
+import datetime
 import tracemalloc
 
 import pandas as pd
 import numpy as np
 
-from automon import log
+from automon.log import logger
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.facebook import FacebookGroups
 from automon.integrations.google.sheets import GoogleSheetsClient
@@ -19,15 +20,17 @@ logging.getLogger('selenium.webdriver.common.service').setLevel(logging.ERROR)
 logging.getLogger('selenium.webdriver.remote.remote_connection').setLevel(logging.ERROR)
 logging.getLogger('selenium.webdriver.common.selenium_manager').setLevel(logging.ERROR)
 
-logging.getLogger('automon.integrations.seleniumWrapper.browser').setLevel(logging.DEBUG)
-logging.getLogger('automon.integrations.seleniumWrapper.webdriver_chrome').setLevel(logging.DEBUG)
+logging.getLogger('automon.integrations.seleniumWrapper.browser').setLevel(logging.CRITICAL)
+logging.getLogger('automon.integrations.seleniumWrapper.webdriver_chrome').setLevel(logging.INFO)
+logging.getLogger('automon.integrations.google.sheets.client').setLevel(logging.INFO)
 logging.getLogger('automon.integrations.facebook.groups').setLevel(logging.DEBUG)
 logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(logging.INFO)
+logging.getLogger('automon.helpers.sleeper').setLevel(logging.INFO)
 
 tracemalloc.start()
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 SHEET_NAME = 'Automated Count DO NOT EDIT'
 SHEET_NAME_INGEST = 'URLS TO INGEST'
@@ -36,22 +39,33 @@ sheets_client = GoogleSheetsClient(
     worksheet=SHEET_NAME,
 )
 
+facebook_group_client = FacebookGroups()
 
-def get_facebook_info(url: str):
+
+async def get_facebook_info(url: str):
+    dict = {}
+
     if not url:
-        return {}
+        return dict
 
-    group = FacebookGroups(
-        url=url_cleaner(url=url)
+    await facebook_group_client.start(
+        headless=True,
+        random_user_agent=True,
     )
-    # group.start(headless=False)
-    group.start(headless=True)
-    group.get_about()
 
-    return group.to_dict()
+    await facebook_group_client.set_url(url=url)
+
+    try:
+        result = await facebook_group_client.get_about(rate_limiting=False)
+        dict = await facebook_group_client.to_dict()
+        await facebook_group_client.quit()
+    except Exception as e:
+        log.error(f'{e}')
+
+    return dict
 
 
-def url_cleaner(url: str):
+async def url_cleaner(url: str):
     if not url:
         return
     if url[-1] == '/':
@@ -59,8 +73,8 @@ def url_cleaner(url: str):
     return url
 
 
-def merge_urls():
-    sheets_client.get(
+async def merge_urls():
+    await sheets_client.get(
         ranges='AUG23 AUDIT!A:Z',
         fields="sheets/data/rowData/values/hyperlink",
     )
@@ -76,8 +90,8 @@ def merge_urls():
 
     df_Shelley = pd.DataFrame(data=links, columns=['url'])
 
-    sheets_client.get()
-    sheets_client.get_values(
+    await sheets_client.get()
+    await sheets_client.get_values(
         range=f'{SHEET_NAME}!A:Z'
     )
 
@@ -94,16 +108,22 @@ def merge_urls():
     return df
 
 
-def batch_processing(sheet_index: int, df: pd.DataFrame):
-    df_results = df['url'].dropna().apply(
-        lambda url: get_facebook_info(url=url)
-    )
-    df_results = pd.DataFrame(df_results.tolist())
+async def batch_processing(sheet_index: int, df: pd.DataFrame):
+    # df_results = df['url'].dropna().apply(
+    #     lambda url: get_facebook_info(url=url)
+    # )
+
+    df_index = df['url'].dropna().index
+    df_url = df['url'].dropna().iloc[0]
+    df_results = await get_facebook_info(url=df_url)
+    df_results = pd.DataFrame([df_results])
 
     df = df.reset_index()
 
     todays_date = datetime.datetime.now().date()
     monthly = f'{todays_date.year}-{todays_date.month}'
+
+    assert df['url'].iloc[0] == df_results['url'].iloc[0]
 
     # create columns
     df[f'url'] = df_results['url']
@@ -145,9 +165,9 @@ def batch_processing(sheet_index: int, df: pd.DataFrame):
 
     sheet_index_df = df['index'].loc[0]
     assert sheet_index == sheet_index_df
-    df = df.drop('index', axis=1)
+    df = df.drop(columns='index')
 
-    # add all other dates
+    # add all other columns
     df_columns = df.columns.tolist()
     columns.extend(
         [x for x in df_columns if x not in columns]
@@ -162,22 +182,22 @@ def batch_processing(sheet_index: int, df: pd.DataFrame):
     df = df.loc[:, columns]
     df = df.fillna(np.nan).replace([np.nan], [None])
 
-    update_columns = sheets_client.update(
+    update_columns = await sheets_client.update(
         range=f'{SHEET_NAME}!A1:Z',
         values=[columns],
     )
 
-    update = sheets_client.update(
+    update = await sheets_client.update(
         range=f'{SHEET_NAME}!A{sheet_index_df}:Z',
         values=[x for x in df.values.tolist()]
     )
 
-    logger.info(f'{sheet_index_df}: {[x for x in df.values.tolist()]}')
+    log.info(f'{sheet_index_df}: {[x for x in df.values.tolist()]}')
 
     return df
 
 
-def memory_profiler():
+async def memory_profiler():
     snapshot = tracemalloc.take_snapshot()
     top_stats = snapshot.statistics("lineno")
 
@@ -196,7 +216,7 @@ def memory_profiler():
     cols.sort()
     df_memory_profile = df_memory_profile.loc[:, cols]
 
-    logger.debug(
+    log.debug(
         f"total memory used: {df_memory_profile['size_MB'].sum()} MB; "
         f'most memory used: '
         f'{df_memory_profile.iloc[0].to_dict()}'
@@ -205,29 +225,44 @@ def memory_profiler():
     return df_memory_profile
 
 
-def main():
-    if not sheets_client.authenticate():
+async def expensive_state_keeping():
+    """fetch sheet data"""
+    if not await sheets_client.authenticate():
         return
 
     # merge urls from audit sheet
-    # df_audit = merge_urls()
+    # df_audit = await merge_urls()
     # df_audit = df_audit.fillna(np.nan).replace([np.nan], [None])
     # rows = []
     # rows.append(df_audit.columns.tolist())
     # rows.extend([x for x in df_audit.values.tolist()])
-    # update = sheets_client.update(
+    # update = await sheets_client.update(
     #     range=f'{SHEET_NAME}!A:Z',
     #     values=rows
     # )
 
     # start processing
-    sheets_client.get_values(
+    await sheets_client.get_values(
         range=f'{SHEET_NAME}!A:Z'
     )
 
     sheet_values = sheets_client.values
-    sheet_columns = sheet_values[0]
+    try:
+        sheet_columns = sheet_values[0]
+    except:
+        return await expensive_state_keeping()
     sheet_data = sheet_values[1:]
+
+    if sheet_columns and sheet_data:
+        for row in sheet_data:
+            if len(sheet_columns) > len(sheet_data[sheet_data.index(row)]):
+
+                fix_length = row
+                r = len(sheet_columns) - len(sheet_data[sheet_data.index(row)])
+                for i in range(r):
+                    fix_length.append(None)
+
+                sheet_data[sheet_data.index(row)] = fix_length
 
     df = pd.DataFrame(data=sheet_data, columns=sheet_columns)
     df = df.dropna(subset=['url'])
@@ -243,21 +278,21 @@ def main():
         duplicate_index, duplicate_row = duplicate
 
         # clear row in sheet
-        range = f'{SHEET_NAME}!{duplicate_index}:{duplicate_index}'
-        result = sheets_client.clear(range=range)
+        data_range = f'{SHEET_NAME}!{duplicate_index}:{duplicate_index}'
+        result = await sheets_client.clear(range=data_range)
         # max 60/min
-        Sleeper.seconds(seconds=1)
-        logger.info(result)
+        Sleeper.seconds(f'WriteRequestsPerMinutePerUser', seconds=1)
+        log.info(result)
         df = df.drop(duplicate_index)
 
     # ingest urls from SHEET_NAME_INGEST
-    sheets_client.get_values(
+    await sheets_client.get_values(
         range=f'{SHEET_NAME_INGEST}!A:Z'
     )
     ingest_sheet_values = sheets_client.values
     if ingest_sheet_values:
         ingest_sheet_values = [x[0] if x else [] for x in ingest_sheet_values]
-        ingest_sheet_values = [url_cleaner(x) for x in ingest_sheet_values]
+        ingest_sheet_values = [await url_cleaner(x) for x in ingest_sheet_values]
     df_ingest_sheet_values = pd.DataFrame(ingest_sheet_values)
     df_ingest_sheet_values.index = df_ingest_sheet_values.index + 1
 
@@ -274,19 +309,25 @@ def main():
 
             values = [[x for x in df.loc[index_add_url].values.tolist()]]
 
-            update = sheets_client.update(
+            update = await sheets_client.update(
                 range=f'{SHEET_NAME}!A{index_add_url}:Z',
                 values=values
             )
 
-            logger.info(
+            log.info(
                 f'{index_add_url}: {values}'
             )
 
         # clear url from ingest sheet
-        range = f'{SHEET_NAME_INGEST}!{ingest_index}:{ingest_index}'
-        clear = sheets_client.clear(range=range)
-        logger.info(f'{clear}')
+        data_range = f'{SHEET_NAME_INGEST}!{ingest_index}:{ingest_index}'
+        clear = await sheets_client.clear(range=data_range)
+        log.info(f'{clear}')
+
+    return df
+
+
+async def main():
+    df = await expensive_state_keeping()
 
     # start updating
     for data in df.iterrows():
@@ -298,20 +339,19 @@ def main():
         todays_date = datetime.datetime.now().date()
         last_updated = f'{todays_date.year}-{todays_date.month}'
         if df_batch['last_updated'].iloc[0] == last_updated:
-            # logger.debug(f'skipping {data_index}, {data_row.to_dict()}')
+            # log.debug(f'skipping {data_index}, {data_row.to_dict()}')
+            # df = expensive_state_keeping()
             continue
 
-        batch_result = batch_processing(sheet_index=data_index, df=df_batch)
-
         try:
-            batch_result = batch_processing(sheet_index=data_index, df=df_batch)
-            df_memory = memory_profiler()
-        except Exception as e:
-            df_memory = memory_profiler()
-            logger.error(f'{e}')
-
-    pass
+            log.info(f'complete {round(data_index / len(df) * 100)}% {data_index}/{len(df)}')
+            batch_result = await batch_processing(sheet_index=data_index, df=df_batch)
+        except Exception as error:
+            log.error(f'{error}')
+        df_memory = await memory_profiler()
 
 
 if __name__ == '__main__':
-    main()
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(main())
+    asyncio.run(main())

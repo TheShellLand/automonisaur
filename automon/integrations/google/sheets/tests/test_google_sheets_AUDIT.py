@@ -7,22 +7,22 @@ from automon.integrations.google.sheets import GoogleSheetsClient
 from automon.integrations.facebook import FacebookGroups
 
 
-def get_facebook_info(url: str):
+async def get_facebook_info(url: str):
     group = FacebookGroups()
     # group.start(headless=False)
-    group.start(headless=True)
-    group.get(url=url)
+    await group.start(headless=True)
+    await group.get(url=url)
     if not group.privacy_details:
-        close = group._browser.wait_for(group.xpath_popup_close).click()
-        group._browser.action_click(close)
-        about = group._browser.wait_for(group.xpath_about)
-        group._browser.action_click(about)
+        close = await group._browser.wait_for(group._xpath_popup_close)
+        close.click()
+        about = await group._browser.wait_for(group._xpath_about)
+        about.click()
 
-    return group.to_dict()
+    return await group.to_dict()
 
 
 class MyTestCase(unittest.TestCase):
-    def test_authenticate(self):
+    async def test_authenticate(self):
         spreadsheetId = '1isrvjU0DaRijEztByQuT9u40TaCOCwdaLAXgGmKHap8'
         test = GoogleSheetsClient(
             spreadsheetId=spreadsheetId,
@@ -30,13 +30,13 @@ class MyTestCase(unittest.TestCase):
             range='AUDIT list Shelley!A:B'
         )
 
-        if not test.authenticate():
+        if not await test.authenticate():
             return
 
-        test.get_values(
+        await test.get_values(
             range='AUDIT list Shelley!A:Z',
         )
-        test.get(
+        await test.get(
             ranges='AUDIT list Shelley!A:Z',
             fields="sheets/data/rowData/values/hyperlink",
         )
