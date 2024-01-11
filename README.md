@@ -26,35 +26,30 @@
 
 ### About
 
-This library adds some easier-to-use wrappers around common services for data science and threat intelligence.
+This library adds some easier-to-use wrappers around common services for data
+science and threat intelligence.
 
-Provides easier clients and configuration options, as well as any additional helpers to get things up and running.
+Provides easier clients and configuration options, as well as any additional
+helpers to get things up and running.
 
 Github issues and feature requests welcomed.
 
 ### Integrations
 
-- airport
-- beautifulsoup
-- elasticsearch
-- facebook groups
-- flask
-- google auth api
-- google people api
-- google sheets api
-- instagram
-- logging
-- minio
-- neo4j
-- nmap
-- requests
-- scrapy
-- selenium
-- sentryio
-- slack
-- snmp
-- splunk
-- swift
+| Category        | Library                                                     |
+|-----------------|-------------------------------------------------------------|
+| API             | flask                                                       |
+| Chat            | slack                                                       |
+| Data Scraping   | beautifulsoup<br/>facebook groups<br/>instagram<br/>scrapy  |
+| Databases       | elasticsearch<br/>neo4j<br/>splunk                          |
+| Data Store      | minio<br/>swift                                             |
+| Devices         | snmp                                                        |
+| Google Cloud    | google auth api<br/>google people api<br/>google sheets api |
+| Logging         | sentryio                                                    |
+| macOS           | airport<br/>macchanger                                      |
+| Python          | logging<br/>requests                                        |
+| Recon           | nmap                                                        |
+| Test Automation | selenium                                                    |
 
 #### Requires
 
@@ -79,6 +74,9 @@ python3 -m pip install -U -r requirements.txt
 
 # pip 
 python3 -m pip install -U -r https://raw.githubusercontent.com/TheShellLand/automonisaur/master/requirements.txt
+
+# master branch 
+python3 -m pip install --upgrade git+https://github.com/TheShellLand/automonisaur.git@master#egg
 ```
 
 #### unittest locally
