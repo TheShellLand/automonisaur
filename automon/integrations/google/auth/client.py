@@ -34,36 +34,36 @@ class GoogleAuthClient(object):
         return f'{self.__dict__}'
 
     @classmethod
-    def execute(cls, func):
-        return func.execute()
+    async def execute(cls, func):
+        return await func.execute()
 
-    def _is_connected(func):
+    async def _is_connected(func):
         @functools.wraps(func)
-        def wrapped(self, *args, **kwargs):
+        async def wrapped(self, *args, **kwargs):
             if self.authenticate():
-                return func(self, *args, **kwargs)
+                return await func(self, *args, **kwargs)
 
         return wrapped
 
-    def authenticate(self) -> bool:
+    async def authenticate(self) -> bool:
         """authenticate with credentials"""
 
         try:
-            return self.authenticate_oauth()
+            return await self.authenticate_oauth()
         except:
             pass
 
         try:
-            return self.authenticate_service_account()
+            return await self.authenticate_service_account()
         except:
             pass
 
         return False
 
-    def authenticate_oauth(self) -> bool:
+    async def authenticate_oauth(self) -> bool:
         """authenticate web token"""
 
-        creds = self.config.Credentials
+        creds = await self.config.Credentials()
         refresh_token = creds.refresh_token
 
         if refresh_token:
@@ -81,17 +81,17 @@ class GoogleAuthClient(object):
 
         return False
 
-    def authenticate_service_account(self) -> bool:
+    async def authenticate_service_account(self) -> bool:
         """authenticate service account"""
-        if self.config.Credentials:
+        if await self.config.Credentials():
             return True
         return False
 
-    def is_connected(self) -> bool:
+    async def is_connected(self) -> bool:
         """Check if authenticated to make requests"""
-        return self.authenticate()
+        return await self.authenticate()
 
-    def service(
+    async def service(
             self,
             serviceName: str = None,
             version: str = None,
@@ -119,7 +119,7 @@ class GoogleAuthClient(object):
             developerKey=developerKey,
             model=model,
             requestBuilder=requestBuilder or googleapiclient.http.HttpRequest,
-            credentials=credentials or self.config.Credentials,
+            credentials=credentials or await self.config.Credentials(),
             cache_discovery=cache_discovery,
             cache=cache,
             client_options=client_options,
