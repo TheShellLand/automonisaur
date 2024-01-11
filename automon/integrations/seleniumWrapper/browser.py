@@ -283,7 +283,7 @@ class SeleniumBrowser(object):
         self.webdriver.close()
 
     @staticmethod
-    def error_parsing(error) -> tuple:
+    async def error_parsing(error) -> tuple:
         try:
             error_parsed = f'{error}'.splitlines()
             error_parsed = [f'{x}'.strip() for x in error_parsed]
@@ -416,7 +416,7 @@ class SeleniumBrowser(object):
             self.webdriver.quit()
             self.webdriver.stop_client()
         except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
+            message, session, stacktrace = await self.error_parsing(error)
             logger.error(str(dict(
                 message=message,
                 session=session,
@@ -486,7 +486,7 @@ class SeleniumBrowser(object):
                 height=height,
                 device_type=device_type)
         except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
+            message, session, stacktrace = await self.error_parsing(error)
             logger.error(str(dict(
                 message=message,
                 session=session,

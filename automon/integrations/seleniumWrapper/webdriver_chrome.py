@@ -330,7 +330,7 @@ class ChromeWrapper(object):
     async def set_chromedriver(self, chromedriver_path: str):
         logger.debug(f'{chromedriver_path}')
         self._chromedriver_path.append(chromedriver_path)
-        await self.update_paths(chromedriver_path)
+        self.update_paths(chromedriver_path)
         return self
 
     async def set_locale(self, locale: str = 'en'):
