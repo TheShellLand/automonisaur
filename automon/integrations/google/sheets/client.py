@@ -52,7 +52,7 @@ class GoogleSheetsClient(GoogleAuthClient):
             except Exception as e:
                 pass
 
-    def clear(
+    async def clear(
             self,
             range: str,
             spreadsheetId: str = None,
@@ -61,7 +61,8 @@ class GoogleSheetsClient(GoogleAuthClient):
         """clear rows"""
         try:
 
-            result = self.spreadsheets().values().clear(
+            spreadsheets = await self.spreadsheets()
+            result = spreadsheets.values().clear(
                 spreadsheetId=spreadsheetId or self.config.spreadsheetId,
                 range=range or self.range,
                 **kwargs,
@@ -74,11 +75,12 @@ class GoogleSheetsClient(GoogleAuthClient):
             logger.error(f"An error occurred: {error}")
             return error
 
-    def spreadsheets(self):
+    async def spreadsheets(self):
         """spreadsheet service"""
-        return self.service().spreadsheets()
+        service = await self.service()
+        return service.spreadsheets()
 
-    def get(
+    async def get(
             self,
             spreadsheetId: str = None,
             ranges: str = None,
@@ -88,7 +90,8 @@ class GoogleSheetsClient(GoogleAuthClient):
     ):
         """get rows"""
         try:
-            self.response = self.spreadsheets().get(
+            spreadsheets = await self.spreadsheets()
+            self.response = spreadsheets.get(
                 spreadsheetId=spreadsheetId or self.config.spreadsheetId,
                 ranges=ranges or self.range,
                 includeGridData=includeGridData,
@@ -101,7 +104,7 @@ class GoogleSheetsClient(GoogleAuthClient):
 
         return self
 
-    def get_values(
+    async def get_values(
             self,
             spreadsheetId: str = None,
             range: str = None,
@@ -109,7 +112,8 @@ class GoogleSheetsClient(GoogleAuthClient):
     ):
         """get values"""
         try:
-            self.response = self.spreadsheets().values().get(
+            spreadsheets = await self.spreadsheets()
+            self.response = spreadsheets.values().get(
                 spreadsheetId=spreadsheetId or self.config.spreadsheetId,
                 range=range or f'{self.worksheet}!{self.range}',
                 **kwargs,
@@ -125,12 +129,12 @@ class GoogleSheetsClient(GoogleAuthClient):
 
         return self
 
-    def list(self):
+    async def list(self):
         # list(pageSize=1).execute()
         logger.warning(f'{NotImplemented}')
         return
 
-    def update(
+    async def update(
             self,
             spreadsheetId: str = None,
             range: str = None,
@@ -146,7 +150,8 @@ class GoogleSheetsClient(GoogleAuthClient):
 
             logger.debug(f'{body}')
 
-            result = self.spreadsheets().values().update(
+            spreadsheets = await self.spreadsheets()
+            result = spreadsheets.values().update(
                 spreadsheetId=spreadsheetId or self.config.spreadsheetId,
                 range=range or self.range,
                 valueInputOption=valueInputOption,

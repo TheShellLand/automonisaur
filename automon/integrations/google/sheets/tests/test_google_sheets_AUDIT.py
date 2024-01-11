@@ -13,7 +13,7 @@ def get_facebook_info(url: str):
     group.start(headless=True)
     group.get(url=url)
     if not group.privacy_details:
-        close = group._browser.wait_for(group.xpath_popup_close)
+        close = group._browser.wait_for(group.xpath_popup_close).click()
         group._browser.action_click(close)
         about = group._browser.wait_for(group.xpath_about)
         group._browser.action_click(about)
