@@ -57,6 +57,10 @@ class SentryConfig(object):
     def __repr__(self):
         return f'{self.__dict__}'
 
+    async def is_ready(self):
+        if self.dsn:
+            return True
+
     async def setLevel(self, level):
         self.level = level
         return sentry_sdk.set_level(self.level)

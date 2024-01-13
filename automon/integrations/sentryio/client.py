@@ -43,9 +43,8 @@ class SentryClient(object):
         return f'{self.__dict__}'
 
     async def isConnected(self):
-        if self.config.dsn:
+        if await self.config.is_ready():
             return True
-        return False
 
     async def setLevel(self, level):
         return self.config.setLevel(level)
