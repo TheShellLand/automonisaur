@@ -123,11 +123,11 @@ class FacebookGroups(object):
             return
 
     async def current_rate_too_fast(self):
-        if self.average_rate() == 0 or len(self._rate_counter) < 2:
+        if await self.average_rate() == 0 or len(self._rate_counter) < 2:
             logger.info(False)
             return False
 
-        if self.average_rate() < self.rate_per_minute():
+        if await self.average_rate() < await self.rate_per_minute():
             logger.info(True)
             return True
 
@@ -438,7 +438,7 @@ class FacebookGroups(object):
         result = None
         while retry < retries:
 
-            if self.rate_limited():
+            if await self.rate_limited():
                 await self.rate_limit_increase()
 
                 self._rate_counter.append(self._wait_between_retries)
