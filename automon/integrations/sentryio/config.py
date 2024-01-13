@@ -1,22 +1,24 @@
-from sentry_sdk import set_level
+import sentry_sdk
 
 from automon.helpers.osWrapper import environ
 
 
 class SentryConfig(object):
-    def __init__(self, dsn: str = None,
-                 environment: str = None,
-                 release: str = None,
-                 debug: bool = False,
-                 sample_rate: float = None,
-                 request_bodies: str = None,
-                 level: str = None):
+    def __init__(
+            self, dsn: str = None,
+            environment: str = None,
+            release: str = None,
+            debug: bool = False,
+            sample_rate: float = None,
+            request_bodies: str = None,
+            level: str = None
+    ):
         self.SENTRY_DSN = dsn or environ('SENTRY_DSN')
         self.SENTRY_ENVIRONMENT = environment or environ('SENTRY_ENVIRONMENT')
         self.SENTRY_RELEASE = release or environ('SENTRY_RELEASE')
 
         self.level = level or 'debug'
-        set_level(self.level)
+        sentry_sdk.set_level(self.level)
 
         # common options
         self.dsn = self.SENTRY_DSN
@@ -55,6 +57,6 @@ class SentryConfig(object):
     def __repr__(self):
         return f'{self.__dict__}'
 
-    def setLevel(self, level):
+    async def setLevel(self, level):
         self.level = level
-        return set_level(self.level)
+        return sentry_sdk.set_level(self.level)
