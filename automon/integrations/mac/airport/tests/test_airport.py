@@ -1,50 +1,52 @@
-import sys
 import unittest
+import asyncio
+import sys
 
 from automon.integrations.mac.airport import Airport
 
+airport = Airport()
+
 
 class AirportTest(unittest.TestCase):
-    a = Airport()
 
     def test_run(self):
-        if self.a.isReady():
-            self.assertTrue(self.a.run())
+        if asyncio.run(airport.isReady()):
+            self.assertTrue(asyncio.run(airport.run()))
 
     def test_scan(self):
-        if self.a.isReady():
-            self.assertTrue(self.a.scan())
-            self.assertTrue(self.a.scan(0))
+        if asyncio.run(airport.isReady()):
+            self.assertTrue(asyncio.run(airport.scan()))
+            self.assertTrue(asyncio.run(airport.scan(0)))
 
     def test_summary(self):
-        if self.a.isReady():
-            self.assertTrue(self.a.scan_summary())
-            self.assertTrue(self.a.scan_summary(0))
+        if asyncio.run(airport.isReady()):
+            self.assertTrue(asyncio.run(airport.scan_summary()))
+            self.assertTrue(asyncio.run(airport.scan_summary(0)))
 
     def test_xml(self):
-        if self.a.isReady():
-            scan = self.a.scan_xml()
+        if asyncio.run(airport.isReady()):
+            scan = asyncio.run(airport.scan_xml())
             if scan:
                 self.assertTrue(scan)
-            self.assertFalse(self.a.scan_xml(0))
+            self.assertFalse(asyncio.run(airport.scan_xml(0)))
 
     def test_set_channel(self):
-        if self.a.isReady():
+        if asyncio.run(airport.isReady()):
             pass
-            # self.assertTrue(self.a.set_channel(10))
+            # self.assertTrue(a.set_channel(10))
 
     def test_disassociate(self):
-        if self.a.isReady():
+        if asyncio.run(airport.isReady()):
             pass
-            # self.assertTrue(self.a.disassociate())
+            # self.assertTrue(a.disassociate())
 
     def test_getinto(self):
-        if self.a.isReady():
-            self.assertTrue(self.a.getinfo())
+        if asyncio.run(airport.isReady()):
+            self.assertTrue(asyncio.run(airport.getinfo()))
 
     def test_create_psk(self):
-        if self.a.isReady():
-            self.assertTrue(self.a.create_psk(ssid='AAAAAAAA', passphrase='CALVIN'))
+        if asyncio.run(airport.isReady()):
+            self.assertTrue(asyncio.run(airport.create_psk(ssid='AAAAAAAA', passphrase='CALVIN')))
 
 
 if __name__ == '__main__':

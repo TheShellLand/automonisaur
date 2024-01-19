@@ -74,21 +74,21 @@ class Airport:
     def _command(command: str) -> list:
         return f'{command}'.split(' ')
 
-    def create_psk(self, ssid: str, passphrase: str):
+    async def create_psk(self, ssid: str, passphrase: str):
         """Create PSK from specified pass phrase and SSID."""
-        if self.run(args=f'-P --ssid={ssid} --password={passphrase}'):
+        if await self.run(args=f'-P --ssid={ssid} --password={passphrase}'):
             return f'{bytes(self._scan_output).decode()}'.strip()
         return False
 
-    def disassociate(self):
+    async def disassociate(self):
         """Disassociate from any network."""
-        return self.run(args='-z')
+        return await self.run(args='-z')
 
-    def getinfo(self):
+    async def getinfo(self):
         """Print current wireless status, e.g. signal info, BSSID, port type etc."""
-        return self.run(args='-I')
+        return await self.run(args='-I')
 
-    def isReady(self):
+    async def isReady(self):
         if sys.platform == 'darwin':
             if os.path.exists(self._airport):
                 logger.debug(f'Airport found! {self._airport}')
@@ -97,9 +97,9 @@ class Airport:
                 logger.error(f'Airport not found! {self._airport}')
         return False
 
-    def run(self, args: str = None):
+    async def run(self, args: str = None):
         """Run airport"""
-        if not self.isReady():
+        if not await self.isReady():
             return False
 
         command = f'{self._airport}'
@@ -121,11 +121,11 @@ class Airport:
 
         return False
 
-    def set_channel(self, channel: int):
+    async def set_channel(self, channel: int):
         """Set arbitrary channel on the card."""
-        return self.run(args=f'-c {channel}')
+        return await self.run(args=f'-c {channel}')
 
-    def scan(self, channel: int = None, args: str = None, ssid: str = None):
+    async def scan(self, channel: int = None, args: str = None, ssid: str = None):
         """Perform a wireless broadcast scan."""
 
         cmd = f'-s'
@@ -139,17 +139,17 @@ class Airport:
         if args:
             cmd = f'{cmd} {args}'
 
-        if self.run(args=cmd):
+        if await self.run(args=cmd):
             self._scan_output = self._runner.stdout
             self._scan_error = self._runner.stderr
             return True
 
         return False
 
-    def scan_channel(self, channel: int = None):
+    async def scan_channel(self, channel: int = None):
         return self.scan(channel=channel)
 
-    def scan_summary(self, channel: int = None, args: str = None, output: bool = True):
+    async def scan_summary(self, channel: int = None, args: str = None, output: bool = True):
         if self.scan(channel=channel, args=args):
             if output:
                 logger.info(f'{self._scan_output}')
@@ -160,10 +160,10 @@ class Airport:
     def ssids(self):
         return self.scan_result.ssids
 
-    def scan_xml(self, ssid: str = None, channel: int = None) -> [Ssid]:
+    async def scan_xml(self, ssid: str = None, channel: int = None) -> [Ssid]:
         """Run scan and process xml output."""
 
-        self.scan(ssid=ssid, args='-x', channel=channel)
+        await self.scan(ssid=ssid, args='-x', channel=channel)
 
         data = self._scan_output
         data = [x for x in data.splitlines()]
