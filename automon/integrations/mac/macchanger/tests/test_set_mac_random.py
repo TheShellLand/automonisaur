@@ -1,7 +1,7 @@
 import unittest
 import asyncio
 
-from automon.integrations import MacChanger
+from automon.integrations.mac import MacChanger
 
 client = MacChanger()
 
