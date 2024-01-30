@@ -40,6 +40,15 @@ neo4j>=4.4.9
 python-keystoneclient>=4.2.0
 python-swiftclient>=3.12.0
 
+# opentelemetry
+#opentelemetry-distro>=0.43b0
+#opentelemetry-exporter-otlp>=1.22.0
+opentelemetry-instrumentation-logging>=0.43b0
+# workaround
+git+https://github.com/open-telemetry/opentelemetry-python-contrib@main
+#opentelemetry-exporter-otlp==1.20.0
+#opentelemetry-instrumentation-aiohttp-server==0.43b0
+
 # splunk soar
 pytz>=2021.1
 

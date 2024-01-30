@@ -55,6 +55,13 @@ OPENSTACK_INTERFACE=public
 OPENSTACK_IDENTITY_API_VERSION=3
 SWIFTCLIENT_INSECURE=True
 
+# OpenTelemetry
+# https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/logging/logging.html
+OTEL_PYTHON_LOG_CORRELATION=true
+OTEL_PYTHON_LOG_FORMAT='%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s trace_sampled=%(otelTraceSampled)s] - %(message)s'
+OTEL_PYTHON_LOG_LEVEL=debug
+
+
 # Splunk SOAR
 SPLUNK_SOAR_HOST=
 SPLUNK_SOAR_AUTH_TOKEN=
