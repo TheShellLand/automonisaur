@@ -1,0 +1,2 @@
+class SwimlaneConfig(object):
+    pass

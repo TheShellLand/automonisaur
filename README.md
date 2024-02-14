@@ -46,8 +46,9 @@ Github issues and feature requests welcomed.
 | Devices         | snmp                                                        |
 | Google Cloud    | google auth api<br/>google people api<br/>google sheets api |
 | Logging         | sentryio                                                    |
-| macOS           | airport<br/>macchanger                                      |
+| MacOS           | airport<br/>macchanger                                      |
 | Python          | logging<br/>requests                                        |
+| SOAR            | swimlane<br/>splunk soar                                    |
 | Recon           | nmap                                                        |
 | Test Automation | selenium                                                    |
 
