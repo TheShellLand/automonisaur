@@ -33,13 +33,13 @@ class RequestsClient(object):
         if self.content:
             len(self.content)
 
-    def _log_result(self):
-        if self.results.status_code == 200:
+    async def _log_result(self):
+        if self.status_code == 200:
             msg = [
                 self.results.request.method,
                 self.results.url,
                 f'{round(len(self.results.content) / 1024, 2)} KB',
-                self.results.status_code,
+                self.status_code,
             ]
             msg = ' '.join(msg)
             return logger.debug(msg)
@@ -48,14 +48,14 @@ class RequestsClient(object):
             self.results.request.method,
             self.results.url,
             f'{round(len(self.results.content) / 1024, 2)} KB',
-            self.results.status_code,
+            self.status_code,
             self.results.content
         ]
 
         msg = ' '.join(msg)
         return logger.error(msg)
 
-    def _params(self, url, data, headers):
+    async def _params(self, url, data, headers):
         if url is None:
             url = self.url
 
@@ -72,7 +72,7 @@ class RequestsClient(object):
 
     @property
     def content(self):
-        if self.results:
+        if 'content' in dir(self.results):
             return self.results.content
 
     @property
@@ -80,30 +80,34 @@ class RequestsClient(object):
         if self.results:
             return self.results.text
 
-    def delete(self,
-               url: str = None,
-               data: dict = None,
-               headers: dict = None, **kwargs) -> bool:
+    async def delete(self,
+                     url: str = None,
+                     data: dict = None,
+                     headers: dict = None, **kwargs) -> bool:
         """requests.delete"""
 
-        url, data, headers = self._params(url, data, headers)
+        url, data, headers = await self._params(url, data, headers)
 
         try:
             self.results = requests.delete(url=url, data=data, headers=headers, **kwargs)
-            self._log_result()
-            return True
+            await self._log_result()
+
+            if self.status_code == 200:
+                return True
+
+            return False
         except Exception as e:
             self.errors = e
             logger.error(f'delete failed. {e}')
         return False
 
-    def get(self,
-            url: str = None,
-            data: dict = None,
-            headers: dict = None, **kwargs) -> bool:
+    async def get(self,
+                  url: str = None,
+                  data: dict = None,
+                  headers: dict = None, **kwargs) -> bool:
         """requests.get"""
 
-        url, data, headers = self._params(url, data, headers)
+        url, data, headers = await self._params(url, data, headers)
 
         try:
             self.results = requests.get(url=url, data=data, headers=headers, **kwargs)
@@ -111,22 +115,25 @@ class RequestsClient(object):
             logger.debug(
                 f'{self.results.url} '
                 f'{round(len(self.results.content) / 1024, 2)} KB '
-                f'{self.results.status_code}'
+                f'{self.status_code}'
             )
 
-            return True
+            if self.status_code == 200:
+                return True
+
+            return False
         except Exception as e:
             self.errors = e
             logger.error(f'{e}')
         return False
 
-    def patch(self,
-              url: str = None,
-              data: dict = None,
-              headers: dict = None, **kwargs) -> bool:
+    async def patch(self,
+                    url: str = None,
+                    data: dict = None,
+                    headers: dict = None, **kwargs) -> bool:
         """requests.patch"""
 
-        url, data, headers = self._params(url, data, headers)
+        url, data, headers = await self._params(url, data, headers)
 
         try:
             self.results = requests.patch(url=url, data=data, headers=headers, **kwargs)
@@ -134,22 +141,25 @@ class RequestsClient(object):
             logger.debug(
                 f'{self.results.url} '
                 f'{round(len(self.results.content) / 1024, 2)} KB '
-                f'{self.results.status_code}'
+                f'{self.status_code}'
             )
 
-            return True
+            if self.status_code == 200:
+                return True
+
+            return False
         except Exception as e:
             self.errors = e
             logger.error(f'patch failed. {e}')
         return False
 
-    def post(self,
-             url: str = None,
-             data: dict = None,
-             headers: dict = None, **kwargs) -> bool:
+    async def post(self,
+                   url: str = None,
+                   data: dict = None,
+                   headers: dict = None, **kwargs) -> bool:
         """requests.post"""
 
-        url, data, headers = self._params(url, data, headers)
+        url, data, headers = await self._params(url, data, headers)
 
         try:
             self.results = requests.post(url=url, data=data, headers=headers, **kwargs)
@@ -157,22 +167,25 @@ class RequestsClient(object):
             logger.debug(
                 f'{self.results.url} '
                 f'{round(len(self.results.content) / 1024, 2)} KB '
-                f'{self.results.status_code}'
+                f'{self.status_code}'
             )
 
-            return True
+            if self.status_code == 200:
+                return True
+
+            return False
         except Exception as e:
             self.errors = e
             logger.error(f'post failed. {e}')
         return False
 
-    def put(self,
-            url: str = None,
-            data: dict = None,
-            headers: dict = None, **kwargs) -> bool:
+    async def put(self,
+                  url: str = None,
+                  data: dict = None,
+                  headers: dict = None, **kwargs) -> bool:
         """requests.put"""
 
-        url, data, headers = self._params(url, data, headers)
+        url, data, headers = await self._params(url, data, headers)
 
         try:
             self.results = requests.put(url=url, data=data, headers=headers, **kwargs)
@@ -180,16 +193,24 @@ class RequestsClient(object):
             logger.debug(
                 f'{self.results.url} '
                 f'{round(len(self.results.content) / 1024, 2)} KB '
-                f'{self.results.status_code}'
+                f'{self.status_code}'
             )
 
-            return True
+            if self.status_code == 200:
+                return True
+
+            return False
         except Exception as e:
             self.errors = e
             logger.error(f'put failed. {e}')
         return False
 
-    def to_dict(self):
+    @property
+    def status_code(self):
+        if 'status_code' in dir(self.results):
+            return self.results.status_code
+
+    async def to_dict(self):
         if self.results is not None:
             return json.loads(self.results.content)
 
