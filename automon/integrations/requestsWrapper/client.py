@@ -75,11 +75,6 @@ class RequestsClient(object):
         if 'content' in dir(self.results):
             return self.results.content
 
-    @property
-    def text(self):
-        if self.results:
-            return self.results.text
-
     async def delete(self,
                      url: str = None,
                      data: dict = None,
@@ -206,9 +201,19 @@ class RequestsClient(object):
         return False
 
     @property
+    def reason(self):
+        if 'reason' in dir(self.results):
+            return self.results.reason
+
+    @property
     def status_code(self):
         if 'status_code' in dir(self.results):
             return self.results.status_code
+
+    @property
+    def text(self):
+        if self.results:
+            return self.results.text
 
     async def to_dict(self):
         if self.results is not None:
