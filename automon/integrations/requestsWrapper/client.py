@@ -38,7 +38,7 @@ class RequestsClient(object):
             msg = [
                 self.results.request.method,
                 self.results.url,
-                f'{round(len(self.results.content) / 1024, 2)} KB',
+                f'{round(len(self.content) / 1024, 2)} KB',
                 self.status_code,
             ]
             msg = ' '.join(msg)
@@ -47,9 +47,9 @@ class RequestsClient(object):
         msg = [
             self.results.request.method,
             self.results.url,
-            f'{round(len(self.results.content) / 1024, 2)} KB',
+            f'{round(len(self.content) / 1024, 2)} KB',
             self.status_code,
-            self.results.content
+            self.content
         ]
 
         msg = ' '.join(msg)
@@ -109,7 +109,7 @@ class RequestsClient(object):
 
             logger.debug(
                 f'{self.results.url} '
-                f'{round(len(self.results.content) / 1024, 2)} KB '
+                f'{round(len(self.content) / 1024, 2)} KB '
                 f'{self.status_code}'
             )
 
@@ -135,7 +135,7 @@ class RequestsClient(object):
 
             logger.debug(
                 f'{self.results.url} '
-                f'{round(len(self.results.content) / 1024, 2)} KB '
+                f'{round(len(self.content) / 1024, 2)} KB '
                 f'{self.status_code}'
             )
 
@@ -161,7 +161,7 @@ class RequestsClient(object):
 
             logger.debug(
                 f'{self.results.url} '
-                f'{round(len(self.results.content) / 1024, 2)} KB '
+                f'{round(len(self.content) / 1024, 2)} KB '
                 f'{self.status_code}'
             )
 
@@ -187,7 +187,7 @@ class RequestsClient(object):
 
             logger.debug(
                 f'{self.results.url} '
-                f'{round(len(self.results.content) / 1024, 2)} KB '
+                f'{round(len(self.content) / 1024, 2)} KB '
                 f'{self.status_code}'
             )
 
@@ -217,7 +217,11 @@ class RequestsClient(object):
 
     async def to_dict(self):
         if self.results is not None:
-            return json.loads(self.results.content)
+            return json.loads(self.content)
+
+    async def to_json(self):
+        if self.content:
+            return json.dumps(json.loads(self.content))
 
 
 class Requests(RequestsClient):
