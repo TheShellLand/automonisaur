@@ -21,6 +21,7 @@ class RequestsClient(object):
         self.headers = headers
         self.results = None
         self.requests = requests
+        self.session = self.requests.Session()
 
         if url:
             self.url = url
