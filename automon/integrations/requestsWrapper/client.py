@@ -76,16 +76,19 @@ class RequestsClient(object):
         if 'content' in dir(self.results):
             return self.results.content
 
-    async def delete(self,
-                     url: str = None,
-                     data: dict = None,
-                     headers: dict = None, **kwargs) -> bool:
+    async def delete(
+            self,
+            url: str = None,
+            data: dict = None,
+            headers: dict = None,
+            **kwargs
+    ) -> bool:
         """requests.delete"""
 
         url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = requests.delete(url=url, data=data, headers=headers, **kwargs)
+            self.results = self.session.delete(url=url, data=data, headers=headers, **kwargs)
             await self._log_result()
 
             if self.status_code == 200:
@@ -97,16 +100,19 @@ class RequestsClient(object):
             logger.error(f'delete failed. {e}')
         return False
 
-    async def get(self,
-                  url: str = None,
-                  data: dict = None,
-                  headers: dict = None, **kwargs) -> bool:
+    async def get(
+            self,
+            url: str = None,
+            data: dict = None,
+            headers: dict = None,
+            **kwargs
+    ) -> bool:
         """requests.get"""
 
         url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = requests.get(url=url, data=data, headers=headers, **kwargs)
+            self.results = self.session.get(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
                 f'{self.results.url} '
@@ -123,16 +129,19 @@ class RequestsClient(object):
             logger.error(f'{e}')
         return False
 
-    async def patch(self,
-                    url: str = None,
-                    data: dict = None,
-                    headers: dict = None, **kwargs) -> bool:
+    async def patch(
+            self,
+            url: str = None,
+            data: dict = None,
+            headers: dict = None,
+            **kwargs
+    ) -> bool:
         """requests.patch"""
 
         url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = requests.patch(url=url, data=data, headers=headers, **kwargs)
+            self.results = self.session.patch(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
                 f'{self.results.url} '
@@ -149,16 +158,19 @@ class RequestsClient(object):
             logger.error(f'patch failed. {e}')
         return False
 
-    async def post(self,
-                   url: str = None,
-                   data: dict = None,
-                   headers: dict = None, **kwargs) -> bool:
+    async def post(
+            self,
+            url: str = None,
+            data: dict = None,
+            headers: dict = None,
+            **kwargs
+    ) -> bool:
         """requests.post"""
 
         url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = requests.post(url=url, data=data, headers=headers, **kwargs)
+            self.results = self.session.post(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
                 f'{self.results.url} '
@@ -175,16 +187,19 @@ class RequestsClient(object):
             logger.error(f'post failed. {e}')
         return False
 
-    async def put(self,
-                  url: str = None,
-                  data: dict = None,
-                  headers: dict = None, **kwargs) -> bool:
+    async def put(
+            self,
+            url: str = None,
+            data: dict = None,
+            headers: dict = None,
+            **kwargs
+    ) -> bool:
         """requests.put"""
 
         url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = requests.put(url=url, data=data, headers=headers, **kwargs)
+            self.results = self.session.put(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
                 f'{self.results.url} '
@@ -223,6 +238,9 @@ class RequestsClient(object):
     async def to_json(self):
         if self.content:
             return json.dumps(json.loads(self.content))
+
+    async def update_headers(self, headers: dict):
+        return self.session.headers.update(headers)
 
 
 class Requests(RequestsClient):
