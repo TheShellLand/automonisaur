@@ -56,8 +56,8 @@ class SplunkSoarClient:
 
     def _content(self) -> bytes:
         """get result"""
-        if self.client.results:
-            return self.client.results.content
+        if self.client.response:
+            return self.client.response.content
         return b''
 
     def _content_dict(self) -> dict:
@@ -95,7 +95,7 @@ class SplunkSoarClient:
         """Set container status to closed"""
         data = dict(status='closed')
         if self._post(Urls.container(identifier=container_id, **kwargs), data=json.dumps(data)):
-            if self.client.results.status_code == 200:
+            if self.client.response.status_code == 200:
                 response = CloseContainerResponse(self._content_dict())
                 logger.info(f'container closed: {response}')
                 return response
@@ -112,7 +112,7 @@ class SplunkSoarClient:
         data = json.dumps(data)
 
         if self._post(Urls.playbook_run(identifier=playbook_run_id, **kwargs), data=data):
-            if self.client.results.status_code == 200:
+            if self.client.response.status_code == 200:
                 response = CancelPlaybookResponse(self._content_dict())
                 logger.info(f'cancel playbook run: {response}')
                 return response
@@ -163,7 +163,7 @@ class SplunkSoarClient:
         )
 
         if self._post(Urls.artifact(*args, **kwargs), data=artifact.to_json()):
-            if self.client.results.status_code == 200:
+            if self.client.response.status_code == 200:
                 id = self.client.to_dict()['id']
                 logger.info(f'artifact created. {artifact} {self.client.to_dict()}')
                 return self.get_artifact(artifact_id=id)
@@ -237,7 +237,7 @@ class SplunkSoarClient:
         )
 
         if self._post(Urls.container(*args, **kwargs), data=container.to_json()):
-            if self.client.results.status_code == 200:
+            if self.client.response.status_code == 200:
                 response = CreateContainerResponse(self.client.to_dict())
                 logger.info(f'container created. {container} {response}')
                 return response
@@ -309,7 +309,7 @@ class SplunkSoarClient:
         assert isinstance(container_id, int)
 
         if self._delete(Urls.container(identifier=container_id, *args, **kwargs)):
-            if self.client.results.status_code == 200:
+            if self.client.response.status_code == 200:
                 logger.info(f'container deleted: {container_id}')
                 return True
         logger.error(f'delete container: {container_id}. {self.client.to_dict()}')
@@ -321,7 +321,7 @@ class SplunkSoarClient:
             if self._get(Urls.container(page_size=1)):
                 logger.info(f'client connected '
                             f'{self.config.host} '
-                            f'[{self.client.results.status_code}] ')
+                            f'[{self.client.response.status_code}] ')
                 return True
 
         else:
@@ -426,7 +426,7 @@ class SplunkSoarClient:
     def get_vault(self, vault_id: int, **kwargs) -> Optional[Vault]:
         """Get vault object"""
         if self._get(Urls.vault(identifier=vault_id, **kwargs)):
-            if self.client.results.status_code == 200:
+            if self.client.response.status_code == 200:
                 response = Vault(self._content_dict())
                 logger.info(msg=f'get vault: {response}')
                 return response
@@ -730,7 +730,7 @@ class SplunkSoarClient:
         )
         data = json.dumps(data)
         if self._post(Urls.playbook(identifier=playbook_id, **kwargs), data=data):
-            if self.client.results.status_code == 200:
+            if self.client.response.status_code == 200:
                 response = UpdatePlaybookResponse(self._content_dict())
                 logger.info(f'update playbook: {data}')
                 return response
@@ -754,7 +754,7 @@ class SplunkSoarClient:
         )
         data = json.dumps(data)
         if self._post(Urls.playbook_run(**kwargs), data=data):
-            if self.client.results.status_code == 200:
+            if self.client.response.status_code == 200:
                 response = RunPlaybookResponse(self._content_dict())
                 logger.info(f'run playbook: {data}')
                 return response
