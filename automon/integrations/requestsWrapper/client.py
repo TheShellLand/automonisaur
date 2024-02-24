@@ -19,13 +19,9 @@ class RequestsClient(object):
         self.data = data
         self.errors = None
         self.headers = headers
-        self.results = None
+        self.response = None
         self.requests = requests
         self.session = self.requests.Session()
-
-        if url:
-            self.url = url
-            self.get(url=self.url, data=self.data, headers=self.headers)
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -37,8 +33,8 @@ class RequestsClient(object):
     async def _log_result(self):
         if self.status_code == 200:
             msg = [
-                self.results.request.method,
-                self.results.url,
+                self.response.request.method,
+                self.response.url,
                 f'{round(len(self.content) / 1024, 2)} KB',
                 self.status_code,
             ]
@@ -46,8 +42,8 @@ class RequestsClient(object):
             return logger.debug(msg)
 
         msg = [
-            self.results.request.method,
-            self.results.url,
+            self.response.request.method,
+            self.response.url,
             f'{round(len(self.content) / 1024, 2)} KB',
             self.status_code,
             self.content
@@ -73,8 +69,8 @@ class RequestsClient(object):
 
     @property
     def content(self):
-        if 'content' in dir(self.results):
-            return self.results.content
+        if 'content' in dir(self.response):
+            return self.response.content
 
     async def delete(
             self,
@@ -88,7 +84,7 @@ class RequestsClient(object):
         url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = self.session.delete(url=url, data=data, headers=headers, **kwargs)
+            self.response = self.session.delete(url=url, data=data, headers=headers, **kwargs)
             await self._log_result()
 
             if self.status_code == 200:
@@ -112,10 +108,10 @@ class RequestsClient(object):
         url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = self.session.get(url=url, data=data, headers=headers, **kwargs)
+            self.response = self.session.get(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
-                f'{self.results.url} '
+                f'{self.response.url} '
                 f'{round(len(self.content) / 1024, 2)} KB '
                 f'{self.status_code}'
             )
@@ -141,10 +137,10 @@ class RequestsClient(object):
         url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = self.session.patch(url=url, data=data, headers=headers, **kwargs)
+            self.response = self.session.patch(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
-                f'{self.results.url} '
+                f'{self.response.url} '
                 f'{round(len(self.content) / 1024, 2)} KB '
                 f'{self.status_code}'
             )
@@ -170,10 +166,10 @@ class RequestsClient(object):
         url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = self.session.post(url=url, data=data, headers=headers, **kwargs)
+            self.response = self.session.post(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
-                f'{self.results.url} '
+                f'{self.response.url} '
                 f'{round(len(self.content) / 1024, 2)} KB '
                 f'{self.status_code}'
             )
@@ -199,10 +195,10 @@ class RequestsClient(object):
         url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = self.session.put(url=url, data=data, headers=headers, **kwargs)
+            self.response = self.session.put(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
-                f'{self.results.url} '
+                f'{self.response.url} '
                 f'{round(len(self.content) / 1024, 2)} KB '
                 f'{self.status_code}'
             )
@@ -218,21 +214,21 @@ class RequestsClient(object):
 
     @property
     def reason(self):
-        if 'reason' in dir(self.results):
-            return self.results.reason
+        if 'reason' in dir(self.response):
+            return self.response.reason
 
     @property
     def status_code(self):
-        if 'status_code' in dir(self.results):
-            return self.results.status_code
+        if 'status_code' in dir(self.response):
+            return self.response.status_code
 
     @property
     def text(self):
-        if self.results:
-            return self.results.text
+        if self.response:
+            return self.response.text
 
     async def to_dict(self):
-        if self.results is not None:
+        if self.response is not None:
             return json.loads(self.content)
 
     async def to_json(self):
