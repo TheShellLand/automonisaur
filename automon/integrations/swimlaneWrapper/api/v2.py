@@ -1,5 +1,61 @@
+from enum import Enum
+
+
 class Api(object):
     api = f'api'
+
+
+class Auth(object):
+    api = f'{Api.api}/auth'
+    token = f'{api}/token'
+    user = f'{api}/user'
+
+    def __init__(self, userId: str):
+        self.userId = userId
+        self.token = f'{self.userId}/token'
+        self.create = f'{self.token}/create'
+
+
+class ApplicationViewModels(Enum):
+    """
+    [
+        {
+            "id": "string",
+            "name": "string",
+            "acronym": "string",
+            "description": "string",
+            "createdDate": "string",
+            "createdByUser": {
+                "id": "string",
+                "name": "string"
+            },
+            "modifiedDate": "string",
+            "modifiedByUser": {
+                "id": "string",
+                "name": "string"
+            }
+        }
+    ]
+    """
+    id: str
+    name: str
+    acronym: str
+    description: str
+    createdDate: str
+    createdByUser: {
+        "id": str,
+        "name": str
+    }
+    modifiedDate: str
+    modifiedByUser: {
+        "id": str,
+        "name": str
+    }
+
+
+class Application(object):
+    api = f'{Api.api}/app'
+    light = f'{api}/light'
 
 
 class User(object):
@@ -7,14 +63,16 @@ class User(object):
     login = f'{user}/login'
 
 
-class Auth(object):
+class Workspace(object):
+    api = f'{Api.api}/workspaces'
+    nav = f'{api}/nav'
 
-    def __init__(self, userId: str):
-        self.auth = f'{Api.api}/auth'
+    @classmethod
+    def id(cls, id: int):
+        """workspace specified by id"""
+        return f'{cls.api}/{id}'
 
-        self.token = f'{self.auth}/token'
-        self.create = f'{self.token}/create'
-
-        self.user = f'{self.auth}/user'
-        self.userId = userId
-        self.token = f'{userId}/token'
+    @classmethod
+    def app(cls, id: int):
+        """workspaces for application id"""
+        return f'{cls.api}/app/{id}'

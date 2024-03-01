@@ -4,7 +4,7 @@ from automon import log
 from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import SwimlaneConfig
-from .api.v2 import Auth, User
+from .api.v2 import *
 
 logger = log.logging.getLogger(__name__)
 logger.setLevel(log.DEBUG)
@@ -18,8 +18,11 @@ class SwimlaneClientRest(object):
 
     def __init__(self):
         self.config = SwimlaneConfig()
-
         self.requests = RequestsClient()
+
+        self.auth = None
+        self.apps = None
+        self.workspaces = None
 
     async def is_ready(self):
         if await self.config.is_ready():
@@ -80,6 +83,17 @@ class SwimlaneClientRest(object):
 
         return response
 
+    async def app_list(self):
+        url = f'{self.host}/{Application.api}'
+
+        response = await self.requests.get(
+            url=url,
+        )
+
+        self.apps = await self.requests.to_dict()
+
+        return self.apps
+
     @property
     def host(self):
         return self.config.host
@@ -87,3 +101,14 @@ class SwimlaneClientRest(object):
     @property
     def userId(self):
         return self.config.userName
+
+    async def workspace_list(self):
+        url = f'{self.host}/{Workspace.api}'
+
+        response = await self.requests.get(
+            url=url,
+        )
+
+        self.workspaces = await self.requests.to_dict()
+
+        return self.workspaces
