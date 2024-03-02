@@ -22,6 +22,7 @@ class SwimlaneClientRest(object):
 
         self.auth = None
         self.apps = None
+        self.records = None
         self.workspaces = None
 
     async def is_ready(self):
@@ -75,7 +76,7 @@ class SwimlaneClientRest(object):
 
     async def create_auth_token(self):
         """Creates a new access token for the user making the request"""
-        url = f'{self.host}/{Auth(userId=self.userId).create}'
+        url = f'{self.host}/{Auth.create}'
 
         response = await self.requests.post(
             url=url,
@@ -97,6 +98,17 @@ class SwimlaneClientRest(object):
     @property
     def host(self):
         return self.config.host
+
+    async def record_list(self, app_id: str):
+        url = f'{self.host}/{Record.api(app_id)}'
+
+        response = await self.requests.get(
+            url=url,
+        )
+
+        self.records = await self.requests.to_dict()
+
+        return self.records
 
     @property
     def userId(self):

@@ -7,13 +7,17 @@ class Api(object):
 
 class Auth(object):
     api = f'{Api.api}/auth'
-    token = f'{api}/token'
     user = f'{api}/user'
+    token = f'{api}/token'
+    create = f'{token}/create'
 
-    def __init__(self, userId: str):
-        self.userId = userId
-        self.token = f'{self.userId}/token'
-        self.create = f'{self.token}/create'
+    @classmethod
+    def delete(cls, userId: str):
+        return f'{cls.user}/{userId}/token'
+
+    @classmethod
+    def metadata(cls, userId: str):
+        return f'{cls.user}/{userId}/token'
 
 
 class ApplicationViewModels(Enum):
@@ -58,9 +62,16 @@ class Application(object):
     light = f'{api}/light'
 
 
+class Record(object):
+
+    @classmethod
+    def api(cls, appId: str):
+        return f'{Application.api}/{appId}/record'
+
+
 class User(object):
-    user = f'{Api.api}/user'
-    login = f'{user}/login'
+    api = f'{Api.api}/user'
+    login = f'{api}/login'
 
 
 class Workspace(object):
@@ -68,11 +79,11 @@ class Workspace(object):
     nav = f'{api}/nav'
 
     @classmethod
-    def id(cls, id: int):
+    def id(cls, id: str):
         """workspace specified by id"""
         return f'{cls.api}/{id}'
 
     @classmethod
-    def app(cls, id: int):
+    def app(cls, id: str):
         """workspaces for application id"""
         return f'{cls.api}/app/{id}'
