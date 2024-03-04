@@ -8,12 +8,18 @@
 python3 -m pip install -U opentelemetry-distro opentelemetry-exporter-otlp
 opentelemetry-bootstrap --action install
 
+# python logging
 python3 -m pip install -U opentelemetry-instrumentation-logging
+
+# django
+python3 -m pip install -U opentelemetry-instrumentation-django
 ```
 
 ## Known issues:
 
-### Problem 1:
+### Problem 1 (fixed):
+
+fixed: https://github.com/open-telemetry/opentelemetry-python-contrib/issues/2053#issuecomment-1962248084
 
 ```
 ERROR: No matching distribution found for opentelemetry-instrumentation-aiohttp-server==0.42b0 
@@ -32,13 +38,13 @@ Solution:
 opentelemetry-instrumentation-aiohttp-server:
 
 ```shell
-python3 -m pip install git+https://github.com/open-telemetry/opentelemetry-python-contrib.git@0.43b0hotfix#subdirectory=instrumentation/opentelemetry-instrumentation-aiohttp-server
+python3 -m pip install git+https://github.com/open-telemetry/opentelemetry-python-contrib.git@0.44b0#subdirectory=instrumentation/opentelemetry-instrumentation-aiohttp-server
 ```
 
 opentelemetry-resource-detector-container:
 
 ```shell
-python3 -m pip install git+https://github.com/open-telemetry/opentelemetry-python-contrib.git@0.43b0hotfix#subdirectory=resource/opentelemetry-resource-detector-container
+python3 -m pip install git+https://github.com/open-telemetry/opentelemetry-python-contrib.git@0.44b0#subdirectory=resource/opentelemetry-resource-detector-container
 ```
 
 solution: https://github.com/open-telemetry/opentelemetry-python-contrib/issues/2053#issuecomment-1928485674
