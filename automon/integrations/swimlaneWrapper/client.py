@@ -99,8 +99,8 @@ class SwimlaneClientRest(object):
     def host(self):
         return self.config.host
 
-    async def record_list(self, app_id: str):
-        url = f'{self.host}/{Record.api(app_id)}'
+    async def record_list(self, appId: str):
+        url = f'{self.host}/{Record.api(appId)}'
 
         response = await self.requests.get(
             url=url,
@@ -109,6 +109,61 @@ class SwimlaneClientRest(object):
         self.records = await self.requests.to_dict()
 
         return self.records
+
+    async def record_create(self, appId: str, data: dict):
+        """create a record"""
+        return await self.record_create_easy(appId=appId, data=data)
+
+    async def record_create_easy(self, appId: str, data: dict):
+        """create a record with boilerplate added
+
+        The bare minimum you need to send is (assuming application id is 5667113fd273a205bc747cf0):
+        {
+          "applicationId": "5667113fd273a205bc747cf0",
+          "values": {
+            "$type": "System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[System.Object, mscorlib]], mscorlib",
+            "56674c5cc6c7dea0aeab4aed": "A new value"
+          }
+        }
+
+        """
+        url = f'{self.host}/{Record.api(appId)}'
+
+        data = {
+            "applicationId": appId,
+            "values": {
+                "$type": "System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[System.Object, mscorlib]], mscorlib",
+                "json": "value"
+            }
+        }
+
+        response = await self.requests.post(
+            url=url,
+            json=data
+        )
+
+        return response
+
+    async def record_create_hard(self, appId: str, data: dict):
+        """create a record the hard way"""
+        url = f'{self.host}/{Record.api(appId)}'
+
+        response = await self.requests.post(
+            url=url,
+            data=data
+        )
+
+        return response
+
+    async def record_delete_all(self, appId: str):
+        """delete all records in application"""
+        url = f'{self.host}/{Record.api(appId)}'
+
+        response = await self.requests.delete(
+            url=url
+        )
+
+        return response
 
     @property
     def userId(self):
