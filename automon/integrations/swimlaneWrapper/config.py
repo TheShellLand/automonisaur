@@ -47,7 +47,16 @@ class SwimlaneConfig(object):
 
         if self.private_token:
             return {
-                'Private-Token': f'{self.jwt_token}'
+                'Authorization': f'Bearer {self.jwt_token}',
+                'Content-Type': 'application/json'
+            }
+
+    @property
+    def headers_jwt_token(self):
+        if self.private_token:
+            return {
+                'Authorization': f'Bearer {self.jwt_token}',
+                'Content-Type': 'application/json'
             }
 
     async def is_ready(self) -> bool:
