@@ -68,7 +68,7 @@ class SwimlaneClientRest(object):
 
         self.requests.session.headers.update(self.config.headers)
 
-        response = await self.requests.post(
+        response = await self.requests.get(
             url=url,
         )
 
