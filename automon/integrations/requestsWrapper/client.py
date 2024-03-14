@@ -229,11 +229,17 @@ class RequestsClient(object):
 
     async def to_dict(self):
         if self.response is not None:
-            return json.loads(self.content)
+            try:
+                return json.loads(self.content)
+            except Exception as error:
+                logger.error(error)
 
     async def to_json(self):
         if self.content:
-            return json.dumps(json.loads(self.content))
+            try:
+                return json.dumps(json.loads(self.content))
+            except Exception as error:
+                logger.error(error)
 
     async def update_headers(self, headers: dict):
         return self.session.headers.update(headers)
