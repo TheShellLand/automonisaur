@@ -23,6 +23,8 @@ class SwimlaneConfig(object):
 
         self.userName_model = None
 
+        self.appId = environ('SWIMLANE_APP_ID')
+
     @property
     def bearer_token(self):
         return self.token
