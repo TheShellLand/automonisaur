@@ -169,6 +169,27 @@ class SwimlaneClientRest(object):
 
         return response
 
+    async def record_get(self, appId: str, id: str):
+        """get a record"""
+        url = f'{self.host}/{Record.get(appId=appId, id=id)}'
+
+        response = await self.requests.get(
+            url=url
+        )
+
+        record = await self.requests.to_dict()
+
+        return record
+    async def record_get_base(self, appId: str):
+        """get a record"""
+        url = f'{self.host}/{Record.api(appId=appId)}'
+
+        response = await self.requests.get(
+            url=url
+        )
+
+        return response
+
     @property
     def userId(self):
         return self.config.userName

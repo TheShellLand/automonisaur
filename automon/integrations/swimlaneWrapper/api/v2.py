@@ -68,6 +68,10 @@ class Record(object):
     def api(cls, appId: str):
         return f'{Application.api}/{appId}/record'
 
+    @classmethod
+    def get(cls, appId: str, id: str):
+        return f'{cls.api(appId)}/{id}'
+
 
 class User(object):
     api = f'{Api.api}/user'
