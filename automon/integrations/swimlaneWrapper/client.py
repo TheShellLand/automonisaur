@@ -110,11 +110,11 @@ class SwimlaneClientRest(object):
 
         return self.records
 
-    async def record_create(self, appId: str, data: dict):
+    async def record_create(self, appId: str, key: str, value: str or int):
         """create a record"""
-        return await self.record_create_easy(appId=appId, data=data)
+        return await self.record_create_easy(appId=appId, key=key, value=value)
 
-    async def record_create_easy(self, appId: str, data: dict):
+    async def record_create_easy(self, appId: str, key: str, value: str or int):
         """create a record with boilerplate added
 
         The bare minimum you need to send is (assuming application id is 5667113fd273a205bc747cf0):
@@ -129,23 +129,27 @@ class SwimlaneClientRest(object):
         """
         url = f'{self.host}/{Record.api(appId)}'
 
-        data = {
+        record = {
             "applicationId": appId,
             "values": {
                 "$type": "System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[System.Object, mscorlib]], mscorlib",
-                "json": "value"
+                key: value
             }
         }
 
+        record_json = json.dumps(record)
+
         response = await self.requests.post(
             url=url,
-            json=data
+            json=record
         )
 
         return response
 
     async def record_create_hard(self, appId: str, data: dict):
-        """create a record the hard way"""
+        """create a record the hard way
+
+        no handholding. you're on your own"""
         url = f'{self.host}/{Record.api(appId)}'
 
         response = await self.requests.post(
