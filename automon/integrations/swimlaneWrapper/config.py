@@ -26,7 +26,13 @@ class SwimlaneConfig(object):
         self.appId = environ('SWIMLANE_APP_ID')
 
     @property
+    def access_token(self):
+        """alias to private acces token"""
+        return self.jwt_token
+
+    @property
     def bearer_token(self):
+        """token you get from username / password"""
         return self.token
 
     @property
@@ -43,22 +49,23 @@ class SwimlaneConfig(object):
     @property
     def headers(self):
         if self.token:
+            return self.headers_api_token
+
+        if self.private_token:
+            return self.headers_jwt_token
+
+    @property
+    def headers_api_token(self):
+        if self.token:
             return {
                 'Authorization': f'Bearer {self.apiKey}'
             }
 
-        if self.private_token:
-            return {
-                'Authorization': f'Bearer {self.jwt_token}',
-                'Content-Type': 'application/json'
-            }
-
     @property
     def headers_jwt_token(self):
-        if self.private_token:
+        if self.jwt_token:
             return {
-                'Authorization': f'Bearer {self.jwt_token}',
-                'Content-Type': 'application/json'
+                'Private-Token': self.jwt_token
             }
 
     async def is_ready(self) -> bool:

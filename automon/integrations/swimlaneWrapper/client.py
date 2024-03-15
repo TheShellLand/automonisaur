@@ -64,13 +64,15 @@ class SwimlaneClientRest(object):
 
     async def login_token(self) -> bool:
         """Login with username and password"""
-        url = f'{self.host}/{User.login}'
+        url = f'{self.host}/{User.authorize}'
 
-        self.requests.session.headers.update(self.config.headers)
+        self.requests.session.headers.update(self.config.headers_jwt_token)
 
         response = await self.requests.get(
             url=url,
         )
+
+        self.config.userName_model = await self.requests.to_dict()
 
         return response
 
