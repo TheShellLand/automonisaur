@@ -76,6 +76,7 @@ class Record(object):
 class User(object):
     api = f'{Api.api}/user'
     login = f'{api}/login'
+    authorize = f'{api}/authorize'
 
 
 class Workspace(object):
