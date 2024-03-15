@@ -9,9 +9,9 @@ client = SwimlaneClientRest()
 class MyTestCase(unittest.TestCase):
     def test_login(self):
         if asyncio.run(client.is_ready()):
-            if asyncio.run(client.login_username_password()):
-                self.assertTrue(
-                    asyncio.run(client.app_list())
+            if asyncio.run(client.login()):
+                self.assertTrue(asyncio.run(
+                    client.app_list())
                 )
 
 
