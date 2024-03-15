@@ -13,27 +13,29 @@ password = environ('SWIMLANE_PASSWORD')
 
 
 class MyTestCase(unittest.TestCase):
-    def test_login(self):
-        swimlane = Swimlane(host, user, password, verify_ssl=False)
 
-        app = swimlane.apps.get(id=appId)
+    if host and user and password and appId:
+        def test_login(self):
+            swimlane = Swimlane(host, user, password, verify_ssl=False)
 
-        # records = app.records.get()
-        # records = app.records.search('.')
+            app = swimlane.apps.get(id=appId)
 
-        # swimlane.exceptions.UnknownField: "<App: AUTO ASSET COLLECTION (AAC)> has no field 'test'"
-        record = app.records.create(
-            json=json.dumps(dict(
-                string='string',
-                int=1,
-                list=[1, 2, 3],
-                dict=dict(
-                    key='value'
-                )
-            ))
-        )
+            # records = app.records.get()
+            # records = app.records.search('.')
 
-        pass
+            # swimlane.exceptions.UnknownField: "<App: AUTO ASSET COLLECTION (AAC)> has no field 'test'"
+            record = app.records.create(
+                json=json.dumps(dict(
+                    string='string',
+                    int=1,
+                    list=[1, 2, 3],
+                    dict=dict(
+                        key='value'
+                    )
+                ))
+            )
+
+            pass
 
 
 if __name__ == '__main__':
