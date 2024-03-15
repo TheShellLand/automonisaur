@@ -72,6 +72,9 @@ class RequestsClient(object):
         if 'content' in dir(self.response):
             return self.response.content
 
+    async def content_to_dict(self):
+        return await self.to_dict()
+
     async def delete(
             self,
             url: str = None,
