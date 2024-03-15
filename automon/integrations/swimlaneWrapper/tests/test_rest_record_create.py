@@ -15,15 +15,17 @@ class MyTestCase(unittest.TestCase):
                     client.app_list()
                 ))
 
+                key = 'a7m4r'       # json
+                value = json.dumps(dict(
+                    key='value',
+                    key2='value2',
+                ))
+
                 record_new = asyncio.run(
                     client.record_create(
                         appId=client.config.appId,
-                        key='json',
-                        value=json.dumps(dict(
-                            key='value',
-                            key2='value2',
-                        ))
-                    )
+                        key=key,
+                        value=value)
                 )
 
                 self.assertTrue(record_new)
