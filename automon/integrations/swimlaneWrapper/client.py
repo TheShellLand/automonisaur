@@ -146,6 +146,8 @@ class SwimlaneClientRest(object):
             json=record
         )
 
+        record_created = await self.requests.content_to_dict()
+
         return response
 
     async def record_create_hard(self, appId: str, data: dict):
@@ -182,6 +184,7 @@ class SwimlaneClientRest(object):
         record = await self.requests.to_dict()
 
         return record
+
     async def record_get_base(self, appId: str):
         """get a record"""
         url = f'{self.host}/{Record.api(appId=appId)}'
