@@ -148,7 +148,7 @@ class SwimlaneClientRest(object):
 
         record_created = await self.requests.content_to_dict()
 
-        return response
+        return record_created
 
     async def record_create_hard(self, appId: str, data: dict):
         """create a record the hard way
@@ -161,7 +161,9 @@ class SwimlaneClientRest(object):
             data=data
         )
 
-        return response
+        record_created = await self.requests.content_to_dict()
+
+        return record_created
 
     async def record_delete_all(self, appId: str):
         """delete all records in application"""
