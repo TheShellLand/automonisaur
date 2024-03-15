@@ -37,10 +37,11 @@ class SwimlaneConfig(object):
 
     @property
     def credentials(self):
-        return {
-            'userName': self.userName,
-            'password': self.password,
-        }
+        if self.userName and self.password:
+            return {
+                'userName': self.userName,
+                'password': self.password,
+            }
 
     @property
     def token(self):
