@@ -397,7 +397,7 @@ class ChromeWrapper(object):
 
                 return True
 
-        logger.error(f'not found: {path}')
+        logger.error(f'chrome driver not found: {path}')
 
     async def quit(self):
         """quit

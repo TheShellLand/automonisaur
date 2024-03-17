@@ -327,6 +327,10 @@ class SeleniumBrowser(object):
 
     async def get(self, url: str, **kwargs) -> bool:
         """get url"""
+        if not self.webdriver:
+            logger.error(f'missing webdriver')
+            raise Exception(f'missing webdriver')
+
         try:
             if self.webdriver.get(url, **kwargs) is None:
                 logger.info(str(dict(
