@@ -66,7 +66,7 @@ slackclient>=2.9.3
 splunk-sdk>=1.6.16
 
 # swimlane
-swimlane>=10.14.0
+#swimlane>=10.14.0
 
 # unit testing
 pytest>=6.2.4
