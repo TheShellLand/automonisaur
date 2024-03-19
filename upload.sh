@@ -15,7 +15,7 @@ if [ "$@" == '--local' ]; then
   python3 -m pip install -U twine
   python3 setup.py sdist bdist_wheel
   twine check dist/*
-  python3 -m twine upload --repository $PYPI --repository-url $TWINE_REPOSITORY \
+  python3 -m twine upload --repository "$PYPI" --repository-url "$TWINE_REPOSITORY" \
     -u "$TWINE_USERNAME" -p "$TWINE_PASSWORD" --non-interactive --skip-existing dist/*
   python3 setup.py clean --all
 elif [ "$@" == '--docker' ]; then
@@ -27,6 +27,6 @@ elif [ "$@" == '--github' ]; then
   python3 -m pip install -U twine
   python3 setup.py sdist bdist_wheel
   twine check dist/*
-  python3 -m twine upload --repository $PYPI --repository-url $TWINE_REPOSITORY \
-    -u $TWINE_USERNAME -p $TWINE_PASSWORD --non-interactive --skip-existing dist/*
+  python3 -m twine upload --repository "$PYPI" --repository-url "$TWINE_REPOSITORY" \
+    -u "$TWINE_USERNAME" -p "$TWINE_PASSWORD" --non-interactive --skip-existing dist/*
 fi
