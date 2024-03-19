@@ -1,0 +1,6 @@
+# opentelemetry
+opentelemetry-distro>=0.44b0
+opentelemetry-exporter-otlp>=1.22.0
+opentelemetry-instrumentation-logging>=0.44b0
+# workaround
+git+https://github.com/TheShellLand/opentelemetry-python-contrib.git@0.44b0#subdirectory=instrumentation/opentelemetry-instrumentation-aiohttp-server
