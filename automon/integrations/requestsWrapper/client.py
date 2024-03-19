@@ -19,12 +19,9 @@ class RequestsClient(object):
         self.data = data
         self.errors = None
         self.headers = headers
-        self.results = None
+        self.response = None
         self.requests = requests
-
-        if url:
-            self.url = url
-            self.get(url=self.url, data=self.data, headers=self.headers)
+        self.session = self.requests.Session()
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -33,29 +30,29 @@ class RequestsClient(object):
         if self.content:
             len(self.content)
 
-    def _log_result(self):
-        if self.results.status_code == 200:
+    async def _log_result(self):
+        if self.status_code == 200:
             msg = [
-                self.results.request.method,
-                self.results.url,
-                f'{round(len(self.results.content) / 1024, 2)} KB',
-                self.results.status_code,
+                self.response.request.method,
+                self.response.url,
+                f'{round(len(self.content) / 1024, 2)} KB',
+                self.status_code,
             ]
             msg = ' '.join(msg)
             return logger.debug(msg)
 
         msg = [
-            self.results.request.method,
-            self.results.url,
-            f'{round(len(self.results.content) / 1024, 2)} KB',
-            self.results.status_code,
-            self.results.content
+            self.response.request.method,
+            self.response.url,
+            f'{round(len(self.content) / 1024, 2)} KB',
+            self.status_code,
+            self.content
         ]
 
         msg = ' '.join(msg)
         return logger.error(msg)
 
-    def _params(self, url, data, headers):
+    async def _params(self, url, data, headers):
         if url is None:
             url = self.url
 
@@ -72,126 +69,183 @@ class RequestsClient(object):
 
     @property
     def content(self):
-        if self.results:
-            return self.results.content
+        if 'content' in dir(self.response):
+            return self.response.content
 
-    @property
-    def text(self):
-        if self.results:
-            return self.results.text
+    async def content_to_dict(self):
+        return await self.to_dict()
 
-    def delete(self,
-               url: str = None,
-               data: dict = None,
-               headers: dict = None, **kwargs) -> bool:
+    async def delete(
+            self,
+            url: str = None,
+            data: dict = None,
+            headers: dict = None,
+            **kwargs
+    ) -> bool:
         """requests.delete"""
 
-        url, data, headers = self._params(url, data, headers)
+        url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = requests.delete(url=url, data=data, headers=headers, **kwargs)
-            self._log_result()
-            return True
+            self.response = self.session.delete(url=url, data=data, headers=headers, **kwargs)
+            await self._log_result()
+
+            if self.status_code == 200:
+                return True
+
+            return False
         except Exception as e:
             self.errors = e
             logger.error(f'delete failed. {e}')
         return False
 
-    def get(self,
+    async def get(
+            self,
             url: str = None,
             data: dict = None,
-            headers: dict = None, **kwargs) -> bool:
+            headers: dict = None,
+            **kwargs
+    ) -> bool:
         """requests.get"""
 
-        url, data, headers = self._params(url, data, headers)
+        url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = requests.get(url=url, data=data, headers=headers, **kwargs)
+            self.response = self.session.get(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
-                f'{self.results.url} '
-                f'{round(len(self.results.content) / 1024, 2)} KB '
-                f'{self.results.status_code}'
+                f'{self.response.url} '
+                f'{round(len(self.content) / 1024, 2)} KB '
+                f'{self.status_code}'
             )
 
-            return True
+            if self.status_code == 200:
+                return True
+
+            return False
         except Exception as e:
             self.errors = e
             logger.error(f'{e}')
         return False
 
-    def patch(self,
-              url: str = None,
-              data: dict = None,
-              headers: dict = None, **kwargs) -> bool:
+    async def patch(
+            self,
+            url: str = None,
+            data: dict = None,
+            headers: dict = None,
+            **kwargs
+    ) -> bool:
         """requests.patch"""
 
-        url, data, headers = self._params(url, data, headers)
+        url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = requests.patch(url=url, data=data, headers=headers, **kwargs)
+            self.response = self.session.patch(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
-                f'{self.results.url} '
-                f'{round(len(self.results.content) / 1024, 2)} KB '
-                f'{self.results.status_code}'
+                f'{self.response.url} '
+                f'{round(len(self.content) / 1024, 2)} KB '
+                f'{self.status_code}'
             )
 
-            return True
+            if self.status_code == 200:
+                return True
+
+            return False
         except Exception as e:
             self.errors = e
             logger.error(f'patch failed. {e}')
         return False
 
-    def post(self,
-             url: str = None,
-             data: dict = None,
-             headers: dict = None, **kwargs) -> bool:
+    async def post(
+            self,
+            url: str = None,
+            data: dict = None,
+            headers: dict = None,
+            **kwargs
+    ) -> bool:
         """requests.post"""
 
-        url, data, headers = self._params(url, data, headers)
+        url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = requests.post(url=url, data=data, headers=headers, **kwargs)
+            self.response = self.session.post(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
-                f'{self.results.url} '
-                f'{round(len(self.results.content) / 1024, 2)} KB '
-                f'{self.results.status_code}'
+                f'{self.response.url} '
+                f'{round(len(self.content) / 1024, 2)} KB '
+                f'{self.status_code}'
             )
 
-            return True
+            if self.status_code == 200:
+                return True
+
+            return False
         except Exception as e:
             self.errors = e
             logger.error(f'post failed. {e}')
         return False
 
-    def put(self,
+    async def put(
+            self,
             url: str = None,
             data: dict = None,
-            headers: dict = None, **kwargs) -> bool:
+            headers: dict = None,
+            **kwargs
+    ) -> bool:
         """requests.put"""
 
-        url, data, headers = self._params(url, data, headers)
+        url, data, headers = await self._params(url, data, headers)
 
         try:
-            self.results = requests.put(url=url, data=data, headers=headers, **kwargs)
+            self.response = self.session.put(url=url, data=data, headers=headers, **kwargs)
 
             logger.debug(
-                f'{self.results.url} '
-                f'{round(len(self.results.content) / 1024, 2)} KB '
-                f'{self.results.status_code}'
+                f'{self.response.url} '
+                f'{round(len(self.content) / 1024, 2)} KB '
+                f'{self.status_code}'
             )
 
-            return True
+            if self.status_code == 200:
+                return True
+
+            return False
         except Exception as e:
             self.errors = e
             logger.error(f'put failed. {e}')
         return False
 
-    def to_dict(self):
-        if self.results is not None:
-            return json.loads(self.results.content)
+    @property
+    def reason(self):
+        if 'reason' in dir(self.response):
+            return self.response.reason
+
+    @property
+    def status_code(self):
+        if 'status_code' in dir(self.response):
+            return self.response.status_code
+
+    @property
+    def text(self):
+        if self.response:
+            return self.response.text
+
+    async def to_dict(self):
+        if self.response is not None:
+            try:
+                return json.loads(self.content)
+            except Exception as error:
+                logger.error(error)
+
+    async def to_json(self):
+        if self.content:
+            try:
+                return json.dumps(json.loads(self.content))
+            except Exception as error:
+                logger.error(error)
+
+    async def update_headers(self, headers: dict):
+        return self.session.headers.update(headers)
 
 
 class Requests(RequestsClient):

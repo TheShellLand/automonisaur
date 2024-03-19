@@ -20,17 +20,17 @@ class BaseRestClient:
             return True
         return False
 
-    def get(self, url: str, data: str = None, headers: dict = None) -> bool:
-        return self.requests.get(url=url, data=data, headers=headers)
+    async def get(self, url: str, data: str = None, headers: dict = None) -> bool:
+        return await self.requests.get(url=url, data=data, headers=headers)
 
-    def post(self, url: str, data: str = None, headers: dict = None) -> bool:
-        return self.requests.post(url=url, data=data, headers=headers)
+    async def post(self, url: str, data: str = None, headers: dict = None) -> bool:
+        return await self.requests.post(url=url, data=data, headers=headers)
 
-    def delete(self, url: str, data: str = None, headers: dict = None) -> bool:
-        return self.requests.delete(url=url, data=data, headers=headers)
+    async def delete(self, url: str, data: str = None, headers: dict = None) -> bool:
+        return await self.requests.delete(url=url, data=data, headers=headers)
 
-    def patch(self, url: str, data: str = None, headers: dict = None) -> bool:
-        return self.requests.patch(url=url, data=data, headers=headers)
+    async def patch(self, url: str, data: str = None, headers: dict = None) -> bool:
+        return await self.requests.patch(url=url, data=data, headers=headers)
 
     def __repr__(self):
         return f'{self.__dict__}'

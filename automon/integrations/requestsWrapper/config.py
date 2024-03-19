@@ -11,8 +11,9 @@ class RequestsConfig(object):
     def __init__(self):
         pass
 
-    def is_ready(self):
+    def __repr__(self):
         return f'{NotImplemented}'
 
-    def __repr__(self):
+    @property
+    def is_ready(self):
         return f'{NotImplemented}'
