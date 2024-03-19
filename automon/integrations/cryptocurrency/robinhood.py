@@ -65,3 +65,14 @@ class RobinhoodCSV:
                 return True
             logger.debug(f'different {other}')
         return False
+
+
+class RobinhoodAPI(object):
+    summary = 'https://status.robinhood.com/api/v2/summary.json'
+    status = 'https://status.robinhood.com/api/v2/status.json'
+    components = 'https://status.robinhood.com/api/v2/components.json'
+    incidents_unresolved = 'https://status.robinhood.com/api/v2/incidents/unresolved.json'
+    incidents_all = 'https://status.robinhood.com/api/v2/incidents.json'
+    scheduled_maintenance_upcoming = 'https://status.robinhood.com/api/v2/scheduled-maintenances/upcoming.json'
+    scheduled_maintenance_active = 'https://status.robinhood.com/api/v2/scheduled-maintenances/active.json'
+    scheduled_maintenance_all = 'https://status.robinhood.com/api/v2/scheduled-maintenances.json'
