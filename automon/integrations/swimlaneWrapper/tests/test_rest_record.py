@@ -14,13 +14,15 @@ class MyTestCase(unittest.TestCase):
                     client.app_list())
                 )
 
-                app_id = client.apps[0].get('id')
-
-                self.assertTrue(asyncio.run(
-                    client.record_list(appId=app_id))
+                app_id = client.config.appId
+                record = asyncio.run(
+                    client.record_list(appId=app_id)
                 )
 
+                self.assertTrue(record)
+
         pass
+
 
 if __name__ == '__main__':
     unittest.main()
