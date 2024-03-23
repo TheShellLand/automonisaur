@@ -101,16 +101,51 @@ class SwimlaneClientRest(object):
     def host(self):
         return self.config.host
 
-    async def record_list(self, appId: str):
+    async def record_resolve_fields(self, appId: str):
+        """since swimlane has no documentation on resolving field names"""
+
         url = f'{self.host}/{Record.api(appId)}'
 
         response = await self.requests.get(
             url=url,
         )
 
-        self.records = await self.requests.to_dict()
+        record_hashmap = {}
 
-        return self.records
+        record = await self.requests.to_dict()
+        record_values = dict(record.get('values'))
+
+        for item in record_values.items():
+            key, value = item
+            if '$' in key:
+                continue
+            record_hashmap[key] = key
+
+        logger.debug(record_hashmap)
+
+        record = {
+            "applicationId": appId,
+            "values": {
+                "$type": "System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[System.Object, mscorlib]], mscorlib",
+            }
+        }
+
+        record.get('values').update(record_hashmap)
+
+        record_create = await self.record_create_hard(appId=appId, data=record)
+
+        return record_hashmap
+
+    async def record_schema(self, appId: str):
+        url = f'{self.host}/{Record.api(appId)}'
+
+        response = await self.requests.get(
+            url=url,
+        )
+
+        record = await self.requests.to_dict()
+
+        return record
 
     async def record_create(self, appId: str, key: str, value: str or int):
         """create a record"""
@@ -158,7 +193,7 @@ class SwimlaneClientRest(object):
 
         response = await self.requests.post(
             url=url,
-            data=data
+            json=data
         )
 
         record_created = await self.requests.content_to_dict()
