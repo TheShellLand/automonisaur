@@ -36,6 +36,21 @@ Github issues and feature requests welcomed.
 
 ### Integrations
 
+| Category        | Library                                                     |
+|-----------------|-------------------------------------------------------------|
+| API             | flask                                                       |
+| Chat            | slack                                                       |
+| Data Scraping   | beautifulsoup<br/>facebook groups<br/>instagram<br/>scrapy  |
+| Databases       | elasticsearch<br/>neo4j<br/>splunk                          |
+| Data Store      | minio<br/>swift                                             |
+| Devices         | snmp                                                        |
+| Google Cloud    | google auth api<br/>google people api<br/>google sheets api |
+| Logging         | sentryio                                                    |
+| MacOS           | airport<br/>macchanger                                      |
+| Python          | logging<br/>requests                                        |
+| SOAR            | swimlane<br/>splunk soar                                    |
+| Recon           | nmap                                                        |
+| Test Automation | selenium                                                    |
 | Category          | Library                                                     |
 |-------------------|-------------------------------------------------------------|
 | API               | flask                                                       |
