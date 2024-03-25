@@ -10,9 +10,12 @@ class MyTestCase(unittest.TestCase):
     def test_login(self):
         if asyncio.run(client.is_ready()):
             if asyncio.run(client.login()):
-                self.assertTrue(asyncio.run(
+                app_list = asyncio.run(
                     client.app_list())
-                )
+
+                self.assertTrue(app_list)
+
+        pass
 
 
 if __name__ == '__main__':
