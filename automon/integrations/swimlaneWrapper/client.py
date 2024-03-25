@@ -97,6 +97,28 @@ class SwimlaneClientRest(object):
 
         return self.apps
 
+    async def app_by_id(self, appId: str):
+        url = f'{self.host}/{Application.by_id(appId=appId)}'
+
+        response = await self.requests.get(
+            url=url,
+        )
+
+        app = await self.requests.to_dict()
+
+        return app
+
+    async def app_export(self, appId: str):
+        url = f'{self.host}/{Application.export(appId=appId)}'
+
+        response = await self.requests.get(
+            url=url,
+        )
+
+        app = await self.requests.to_dict()
+
+        return app
+
     @property
     def host(self):
         return self.config.host

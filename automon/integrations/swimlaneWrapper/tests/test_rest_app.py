@@ -1,5 +1,6 @@
 import unittest
 import asyncio
+import random
 
 from automon.integrations.swimlaneWrapper.client import SwimlaneClientRest
 
@@ -14,6 +15,19 @@ class MyTestCase(unittest.TestCase):
                     client.app_list())
 
                 self.assertTrue(app_list)
+
+                app = random.choice(app_list)
+                appId = app['id']
+
+                app_export = asyncio.run(
+                    client.app_export(appId))
+
+                self.assertTrue(app_export)
+
+                app_get = asyncio.run(
+                    client.app_by_id(appId=appId))
+
+                self.assertTrue(app_get)
 
         pass
 
