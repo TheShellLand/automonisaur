@@ -24,5 +24,26 @@ class OpenTelemetryClient(object):
         return await self.config.get_finished_spans()
 
     async def to_dict(self):
-        for span in await self.get_finished_spans():
-            yield json.loads(span.to_json())
+        return [
+            json.loads(span.to_json())
+            for span in await self.get_finished_spans()
+        ]
+
+    async def to_datadog(self):
+        log = []
+        for span in await self.to_dict():
+            message = dict(span).copy()
+            ddsource = None
+            ddtags = ','.join([f"{x[0]}:{x[1]}" for x in span.get("resource").get("attributes").items()])
+            hostname = span['context']['trace_id']
+            service = span['context']['span_id']
+
+            span['datadog'] = dict(
+                ddsource=ddsource,
+                ddtags=ddtags,
+                hostname=hostname,
+                service=service,
+                message=message,
+            )
+            log.append(span)
+        return log
