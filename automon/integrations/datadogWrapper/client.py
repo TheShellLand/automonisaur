@@ -17,8 +17,16 @@ class DatadogClientRest(object):
             if await self.validate():
                 return True
 
-    async def log(self, log: dict):
+    async def log(self, ddsource: str, hostname: str, service: str, message: str, ddtags: str = 'env:test,version:0.1'):
         url = V2(self.config.host_log).api.logs.endpoint
+
+        log = {
+            "ddsource": ddsource,
+            "ddtags": ddtags,
+            "hostname": hostname,
+            "service": service,
+            'message': message
+        }
 
         response = await self.requests.post(url=url, json=log)
         response_log = await self.requests.to_dict()
