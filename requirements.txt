@@ -5,6 +5,7 @@
 # base
 requests>=2.26.0
 xmltodict>=0.12.0
+deprecation>=2.1.0
 
 # airport
 beautifulsoup4>=4.10.0
