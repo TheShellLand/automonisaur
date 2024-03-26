@@ -9,8 +9,8 @@ class MyTestCase(unittest.TestCase):
 
     def test_something(self):
         self.assertTrue(asyncio.run(
-            self.config.test()
-        ))
+            self.config.test())
+        )
 
 
 if __name__ == '__main__':

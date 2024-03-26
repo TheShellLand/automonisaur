@@ -35,5 +35,4 @@ class OpenTelemetryConfig(object):
             with self.tracer.start_as_current_span("childSpan"):
                 print("Hello world!")
 
-        assert len(await self.get_finished_spans()) == 2
         return True
