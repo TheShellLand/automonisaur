@@ -1,9 +1,11 @@
-import json
-
 from automon.integrations.requestsWrapper import RequestsClient
+from automon.log import logging
 
 from .config import DatadogConfigRest
 from .api import V1, V2
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class DatadogClientRest(object):
@@ -16,6 +18,7 @@ class DatadogClientRest(object):
         if await self.config.is_ready():
             if await self.validate():
                 return True
+        logger.error(f'client not ready')
 
     async def log(self, ddsource: str, hostname: str, service: str, message: str, ddtags: str = 'env:test,version:0.1'):
         url = V2(self.config.host_log).api.logs.endpoint
@@ -27,6 +30,8 @@ class DatadogClientRest(object):
             "service": service,
             'message': message
         }
+
+        logger.debug(log)
 
         response = await self.requests.post(url=url, json=log)
         response_log = await self.requests.to_dict()

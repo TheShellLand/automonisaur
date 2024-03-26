@@ -17,6 +17,7 @@ class DatadogConfigRest(object):
     async def is_ready(self):
         if self.host and self.api_key and self.app_key:
             return True
+        logger.error(f'missing DD_SITE DD_API_KEY DD_APP_KEY')
 
     async def headers(self):
         if await self.is_ready():
