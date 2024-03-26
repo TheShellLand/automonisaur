@@ -76,6 +76,36 @@ class SwimlaneClientRest(object):
 
         return response
 
+    async def logging_by_id(self, jobId: str):
+        """finds the recent logs"""
+        url = f'{self.host}/{Logging.by_id(jobId=jobId)}'
+
+        response = await self.requests.get(url=url)
+        logs_job = await self.requests.to_dict()
+
+        return logs_job
+
+    async def logging_recent(self, level: str = 'Debug'):
+        """finds the recent logs"""
+        url = f'{self.host}/{Logging.recent}'
+
+        request_body = {
+            "level": [
+                level
+            ]
+        }
+
+        header = {
+            'Content-Type': 'application/json'
+        }
+
+        # self.requests.session.headers.update(header)
+
+        response = await self.requests.post(url=url, json=request_body, headers=header)
+        logs_recent = await self.requests.to_dict()
+
+        return logs_recent
+
     async def create_auth_token(self):
         """Creates a new access token for the user making the request"""
         url = f'{self.host}/{Auth.create}'
@@ -96,6 +126,28 @@ class SwimlaneClientRest(object):
         self.apps = await self.requests.to_dict()
 
         return self.apps
+
+    async def app_by_id(self, appId: str):
+        url = f'{self.host}/{Application.by_id(appId=appId)}'
+
+        response = await self.requests.get(
+            url=url,
+        )
+
+        app = await self.requests.to_dict()
+
+        return app
+
+    async def app_export(self, appId: str):
+        url = f'{self.host}/{Application.export(appId=appId)}'
+
+        response = await self.requests.get(
+            url=url,
+        )
+
+        app = await self.requests.to_dict()
+
+        return app
 
     @property
     def host(self):

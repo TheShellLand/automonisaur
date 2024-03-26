@@ -61,6 +61,24 @@ class Application(object):
     api = f'{Api.api}/app'
     light = f'{api}/light'
 
+    @classmethod
+    def by_id(cls, appId: str):
+        return f'{cls.api}/{appId}'
+
+    @classmethod
+    def export(cls, appId: str):
+        return f'{cls.api}/{appId}/export'
+
+
+class Logging(object):
+    api = f'{Api.api}/logging'
+    job = f'{api}/job'
+    recent = f'{api}/recent'
+
+    @classmethod
+    def by_id(cls, jobId: str):
+        return f'{cls.job}/{jobId}'
+
 
 class Record(object):
 
