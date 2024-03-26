@@ -1,3 +1,5 @@
+import json
+
 from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import DatadogConfigRest
@@ -15,11 +17,19 @@ class DatadogClientRest(object):
             if await self.validate():
                 return True
 
+    async def log(self, log: dict):
+        url = V2(self.config.host_log).api.logs.endpoint
+
+        response = await self.requests.post(url=url, json=log)
+        response_log = await self.requests.to_dict()
+
+        return response_log
+
     async def validate(self):
         url = V1(self.config.host).api.validate.endpoint
 
         self.requests.session.headers.update(await self.config.headers())
-        response = await self.requests.get(url=url, headers=await self.config.headers())
-        validate = await self.requests.to_dict()
+        response = await self.requests.get(url=url)
+        response_validate = await self.requests.to_dict()
 
-        return validate
+        return response_validate
