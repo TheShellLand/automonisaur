@@ -45,6 +45,7 @@ Github issues and feature requests welcomed.
 | Data Store      | minio<br/>swift                                             |
 | Devices         | snmp                                                        |
 | Google Cloud    | google auth api<br/>google people api<br/>google sheets api |
+| Helpers         | os<br/>subprocess<br/>threading<br/>socket<br/>datetime     |
 | Logging         | sentryio                                                    |
 | MacOS           | airport<br/>macchanger                                      |
 | Python          | logging<br/>requests                                        |
