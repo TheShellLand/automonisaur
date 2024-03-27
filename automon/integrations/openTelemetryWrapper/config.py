@@ -30,6 +30,12 @@ class OpenTelemetryConfig(object):
     async def get_finished_spans(self):
         return self.memory_processor.get_finished_spans()
 
+    async def pop_finished_spans(self):
+        """ideal is to lock, pop spans, and clear"""
+        spans = await self.get_finished_spans()
+        clear = await self.clear()
+        return spans
+
     async def test(self):
         with self.tracer.start_as_current_span("rootSpan"):
             with self.tracer.start_as_current_span("childSpan"):
