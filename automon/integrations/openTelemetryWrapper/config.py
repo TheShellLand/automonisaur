@@ -1,3 +1,5 @@
+import asyncio
+
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
@@ -19,6 +21,9 @@ class OpenTelemetryConfig(object):
         trace.set_tracer_provider(self.provider)
 
         self.tracer = trace.get_tracer(__name__)
+
+        self.queue_consumer = asyncio.Queue()
+        self.queue_producer = asyncio.Queue()
 
     async def clear(self):
         return self.memory_processor.clear()

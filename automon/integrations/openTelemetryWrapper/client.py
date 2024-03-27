@@ -23,6 +23,18 @@ class OpenTelemetryClient(object):
     async def get_finished_spans(self):
         return await self.config.get_finished_spans()
 
+    async def start_consumer(self):
+        """adds spans from memory to queue"""
+        while True:
+            pass
+        return
+
+    async def start_producer(self):
+        """"""
+        while True:
+            pass
+        return
+
     async def to_dict(self):
         return [
             json.loads(span.to_json())
