@@ -260,6 +260,9 @@ class SwimlaneClientRest(object):
             url=url
         )
 
+        if self.requests.status_code == 204 or self.requests.status_code == 404:
+            return True
+
         return response
 
     async def record_get(self, appId: str, id: str):
