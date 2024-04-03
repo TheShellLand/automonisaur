@@ -9,8 +9,12 @@ class MyTestCase(unittest.TestCase):
 
     def test_something(self):
         self.assertTrue(asyncio.run(
-            self.client.test())
-        )
+            self.client.test()))
+
+        spans = asyncio.run(
+            self.client.get_finished_spans())
+
+        pass
 
 
 if __name__ == '__main__':

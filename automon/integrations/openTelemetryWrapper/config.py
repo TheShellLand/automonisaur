@@ -1,7 +1,6 @@
 import asyncio
+import opentelemetry
 
-from opentelemetry import trace
-from opentelemetry.trace import Status, StatusCode
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
@@ -19,25 +18,27 @@ class OpenTelemetryConfig(object):
         self.processor = SimpleSpanProcessor(self.memory_processor)
         self.provider.add_span_processor(self.processor)
 
-        trace.set_tracer_provider(self.provider)
+        opentelemetry.trace.set_tracer_provider(self.provider)
 
-        self.tracer = trace.get_tracer(__name__)
+        self.tracer = opentelemetry.trace.get_tracer(__name__)
 
         self.queue_consumer = asyncio.Queue()
         self.queue_producer = asyncio.Queue()
 
     async def clear(self):
+        logger.debug('clear')
         return self.memory_processor.clear()
 
-    @property
-    def current_span(self):
-        return trace.get_current_span()
+    async def current_span(self):
+        logger.debug('get_current_span')
+        return opentelemetry.trace.get_current_span()
 
     async def is_ready(self):
         if self.provider and self.memory_processor and self.processor:
             return True
 
     async def get_finished_spans(self):
+        logger.debug('get_finished_spans')
         return self.memory_processor.get_finished_spans()
 
     async def pop_finished_spans(self):
