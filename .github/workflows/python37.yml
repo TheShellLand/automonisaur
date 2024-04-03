@@ -2,9 +2,9 @@ name: 3.7 EOL
 
 on:
   push:
-    branches: [ '*' ]
+    branches: [ 'none' ]
   pull_request:
-    branches: [ '*' ]
+    branches: [ 'none' ]
 
 env:
   # Use docker.io for Docker Hub if empty
