@@ -18,11 +18,11 @@ class MyTestCase(unittest.TestCase):
             for span in spans:
                 asyncio.run(
                     self.client.log(
-                        ddsource=span['datadog']['ddsource'],
-                        ddtags=span['datadog']['ddtags'],
-                        hostname=span['datadog']['hostname'],
-                        service=span['datadog']['service'],
-                        message=span['datadog']['message'],
+                        ddsource=span['ddsource'],
+                        ddtags=span['ddtags'],
+                        hostname=span['hostname'],
+                        service=span['service'],
+                        message=span['message'],
                     ))
 
             pass

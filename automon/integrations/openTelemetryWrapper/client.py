@@ -1,5 +1,6 @@
 import json
 
+from opentelemetry.util import types
 from automon.log import logging
 
 from .config import OpenTelemetryConfig
@@ -13,6 +14,9 @@ class OpenTelemetryClient(object):
     def __init__(self):
         self.config = OpenTelemetryConfig()
 
+    def add_event(self, name: str, attributes: types.Attributes = None, **kwargs):
+        return self.config.current_span.add_event(name=name, attributes=attributes, **kwargs)
+
     async def clear(self):
         return await self.config.clear()
 
@@ -22,6 +26,16 @@ class OpenTelemetryClient(object):
 
     async def get_finished_spans(self):
         return await self.config.get_finished_spans()
+
+    async def pop_finished_spans(self):
+        return await self.config.pop_finished_spans()
+
+    def record_exception(self, exception: Exception):
+        return self.config.current_span.record_exception(exception=exception)
+
+    def start_as_current_span(self, name: str, attributes: types.Attributes = None, **kwargs):
+        return self.config.tracer.start_as_current_span(
+            name=name, attributes=attributes, **kwargs)
 
     async def start_consumer(self):
         """adds spans from memory to queue"""
@@ -34,6 +48,14 @@ class OpenTelemetryClient(object):
         while True:
             pass
         return
+
+    async def test(self):
+        with self.start_as_current_span(name='rootSpan') as trace_root:
+            with self.start_as_current_span(name='childSpan') as trace_child:
+                self.add_event('AAAAAAAA')
+                self.add_event('BBBBBBBB')
+
+        return True
 
     async def to_dict(self):
         return [
@@ -50,12 +72,11 @@ class OpenTelemetryClient(object):
             hostname = span['context']['trace_id']
             service = span['context']['span_id']
 
-            span['datadog'] = dict(
+            log.append(dict(
                 ddsource=ddsource,
                 ddtags=ddtags,
                 hostname=hostname,
                 service=service,
                 message=message,
-            )
-            log.append(span)
+            ))
         return log
