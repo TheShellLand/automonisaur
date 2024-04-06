@@ -19,7 +19,7 @@ log_format_opentelemetry = '\t'.join(
 try:
     import opentelemetry
 
-    logging.basicConfig(level=DEBUG, format=log_format_opentelemetry)
+    # logging.basicConfig(level=DEBUG, format=log_format_opentelemetry)
     LoggingInstrumentor().instrument(
         log_level=logging.DEBUG,
         set_logging_format=True,
