@@ -45,30 +45,17 @@ Github issues and feature requests welcomed.
 | Data Store      | minio<br/>swift                                             |
 | Devices         | snmp                                                        |
 | Google Cloud    | google auth api<br/>google people api<br/>google sheets api |
+| Helpers         | os<br/>subprocess<br/>threading<br/>socket<br/>datetime     |
 | Logging         | sentryio                                                    |
 | MacOS           | airport<br/>macchanger                                      |
 | Python          | logging<br/>requests                                        |
 | SOAR            | swimlane<br/>splunk soar                                    |
 | Recon           | nmap                                                        |
 | Test Automation | selenium                                                    |
-| Category          | Library                                                     |
-|-------------------|-------------------------------------------------------------|
-| API               | flask                                                       |
-| Chat              | slack                                                       |
-| Data Scraping     | beautifulsoup<br/>facebook groups<br/>instagram<br/>scrapy  |
-| Databases         | elasticsearch<br/>neo4j<br/>splunk                          |
-| Data Store        | minio<br/>swift                                             |
-| Devices           | snmp                                                        |
-| Google Cloud      | google auth api<br/>google people api<br/>google sheets api |
-| Tracing / Logging | openTelemetry<br/>sentryio                                  |
-| macOS             | airport<br/>macchanger                                      |
-| Python            | logging<br/>requests                                        |
-| Recon             | nmap                                                        |
-| Test Automation   | selenium                                                    |
 
 #### Requires
 
-- python >= 3.8
+- python >= 3.10
 
 _Note: install requirements.txt to use all integrations_
 

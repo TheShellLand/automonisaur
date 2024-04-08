@@ -1,6 +1,11 @@
 # Codecov
 CODECOV_TOKEN=
 
+# Datadog
+DD_SITE=https://us5.datadoghq.com
+DD_API_KEY=
+DD_APP_KEY=
+
 # Elasticsearch
 ELASTICSEARCH_HOST=https://elastic-cloud.com:9200
 ELASTICSEARCH_USER=elastic
