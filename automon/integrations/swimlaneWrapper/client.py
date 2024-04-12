@@ -86,7 +86,10 @@ class SwimlaneClientRest(object):
         return logs_job
 
     async def logging_recent(self, level: str = 'Debug'):
-        """finds the recent logs"""
+        """gets logs but needs to get it from a task run id
+
+        this is broken
+        """
         url = f'{self.host}/{Logging.recent}'
 
         request_body = {
@@ -259,6 +262,9 @@ class SwimlaneClientRest(object):
         response = await self.requests.delete(
             url=url
         )
+
+        if self.requests.status_code == 204 or self.requests.status_code == 404:
+            return True
 
         return response
 

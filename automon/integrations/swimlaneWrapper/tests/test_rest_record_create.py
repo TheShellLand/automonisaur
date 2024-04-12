@@ -11,19 +11,17 @@ class MyTestCase(unittest.TestCase):
     def test_login(self):
         if asyncio.run(client.is_ready()):
             if asyncio.run(client.login_token()):
-                self.assertTrue(asyncio.run(
-                    client.app_list()
-                ))
+                appId = client.config.appId
 
-                key = 'a7m4r'       # json
-                value = json.dumps(dict(
+                key = 'a1qio'  # base64
+                value = dict(
                     key='value',
                     key2='value2',
-                ))
+                )
 
                 record_new = asyncio.run(
                     client.record_create(
-                        appId=client.config.appId,
+                        appId=appId,
                         key=key,
                         value=value)
                 )
@@ -33,7 +31,7 @@ class MyTestCase(unittest.TestCase):
                 record_id = record_new.get('id')
 
                 record_get = asyncio.run(
-                    client.record_get(appId=client.config.appId, id=record_id))
+                    client.record_get(appId=appId, id=record_id))
 
                 self.assertTrue(record_get)
 

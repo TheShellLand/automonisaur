@@ -36,7 +36,7 @@ class RequestsClient(object):
                 self.response.request.method,
                 self.response.url,
                 f'{round(len(self.content) / 1024, 2)} KB',
-                self.status_code,
+                f'{self.status_code}',
             ]
             msg = ' '.join(msg)
             return logger.debug(msg)
@@ -45,8 +45,8 @@ class RequestsClient(object):
             self.response.request.method,
             self.response.url,
             f'{round(len(self.content) / 1024, 2)} KB',
-            self.status_code,
-            self.content
+            f'{self.status_code}',
+            f'{self.content}'
         ]
 
         msg = ' '.join(msg)
