@@ -12,7 +12,7 @@ class MyTestCase(unittest.TestCase):
     if asyncio.run(client.is_ready()):
         def test_ready(self):
             self.assertTrue(asyncio.run(
-                self.client.validate()
+                self.client.is_ready()
             ))
 
         pass

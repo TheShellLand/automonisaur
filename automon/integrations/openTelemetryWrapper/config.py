@@ -13,6 +13,7 @@ logger.setLevel(logging.DEBUG)
 
 class OpenTelemetryConfig(object):
     def __init__(self):
+        self.opentelemetry = opentelemetry
         self.provider = TracerProvider()
         self.memory_processor = InMemorySpanExporter()
         self.processor = SimpleSpanProcessor(self.memory_processor)
@@ -29,7 +30,8 @@ class OpenTelemetryConfig(object):
         logger.debug('clear')
         return self.memory_processor.clear()
 
-    async def current_span(self):
+    @property
+    def get_current_span(self):
         logger.debug('get_current_span')
         return opentelemetry.trace.get_current_span()
 
@@ -49,9 +51,9 @@ class OpenTelemetryConfig(object):
 
     async def test(self):
         with self.tracer.start_as_current_span(name="rootSpan") as trace_root:
+            trace_root.add_event('AAAAAAAA')
             with self.tracer.start_as_current_span(name="childSpan") as trace_child:
                 trace_child.add_event('AAAAAAAA')
                 trace_child.add_event('BBBBBBBB')
-                print("Hello world!")
 
         return True

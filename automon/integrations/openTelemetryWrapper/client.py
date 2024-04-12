@@ -1,4 +1,5 @@
 import json
+import opentelemetry
 
 from opentelemetry.util import types
 from opentelemetry.trace import Status, StatusCode
@@ -16,18 +17,17 @@ class OpenTelemetryClient(object):
     def __init__(self):
         self.config = OpenTelemetryConfig()
 
-    async def add_event(self, name: str, attributes: types.Attributes = None, **kwargs):
+    def add_event(self, name: str, attributes: types.Attributes = None, **kwargs):
         logger.debug(dict(name=name, attributes=attributes, kwargs=kwargs))
-        span = await self.current_span()
-        return span.add_event(name=name, attributes=attributes, **kwargs)
+        return self.config.opentelemetry.trace.get_current_span.add_event(
+            name=name,
+            attributes=attributes,
+            **kwargs
+        )
 
     async def clear(self):
         logger.debug('clear')
         return await self.config.clear()
-
-    async def current_span(self):
-        logger.debug('current_span')
-        return await self.config.current_span()
 
     async def is_ready(self):
         if await self.config.is_ready():
@@ -43,20 +43,27 @@ class OpenTelemetryClient(object):
 
     async def record_exception(self, exception: Exception):
         logger.error(f'{exception}')
-        span = await self.current_span()
+        span = self.config.opentelemetry.trace.get_current_span()
         span.set_status(Status(StatusCode.ERROR))
         return span.record_exception(exception=exception)
 
-    async def start_as_current_span(
+    def start_as_current_span(
             self, name: str,
-            attributes: types.Attributes = None,
+            attributes: any = None,
             **kwargs
     ):
+        """this does not work
+
+        test error: FAILED AttributeError: 'int' object has no attribute 'sampled'
+
+        """
+        raise Exception(f'this functino does not work')
         logger.debug(dict(name=name, attributes=attributes, kwargs=kwargs))
-        return self.config.tracer.start_as_current_span(
+        return self.tracer.start_as_current_span(
             name=name,
             attributes=attributes,
-            **kwargs)
+            **kwargs,
+        )
 
     async def start_consumer(self):
         """adds spans from memory to queue"""
@@ -71,14 +78,14 @@ class OpenTelemetryClient(object):
         return
 
     async def test(self):
-        with await self.start_as_current_span(name='rootSpan') as trace_root:
-            await self.add_event('AAAAAAAA')
+        with self.tracer.start_as_current_span(name='rootSpan') as trace_root:
+            trace_root.add_event('AAAAAAAA')
 
-            with await self.start_as_current_span(name='childSpan') as trace_child:
-                await self.add_event('AAAAAAAA')
-                await self.add_event('BBBBBBBB')
+            with self.tracer.start_as_current_span(name='childSpan') as trace_child:
+                trace_child.add_event('AAAAAAAA')
+                trace_child.add_event('BBBBBBBB')
 
-            await self.add_event('BBBBBBBB')
+            trace_root.add_event('BBBBBBBB')
 
         return True
 
@@ -105,3 +112,7 @@ class OpenTelemetryClient(object):
                 message=message,
             ))
         return log
+
+    @property
+    def tracer(self):
+        return self.config.tracer
