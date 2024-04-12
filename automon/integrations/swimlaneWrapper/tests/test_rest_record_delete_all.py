@@ -7,7 +7,7 @@ client = SwimlaneClientRest()
 
 
 class MyTestCase(unittest.TestCase):
-    def test_login(self):
+    def test_record_delete_all(self):
         if asyncio.run(client.is_ready()):
             if asyncio.run(client.login()):
                 app_id = client.config.appId

@@ -42,11 +42,11 @@ python-keystoneclient>=4.2.0
 python-swiftclient>=3.12.0
 
 # opentelemetry
-opentelemetry-distro>=0.44b0
-opentelemetry-exporter-otlp>=1.22.0
-opentelemetry-instrumentation-logging>=0.44b0
+opentelemetry-distro==0.43b0
+opentelemetry-exporter-otlp==1.22.0
+opentelemetry-instrumentation-logging==0.43b0
 # workaround
-git+https://github.com/TheShellLand/opentelemetry-python-contrib.git@0.44b0#subdirectory=instrumentation/opentelemetry-instrumentation-aiohttp-server
+git+https://github.com/open-telemetry/opentelemetry-python-contrib.git@0.43b0hotfix#subdirectory=instrumentation/opentelemetry-instrumentation-aiohttp-server
 
 # splunk soar
 pytz>=2021.1

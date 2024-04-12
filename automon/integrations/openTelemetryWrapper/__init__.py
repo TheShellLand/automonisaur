@@ -1,1 +1,2 @@
-from .config import *
+from .client import OpenTelemetryClient
+from .config import OpenTelemetryConfig

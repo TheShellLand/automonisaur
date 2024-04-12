@@ -1,6 +1,6 @@
 import unittest
 
-from automon.helpers.grok import Grok
+from automon.integrations.grok import Grok
 
 
 class GrokTest(unittest.TestCase):
