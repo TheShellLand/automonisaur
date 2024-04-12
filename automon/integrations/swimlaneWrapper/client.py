@@ -86,7 +86,10 @@ class SwimlaneClientRest(object):
         return logs_job
 
     async def logging_recent(self, level: str = 'Debug'):
-        """finds the recent logs"""
+        """gets logs but needs to get it from a task run id
+
+        this is broken
+        """
         url = f'{self.host}/{Logging.recent}'
 
         request_body = {
