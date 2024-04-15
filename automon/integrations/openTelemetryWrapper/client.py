@@ -52,12 +52,6 @@ class OpenTelemetryClient(object):
             attributes: any = None,
             **kwargs
     ):
-        """this does not work
-
-        test error: FAILED AttributeError: 'int' object has no attribute 'sampled'
-
-        """
-        raise Exception(f'this functino does not work')
         logger.debug(dict(name=name, attributes=attributes, kwargs=kwargs))
         return self.tracer.start_as_current_span(
             name=name,
