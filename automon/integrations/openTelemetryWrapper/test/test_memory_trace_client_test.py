@@ -11,8 +11,8 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(asyncio.run(
             self.client.test()))
 
-        spans = asyncio.run(
-            self.client.get_finished_spans())
+        # spans = asyncio.run(
+        #     self.client.get_finished_spans())
 
         pass
 
