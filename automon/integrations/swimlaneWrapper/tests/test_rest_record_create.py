@@ -19,6 +19,8 @@ class MyTestCase(unittest.TestCase):
                     key2='value2',
                 )
 
+                value = 'value'
+
                 record_new = asyncio.run(
                     client.record_create(
                         appId=appId,
