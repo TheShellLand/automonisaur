@@ -10,10 +10,10 @@ browser.config.webdriver_wrapper.enable_headless()
 
 
 class SeleniumClientTest(unittest.TestCase):
+    if asyncio.run(browser.run()):
 
-    def test(self):
+        def test(self):
 
-        if asyncio.run(browser.run()):
             asyncio.run(browser.set_window_size(device_type='web-large'))
 
             if asyncio.run(browser.get('http://bing.com')):
