@@ -1,6 +1,6 @@
 import re
 
-from neo4j.work.summary import ResultSummary
+from neo4j import ResultSummary
 
 from automon import log
 
