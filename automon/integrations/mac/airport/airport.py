@@ -147,10 +147,10 @@ class Airport:
         return False
 
     async def scan_channel(self, channel: int = None):
-        return self.scan(channel=channel)
+        return await self.scan(channel=channel)
 
     async def scan_summary(self, channel: int = None, args: str = None, output: bool = True):
-        if self.scan(channel=channel, args=args):
+        if await self.scan(channel=channel, args=args):
             if output:
                 logger.info(f'{self._scan_output}')
             return True

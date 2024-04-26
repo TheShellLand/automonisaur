@@ -1,4 +1,5 @@
 import sys
+import asyncio
 import unittest
 
 from automon.integrations.mac.airport import Airport
@@ -11,8 +12,8 @@ class AirportToNeo4jTest(unittest.TestCase):
     n = Neo4jClient()
 
     def test_scan_xml(self):
-        if self.a.isReady():
-            test = self.a.scan_xml()
+        if asyncio.run(self.a.isReady()):
+            test = asyncio.run(self.a.scan_xml())
             if test:
                 self.assertTrue(test)
 
