@@ -24,6 +24,8 @@ class ChromeWrapper(object):
 
         self.update_paths(self.chromedriver_path)
 
+        logger.error('missing SELENIUM_CHROMEDRIVER_PATH')
+
     def __repr__(self):
         if self._webdriver:
             return str(dict(
@@ -397,7 +399,9 @@ class ChromeWrapper(object):
 
                 return True
 
-        logger.error(f'chrome driver not found: {path}')
+        logger.error(dict(
+            chromedriver_path=path
+        ))
 
     async def quit(self):
         """quit
