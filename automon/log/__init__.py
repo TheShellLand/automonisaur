@@ -1,5 +1,3 @@
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
-
 from automon.helpers.osWrapper import environ
 
 from .attributes import LogRecordAttribute
@@ -20,6 +18,7 @@ log_format_opentelemetry = environ('OTEL_PYTHON_LOG_FORMAT') or '\t'.join(
 
 try:
     import opentelemetry
+    from opentelemetry.instrumentation.logging import LoggingInstrumentor
 
     # logging.basicConfig(level=DEBUG, format=log_format_opentelemetry)
     LoggingInstrumentor().instrument(
