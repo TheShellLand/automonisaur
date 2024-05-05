@@ -240,10 +240,10 @@ class InstagramBrowserClient:
         self.useragent = await self.browser.get_random_user_agent()
 
         if self.headless:
-            await self.browser.config.webdriver_wrapper.in_headless()
-            await self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
+            self.browser.config.webdriver_wrapper.in_headless()
+            self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
         else:
-            await self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
+            self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
 
     @property
     def urls(self):
