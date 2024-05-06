@@ -32,7 +32,9 @@ class SentryConfig(object):
         self.server_name = None
         self.in_app_include = None
         self.in_app_exclude = None
+        # depreciated
         self.request_bodies = request_bodies or 'always'
+        # depreciated
         self.with_locals = None
         self.ca_certs = None
 

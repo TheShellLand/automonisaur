@@ -23,8 +23,6 @@ class SentryClient(object):
             server_name=self.config.server_name,
             in_app_include=self.config.in_app_include,
             in_app_exclude=self.config.in_app_exclude,
-            request_bodies=self.config.request_bodies,
-            with_locals=self.config.with_locals,
             ca_certs=self.config.ca_certs,
             integrations=self.config.integrations,
             default_integrations=self.config.default_integrations,
