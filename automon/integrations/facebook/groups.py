@@ -552,17 +552,17 @@ class FacebookGroups(object):
         self._browser.config.webdriver_wrapper = ChromeWrapper()
 
         if headless:
-            await self._browser.config.webdriver_wrapper.enable_headless()
-            await self._browser.config.webdriver_wrapper.set_locale_experimental()
+            self._browser.config.webdriver_wrapper.enable_headless()
+            self._browser.config.webdriver_wrapper.set_locale_experimental()
         else:
-            await self._browser.config.webdriver_wrapper.set_locale_experimental()
+            self._browser.config.webdriver_wrapper.set_locale_experimental()
 
         if random_user_agent:
-            await self._browser.config.webdriver_wrapper.set_user_agent(
+            self._browser.config.webdriver_wrapper.set_user_agent(
                 await self._browser.get_random_user_agent()
             )
         elif set_user_agent:
-            await self._browser.config.webdriver_wrapper.set_user_agent(
+            self._browser.config.webdriver_wrapper.set_user_agent(
                 set_user_agent
             )
 
@@ -570,7 +570,7 @@ class FacebookGroups(object):
             browser=self._browser
         )))
         browser = await self._browser.run()
-        await self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
+        self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
         return browser
 
     async def stop(self):
