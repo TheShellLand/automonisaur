@@ -47,7 +47,7 @@ Github issues and feature requests welcomed.
 | Google Cloud    | google auth api<br/>google people api<br/>google sheets api |
 | Helpers         | os<br/>subprocess<br/>threading<br/>socket<br/>datetime     |
 | Logging         | sentryio                                                    |
-| MacOS           | airport<br/>macchanger                                      |
+| MacOS           | airport<br/>macchanger<br/>wdutil                           |
 | Python          | logging<br/>requests                                        |
 | SOAR            | swimlane<br/>splunk soar                                    |
 | Recon           | nmap                                                        |

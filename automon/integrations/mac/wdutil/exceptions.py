@@ -1,0 +1,2 @@
+class WdutilConfigNotReady(Exception):
+    pass
