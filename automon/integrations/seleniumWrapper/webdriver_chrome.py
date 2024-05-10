@@ -24,7 +24,8 @@ class ChromeWrapper(object):
 
         self.update_paths(self.chromedriver_path)
 
-        logger.error('missing SELENIUM_CHROMEDRIVER_PATH')
+        if not self.chromedriver_path:
+            logger.error('missing SELENIUM_CHROMEDRIVER_PATH')
 
     def __repr__(self):
         if self._webdriver:
