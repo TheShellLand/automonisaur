@@ -82,13 +82,11 @@ stderr:
         :return:
         """
         logger.debug(str(dict(
-            program=program,
+            which=program,
             args=args,
             kwargs=kwargs,
         )))
-        if program:
-            return self.run(command=f'which {program}', *args, **kwargs)
-        return False
+        return self.run(command=f'which {program}', *args, **kwargs)
 
     def run_command(self, *args, **kwargs) -> bool:
         """alias to run"""
@@ -101,23 +99,23 @@ stderr:
     def run(
             self,
             command: str,
+            pipe: bool = False,
             text: bool = False,
-            inBackground: bool = False,
             shell: bool = False,
             sanitize_command: bool = True,
             **kwargs
     ) -> bool:
 
-        self.command = command
+        if not pipe:
+            self.command = command
 
-        if sanitize_command:
+        if sanitize_command and not shell:
             command = self.sanitize_command(command)
 
         if not command:
             logger.error(str(dict(
                 command=command,
                 text=text,
-                inBackground=inBackground,
                 shell=shell,
                 sanitize_command=sanitize_command,
                 kwargs=kwargs,
@@ -125,54 +123,39 @@ stderr:
             raise SyntaxError(f'command cannot be empty, {command}')
 
         logger.debug(str(dict(
-            command=self.command,
+            command=command,
             text=text,
-            inBackground=inBackground,
             shell=shell,
             sanitize_command=sanitize_command,
             kwargs=kwargs,
         )))
 
         try:
-            if inBackground:
-                if 'text' in dir(subprocess.Popen):
-                    self.call = subprocess.Popen(args=command, text=text, shell=shell, **kwargs)
-                else:
-                    self.call = subprocess.Popen(args=command, shell=shell, **kwargs)
+
+            self.call = subprocess.Popen(
+                args=command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=text,
+                shell=shell,
+                **kwargs)
+
+            stdout, stderr = self.call.communicate()
+            # self.call.wait()
+
+            timestamp = Dates.iso()
+
+            self.last_run = timestamp
+            self._stdout = stdout
+            self._stderr = stderr
+            self.returncode = self.call.returncode
+
+            if self.returncode == 0:
+                logger.debug(str(dict(
+                    stdout_KB=round(len(self.stdout) / 1024, 2),
+                    stderr_KB=round(len(self.stderr) / 1024, 2),
+                )))
                 return True
-            else:
-                if 'text' in dir(subprocess.Popen):
-                    self.call = subprocess.Popen(
-                        args=command,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=text,
-                        shell=shell,
-                        **kwargs)
-                else:
-                    self.call = subprocess.Popen(
-                        args=command,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        shell=shell,
-                        **kwargs)
-
-                stdout, stderr = self.call.communicate()
-                # call.wait()
-
-                timestamp = Dates.iso()
-
-                self.last_run = timestamp
-                self._stdout = stdout
-                self._stderr = stderr
-                self.returncode = self.call.returncode
-
-                if self.returncode == 0:
-                    logger.debug(str(dict(
-                        stdout_KB=round(len(self.stdout) / 1024, 2),
-                        stderr_KB=round(len(self.stderr) / 1024, 2),
-                    )))
-                    return True
 
         except Exception as error:
             self._stderr = f'{error}'.encode()
@@ -188,21 +171,32 @@ stderr:
     def sanitize_command(self, command: str) -> [str]:
 
         if isinstance(command, str):
-            split_command = f'{command}'.split(' ')
-            split_command = [str(x).strip() for x in split_command]
-            split_command = [x for x in split_command if x]
-            command = split_command
 
-            for arg in split_command:
-                if '|' in arg:
-                    error = f'Pipes are not supported! {split_command}'
-                    logger.error(error)
-                    raise NotSupportedCommand(error)
+            if '|' in command:
+                command = self.sanitize_command_pipe(command=command)
+                command = [self.sanitize_command_spaces(command=cmd) for cmd in command]
+            else:
+                command = self.sanitize_command_spaces(command=command)
 
         logger.debug(str(dict(
             command=command
         )))
         return command
+
+    def sanitize_command_pipe(self, command: str) -> [str]:
+        """support for shell command piping"""
+        error = f'Pipes are not supported! To use run(shell=True). {command}'
+        logger.error(error)
+        raise NotSupportedCommand(error)
+
+        split_command = f'{command}'.split('|')
+        return split_command
+
+    def sanitize_command_spaces(self, command: str) -> [str]:
+        split_command = f'{command}'.split(' ')
+        split_command = [str(x).strip() for x in split_command]
+        split_command = [x for x in split_command if x]
+        return split_command
 
     def __repr__(self) -> str:
         return str(dict(
