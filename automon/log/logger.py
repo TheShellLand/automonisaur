@@ -1,4 +1,5 @@
 import logging
+import hashlib
 import traceback
 
 from automon.helpers import Dates
@@ -16,6 +17,10 @@ NOTSET = logging.NOTSET
 
 logger = logging.getLogger(__name__)
 logger.setLevel(CRITICAL)
+
+
+def log_secret(secret: str) -> str:
+    return len(hashlib.md5(str(secret).encode()).hexdigest()) * '*'
 
 
 class Callback(object):
