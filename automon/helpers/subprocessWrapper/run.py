@@ -60,7 +60,10 @@ stderr:
         return False
 
     @property
-    def stdout(self):
+    def stdout(self) -> bytes:
+        if type(self._stdout) is str:
+            return str(self._stdout).encode()
+
         return self._stdout
 
     @property
@@ -68,7 +71,10 @@ stderr:
         return self.stdout.decode().splitlines()
 
     @property
-    def stderr(self):
+    def stderr(self) -> bytes:
+        if type(self._stderr) is str:
+            return str(self._stderr).encode()
+
         return self._stderr
 
     @property
