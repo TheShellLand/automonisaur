@@ -5,8 +5,7 @@ from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
 browser = SeleniumBrowser()
 browser.config.webdriver_wrapper = ChromeWrapper()
-browser.config.webdriver_wrapper.enable_defaults()
-browser.config.webdriver_wrapper.enable_headless()
+browser.config.webdriver_wrapper.enable_defaults().enable_headless()
 
 agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:112.0) Gecko/20100101 Firefox/112.0'
 

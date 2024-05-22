@@ -5,8 +5,7 @@ from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
 browser = SeleniumBrowser()
 browser.config.webdriver_wrapper = ChromeWrapper()
-browser.config.webdriver_wrapper.enable_defaults()
-browser.config.webdriver_wrapper.enable_headless()
+browser.config.webdriver_wrapper.enable_defaults().enable_headless()
 
 
 class SeleniumClientTest(unittest.TestCase):
