@@ -1,8 +1,21 @@
 import os
 import hashlib
 
+from automon import environ
+
 
 class FlaskConfig(object):
+
+    def __init__(
+            self,
+            host: str = None,
+            port: int = None,
+            debug: bool = None,
+            **kwargs
+    ):
+        self.host = host or environ('FLASK_HOST')
+        self.port = port or environ('FLASK_PORT')
+        self.debug = debug or environ('FLASK_DEBUG')
 
     @staticmethod
     def javascript_compatibility(app):
