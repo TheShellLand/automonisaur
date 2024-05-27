@@ -12,6 +12,7 @@ class SeleniumConfig(object):
         self._webdriver = None
         self.webdriver_wrapper = None
 
+        self.cookies_autosave: bool = environ('SELENIUM_COOKIES_AUTOSAVE', False)
         self._cookies_base64 = environ('SELENIUM_COOKIES_BASE64')
         self._cookies_file = environ('SELENIUM_COOKIES_FILE')
 

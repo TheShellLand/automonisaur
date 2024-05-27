@@ -12,7 +12,6 @@ class MyTestCase(unittest.TestCase):
         self.assertFalse(test.filter_agent('xxxxx'))
         self.assertFalse(test.filter_agent('xxxxx', case_sensitive=True))
 
-
     def test_random(self):
         test = SeleniumUserAgentBuilder()
         self.assertTrue(test.get_random_agent('applewebkit'))

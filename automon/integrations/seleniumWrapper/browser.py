@@ -55,8 +55,10 @@ class SeleniumBrowser(object):
     def config(self):
         return self._config
 
-    async def cookie_file_to_dict(self, file: str = 'cookies.txt'):
-        logger.debug(f'{file}')
+    async def cookie_file_to_dict(self, file: str = 'cookies.txt') -> list:
+        logger.debug(dict(
+            cookie_file_to_dict=file
+        ))
         with open(file, 'r') as file:
             return json.loads(file.read())
 
@@ -108,7 +110,9 @@ class SeleniumBrowser(object):
     @property
     def current_url(self):
         if self.webdriver:
-            logger.debug(self._current_url)
+            logger.debug(dict(
+                current_url=self._current_url
+            ))
             if self._current_url == 'data:,':
                 return ''
             return self._current_url
@@ -124,7 +128,7 @@ class SeleniumBrowser(object):
         """Generate a unique filename"""
 
         title = self.webdriver.title
-        url = self._current_url
+        url = self.current_url
         hostname = urlparse(url).hostname
 
         hostname_ = Sanitation.ascii_numeric_only(hostname)
@@ -176,10 +180,18 @@ class SeleniumBrowser(object):
         result = self.webdriver.add_cookie(cookie_dict=cookie_dict)
 
         if result is None:
-            logger.debug(f'{cookie_dict}')
+            logger.debug(dict(
+                domain=cookie_dict.get('domain'),
+                path=cookie_dict.get('path'),
+                secure=cookie_dict.get('secure'),
+                expiry=cookie_dict.get('expiry'),
+                name=cookie_dict.get('name'),
+            ))
             return True
 
-        logger.error(f'{cookie_dict}')
+        logger.error(dict(
+            add_cookie=cookie_dict
+        ))
         return False
 
     async def add_cookie_from_file(self, file: str) -> bool:
@@ -197,7 +209,9 @@ class SeleniumBrowser(object):
         for cookie in cookies_list:
             await self.add_cookie(cookie_dict=cookie)
 
-        logger.debug(f'{True}')
+        logger.debug(dict(
+            add_cookies_from_list=len(cookies_list)
+        ))
         return True
 
     async def add_cookie_from_current_url(self):
@@ -210,7 +224,7 @@ class SeleniumBrowser(object):
 
         if os.path.exists(cookie_file):
             logger.info(f'{cookie_file}')
-            return self.add_cookie_from_file(file=cookie_file)
+            return await self.add_cookie_from_file(file=cookie_file)
 
         logger.error(f'{cookie_file}')
 
@@ -225,6 +239,11 @@ class SeleniumBrowser(object):
         logger.error(f'{base64_str}')
         return False
 
+    async def autosave_cookies(self) -> bool:
+        if self.current_url:
+            await self.save_cookies_for_current_url()
+            return await self.load_cookies_for_current_url()
+
     async def delete_all_cookies(self) -> None:
         result = self.webdriver.delete_all_cookies()
         logger.info(f'{True}')
@@ -234,7 +253,9 @@ class SeleniumBrowser(object):
         parsed = await self.urlparse(url)
         hostname = parsed.hostname
         cookie_file = f'cookies-{hostname}.txt'
-        logger.info(f'{cookie_file}')
+        logger.info(dict(
+            _url_filename=cookie_file
+        ))
         return cookie_file
 
     async def get_cookie(self, name: str) -> dict:
@@ -243,24 +264,28 @@ class SeleniumBrowser(object):
         return result
 
     async def get_cookies(self) -> [dict]:
-        result = self.webdriver.get_cookies()
-        logger.debug(f'{True}')
-        return result
+        cookies = self.webdriver.get_cookies()
+        logger.debug(dict(
+            get_cookies=len(cookies)
+        ))
+        return cookies
 
     async def get_cookies_base64(self) -> base64:
-        result = self.get_cookies()
+        cookies = await self.get_cookies()
         logger.debug(f'{True}')
         return base64.b64encode(
-            json.dumps(result).encode()
+            json.dumps(cookies).encode()
         ).decode()
 
     async def get_cookies_json(self) -> json.dumps:
-        cookies = self.get_cookies()
-        logger.debug(f'{True}')
+        cookies = await self.get_cookies()
+        logger.debug(dict(
+            get_cookies_json=len(cookies)
+        ))
         return json.dumps(cookies)
 
     async def get_cookies_summary(self):
-        result = self.get_cookies()
+        result = await self.get_cookies()
         summary = {}
         if result:
             for cookie in result:
@@ -338,11 +363,15 @@ class SeleniumBrowser(object):
                     current_url=self.current_url,
                     kwargs=kwargs
                 )))
+
+            if self.config.cookies_autosave:
+                await self.autosave_cookies()
+
             return True
         except Exception as error:
-            logger.error(str(dict(
+            logger.error(dict(
                 error=error,
-            )))
+            ))
 
         return False
 
@@ -360,7 +389,7 @@ class SeleniumBrowser(object):
             features: str = 'lxml') -> BeautifulSoup:
         """read page source with beautifulsoup"""
         if not markdup:
-            markdup = self.get_page_source()
+            markdup = await self.get_page_source()
         return BeautifulSoup(
             markup=markdup,
             features=features)
@@ -408,9 +437,19 @@ class SeleniumBrowser(object):
         logger.error(f'{False}')
         return False
 
+    async def load_cookies_for_current_url(self) -> bool:
+        filename = await self._url_filename(url=self.url)
+        logger.info(dict(
+            load_cookies_for_current_url=filename,
+            url=self.url,
+        ))
+        return await self.add_cookie_from_file(file=filename)
+
     async def urlparse(self, url: str):
         parsed = urlparse(url=url)
-        logger.debug(f'{parsed}')
+        logger.debug(dict(
+            urlparse=parsed
+        ))
         return parsed
 
     async def quit(self) -> bool:
@@ -432,26 +471,37 @@ class SeleniumBrowser(object):
     async def run(self):
         """run browser"""
         try:
-            await self.config.run()
-        except:
+            return await self.config.run()
+        except Exception as error:
+            logger.error(dict(
+                error=error
+            ))
             return False
 
-    async def save_cookies_for_current_url(self):
-        filename = self._url_filename(url=self.url)
-        logger.info(f'{filename}')
+    async def save_cookies_for_current_url(self) -> bool:
+        filename = await self._url_filename(url=self.url)
+        logger.info(dict(
+            save_cookies_for_current_url=filename,
+            url=self.url,
+        ))
         return await self.save_cookies_to_file(file=filename)
 
-    async def save_cookies_to_file(self, file: str):
+    async def save_cookies_to_file(self, file: str) -> bool:
         with open(file, 'w') as cookies:
             cookies.write(
                 await self.get_cookies_json()
             )
 
         if os.path.exists(file):
-            logger.info(f'{os.path.abspath(file)} ({os.stat(file).st_size} B)')
+            logger.info(dict(
+                save_cookies_to_file=os.path.abspath(file),
+                bytes=os.stat(file).st_size
+            ))
             return True
 
-        logger.error(f'{file}')
+        logger.error(dict(
+            file=file
+        ))
         return False
 
     async def save_screenshot(

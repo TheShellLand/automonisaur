@@ -24,9 +24,6 @@ class ChromeWrapper(object):
 
         self.update_paths(self.chromedriver_path)
 
-        if not self.chromedriver_path:
-            logger.error('missing SELENIUM_CHROMEDRIVER_PATH')
-
     def __repr__(self):
         if self._webdriver:
             return str(dict(
@@ -58,6 +55,8 @@ class ChromeWrapper(object):
         for path in self._chromedriver_path:
             if os.path.exists(path):
                 return path
+
+        logger.error('missing SELENIUM_CHROMEDRIVER_PATH')
 
     @property
     def chromedriverVersion(self):
@@ -304,7 +303,7 @@ class ChromeWrapper(object):
         self.disable_sandbox()
         return self
 
-    async def run(self) -> selenium.webdriver.Chrome:
+    async def run(self) -> bool:
         try:
             if self.chromedriver_path:
                 self._ChromeService = selenium.webdriver.ChromeService(
@@ -320,12 +319,12 @@ class ChromeWrapper(object):
                 )
                 logger.info(f'{self}')
 
-                return self.webdriver
+                return True
 
             self._webdriver = selenium.webdriver.Chrome(options=self.chrome_options)
             logger.info(f'{self}')
 
-            return self.webdriver
+            return True
         except Exception as error:
             logger.error(f'{error}')
             raise Exception(error)
@@ -400,9 +399,7 @@ class ChromeWrapper(object):
 
                 return True
 
-        logger.error(dict(
-            chromedriver_path=path
-        ))
+        return False
 
     async def quit(self):
         """quit

@@ -12,7 +12,7 @@ class SeleniumClientTest(unittest.TestCase):
     if asyncio.run(browser.run()):
 
         def test_fake_page(self):
-            self.assertFalse(browser.get('http://555.555.555.555'))
+            self.assertFalse(asyncio.run(browser.get('http://555.555.555.555')))
 
         def test_real_page(self):
             if asyncio.run(browser.get('http://1.1.1.1')):
@@ -30,6 +30,8 @@ class SeleniumClientTest(unittest.TestCase):
             if asyncio.run(browser.get('http://bing.com')):
                 self.assertTrue(asyncio.run(browser.save_screenshot()))
                 self.assertTrue(asyncio.run(browser.save_screenshot(folder='./')))
+
+    asyncio.run(browser.quit())
 
 
 if __name__ == '__main__':
