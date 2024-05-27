@@ -21,19 +21,18 @@ class InstagramConfig(object):
     @property
     def login(self):
         if not self._login:
-            logger.error(f'INSTAGRAM_LOGIN')
+            logger.error(f'missing INSTAGRAM_LOGIN')
         return self._login
 
     @property
     def password(self):
         if not self._password:
-            logger.error(f'INSTAGRAM_PASSWORD')
+            logger.error(f'missing INSTAGRAM_PASSWORD')
         return self._password
 
     @property
     def is_configured(self):
         if self.login and self.password:
-            logger.info(f'{True}')
             return True
-        logger.error(f'{False}')
+        logger.error(f'not configured')
         return False
