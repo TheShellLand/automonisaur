@@ -192,8 +192,8 @@ class GooglePeopleConfig:
                 )
             }
 
-        logger.warning(f'Missing client_type')
-        return False
+        logger.error(f'Missing client_type')
+        return {}
 
     def from_authorized_user_file(self, file: str) -> Credentials:
         """Load token.json"""
@@ -205,7 +205,7 @@ class GooglePeopleConfig:
         if self.oauth_dict():
             return True
 
-        logger.warning(f'config is not ready')
+        logger.error(f'config is not ready')
         return False
 
     def load_oauth(self, oauth: dict) -> Credentials:
