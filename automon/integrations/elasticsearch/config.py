@@ -1,5 +1,4 @@
 import os
-import logging
 
 from automon import log
 from automon.helpers.sanitation import Sanitation as S
@@ -7,8 +6,8 @@ from automon.helpers.sanitation import Sanitation as S
 logger = log.logging.getLogger(__name__)
 logger.setLevel(log.DEBUG)
 
-logging.getLogger('elasticsearch').setLevel(logging.ERROR)
-logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
+log.logging.getLogger('elasticsearch').setLevel(log.logging.ERROR)
+log.logging.getLogger('urllib3.connectionpool').setLevel(log.logging.ERROR)
 
 
 class ElasticsearchConfig:

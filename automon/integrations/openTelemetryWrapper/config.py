@@ -5,10 +5,10 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from automon.log import logging
+from automon import log
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.logging.DEBUG)
 
 
 class OpenTelemetryConfig(object):

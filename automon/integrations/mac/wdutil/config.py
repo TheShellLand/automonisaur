@@ -1,12 +1,12 @@
 from automon import Run
+from automon import log
 from automon import environ
-from automon import logging
 from automon import os_is_mac
 
 from .exceptions import *
 
-log = logging.getLogger(__name__)
-log.setLevel(level=logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(level=log.DEBUG)
 
 
 class WdutilConfig(object):
@@ -18,10 +18,10 @@ class WdutilConfig(object):
 
     def is_ready(self):
         if not self.password:
-            log.error(f'missing WDUTIL_PASSWORD')
+            logger.error(f'missing WDUTIL_PASSWORD')
 
         if not self.wdutil_path():
-            log.error(f'missing wdutil')
+            logger.error(f'missing wdutil')
 
         if self.password and self.wdutil_path():
             return True
@@ -36,7 +36,7 @@ class WdutilConfig(object):
 
             if self._runner.which('wdutil'):
                 self._wdutil_path = self._runner.stdout.decode().strip()
-                log.info(str(dict(
+                logger.info(str(dict(
                     wdutil_path=self._wdutil_path
                 )))
                 return self._wdutil_path

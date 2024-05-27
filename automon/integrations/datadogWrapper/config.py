@@ -1,8 +1,8 @@
 from automon import environ
-from automon.log import logging
+from automon import log
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.logging.DEBUG)
 
 
 class DatadogConfigRest(object):

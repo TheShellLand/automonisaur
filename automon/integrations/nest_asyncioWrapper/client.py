@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import nest_asyncio
 
 from automon import log

@@ -1,10 +1,10 @@
-from automon import logging
+from automon import log
 
 from .app import app
 from .config import FlaskConfig
 
-log = logging.getLogger(__name__)
-log.setLevel(level=logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(level=log.DEBUG)
 
 
 class FlaskClient(object):

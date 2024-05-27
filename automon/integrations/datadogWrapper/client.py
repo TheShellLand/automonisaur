@@ -1,11 +1,11 @@
 from automon.integrations.requestsWrapper import RequestsClient
-from automon.log import logging
+from automon import log
 
 from .config import DatadogConfigRest
 from .api import V1, V2
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.logging.DEBUG)
 
 
 class DatadogClientRest(object):

@@ -1,36 +1,35 @@
 import profile
 import asyncio
-import logging
 import datetime
 import tracemalloc
 
 import pandas as pd
 import numpy as np
 
-from automon.log import logger
+from automon import log
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.facebook import FacebookGroups
 from automon.integrations.google.sheets import GoogleSheetsClient
 
-logging.getLogger('google_auth_httplib2').setLevel(logging.ERROR)
-logging.getLogger('googleapiclient.discovery').setLevel(logging.ERROR)
-logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
-logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
-logging.getLogger('selenium.webdriver.common.service').setLevel(logging.ERROR)
-logging.getLogger('selenium.webdriver.remote.remote_connection').setLevel(logging.ERROR)
-logging.getLogger('selenium.webdriver.common.selenium_manager').setLevel(logging.ERROR)
+log.logging.getLogger('google_auth_httplib2').setLevel(log.logging.ERROR)
+log.logging.getLogger('googleapiclient.discovery').setLevel(log.logging.ERROR)
+log.logging.getLogger('googleapiclient.discovery_cache').setLevel(log.logging.ERROR)
+log.logging.getLogger('urllib3.connectionpool').setLevel(log.logging.ERROR)
+log.logging.getLogger('selenium.webdriver.common.service').setLevel(log.logging.ERROR)
+log.logging.getLogger('selenium.webdriver.remote.remote_connection').setLevel(log.logging.ERROR)
+log.logging.getLogger('selenium.webdriver.common.selenium_manager').setLevel(log.logging.ERROR)
 
-logging.getLogger('automon.integrations.seleniumWrapper.browser').setLevel(logging.CRITICAL)
-logging.getLogger('automon.integrations.seleniumWrapper.webdriver_chrome').setLevel(logging.INFO)
-logging.getLogger('automon.integrations.google.sheets.client').setLevel(logging.INFO)
-logging.getLogger('automon.integrations.facebook.groups').setLevel(logging.DEBUG)
-logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(logging.INFO)
-logging.getLogger('automon.helpers.sleeper').setLevel(logging.INFO)
+log.logging.getLogger('automon.integrations.seleniumWrapper.browser').setLevel(log.logging.CRITICAL)
+log.logging.getLogger('automon.integrations.seleniumWrapper.webdriver_chrome').setLevel(log.logging.INFO)
+log.logging.getLogger('automon.integrations.google.sheets.client').setLevel(log.logging.INFO)
+log.logging.getLogger('automon.integrations.facebook.groups').setLevel(log.logging.DEBUG)
+log.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(log.logging.INFO)
+log.logging.getLogger('automon.helpers.sleeper').setLevel(log.logging.INFO)
 
 tracemalloc.start()
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 SHEET_NAME = 'Automated Count DO NOT EDIT'
 SHEET_NAME_INGEST = 'URLS TO INGEST'
@@ -60,7 +59,7 @@ async def get_facebook_info(url: str):
         dict = await facebook_group_client.to_dict()
         await facebook_group_client.quit()
     except Exception as e:
-        log.error(f'{e}')
+        logger.error(f'{e}')
 
     return dict
 
@@ -192,7 +191,7 @@ async def batch_processing(sheet_index: int, df: pd.DataFrame):
         values=[x for x in df.values.tolist()]
     )
 
-    log.info(f'{sheet_index_df}: {[x for x in df.values.tolist()]}')
+    logger.info(f'{sheet_index_df}: {[x for x in df.values.tolist()]}')
 
     return df
 
@@ -216,7 +215,7 @@ async def memory_profiler():
     cols.sort()
     df_memory_profile = df_memory_profile.loc[:, cols]
 
-    log.debug(
+    logger.debug(
         f"total memory used: {df_memory_profile['size_MB'].sum()} MB; "
         f'most memory used: '
         f'{df_memory_profile.iloc[0].to_dict()}'
@@ -282,7 +281,7 @@ async def expensive_state_keeping():
         result = await sheets_client.clear(range=data_range)
         # max 60/min
         Sleeper.seconds(f'WriteRequestsPerMinutePerUser', seconds=1)
-        log.info(result)
+        logger.info(result)
         df = df.drop(duplicate_index)
 
     # ingest urls from SHEET_NAME_INGEST
@@ -314,14 +313,14 @@ async def expensive_state_keeping():
                 values=values
             )
 
-            log.info(
+            logger.info(
                 f'{index_add_url}: {values}'
             )
 
         # clear url from ingest sheet
         data_range = f'{SHEET_NAME_INGEST}!{ingest_index}:{ingest_index}'
         clear = await sheets_client.clear(range=data_range)
-        log.info(f'{clear}')
+        logger.info(f'{clear}')
 
     return df
 
@@ -344,10 +343,10 @@ async def main():
             continue
 
         try:
-            log.info(f'complete {round(data_index / len(df) * 100)}% {data_index}/{len(df)}')
+            logger.info(f'complete {round(data_index / len(df) * 100)}% {data_index}/{len(df)}')
             batch_result = await batch_processing(sheet_index=data_index, df=df_batch)
         except Exception as error:
-            log.error(f'{error}')
+            logger.error(f'{error}')
         df_memory = await memory_profiler()
 
 

@@ -1,9 +1,9 @@
-from automon.log import logging
+from automon import log
 
 from .config_opentelemetry import DatadogOpenTelemetryConfig
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.logging.DEBUG)
 
 
 class DatadogOpenTelemetryClient(object):
