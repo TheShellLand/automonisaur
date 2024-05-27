@@ -324,8 +324,7 @@ class SplunkSoarClient:
                             f'[{self.client.response.status_code}] ')
                 return True
 
-        else:
-            logger.warning(f'client not connected')
+        logger.error(f'client not connected')
         return False
 
     @_is_connected

@@ -20,9 +20,6 @@ class SplunkSoarConfig:
 
         self.headers = {'ph-auth-token': self.auth_token}
 
-        if not self.host:
-            logger.warning(f'missing SPLUNK_SOAR_HOST')
-
     def __repr__(self):
         return f'{self.__dict__}'
 
@@ -30,5 +27,5 @@ class SplunkSoarConfig:
     def is_ready(self) -> bool:
         if self.host:
             return True
-        logger.warning(f'bad config')
+        logger.error(f'missing SPLUNK_SOAR_HOST')
         return False
