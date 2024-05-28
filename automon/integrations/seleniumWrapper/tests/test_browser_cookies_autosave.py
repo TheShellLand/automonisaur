@@ -15,8 +15,6 @@ class Test(unittest.TestCase):
     def test_autosave(self):
         if asyncio.run(self.browser.run()):
 
-            asyncio.run(self.browser.set_window_size(device_type='web-large'))
-
             if asyncio.run(self.browser.get('http://bing.com')):
                 self.assertTrue(asyncio.run(self.browser.autosave_cookies()))
 
