@@ -131,6 +131,7 @@ class ChromeWrapper(object):
 
     def enable_defaults(self):
         self.enable_maximized()
+        self.enable_logging()
         return self
 
     def enable_fullscreen(self):
@@ -145,6 +146,13 @@ class ChromeWrapper(object):
         logger.debug(str(dict(
             add_argument='headless'
         )))
+        return self
+
+    def enable_logging(self):
+        self.chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
+        logger.debug(dict(
+            set_capability=('goog:loggingPrefs', {'performance': 'ALL'})
+        ))
         return self
 
     def enable_notifications(self):
