@@ -485,6 +485,10 @@ class SeleniumBrowser(object):
         ))
         return await self.add_cookie_from_file(file=filename)
 
+    @property
+    def page_source(self):
+        return self.webdriver.page_source
+
     async def urlparse(self, url: str):
         parsed = urlparse(url=url)
         logger.debug(dict(
