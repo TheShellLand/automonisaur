@@ -34,6 +34,9 @@ class SeleniumBrowser(object):
         """A selenium wrapper"""
 
         self._config = config or SeleniumConfig()
+        self._selenium = selenium
+
+        self.logs = {}
 
     def __repr__(self):
         try:
@@ -74,18 +77,36 @@ class SeleniumBrowser(object):
     def webdriver(self):
         return self.config.webdriver
 
-    @property
-    def get_log(self) -> list:
-        """Gets the log for a given log type"""
-        logs = []
+    async def get_log(self, log_type: str) -> list:
+        """Get logs for log type"""
+        return self.webdriver.get_log(log_type)
+
+    async def get_logs(self) -> dict:
+        """Get all logs
+
+        you can only run this once
+        afterwards the logs are cleared from the webdriver
+        """
         for log_type in self.webdriver.log_types:
-            logs.append(
+            self.logs.update(
                 {
                     log_type: self.webdriver.get_log(log_type)
                 }
             )
+        return self.logs
 
-        return logs
+    async def get_log_performance(self) -> list:
+        """Get performance logs"""
+        logs = await self.get_logs()
+        return logs.get('performance')
+
+    async def check_page_load_finished(self) -> bool:
+
+        logs = await self.get_log_performance()
+        for log in logs:
+            if 'frameStoppedLoading' in log.get('message'):
+                return True
+        return False
 
     @property
     def keys(self):
