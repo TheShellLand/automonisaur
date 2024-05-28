@@ -95,17 +95,33 @@ class SeleniumBrowser(object):
             )
         return self.logs
 
+    async def get_log_browser(self) -> list:
+        """Get browser logs"""
+        logs = await self.get_log('browser')
+        return logs
+
+    async def get_log_driver(self) -> list:
+        """Get driver logs"""
+        logs = await self.get_log('driver')
+        return logs
+
     async def get_log_performance(self) -> list:
         """Get performance logs"""
-        logs = await self.get_logs()
-        return logs.get('performance')
+        logs = await self.get_log('performance')
+        return logs
 
     async def check_page_load_finished(self) -> bool:
-
+        """Checks for `frameStoppedLoading` string in performance logs"""
         logs = await self.get_log_performance()
-        for log in logs:
-            if 'frameStoppedLoading' in log.get('message'):
-                return True
+
+        check = []
+        for log_dict in logs:
+            if 'frameStoppedLoading' in log_dict.get('message'):
+                check.append(log_dict)
+
+        if check:
+            return True
+
         return False
 
     @property
@@ -274,7 +290,7 @@ class SeleniumBrowser(object):
         parsed = await self.urlparse(url)
         hostname = parsed.hostname
         cookie_file = f'cookies-{hostname}.txt'
-        logger.info(dict(
+        logger.debug(dict(
             _url_filename=cookie_file
         ))
         return cookie_file
