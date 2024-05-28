@@ -340,8 +340,11 @@ class SeleniumBrowser(object):
 
             return message, session, stacktrace
 
-        except Exception as error:
-            logger.error(error)
+        except Exception as e:
+            logger.error(dict(
+                exception=e,
+                error=error,
+            ))
 
         return error, None, None
 
