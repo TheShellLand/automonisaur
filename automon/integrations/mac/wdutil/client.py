@@ -16,6 +16,11 @@ class WdutilClient(object):
 
         self._runner = Run()
 
+        self.output = None
+
+    def info(self):
+        return self.run('info')
+
     def run(self, arg: str):
         self.config.is_ready()
 
@@ -23,7 +28,12 @@ class WdutilClient(object):
         command = f'sudo -S {self.wdutil} {arg}'
 
         logger.info(f'echo {log_secret(self.config.password)} | {command}')
-        return self._runner.run(command=f'{secret}{command}', shell=True)
+        run = self._runner.run(command=f'{secret}{command}', shell=True)
+
+        output = self._runner.stdout_lines
+        self.output = WdutilOutput(output=output)
+
+        return run
 
     def is_ready(self):
         if self.config.is_ready():
@@ -32,3 +42,29 @@ class WdutilClient(object):
 
     def help(self):
         return self.run('help')
+
+
+class WdutilOutput(object):
+    NETWORK: None
+    WIFI: None
+    BLUETOOTH: None
+    AWDL: None
+
+    def __init__(self, output: [str]):
+        self._output = output
+
+    @property
+    def network(self):
+        pass
+
+    @property
+    def wifi(self):
+        pass
+
+    @property
+    def bluetooth(self):
+        pass
+
+    @property
+    def awdl(self):
+        pass

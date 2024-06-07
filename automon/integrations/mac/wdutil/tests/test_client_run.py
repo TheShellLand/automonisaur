@@ -9,6 +9,7 @@ class MyTestCase(unittest.TestCase):
         def test_something(self):
             client = WdutilClient()
             self.assertTrue(client.run('info'))
+            self.assertTrue(client.info())
             pass
 
 
