@@ -1,7 +1,7 @@
 from automon import Run
 from automon import log
 from automon import environ
-from automon import os_is_mac
+from automon.integrations.mac import os_is_mac
 
 from .exceptions import *
 

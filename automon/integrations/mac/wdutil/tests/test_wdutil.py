@@ -1,6 +1,6 @@
 import unittest
 
-from automon import os_is_mac
+from automon.integrations.mac import os_is_mac
 from automon.integrations.mac.wdutil import WdutilClient
 
 
