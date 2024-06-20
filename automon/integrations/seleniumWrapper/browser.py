@@ -456,7 +456,6 @@ class SeleniumBrowser(object):
             folder: str = None,
             **kwargs) -> bool:
         return await self.save_screenshot(
-            self,
             filename=filename,
             prefix=prefix,
             folder=folder,
