@@ -41,7 +41,7 @@ class SeleniumConfig(object):
         logger.info(f'{self._cookies_file}')
         return self._cookies_file
 
-    async def run(self):
+    async def run(self) -> True or Exception:
         """run webdriver"""
         run = await self.webdriver_wrapper.run()
         self._webdriver = self.webdriver_wrapper.webdriver

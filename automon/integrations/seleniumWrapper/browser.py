@@ -511,7 +511,7 @@ class SeleniumBrowser(object):
             return False
         return True
 
-    async def run(self):
+    async def run(self) -> True or Exception:
         """run browser"""
         try:
             return await self.config.run()
@@ -519,7 +519,7 @@ class SeleniumBrowser(object):
             logger.error(dict(
                 error=error
             ))
-            return False
+            raise Exception(error)
 
     async def save_cookies_for_current_url(self) -> bool:
         filename = await self._url_filename(url=self.url)

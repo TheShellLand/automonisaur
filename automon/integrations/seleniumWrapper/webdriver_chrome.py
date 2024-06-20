@@ -311,7 +311,7 @@ class ChromeWrapper(object):
         self.disable_sandbox()
         return self
 
-    async def run(self) -> bool:
+    async def run(self) -> True or Exception:
         try:
             if self.chromedriver_path:
                 self._ChromeService = selenium.webdriver.ChromeService(
