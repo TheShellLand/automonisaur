@@ -15,9 +15,9 @@ WORKDIR /automonisaur
 COPY automon automon
 COPY README.md .
 COPY LICENSE .
-COPY entry.sh .
 COPY unittests.sh .
 COPY setup.py .
+COPY docker/entry.sh .
 
 CMD ["/bin/bash"]
 ENTRYPOINT ["/bin/bash", "entry.sh"]
