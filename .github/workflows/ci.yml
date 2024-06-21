@@ -42,6 +42,7 @@ jobs:
         run: /bin/bash test.sh
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SELENIUM_CHROMEDRIVER_PATH: /usr/bin/chromedriver
 
 
   docker-build:

@@ -17,7 +17,10 @@ COPY README.md .
 COPY LICENSE .
 COPY unittests.sh .
 COPY setup.py .
+COPY docker/install.sh .
 COPY docker/entry.sh .
+
+RUN bash install.sh
 
 CMD ["/bin/bash"]
 ENTRYPOINT ["/bin/bash", "entry.sh"]
