@@ -10,7 +10,7 @@ google-chrome --version
 # install chromedriver
 cd /tmp/
 # https://googlechromelabs.github.io/chrome-for-testing/#stable
-wget -q https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.91/linux64/chromedriver-linux64.zip
+wget -q https://storage.googleapis.com/chrome-for-testing-public/126.0.6478.63/linux64/chromedriver-linux64.zip
 unzip chromedriver-linux64.zip
 sudo mv chromedriver-linux64/chromedriver /usr/bin/chromedriver
 chromedriver --version
