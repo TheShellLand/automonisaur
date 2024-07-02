@@ -58,7 +58,7 @@ class SeleniumBrowser(object):
     def config(self):
         return self._config
 
-    async def cookie_file_to_dict(self, file: str = 'cookies.txt') -> list:
+    async def cookie_file_to_dict(self, file: str = 'cookies.json') -> list:
         logger.debug(dict(
             cookie_file_to_dict=file
         ))
@@ -290,7 +290,7 @@ class SeleniumBrowser(object):
     async def _url_filename(self, url: str):
         parsed = await self.urlparse(url)
         hostname = parsed.hostname
-        cookie_file = f'cookies-{hostname}.txt'
+        cookie_file = f'cookies-{hostname}.json'
         logger.debug(dict(
             _url_filename=cookie_file
         ))
