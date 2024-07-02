@@ -27,8 +27,7 @@ class InstagramBrowserClient:
                  headless: bool = True):
         """Instagram Browser Client"""
         self.config = config or InstagramConfig(login=login, password=password)
-        self.browser = SeleniumBrowser()
-        self.browser.config.webdriver_wrapper = ChromeWrapper()
+        self.browser = None
 
         self.authenticated_browser = None
         self.useragent = None
@@ -237,13 +236,19 @@ class InstagramBrowserClient:
         return self.config.login
 
     async def start(self):
-        self.useragent = await self.browser.get_random_user_agent()
+        try:
+            self.browser = SeleniumBrowser()
+            self.browser.config.webdriver_wrapper = ChromeWrapper()
 
-        if self.headless:
-            self.browser.config.webdriver_wrapper.in_headless()
-            self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
-        else:
-            self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
+            self.useragent = await self.browser.get_random_user_agent()
+
+            if self.headless:
+                self.browser.config.webdriver_wrapper.in_headless()
+                self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
+            else:
+                self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
+        except Exception as error:
+            logger.error(error)
 
     @property
     def urls(self):
