@@ -6,6 +6,7 @@ from automon import log
 logger = log.logging.getLogger(__name__)
 logger.setLevel(log.DEBUG)
 
+
 class BaseRestClient:
     requests: RequestsClient
     config: RequestsConfig

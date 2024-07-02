@@ -56,7 +56,7 @@ class ChromeWrapper(object):
             if os.path.exists(path):
                 return path
 
-        logger.error('missing SELENIUM_CHROMEDRIVER_PATH')
+        raise Exception('missing SELENIUM_CHROMEDRIVER_PATH')
 
     @property
     def chromedriverVersion(self):

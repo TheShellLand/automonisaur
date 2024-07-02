@@ -15,10 +15,10 @@ class RequestsClient(object):
 
         self.config = config or RequestsConfig()
 
-        self.url = url
-        self.data = data
-        self.errors = None
-        self.headers = headers
+        self.url: str = url
+        self.data: dict = data
+        self.errors: bytes = b''
+        self.headers: dict = headers
         self.response = None
         self.requests = requests
         self.session = self.requests.Session()
@@ -122,6 +122,8 @@ class RequestsClient(object):
             if self.status_code == 200:
                 return True
 
+            self.errors = self.content
+
             return False
         except Exception as e:
             self.errors = e
@@ -150,6 +152,8 @@ class RequestsClient(object):
 
             if self.status_code == 200:
                 return True
+
+            self.errors = self.content
 
             return False
         except Exception as e:
@@ -180,6 +184,8 @@ class RequestsClient(object):
             if self.status_code == 200:
                 return True
 
+            self.errors = self.content
+
             return False
         except Exception as e:
             self.errors = e
@@ -208,6 +214,8 @@ class RequestsClient(object):
 
             if self.status_code == 200:
                 return True
+
+            self.errors = self.content
 
             return False
         except Exception as e:

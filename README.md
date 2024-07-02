@@ -49,7 +49,7 @@ Github issues and feature requests welcomed.
 | Logging         | sentryio                                                    |
 | MacOS           | airport<br/>macchanger<br/>wdutil                           |
 | Python          | logging<br/>requests                                        |
-| SOAR            | swimlane<br/>splunk soar                                    |
+| SOAR            | swimlane<br/>splunk soar<br/>xsoar                          |
 | Recon           | nmap                                                        |
 | Test Automation | selenium                                                    |
 
