@@ -22,8 +22,6 @@ class ChromeWrapper(object):
         self._ChromeService = None
         self._window_size = set_window_size()
 
-        self.update_paths(self.chromedriver_path)
-
     def __repr__(self):
         if self._webdriver:
             return str(dict(
@@ -313,6 +311,8 @@ class ChromeWrapper(object):
 
     async def run(self) -> bool:
         try:
+            self.update_paths(self.chromedriver_path)
+
             if self.chromedriver_path:
                 self._ChromeService = selenium.webdriver.ChromeService(
                     executable_path=self.chromedriver_path
