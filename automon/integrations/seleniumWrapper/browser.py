@@ -601,7 +601,7 @@ class SeleniumBrowser(object):
 
     async def start(self):
         """alias to run"""
-        return self.run()
+        return await self.run()
 
     async def wait_for(
             self,
