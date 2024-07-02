@@ -187,7 +187,8 @@ class SeleniumBrowser(object):
             logger.debug(str(dict(
                 xpath=xpath,
             )))
-            return await self.find_element(value=xpath, by=self.by.XPATH, **kwargs).click()
+            element = await self.find_element(value=xpath, by=self.by.XPATH, **kwargs)
+            return element.click()
 
         except Exception as error:
             raise Exception(error)
