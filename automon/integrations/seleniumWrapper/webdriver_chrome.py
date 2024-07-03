@@ -372,6 +372,7 @@ class ChromeWrapper(object):
         return self
 
     def set_window_size(self, *args, **kwargs):
+        """has to be set after setting webdriver"""
         self._window_size = set_window_size(*args, **kwargs)
         width, height = self.window_size
         self.webdriver.set_window_size(width=width, height=height)
