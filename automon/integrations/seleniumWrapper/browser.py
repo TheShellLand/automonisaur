@@ -391,7 +391,7 @@ class SeleniumBrowser(object):
             current_url=self.current_url,
             value=value,
         )))
-        return self.find_element(value=value, by=by, **kwargs)
+        return await self.find_element(value=value, by=by, **kwargs)
 
     async def get(self, url: str, **kwargs) -> bool:
         """get url"""
