@@ -184,9 +184,7 @@ class SeleniumBrowser(object):
     ) -> selenium.webdriver.Chrome.find_element:
         """perform mouse command"""
         try:
-            logger.debug(str(dict(
-                xpath=xpath,
-            )))
+            logger.debug(dict(xpath=xpath))
             element = await self.find_element(value=xpath, by=self.by.XPATH, **kwargs)
             return element.click()
 
@@ -196,22 +194,56 @@ class SeleniumBrowser(object):
     async def action_type(
             self,
             key: str or Keys,
-            secret: bool = True,
+            secret: bool = False,
     ) -> selenium.webdriver.common.action_chains.ActionChains:
         """perform keyboard command"""
 
         if secret:
-            logger.debug(dict(
-                send_keys=f'*' * len(key),
-            ))
+            logger.debug(dict(send_keys=f'*' * len(f'{key}')))
         else:
-            logger.debug(dict(
-                send_keys=key,
-            ))
+            logger.debug(dict(send_keys=key))
 
         try:
             return selenium.webdriver.common.action_chains.ActionChains(
                 self.webdriver).send_keys(key).perform()
+
+        except Exception as error:
+            raise Exception(error)
+
+    async def action_type_up(
+            self,
+            key: str or Keys,
+            secret: bool = False,
+    ) -> selenium.webdriver.common.action_chains.ActionChains:
+        """release key"""
+
+        if secret:
+            logger.debug(dict(send_keys=f'*' * len(f'{key}')))
+        else:
+            logger.debug(dict(send_keys=key))
+
+        try:
+            return selenium.webdriver.common.action_chains.ActionChains(
+                self.webdriver).key_up(key).perform()
+
+        except Exception as error:
+            raise Exception(error)
+
+    async def action_type_down(
+            self,
+            key: str or Keys,
+            secret: bool = False,
+    ) -> selenium.webdriver.common.action_chains.ActionChains:
+        """hold key down"""
+
+        if secret:
+            logger.debug(dict(send_keys=f'*' * len(f'{key}')))
+        else:
+            logger.debug(dict(send_keys=key))
+
+        try:
+            return selenium.webdriver.common.action_chains.ActionChains(
+                self.webdriver).key_down(key).perform()
 
         except Exception as error:
             raise Exception(error)
