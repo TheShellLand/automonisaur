@@ -380,6 +380,19 @@ class SeleniumBrowser(object):
         )))
         return self.webdriver.find_element(value=value, by=by, **kwargs)
 
+    async def find_elements(
+            self,
+            value: str,
+            by: By.ID = By.ID,
+            **kwargs
+    ) -> selenium.webdriver.Chrome.find_elements:
+        """find elements"""
+        logger.info(str(dict(
+            current_url=self.current_url,
+            value=value,
+        )))
+        return self.webdriver.find_elements(value=value, by=by, **kwargs)
+
     async def find_xpath(
             self,
             value: str,
