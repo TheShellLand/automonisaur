@@ -201,11 +201,13 @@ class SeleniumBrowser(object):
         """perform keyboard command"""
 
         if secret:
-            key = f'*' * len(key)
-
-        logger.debug(str(dict(
-            send_keys=key,
-        )))
+            logger.debug(dict(
+                send_keys=f'*' * len(key),
+            ))
+        else:
+            logger.debug(dict(
+                send_keys=key,
+            ))
 
         try:
             return selenium.webdriver.common.action_chains.ActionChains(
