@@ -7,13 +7,13 @@ cd $(dirname $0) && set -e
 rm -rf .coverage coverage.xml htmlcov
 
 if [[ "$@" == "-v" ]]; then
-  pytest --cov=automon -v --cov-report term automon
+  pytest --log-cli-level=DEBUG --cov=automon -v --cov-report term automon
 elif [[ "$@" == "-l" ]]; then
-    pytest -v automon
+    pytest --log-cli-level=DEBUG -v automon
 elif [[ "$@" == "-ll" ]]; then
-    pytest automon
+    pytest --log-cli-level=DEBUG automon
 elif [[ "$@" == "html" ]]; then
-    pytest --cov=automon --cov-report html automon
+    pytest --log-cli-level=DEBUG --cov=automon --cov-report html automon
 else
-  pytest --cov-report term "$@"
+  pytest --log-cli-level=DEBUG --cov-report term "$@"
 fi

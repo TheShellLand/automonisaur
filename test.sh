@@ -6,8 +6,8 @@ cd $(dirname $0) && set -e
 
 if [ ! -z "$@" ]; then
   set -x
-  python3 -m pytest automon
+  python3 -m pytest --log-cli-level=DEBUG automon
 else
   set -x
-  python3 -m pytest $@
+  python3 -m pytest --log-cli-level=DEBUG $@
 fi
