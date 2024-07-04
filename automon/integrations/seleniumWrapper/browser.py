@@ -6,6 +6,7 @@ import datetime
 import tempfile
 import selenium
 import selenium.webdriver
+import selenium.webdriver.remote.webelement
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -180,12 +181,10 @@ class SeleniumBrowser(object):
 
     async def action_click(
             self,
-            xpath: str, **kwargs
-    ) -> selenium.webdriver.Chrome.find_element:
-        """perform mouse command"""
+            element: selenium.webdriver.remote.webelement.WebElement, **kwargs):
+        """perform mouse click"""
         try:
-            logger.debug(dict(xpath=xpath))
-            element = await self.find_element(value=xpath, by=self.by.XPATH, **kwargs)
+            logger.debug(dict(element=element))
             return element.click()
 
         except Exception as error:
