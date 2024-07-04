@@ -399,6 +399,75 @@ class SeleniumBrowser(object):
 
         return error, None, None
 
+    async def find_anything(
+            self,
+            value: str,
+            case_insensitivity: bool = True,
+            contains: bool = True,
+            **kwargs
+    ) -> selenium.webdriver.Chrome.find_element:
+        """fuzzy search through everything
+
+        find all tags
+        find all matches within meta data
+        """
+        logger.info(dict(
+            current_url=self.current_url,
+            value=value,
+            case_insensitivity=case_insensitivity,
+            contains=contains,
+            kwargs=kwargs,
+        ))
+
+        by_types = [
+            self.by.TAG_NAME,
+        ]
+
+        MATCHED = []
+
+        for by in by_types:
+            elements = self.webdriver.find_elements(value='*', by=by)
+            for element in elements:
+                dirs = dir(element)
+                dir_meta = []
+                for dir_ in dirs:
+                    try:
+                        dir_meta.append(
+                            getattr(element, f'{dir_}')
+                        )
+
+                        MATCH = f'{value}'
+                        AGAINST = f'''{getattr(element, f'{dir_}')}'''
+
+                        if case_insensitivity:
+                            MATCH = f'{value}'.lower()
+                            AGAINST = f'''{getattr(element, f'{dir_}')}'''.lower()
+
+                    except:
+                        pass
+
+                    FOUND = None
+
+                    if MATCH == AGAINST and not contains:
+                        FOUND = element
+
+                    if MATCH in AGAINST and contains:
+                        FOUND = element
+
+                    if FOUND and FOUND not in MATCHED:
+                        logger.info(dict(
+                            MATCH=MATCH,
+                            AGAINST=AGAINST,
+                            attribute=dir_,
+                            element=element,
+                        ))
+                        MATCHED.append(FOUND)
+
+                pass
+            pass
+
+        return MATCHED
+
     async def find_element(
             self,
             value: str,
