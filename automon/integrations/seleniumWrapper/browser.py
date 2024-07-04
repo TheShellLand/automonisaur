@@ -184,7 +184,11 @@ class SeleniumBrowser(object):
             element: selenium.webdriver.remote.webelement.WebElement, **kwargs):
         """perform mouse click"""
         try:
-            logger.debug(dict(element=element))
+            logger.debug(dict(
+                tag_name=element.tag_name,
+                text=element.text,
+                accessible_name=element.accessible_name,
+                aria_role=element.aria_role))
             return element.click()
 
         except Exception as error:
