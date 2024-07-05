@@ -405,7 +405,7 @@ class SeleniumBrowser(object):
     async def find_anything(
             self,
             value: str,
-            case_insensitivity: bool = True,
+            case_sensitive: bool = False,
             contains: bool = True,
             **kwargs
     ) -> selenium.webdriver.Chrome.find_element:
@@ -417,7 +417,7 @@ class SeleniumBrowser(object):
         logger.info(dict(
             current_url=self.current_url,
             value=value,
-            case_insensitivity=case_insensitivity,
+            case_sensitive=case_sensitive,
             contains=contains,
             kwargs=kwargs,
         ))
@@ -442,7 +442,7 @@ class SeleniumBrowser(object):
                         MATCH = f'{value}'
                         AGAINST = f'''{getattr(element, f'{dir_}')}'''
 
-                        if case_insensitivity:
+                        if case_sensitive:
                             MATCH = f'{value}'.lower()
                             AGAINST = f'''{getattr(element, f'{dir_}')}'''.lower()
 
