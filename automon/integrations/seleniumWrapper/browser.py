@@ -189,7 +189,7 @@ class SeleniumBrowser(object):
                 text=element.text,
                 accessible_name=element.accessible_name,
                 aria_role=element.aria_role))
-            return element.click()
+            return element.click(**kwargs)
 
         except Exception as error:
             raise Exception(error)
@@ -790,6 +790,12 @@ class SeleniumBrowser(object):
             **kwargs
     ) -> selenium.webdriver.Chrome.find_element:
         """wait for an element"""
+        if isinstance(element, list):
+            return await self.wait_for_list(
+                values=element,
+                by=self.by.ID,
+                timeout=timeout,
+                **kwargs)
         return await self.wait_for(
             value=element,
             by=self.by.ID,
@@ -802,6 +808,12 @@ class SeleniumBrowser(object):
             timeout: int = 1,
             **kwargs) -> str or False:
         """wait for an xpath"""
+        if isinstance(xpath, list):
+            return await self.wait_for_list(
+                values=xpath,
+                by=self.by.XPATH,
+                timeout=timeout,
+                **kwargs)
         return await self.wait_for(
             value=xpath,
             by=self.by.XPATH,
