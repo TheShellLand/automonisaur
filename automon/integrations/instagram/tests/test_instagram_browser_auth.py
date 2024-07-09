@@ -11,7 +11,7 @@ class InstagramClientTest(unittest.TestCase):
 
     async def test(self):
 
-        if c.is_running():
+        if c.is_ready():
             await c.browser.get(c.urls.domain)
             await c.browser.add_cookie_from_base64()
             await c.browser.refresh()

@@ -39,7 +39,7 @@ class InstagramBrowserClient:
     def _is_running(func):
         @functools.wraps(func)
         def wrapped(self, *args, **kwargs):
-            if self.is_running():
+            if self.is_ready():
                 return func(self, *args, **kwargs)
             return False
 
@@ -220,15 +220,16 @@ class InstagramBrowserClient:
                 logger.info(f'{True}')
                 return True
         except Exception as error:
-            logger.error(f'{error}')
-        return False
+            raise Exception(error)
+        raise Exception(f'not authenticated')
 
-    async def is_running(self) -> bool:
-        if self.config.is_configured:
-            if self.browser.is_running():
-                logger.info(f'{True}')
-                return True
-        logger.error(f'{False}')
+    async def is_ready(self) -> bool:
+        try:
+            if await self.config.is_ready():
+                if await self.browser.is_running():
+                    return True
+        except Exception as error:
+            logger.error(error)
         return False
 
     @property
@@ -243,10 +244,12 @@ class InstagramBrowserClient:
             self.useragent = await self.browser.get_random_user_agent()
 
             if self.headless:
-                self.browser.config.webdriver_wrapper.in_headless()
-                self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
+                self.browser.config.webdriver_wrapper.in_headless().set_user_agent(self.useragent)
             else:
                 self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
+
+            await self.browser.start()
+
         except Exception as error:
             logger.error(error)
 
