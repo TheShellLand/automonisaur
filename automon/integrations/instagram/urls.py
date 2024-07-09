@@ -9,7 +9,7 @@ class Urls(object):
 
     @property
     def login_page(self):
-        return f'{self.domain}/accounts/login/?source=auth_switcher'
+        return f'{self.domain}'
 
     def followers(self, account: str):
         return f'{self.domain}/{account}/followers/'
