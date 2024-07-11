@@ -130,7 +130,7 @@ class SeleniumBrowser(object):
         """Set of special keys codes"""
         return selenium.webdriver.common.keys.Keys
 
-    async def refresh(self):
+    async def refresh(self) -> None:
         self.webdriver.refresh()
         logger.info(dict(
             refresh_page=self.current_url
@@ -150,9 +150,6 @@ class SeleniumBrowser(object):
     @property
     def current_url(self):
         if self.webdriver:
-            logger.debug(dict(
-                current_url=self._current_url
-            ))
             if self._current_url == 'data:,':
                 return ''
             return self._current_url
@@ -315,8 +312,10 @@ class SeleniumBrowser(object):
 
     async def autosave_cookies(self) -> bool:
         if self.current_url:
+            await self.load_cookies_for_current_url()
+            await self.refresh()
             await self.save_cookies_for_current_url()
-            return await self.load_cookies_for_current_url()
+            return True
 
     async def delete_all_cookies(self) -> None:
         result = self.webdriver.delete_all_cookies()
@@ -407,7 +406,8 @@ class SeleniumBrowser(object):
             by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
             contains: bool = True,
-            **kwargs) -> selenium.webdriver.Chrome.find_element:
+            return_first: bool = False,
+            **kwargs) -> list:
         """fuzzy search through everything
 
         find all tags
@@ -416,6 +416,7 @@ class SeleniumBrowser(object):
         logger.info(dict(
             current_url=self.current_url,
             value=value,
+            by=by,
             case_sensitive=case_sensitive,
             contains=contains,
             kwargs=kwargs,
@@ -438,7 +439,7 @@ class SeleniumBrowser(object):
         MATCHED = []
 
         for by_ in by_types:
-            elements = self.find_elements(value='*', by=by_, **kwargs)
+            elements = await self.find_elements(value='*', by=by_, **kwargs)
             for element in elements:
                 dirs = dir(element)
                 dir_meta = []
@@ -475,9 +476,8 @@ class SeleniumBrowser(object):
                         ))
                         MATCHED.append(FOUND)
 
-                pass
-            pass
-
+                        if return_first:
+                            return MATCHED
         return MATCHED
 
     async def find_element(
@@ -486,22 +486,24 @@ class SeleniumBrowser(object):
             by: selenium.webdriver.common.by.By,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
         """find element"""
-        logger.info(str(dict(
+        logger.info(dict(
             current_url=self.current_url,
             value=value,
-        )))
+            by=by,
+        ))
         return self.webdriver.find_element(value=value, by=by, **kwargs)
 
     async def find_elements(
             self,
             value: str,
             by: selenium.webdriver.common.by.By,
-            **kwargs) -> selenium.webdriver.Chrome.find_elements:
+            **kwargs) -> list:
         """find elements"""
-        logger.info(str(dict(
+        logger.info(dict(
             current_url=self.current_url,
             value=value,
-        )))
+            by=by,
+        ))
         return self.webdriver.find_elements(value=value, by=by, **kwargs)
 
     async def find_xpath(
@@ -510,10 +512,11 @@ class SeleniumBrowser(object):
             by: selenium.webdriver.common.by.By = selenium.webdriver.common.by.By.XPATH,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
         """find xpath"""
-        logger.info(str(dict(
+        logger.info(dict(
             current_url=self.current_url,
             value=value,
-        )))
+            by=by,
+        ))
         return await self.find_element(value=value, by=by, **kwargs)
 
     async def get(self, url: str, **kwargs) -> bool:
@@ -729,7 +732,48 @@ class SeleniumBrowser(object):
         """alias to run"""
         return await self.run()
 
-    async def wait_for(
+    async def wait_for_anything(
+            self,
+            value: str,
+            by: selenium.webdriver.common.by.By,
+            case_sensitive: bool = False,
+            contains: bool = True,
+            timeout: int = 30,
+            return_first: bool = False,
+            **kwargs) -> list:
+        """wait for anything"""
+        timeout_start = time.time()
+        timeout_elapsed = round(abs(timeout_start - time.time()), 1)
+
+        while timeout_elapsed < timeout:
+
+            logger.debug(str(dict(
+                timeout=f'{timeout_elapsed}/{timeout}',
+                current_url=self.current_url,
+                value=value,
+                by=by,
+            )))
+
+            try:
+                find = await self.find_anything(
+                    value=value,
+                    by=by,
+                    case_sensitive=case_sensitive,
+                    contains=contains,
+                    return_first=return_first,
+                    **kwargs)
+
+                if find:
+                    return find
+
+            except Exception as error:
+                logger.error(error)
+
+            timeout_elapsed = round(abs(timeout_start - time.time()), 1)
+
+        raise ElementNotFoundException(value)
+
+    async def wait_for_element(
             self,
             value: str,
             by: selenium.webdriver.common.by.By,
@@ -749,10 +793,49 @@ class SeleniumBrowser(object):
             )))
 
             try:
-                return await self.find_element(
-                    by=by,
+                find = await self.find_element(
                     value=value,
+                    by=by,
                     **kwargs)
+
+                if find:
+                    return find
+
+            except Exception as error:
+                logger.error(error)
+
+            timeout_elapsed = round(abs(timeout_start - time.time()), 1)
+
+        raise ElementNotFoundException(value)
+
+    async def wait_for_elements(
+            self,
+            value: str,
+            by: selenium.webdriver.common.by.By,
+            timeout: int = 30,
+            **kwargs) -> list:
+        """wait for all matching elements"""
+        timeout_start = time.time()
+        timeout_elapsed = round(abs(timeout_start - time.time()), 1)
+
+        while timeout_elapsed < timeout:
+
+            logger.debug(str(dict(
+                timeout=f'{timeout_elapsed}/{timeout}',
+                by=by,
+                current_url=self.current_url,
+                value=value,
+            )))
+
+            try:
+                find = await self.find_elements(
+                    value=value,
+                    by=by,
+                    **kwargs)
+
+                if find:
+                    return find
+
             except Exception as error:
                 logger.error(error)
 
@@ -766,7 +849,7 @@ class SeleniumBrowser(object):
             timeout: int = 30,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
         """wait for an element id"""
-        return await self.wait_for(
+        return await self.wait_for_element(
             value=id,
             by=self.by.ID,
             timeout=timeout,
@@ -778,7 +861,7 @@ class SeleniumBrowser(object):
             timeout: int = 30,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
         """wait for a xpath"""
-        return await self.wait_for(
+        return await self.wait_for_element(
             value=xpath,
             by=self.by.XPATH,
             timeout=timeout,
