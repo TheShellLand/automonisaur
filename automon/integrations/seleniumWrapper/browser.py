@@ -132,7 +132,9 @@ class SeleniumBrowser(object):
 
     async def refresh(self):
         self.webdriver.refresh()
-        logger.info(f'{True}')
+        logger.info(dict(
+            refresh_page=self.current_url
+        ))
 
     @property
     def url(self):
@@ -728,8 +730,7 @@ class SeleniumBrowser(object):
             value: str,
             by: By = By.XPATH,
             timeout: int = 1,
-            **kwargs
-    ) -> selenium.webdriver.Chrome.find_element:
+            **kwargs) -> selenium.webdriver.Chrome.find_element:
         """wait for an element"""
         timeout_start = time.time()
         timeout_elapsed = round(abs(timeout_start - time.time()), 1)
@@ -760,8 +761,7 @@ class SeleniumBrowser(object):
             values: list,
             by: By = By.XPATH,
             timeout: int = 1,
-            **kwargs
-    ) -> selenium.webdriver.Chrome.find_element:
+            **kwargs) -> selenium.webdriver.Chrome.find_element:
         """wait for a list of elements"""
         if isinstance(values, list):
             for value in values:
@@ -787,8 +787,7 @@ class SeleniumBrowser(object):
             self,
             element: str or list,
             timeout: int = 1,
-            **kwargs
-    ) -> selenium.webdriver.Chrome.find_element:
+            **kwargs) -> selenium.webdriver.Chrome.find_element:
         """wait for an element"""
         if isinstance(element, list):
             return await self.wait_for_list(
@@ -806,7 +805,7 @@ class SeleniumBrowser(object):
             self,
             xpath: str or list,
             timeout: int = 1,
-            **kwargs) -> str or False:
+            **kwargs) -> selenium.webdriver.Chrome.find_element:
         """wait for an xpath"""
         if isinstance(xpath, list):
             return await self.wait_for_list(
