@@ -753,7 +753,7 @@ class SeleniumBrowser(object):
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
-        raise NoSuchElementException(value)
+        raise ElementNotFoundException(value)
 
     async def wait_for_list(
             self,
@@ -781,7 +781,7 @@ class SeleniumBrowser(object):
                 except Exception as error:
                     logger.error(error)
 
-        raise NoSuchElementException(values)
+        raise ElementNotFoundException(values)
 
     async def wait_for_element(
             self,

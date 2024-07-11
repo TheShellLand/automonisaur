@@ -6,5 +6,9 @@ class ActionTypeException(Exception):
     pass
 
 
-class NoSuchElementException(Exception):
+class ElementNotFoundException(Exception):
+    pass
+
+
+class XpathNotFoundException(ElementNotFoundException):
     pass
