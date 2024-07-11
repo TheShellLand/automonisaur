@@ -13,9 +13,9 @@ async def get_facebook_info(url: str):
     await group.start(headless=True)
     await group.get(url=url)
     if not group.privacy_details:
-        close = await group._browser.wait_for(group._xpath_popup_close)
+        close = await group._browser.wait_for_element(value=group._xpath_popup_close, by=group._browser.by.XPATH)
         close.click()
-        about = await group._browser.wait_for(group._xpath_about)
+        about = await group._browser.wait_for_element(value=group._xpath_about, by=group._browser.by.XPATH)
         about.click()
 
     return await group.to_dict()
