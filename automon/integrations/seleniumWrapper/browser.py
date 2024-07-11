@@ -406,7 +406,7 @@ class SeleniumBrowser(object):
             value: str = None,
             by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
-            contains: bool = True,
+            exact_match: bool = False,
             return_first: bool = False,
             **kwargs) -> list:
         """fuzzy search through everything
@@ -419,7 +419,7 @@ class SeleniumBrowser(object):
             value=value,
             by=by,
             case_sensitive=case_sensitive,
-            contains=contains,
+            exact_match=exact_match,
             kwargs=kwargs,
         ))
 
@@ -465,10 +465,10 @@ class SeleniumBrowser(object):
 
                     FOUND = None
 
-                    if MATCH == AGAINST and not contains:
+                    if MATCH == AGAINST and not exact_match:
                         FOUND = element
 
-                    if MATCH in AGAINST and contains:
+                    if MATCH in AGAINST and exact_match:
                         FOUND = element
 
                     if FOUND and FOUND not in MATCHED:
@@ -742,7 +742,7 @@ class SeleniumBrowser(object):
             value: str = None,
             by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
-            contains: bool = True,
+            exact_match: bool = True,
             timeout: int = 30,
             return_first: bool = False,
             **kwargs) -> list:
@@ -765,7 +765,7 @@ class SeleniumBrowser(object):
                     value=value,
                     by=by,
                     case_sensitive=case_sensitive,
-                    contains=contains,
+                    exact_match=exact_match,
                     return_first=return_first,
                     **kwargs)
 
