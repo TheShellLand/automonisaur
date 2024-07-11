@@ -845,24 +845,24 @@ class SeleniumBrowser(object):
 
     async def wait_for_id(
             self,
-            id: str or list,
+            value: str,
             timeout: int = 30,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
         """wait for an element id"""
         return await self.wait_for_element(
-            value=id,
+            value=value,
             by=self.by.ID,
             timeout=timeout,
             **kwargs)
 
     async def wait_for_xpath(
             self,
-            xpath: str or list,
+            value: str,
             timeout: int = 30,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
         """wait for a xpath"""
         return await self.wait_for_element(
-            value=xpath,
+            value=value,
             by=self.by.XPATH,
             timeout=timeout,
             **kwargs)
