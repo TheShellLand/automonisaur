@@ -456,7 +456,7 @@ class SeleniumBrowser(object):
                         MATCH = f'{match}'
                         AGAINST = f'''{getattr(element, f'{dir_}')}'''
 
-                        if case_sensitive:
+                        if not case_sensitive:
                             MATCH = f'{match}'.lower()
                             AGAINST = f'''{getattr(element, f'{dir_}')}'''.lower()
 
