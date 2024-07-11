@@ -402,7 +402,8 @@ class SeleniumBrowser(object):
 
     async def find_anything(
             self,
-            value: str,
+            match: str,
+            value: str = None,
             by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
             contains: bool = True,
@@ -436,10 +437,13 @@ class SeleniumBrowser(object):
         if by:
             by_types = [by]
 
+        if not value:
+            value = '*'
+
         MATCHED = []
 
         for by_ in by_types:
-            elements = await self.find_elements(value='*', by=by_, **kwargs)
+            elements = await self.find_elements(value=value, by=by_, **kwargs)
             for element in elements:
                 dirs = dir(element)
                 dir_meta = []
@@ -449,11 +453,11 @@ class SeleniumBrowser(object):
                             getattr(element, f'{dir_}')
                         )
 
-                        MATCH = f'{value}'
+                        MATCH = f'{match}'
                         AGAINST = f'''{getattr(element, f'{dir_}')}'''
 
                         if case_sensitive:
-                            MATCH = f'{value}'.lower()
+                            MATCH = f'{match}'.lower()
                             AGAINST = f'''{getattr(element, f'{dir_}')}'''.lower()
 
                     except:
@@ -734,8 +738,9 @@ class SeleniumBrowser(object):
 
     async def wait_for_anything(
             self,
-            value: str,
-            by: selenium.webdriver.common.by.By,
+            match: str,
+            value: str = None,
+            by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
             contains: bool = True,
             timeout: int = 30,
@@ -756,6 +761,7 @@ class SeleniumBrowser(object):
 
             try:
                 find = await self.find_anything(
+                    match=match,
                     value=value,
                     by=by,
                     case_sensitive=case_sensitive,
