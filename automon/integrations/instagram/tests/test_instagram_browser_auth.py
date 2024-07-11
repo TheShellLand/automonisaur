@@ -3,21 +3,20 @@ import asyncio
 
 from automon.integrations.instagram.client_browser import InstagramBrowserClient
 
-c = InstagramBrowserClient(headless=True)
+c = InstagramBrowserClient(headless=False)
 asyncio.run(c.start())
 
 
 class InstagramClientTest(unittest.TestCase):
 
-    async def test(self):
+    def test(self):
 
-        if c.is_ready():
-            await c.browser.get(c.urls.domain)
-            await c.browser.add_cookie_from_base64()
-            await c.browser.refresh()
-            if await c.is_authenticated():
-                self.assertTrue(await c.is_authenticated())
-                await c.browser.quit()
+        if asyncio.run(c.is_ready()):
+            asyncio.run(c.browser.get(c.urls.domain))
+            asyncio.run(c.browser.refresh())
+            if asyncio.run(c.authenticate()):
+                self.assertTrue(asyncio.run(c.is_authenticated()))
+        asyncio.run(c.browser.quit())
 
 
 if __name__ == '__main__':

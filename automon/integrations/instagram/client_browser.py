@@ -129,24 +129,28 @@ class InstagramBrowserClient:
 
     async def remove_not_now(self):
         """check for "save your login info" dialogue"""
-        not_now = await self.browser.wait_for_xpath(
-            self.xpaths.save_info_not_now_div,
-            fail_on_error=False
-        )
-        if not_now:
-            await self.browser.action_type(self.browser.keys.TAB)
-            await self.browser.action_type(self.browser.keys.TAB)
-            await self.browser.action_type(self.browser.keys.ENTER)
-            # self.browser.action_click(not_now, 'dont save login info')
+        try:
+            not_now = await self.browser.wait_for_xpath(
+                self.xpaths.save_info_not_now_div,
+            )
+            if not_now:
+                await self.browser.action_type(self.browser.keys.TAB)
+                await self.browser.action_type(self.browser.keys.TAB)
+                await self.browser.action_type(self.browser.keys.ENTER)
+                # self.browser.action_click(not_now)
+        except:
+            return False
 
     async def remove_notifications_not_now(self):
         """check for "notifications" dialogue"""
-        notifications_not_now = await self.browser.wait_for_xpath(
-            self.xpaths.turn_on_notifications_not_now,
-            fail_on_error=False
-        )
-        if notifications_not_now:
-            await self.browser.action_click(notifications_not_now, 'no notifications')
+        try:
+            notifications_not_now = await self.browser.wait_for_xpath(
+                self.xpaths.turn_on_notifications_not_now
+            )
+            if notifications_not_now:
+                await self.browser.action_click(notifications_not_now)
+        except:
+            return False
 
     async def run_stories(self, limit=None):
         """Run
@@ -186,12 +190,12 @@ class InstagramBrowserClient:
 
         # user
         login_user = await self.browser.wait_for_xpath(self.xpaths.login_user)
-        await self.browser.action_click(login_user, 'user')
+        await self.browser.action_click(login_user)
         await self.browser.action_type(self.login)
 
         # password
-        login_pass = self.browser.wait_for_xpath(self.xpaths.login_pass)
-        await self.browser.action_click(login_pass, 'login')
+        login_pass = await self.browser.wait_for_xpath(self.xpaths.login_pass)
+        await self.browser.action_click(login_pass)
         await self.browser.action_type(self.config.password)
         await self.browser.action_type(self.browser.keys.ENTER)
 
@@ -199,10 +203,10 @@ class InstagramBrowserClient:
         await self.remove_not_now()
 
         if await self.is_authenticated():
-            logger.info(f'{True}')
+            logger.info(f'logged in')
             return True
 
-        logger.error(f'{False}')
+        logger.error(f'login failed')
         return False
 
     async def get_followers(self, account: str):
@@ -211,17 +215,17 @@ class InstagramBrowserClient:
 
     async def is_authenticated(self):
         try:
-            if self.urls.domain not in self.browser.url:
-                await self.browser.get(self.urls.domain)
+            await self.browser.get(self.urls.domain)
             await self.remove_notifications_not_now()
             await self.remove_not_now()
             profile_picture = await self.browser.wait_for_xpath(self.xpaths.profile_picture)
             if profile_picture:
-                logger.info(f'{True}')
+                logger.info(f'authenticated')
                 return True
         except Exception as error:
-            raise Exception(error)
-        raise Exception(f'not authenticated')
+            logger.error(error)
+
+        return False
 
     async def is_ready(self) -> bool:
         try:
