@@ -127,29 +127,61 @@ class InstagramBrowserClient:
             logger.debug('[_next_story] no more stories')
             raise Exception
 
-    async def remove_not_now(self):
+    async def remove_save_login(self):
         """check for "save your login info" dialogue"""
         try:
-            not_now = await self.browser.wait_for_xpath(
-                self.xpaths.save_info_not_now_div,
+            await self.browser.wait_for_anything(
+                by=self.browser.by.TAG_NAME,
+                value='Save your login info?',
+                timeout=60,
+                contains=False,
+                return_first=True,
             )
-            if not_now:
-                await self.browser.action_type(self.browser.keys.TAB)
-                await self.browser.action_type(self.browser.keys.TAB)
-                await self.browser.action_type(self.browser.keys.ENTER)
-                # self.browser.action_click(not_now)
+            remove_save_login = await self.browser.wait_for_anything(
+                by=self.browser.by.TAG_NAME,
+                value='Not now',
+                contains=False,
+                timeout=60,
+            )
+            remove_save_login = [x for x in remove_save_login
+                                 if x.aria_role == 'button'
+                                 if x.text == 'Not now']
+
+            if remove_save_login:
+                await self.browser.save_screenshot(folder='.')
+                await self.browser.action_click(remove_save_login[0])
+
         except:
             return False
 
-    async def remove_notifications_not_now(self):
+    async def remove_notifications(self):
         """check for "notifications" dialogue"""
         try:
-            notifications_not_now = await self.browser.wait_for_xpath(
-                self.xpaths.turn_on_notifications_not_now
-            )
-            if notifications_not_now:
-                await self.browser.action_click(notifications_not_now)
-        except:
+            remove_notifications = await self.browser.wait_for_elements(
+                by=self.browser.by.TAG_NAME,
+                value='span',
+                timeout=60)
+
+            remove_notifications = [
+                x for x in remove_notifications
+                if x.text == 'Turn on Notifications']
+
+            if not remove_notifications:
+                return False
+
+            remove_notifications = await self.browser.wait_for_elements(
+                by=self.browser.by.TAG_NAME,
+                value='button',
+                timeout=60)
+
+            remove_notifications = [
+                x for x in remove_notifications
+                if x.text == 'Not Now']
+
+            if remove_notifications:
+                await self.browser.action_click(remove_notifications[0])
+
+        except Exception as error:
             return False
 
     async def run_stories(self, limit=None):
@@ -189,18 +221,21 @@ class InstagramBrowserClient:
         await self.browser.get(self.urls.login_page)
 
         # user
-        login_user = await self.browser.wait_for_xpath(self.xpaths.login_user)
+        login_user = await self.browser.wait_for_elements(
+            by=self.browser.by.TAG_NAME, value='input', timeout=60)
+        login_user = [x for x in login_user if x.accessible_name == 'Phone number, username, or email'][0]
         await self.browser.action_click(login_user)
-        await self.browser.action_type(self.login)
+        await self.browser.action_type(self.login, secret=True)
 
         # password
-        login_pass = await self.browser.wait_for_xpath(self.xpaths.login_pass)
+        login_pass = await self.browser.find_elements(by=self.browser.by.TAG_NAME, value='input')
+        login_pass = [x for x in login_pass if x.accessible_name == 'Password'][0]
         await self.browser.action_click(login_pass)
-        await self.browser.action_type(self.config.password)
+        await self.browser.action_type(self.config.password, secret=True)
         await self.browser.action_type(self.browser.keys.ENTER)
 
-        await self.remove_notifications_not_now()
-        await self.remove_not_now()
+        await self.remove_notifications()
+        await self.remove_save_login()
 
         if await self.is_authenticated():
             logger.info(f'logged in')
@@ -215,11 +250,19 @@ class InstagramBrowserClient:
 
     async def is_authenticated(self):
         try:
+            await self.remove_notifications()
             await self.browser.get(self.urls.domain)
-            await self.remove_notifications_not_now()
-            await self.remove_not_now()
-            profile_picture = await self.browser.wait_for_xpath(self.xpaths.profile_picture)
-            if profile_picture:
+
+            is_authenticated = await self.browser.wait_for_elements(
+                by=self.browser.by.TAG_NAME,
+                value='img')
+
+            is_authenticated = [
+                x for x in is_authenticated
+                if x.accessible_name == f"{self.config.login}'s profile picture"
+            ]
+
+            if is_authenticated:
                 logger.info(f'authenticated')
                 return True
         except Exception as error:
