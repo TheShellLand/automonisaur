@@ -6,9 +6,9 @@ import datetime
 import tempfile
 import selenium
 import selenium.webdriver
+import selenium.webdriver.common.by
 import selenium.webdriver.remote.webelement
 
-from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
@@ -51,7 +51,7 @@ class SeleniumBrowser(object):
         return f'{__class__}'
 
     @property
-    def by(self) -> By:
+    def by(self) -> selenium.webdriver.common.by.By:
         """Set of supported locator strategies"""
         return selenium.webdriver.common.by.By()
 
@@ -199,8 +199,7 @@ class SeleniumBrowser(object):
     async def action_type(
             self,
             key: str or Keys,
-            secret: bool = False,
-    ) -> selenium.webdriver.common.action_chains.ActionChains:
+            secret: bool = False) -> selenium.webdriver.common.action_chains.ActionChains:
         """perform keyboard command"""
 
         if secret:
@@ -218,8 +217,7 @@ class SeleniumBrowser(object):
     async def action_type_up(
             self,
             key: str or Keys,
-            secret: bool = False,
-    ) -> selenium.webdriver.common.action_chains.ActionChains:
+            secret: bool = False) -> selenium.webdriver.common.action_chains.ActionChains:
         """release key"""
 
         if secret:
@@ -237,8 +235,7 @@ class SeleniumBrowser(object):
     async def action_type_down(
             self,
             key: str or Keys,
-            secret: bool = False,
-    ) -> selenium.webdriver.common.action_chains.ActionChains:
+            secret: bool = False, ) -> selenium.webdriver.common.action_chains.ActionChains:
         """hold key down"""
 
         if secret:
@@ -407,10 +404,10 @@ class SeleniumBrowser(object):
     async def find_anything(
             self,
             value: str,
+            by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
             contains: bool = True,
-            **kwargs
-    ) -> selenium.webdriver.Chrome.find_element:
+            **kwargs) -> selenium.webdriver.Chrome.find_element:
         """fuzzy search through everything
 
         find all tags
@@ -426,12 +423,22 @@ class SeleniumBrowser(object):
 
         by_types = [
             self.by.TAG_NAME,
+            self.by.ID,
+            self.by.NAME,
+            self.by.CLASS_NAME,
+            self.by.LINK_TEXT,
+            self.by.PARTIAL_LINK_TEXT,
+            self.by.CSS_SELECTOR,
+            self.by.XPATH,
         ]
+
+        if by:
+            by_types = [by]
 
         MATCHED = []
 
-        for by in by_types:
-            elements = self.webdriver.find_elements(value='*', by=by)
+        for by_ in by_types:
+            elements = self.find_elements(value='*', by=by_, **kwargs)
             for element in elements:
                 dirs = dir(element)
                 dir_meta = []
@@ -476,9 +483,8 @@ class SeleniumBrowser(object):
     async def find_element(
             self,
             value: str,
-            by: By.ID = By.ID,
-            **kwargs
-    ) -> selenium.webdriver.Chrome.find_element:
+            by: selenium.webdriver.common.by.By,
+            **kwargs) -> selenium.webdriver.Chrome.find_element:
         """find element"""
         logger.info(str(dict(
             current_url=self.current_url,
@@ -489,9 +495,8 @@ class SeleniumBrowser(object):
     async def find_elements(
             self,
             value: str,
-            by: By.ID = By.ID,
-            **kwargs
-    ) -> selenium.webdriver.Chrome.find_elements:
+            by: selenium.webdriver.common.by.By,
+            **kwargs) -> selenium.webdriver.Chrome.find_elements:
         """find elements"""
         logger.info(str(dict(
             current_url=self.current_url,
@@ -502,9 +507,8 @@ class SeleniumBrowser(object):
     async def find_xpath(
             self,
             value: str,
-            by: By = By.XPATH,
-            **kwargs
-    ) -> selenium.webdriver.Chrome.find_element:
+            by: selenium.webdriver.common.by.By = selenium.webdriver.common.by.By.XPATH,
+            **kwargs) -> selenium.webdriver.Chrome.find_element:
         """find xpath"""
         logger.info(str(dict(
             current_url=self.current_url,
@@ -728,8 +732,8 @@ class SeleniumBrowser(object):
     async def wait_for(
             self,
             value: str,
-            by: By = By.XPATH,
-            timeout: int = 1,
+            by: selenium.webdriver.common.by.By,
+            timeout: int = 30,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
         """wait for an element"""
         timeout_start = time.time()
@@ -756,47 +760,14 @@ class SeleniumBrowser(object):
 
         raise ElementNotFoundException(value)
 
-    async def wait_for_list(
+    async def wait_for_id(
             self,
-            values: list,
-            by: By = By.XPATH,
-            timeout: int = 1,
+            id: str or list,
+            timeout: int = 30,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
-        """wait for a list of elements"""
-        if isinstance(values, list):
-            for value in values:
-
-                logger.debug(str(dict(
-                    checking=f'{values.index(value) + 1}/{len(values)}',
-                    value=value,
-                )))
-
-                try:
-                    return await self.wait_for(
-                        value=value,
-                        by=by,
-                        timeout=timeout,
-                        **kwargs,
-                    )
-                except Exception as error:
-                    logger.error(error)
-
-        raise ElementNotFoundException(values)
-
-    async def wait_for_element(
-            self,
-            element: str or list,
-            timeout: int = 1,
-            **kwargs) -> selenium.webdriver.Chrome.find_element:
-        """wait for an element"""
-        if isinstance(element, list):
-            return await self.wait_for_list(
-                values=element,
-                by=self.by.ID,
-                timeout=timeout,
-                **kwargs)
+        """wait for an element id"""
         return await self.wait_for(
-            value=element,
+            value=id,
             by=self.by.ID,
             timeout=timeout,
             **kwargs)
@@ -804,15 +775,9 @@ class SeleniumBrowser(object):
     async def wait_for_xpath(
             self,
             xpath: str or list,
-            timeout: int = 1,
+            timeout: int = 30,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
-        """wait for an xpath"""
-        if isinstance(xpath, list):
-            return await self.wait_for_list(
-                values=xpath,
-                by=self.by.XPATH,
-                timeout=timeout,
-                **kwargs)
+        """wait for a xpath"""
         return await self.wait_for(
             value=xpath,
             by=self.by.XPATH,
