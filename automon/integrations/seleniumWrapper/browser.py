@@ -37,6 +37,8 @@ class SeleniumBrowser(object):
         self._config = config or SeleniumConfig()
         self._selenium = selenium
 
+        self.autosaved = None
+
         self.logs = {}
 
     def __repr__(self):
@@ -312,10 +314,11 @@ class SeleniumBrowser(object):
 
     async def autosave_cookies(self) -> bool:
         if self.current_url:
-            await self.load_cookies_for_current_url()
-            await self.refresh()
-            await self.save_cookies_for_current_url()
-            return True
+            if not self.autosaved:
+                await self.add_cookie_from_current_url()
+                await self.refresh()
+                self.autosaved = True
+            return await self.save_cookies_for_current_url()
 
     async def delete_all_cookies(self) -> None:
         result = self.webdriver.delete_all_cookies()
