@@ -581,7 +581,7 @@ class SeleniumBrowser(object):
     async def get_screenshot_as_base64(self, **kwargs):
         """screenshot as base64"""
         screenshot = self.webdriver.get_screenshot_as_base64(**kwargs)
-        logger.debug(f'{round(len(screenshot) / 1024)} KB')
+        logger.debug(f'get_screenshot_as_base64 ({round(len(screenshot) / 1024)} KB)')
 
         return screenshot
 
