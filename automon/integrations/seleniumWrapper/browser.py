@@ -176,9 +176,9 @@ class SeleniumBrowser(object):
 
         if prefix:
             prefix = Sanitation.safe_string(prefix)
-            return f'{prefix}_{hostname_}_{title_}_{timestamp}.png'
+            return f'{prefix}_{timestamp}_{hostname_}_{title_}.png'
 
-        return f'{hostname_}_{title_}_{timestamp}.png'
+        return f'{timestamp}_{hostname_}_{title_}.png'
 
     async def action_click(
             self,
