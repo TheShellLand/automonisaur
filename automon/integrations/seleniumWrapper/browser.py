@@ -190,7 +190,8 @@ class SeleniumBrowser(object):
                 text=element.text,
                 accessible_name=element.accessible_name,
                 aria_role=element.aria_role))
-            return element.click(**kwargs)
+            element.click(**kwargs)
+            return True
 
         except Exception as error:
             raise Exception(error)
@@ -468,10 +469,10 @@ class SeleniumBrowser(object):
 
                     FOUND = None
 
-                    if MATCH == AGAINST and not exact_match:
+                    if MATCH == AGAINST and exact_match:
                         FOUND = element
 
-                    if MATCH in AGAINST and exact_match:
+                    if MATCH in AGAINST and not exact_match:
                         FOUND = element
 
                     if FOUND and FOUND not in MATCHED:
