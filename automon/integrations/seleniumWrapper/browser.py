@@ -71,7 +71,6 @@ class SeleniumBrowser(object):
     @property
     def _current_url(self):
         try:
-            self.webdriver.current_url
             return self.webdriver.current_url
         except Exception as error:
             return
@@ -135,7 +134,7 @@ class SeleniumBrowser(object):
     async def refresh(self) -> None:
         self.webdriver.refresh()
         logger.info(dict(
-            refresh_page=self.current_url
+            refresh=self.current_url
         ))
 
     @property
@@ -155,8 +154,6 @@ class SeleniumBrowser(object):
             if self._current_url == 'data:,':
                 return ''
             return self._current_url
-
-        logger.info(None)
         return ''
 
     @property
@@ -289,7 +286,9 @@ class SeleniumBrowser(object):
         return True
 
     async def add_cookie_from_current_url(self):
-        logger.info(f'{self.url}')
+        logger.debug(dict(
+            add_cookie_from_current_url=self.url,
+        ))
         return self.add_cookie_from_url(self.url)
 
     async def add_cookie_from_url(self, url: str) -> bool:
@@ -297,20 +296,30 @@ class SeleniumBrowser(object):
         cookie_file = await self._url_filename(url=url)
 
         if os.path.exists(cookie_file):
-            logger.info(f'{cookie_file}')
+            logger.debug(dict(
+                add_cookie_from_url=url,
+                cookie_file=cookie_file,
+            ))
             return await self.add_cookie_from_file(file=cookie_file)
 
-        logger.error(f'{cookie_file}')
+        logger.error(dict(
+            add_cookie_from_url=url,
+            cookie_file=cookie_file,
+        ))
 
     async def add_cookie_from_base64(self, base64_str: str) -> bool:
         if base64_str:
-            await self.add_cookies_from_list(
-                json.loads(base64.b64decode(base64_str))
-            )
-            logger.debug(f'{True}')
+            add_cookie_from_base64 = json.loads(base64.b64decode(base64_str))
+            await self.add_cookies_from_list(add_cookie_from_base64)
+            logger.debug(dict(
+                add_cookie_from_base64=add_cookie_from_base64,
+                base64_str=base64_str,
+            ))
             return True
 
-        logger.error(f'{base64_str}')
+        logger.error(dict(
+            base64_str=base64_str
+        ))
         return False
 
     async def autosave_cookies(self) -> bool:
@@ -323,7 +332,9 @@ class SeleniumBrowser(object):
 
     async def delete_all_cookies(self) -> None:
         result = self.webdriver.delete_all_cookies()
-        logger.info(f'{True}')
+        logger.debug(dict(
+            delete_all_cookies='done'
+        ))
         return result
 
     async def _url_filename(self, url: str):
@@ -331,37 +342,46 @@ class SeleniumBrowser(object):
         hostname = parsed.hostname
         cookie_file = f'cookies-{hostname}.json'
         logger.debug(dict(
-            _url_filename=cookie_file
+            cookie_file=cookie_file
         ))
         return cookie_file
 
     async def get_cookie(self, name: str) -> dict:
-        result = self.webdriver.get_cookie(name=name)
-        logger.info(f'{result}')
-        return result
+        get_cookie = self.webdriver.get_cookie(name=name)
+        logger.debug(dict(
+            name=name,
+            get_cookie=get_cookie,
+        ))
+        return get_cookie
 
     async def get_cookies(self) -> [dict]:
-        cookies = self.webdriver.get_cookies()
+        get_cookies = self.webdriver.get_cookies()
         logger.debug(dict(
-            get_cookies=len(cookies)
+            get_cookies=len(get_cookies)
         ))
-        return cookies
+        return get_cookies
 
-    async def get_cookies_base64(self) -> base64:
-        cookies = await self.get_cookies()
-        logger.debug(f'{True}')
-        return base64.b64encode(
-            json.dumps(cookies).encode()
+    async def get_cookies_base64(self) -> str:
+        get_cookies_base64 = await self.get_cookies()
+        get_cookies_base64 = base64.b64encode(
+            json.dumps(get_cookies_base64).encode()
         ).decode()
 
-    async def get_cookies_json(self) -> json.dumps:
-        cookies = await self.get_cookies()
         logger.debug(dict(
-            get_cookies_json=len(cookies)
+            get_cookies_base64=get_cookies_base64
         ))
-        return json.dumps(cookies)
+        return get_cookies_base64
 
-    async def get_cookies_summary(self):
+    async def get_cookies_json(self) -> json.dumps:
+        get_cookies_json = await self.get_cookies()
+        get_cookies_json = json.dumps(get_cookies_json)
+
+        logger.debug(dict(
+            get_cookies_json=f'{len(get_cookies_json)} B',
+        ))
+        return get_cookies_json
+
+    async def get_cookies_summary(self) -> dict:
         result = await self.get_cookies()
         summary = {}
         if result:
@@ -376,12 +396,12 @@ class SeleniumBrowser(object):
                 else:
                     summary[domain] = [cookie]
 
-        logger.debug(f'{summary}')
+        logger.debug(summary)
         return summary
 
     async def close(self):
         """close browser"""
-        logger.info(f'closed')
+        logger.info(f'closing webdriver')
         self.webdriver.close()
 
     @staticmethod
@@ -418,8 +438,8 @@ class SeleniumBrowser(object):
         find all tags
         find all matches within meta data
         """
-        logger.info(dict(
-            current_url=self.current_url,
+        logger.debug(dict(
+            find_anything=self.current_url,
             value=value,
             by=by,
             case_sensitive=case_sensitive,
@@ -476,7 +496,7 @@ class SeleniumBrowser(object):
                         FOUND = element
 
                     if FOUND and FOUND not in MATCHED:
-                        logger.info(dict(
+                        logger.debug(dict(
                             MATCH=MATCH,
                             AGAINST=AGAINST,
                             attribute=dir_,
@@ -494,8 +514,8 @@ class SeleniumBrowser(object):
             by: selenium.webdriver.common.by.By,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
         """find element"""
-        logger.info(dict(
-            current_url=self.current_url,
+        logger.debug(dict(
+            find_element=self.current_url,
             value=value,
             by=by,
         ))
@@ -507,8 +527,8 @@ class SeleniumBrowser(object):
             by: selenium.webdriver.common.by.By,
             **kwargs) -> list:
         """find elements"""
-        logger.info(dict(
-            current_url=self.current_url,
+        logger.debug(dict(
+            find_elements=self.current_url,
             value=value,
             by=by,
         ))
@@ -520,8 +540,8 @@ class SeleniumBrowser(object):
             by: selenium.webdriver.common.by.By = selenium.webdriver.common.by.By.XPATH,
             **kwargs) -> selenium.webdriver.Chrome.find_element:
         """find xpath"""
-        logger.info(dict(
-            current_url=self.current_url,
+        logger.debug(dict(
+            find_xpath=self.current_url,
             value=value,
             by=by,
         ))
@@ -535,11 +555,11 @@ class SeleniumBrowser(object):
 
         try:
             if self.webdriver.get(url, **kwargs) is None:
-                logger.info(str(dict(
-                    url=url,
+                logger.debug(dict(
+                    get=url,
                     current_url=self.current_url,
                     kwargs=kwargs
-                )))
+                ))
 
             if self.config.cookies_autosave:
                 await self.autosave_cookies()
@@ -552,9 +572,9 @@ class SeleniumBrowser(object):
 
         return False
 
-    async def get_page(self, *args, **kwargs):
+    async def get_page(self, *args, **kwargs) -> bool:
         """alias to get"""
-        return self.get(*args, **kwargs)
+        return await self.get(*args, **kwargs)
 
     async def get_page_source(self) -> str:
         """get page source"""
@@ -609,14 +629,14 @@ class SeleniumBrowser(object):
     async def is_running(self) -> bool:
         """browser is running"""
         if self.webdriver:
-            logger.info(f'{True}')
+            logger.info(f'webdriver is running')
             return True
-        logger.error(f'{False}')
+        logger.error(f'webdriver is not running')
         return False
 
     async def load_cookies_for_current_url(self) -> bool:
         filename = await self._url_filename(url=self.url)
-        logger.info(dict(
+        logger.debug(dict(
             load_cookies_for_current_url=filename,
             url=self.url,
         ))
@@ -649,7 +669,7 @@ class SeleniumBrowser(object):
             return False
         return True
 
-    async def run(self):
+    async def run(self) -> bool:
         """run browser"""
         try:
             return await self.config.run()
@@ -661,7 +681,7 @@ class SeleniumBrowser(object):
 
     async def save_cookies_for_current_url(self) -> bool:
         filename = await self._url_filename(url=self.url)
-        logger.info(dict(
+        logger.debug(dict(
             save_cookies_for_current_url=filename,
             url=self.url,
         ))
@@ -674,7 +694,7 @@ class SeleniumBrowser(object):
             )
 
         if os.path.exists(file):
-            logger.info(dict(
+            logger.debug(dict(
                 save_cookies_to_file=os.path.abspath(file),
                 bytes=os.stat(file).st_size
             ))
@@ -732,9 +752,11 @@ class SeleniumBrowser(object):
 
     async def set_window_position(self, x: int = 0, y: int = 0):
         """set browser position"""
-        result = self.webdriver.set_window_position(x, y)
-        logger.info(f'{result}')
-        return result
+        set_window_position = self.webdriver.set_window_position(x, y)
+        logger.debug(dict(
+            set_window_position=set_window_position
+        ))
+        return set_window_position
 
     async def start(self):
         """alias to run"""
