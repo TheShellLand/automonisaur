@@ -388,7 +388,7 @@ class ChromeWrapper(object):
                 logger.info(f'update_paths :: done')
                 return True
 
-        logger.error(f'update_paths :: failed :: {path=}')
+        logger.error(f'update_paths :: failed :: {path} not found')
         return False
 
     async def quit(self):
