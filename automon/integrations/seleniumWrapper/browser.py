@@ -132,10 +132,8 @@ class SeleniumBrowser(object):
         return selenium.webdriver.common.keys.Keys
 
     async def refresh(self) -> None:
-        self.webdriver.refresh()
-        logger.info(dict(
-            refresh=self.current_url
-        ))
+        logger.debug(f'refreshing page: {self.current_url=}')
+        return self.webdriver.refresh()
 
     @property
     def url(self):
@@ -682,8 +680,8 @@ class SeleniumBrowser(object):
     async def save_cookies_for_current_url(self) -> bool:
         filename = await self._url_filename(url=self.url)
         logger.debug(dict(
-            save_cookies_for_current_url=filename,
-            url=self.url,
+            save_cookies_for_current_url=self.url,
+            filename=filename,
         ))
         return await self.save_cookies_to_file(file=filename)
 
