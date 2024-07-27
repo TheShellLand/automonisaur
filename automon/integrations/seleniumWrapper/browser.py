@@ -217,7 +217,7 @@ class SeleniumBrowser(object):
         _screenshot_name = f'{timestamp}_{hostname_}_{title_}.png'
         logger.debug(f'_screenshot_name :: {_screenshot_name=}')
 
-        logger.info(f'_screenshot_name :: done')
+        logger.debug(f'_screenshot_name :: done')
         return _screenshot_name
 
     async def action_click(
@@ -421,7 +421,7 @@ class SeleniumBrowser(object):
         logger.debug(f'_url_filename :: {hostname=}')
         logger.debug(f'_url_filename :: {cookie_file=}')
 
-        logger.info(f'_url_filename :: done')
+        logger.debug(f'_url_filename :: done')
         return cookie_file
 
     async def get_cookie(self, name: str) -> dict:
@@ -587,8 +587,8 @@ class SeleniumBrowser(object):
                         FOUND = element
 
                     if FOUND and FOUND not in MATCHED:
-                        logger.debug(f'find_anything :: {MATCH=} :: {AGAINST=} :: attribute={dir_} :: {element=}')
-                        logger.info(f'find_anything :: {MATCH=} :: found')
+                        logger.debug(
+                            f'find_anything :: {self.current_url} :: {MATCH=} :: {AGAINST=} :: attribute={dir_} :: {element=} :: found')
                         MATCHED.append(FOUND)
 
                         if return_first:
@@ -608,7 +608,7 @@ class SeleniumBrowser(object):
         logger.debug(f'find_element :: {self.current_url} :: {value=} :: {by=} :: {kwargs=}')
 
         find_element = self.webdriver.find_element(value=value, by=by, **kwargs)
-        logger.debug(f'find_element :: {find_element=}')
+        logger.debug(f'find_element :: {self.current_url} :: {value=} :: found')
 
         logger.info(f'find_element :: done')
         return find_element
@@ -636,21 +636,22 @@ class SeleniumBrowser(object):
         logger.debug(f'find_xpath :: {self.current_url} :: {value=} :: {by=} :: {kwargs=}')
 
         find_xpath = await self.find_element(value=value, by=by, **kwargs)
-        logger.debug(f'find_xpath :: {find_xpath=}')
+        logger.debug(f'find_xpath :: {self.current_url} :: {find_xpath=} :: found')
 
         logger.info(f'find_xpath :: done')
         return find_xpath
 
     async def get(self, url: str, **kwargs) -> bool:
         """get url"""
-        logger.debug(f'browser :: get :: {url=} :: {kwargs=}')
+        logger.debug(f'browser :: get :: {url} :: {kwargs=}')
 
         if not self.webdriver:
             raise Exception(f'browser :: get :: failed :: missing webdriver')
 
         try:
             if self.webdriver.get(url, **kwargs) is None:
-                logger.debug(f'browser :: get :: {url=} :: {self.current_url=} :: {kwargs=}')
+                logger.debug(f'browser :: get :: {url} :: {self.current_url=} :: {kwargs=}')
+                logger.info(f'browser :: get')
 
             if self.config.cookies_autosave:
                 await self.autosave_cookies()
@@ -661,7 +662,7 @@ class SeleniumBrowser(object):
         except Exception as exception:
             logger.error(f'browser :: get :: failed :: {exception=}')
 
-        logger.error(f'browser :: get :: failed :: {url=}')
+        logger.error(f'browser :: get :: failed :: {url}')
         return False
 
     async def get_page(self, *args, **kwargs) -> bool:
@@ -777,7 +778,7 @@ class SeleniumBrowser(object):
         """parse url"""
         logger.debug(f'urlparse :: {url=}')
         parsed = urlparse(url=url)
-        logger.info(f'urlparse :: {parsed=}')
+        logger.debug(f'urlparse :: {parsed=}')
         logger.info(f'urlparse :: done')
         return parsed
 
