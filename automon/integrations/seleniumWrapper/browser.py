@@ -845,7 +845,7 @@ class SeleniumBrowser(object):
             folder: str = None,
             **kwargs) -> bool:
         """save screenshot to file"""
-        logger.debug(f'save_screenshot :: {filename=} :: {prefix=} :: {folder=} :: {kwargs=}')
+        logger.debug(f'save_screenshot :: {self.current_url} :: {filename=} :: {prefix=} :: {folder=} :: {kwargs=}')
 
         if not filename:
             filename = self._screenshot_name(prefix)
