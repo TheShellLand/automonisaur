@@ -25,29 +25,27 @@ class SeleniumConfig(object):
 
     @property
     def window_size(self):
-        """get window size
-
-        """
+        """get window size"""
         if self.webdriver_wrapper:
             return self.webdriver_wrapper.window_size
 
     @property
     def cookies_base64(self):
-        logger.debug(f'{len(self._cookies_base64) if self._cookies_base64 else None}')
+        logger.debug(f'cookies_base64 :: {len(self._cookies_base64) / 1024 if self._cookies_base64 else None} KB')
         return self._cookies_base64
 
     @property
     def cookies_file(self):
-        logger.info(f'{self._cookies_file}')
+        logger.debug(f'cookies_file :: {self._cookies_file}')
         return self._cookies_file
 
     async def run(self):
         """run webdriver"""
+        logger.debug(f'webdriver :: config :: run')
         run = await self.webdriver_wrapper.run()
         self._webdriver = self.webdriver_wrapper.webdriver
-        logger.info(str(dict(
-            webdriver=self.webdriver
-        )))
+        logger.debug(f'webdriver :: config :: run :: {self.webdriver=}')
+        logger.info(f'webdriver :: config :: run :: done')
         return run
 
     async def start(self):

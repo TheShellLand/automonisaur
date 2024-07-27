@@ -74,25 +74,19 @@ class ChromeWrapper(object):
         return self._window_size
 
     def disable_certificate_verification(self):
+        logger.debug(f'webdriver :: chrome :: add_argument :: --ignore-certificate-errors')
         logger.warning('Certificates are not verified')
         self.chrome_options.add_argument('--ignore-certificate-errors')
-        logger.debug(str(dict(
-            add_argument='--ignore-certificate-errors'
-        )))
         return self
 
     def disable_extensions(self):
+        logger.debug(f'webdriver :: chrome :: add_argument :: --disable-extensions')
         self.chrome_options.add_argument("--disable-extensions")
-        logger.debug(str(dict(
-            add_argument=f'--disable-extensions'
-        )))
         return self
 
     def disable_infobars(self):
+        logger.debug(f'webdriver :: chrome :: add_argument :: --disable-infobars')
         self.chrome_options.add_argument("--disable-infobars")
-        logger.debug(str(dict(
-            add_argument=f'--disable-infobars'
-        )))
         return self
 
     def disable_notifications(self):
@@ -109,19 +103,19 @@ class ChromeWrapper(object):
         return self
 
     def disable_sandbox(self):
+        logger.debug(f'webdriver :: chrome :: add_argument :: --no-sandbox')
         self.chrome_options.add_argument('--no-sandbox')
-        logger.debug(str(dict(
-            add_argument=f'--no-sandbox'
-        )))
         return self
 
     def disable_shm(self):
         logger.warning('Disabled shm will use disk I/O, and will be slow')
+        logger.debug(f'webdriver :: chrome :: add_argument :: --disable-dev-shm-usage')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
-        logger.debug(str(dict(
-            add_argument=f'--disable-dev-shm-usage'
-        )))
         return self
+
+    def download_chromedriver(self):
+        versions = 'https://googlechromelabs.github.io/chrome-for-testing/latest-versions-per-milestone-with-downloads.json'
+        raise
 
     def enable_bigshm(self):
         logger.warning('Big shm not yet implemented')
@@ -133,24 +127,18 @@ class ChromeWrapper(object):
         return self
 
     def enable_fullscreen(self):
+        logger.debug(f'webdriver :: chrome :: add_argument :: --start-fullscreen')
         self.chrome_options.add_argument("--start-fullscreen")
-        logger.debug(str(dict(
-            add_argument=f'--start-fullscreen'
-        )))
         return self
 
     def enable_headless(self):
+        logger.debug(f'webdriver :: chrome :: add_argument :: headless')
         self.chrome_options.add_argument('headless')
-        logger.debug(str(dict(
-            add_argument='headless'
-        )))
         return self
 
     def enable_logging(self):
+        logger.debug(f'webdriver :: chrome :: set_capability :: "goog:loggingPrefs", {{"performance": "ALL"}}')
         self.chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
-        logger.debug(dict(
-            set_capability=('goog:loggingPrefs', {'performance': 'ALL'})
-        ))
         return self
 
     def enable_notifications(self):
@@ -166,10 +154,8 @@ class ChromeWrapper(object):
         return self
 
     def enable_maximized(self):
+        logger.debug(f'webdriver :: chrome :: add_argument :: --start-maximized')
         self.chrome_options.add_argument('--start-maximized')
-        logger.debug(str(dict(
-            add_argument='--start-maximized'
-        )))
         return self
 
     def enable_translate(self, native_language: str = 'en'):
@@ -317,25 +303,24 @@ class ChromeWrapper(object):
                 self._ChromeService = selenium.webdriver.ChromeService(
                     executable_path=self.chromedriver_path
                 )
-                logger.debug(str(dict(
-                    ChromeService=self.ChromeService
-                )))
+
+                logger.debug(f'webdriver :: chrome :: run :: {self.ChromeService=}')
 
                 self._webdriver = selenium.webdriver.Chrome(
                     service=self.ChromeService,
                     options=self.chrome_options
                 )
-                logger.info(f'{self}')
+                logger.debug(f'webdriver :: chrome :: run :: {self=}')
 
+                logger.info(f'webdriver :: chrome :: run :: done')
                 return True
 
             self._webdriver = selenium.webdriver.Chrome(options=self.chrome_options)
             logger.info(f'{self}')
 
             return True
-        except Exception as error:
-            logger.error(f'{error}')
-            raise Exception(error)
+        except Exception as exception:
+            raise Exception(f'webdriver :: chrome :: run :: failed :: {exception}')
 
     async def set_chromedriver(self, chromedriver_path: str):
         logger.debug(f'{chromedriver_path}')
@@ -344,10 +329,8 @@ class ChromeWrapper(object):
         return self
 
     def set_locale(self, locale: str = 'en'):
+        logger.debug(f'webdriver :: chrome :: add_argument :: "--lang={locale}"')
         self.chrome_options.add_argument(f"--lang={locale}")
-        logger.debug(str(dict(
-            add_argument=f"--lang={locale}"
-        )))
         return self
 
     def set_locale_experimental(self, locale: str = 'en-US'):
@@ -365,10 +348,8 @@ class ChromeWrapper(object):
         return self
 
     def set_user_agent(self, user_agent: str):
+        logger.debug(f'webdriver :: chrome :: add_argument :: f"user-agent={user_agent}"')
         self.chrome_options.add_argument(f"user-agent={user_agent}")
-        logger.debug(str(dict(
-            add_argument=f"user-agent={user_agent}"
-        )))
         return self
 
     def set_window_size(self, *args, **kwargs):
@@ -401,13 +382,13 @@ class ChromeWrapper(object):
                 else:
                     os.environ['PATH'] = f"{os.getenv('PATH')}:{path}"
 
-                logger.debug(str(dict(
-                    SELENIUM_CHROMEDRIVER_PATH=path,
-                    PATH=os.environ['PATH']
-                )))
+                # logger.debug(f'update_paths :: {path=} :: {os.environ['PATH']}')
+                logger.debug(f'update_paths :: {path}')
 
+                logger.info(f'update_paths :: done')
                 return True
 
+        logger.error(f'update_paths :: failed :: {path=}')
         return False
 
     async def quit(self):
