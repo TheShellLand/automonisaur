@@ -354,10 +354,11 @@ class ChromeWrapper(object):
 
     def set_window_size(self, *args, **kwargs):
         """has to be set after setting webdriver"""
+        logger.debug(f'webdriver :: chrome :: set_window_size :: {args=} :: {kwargs=}')
         self._window_size = set_window_size(*args, **kwargs)
         width, height = self.window_size
         self.webdriver.set_window_size(width=width, height=height)
-        logger.debug(f'{width}, {height}')
+        logger.info(f'webdriver :: chrome :: set_window_size :: {width=} {height=}')
         return self
 
     async def start(self):

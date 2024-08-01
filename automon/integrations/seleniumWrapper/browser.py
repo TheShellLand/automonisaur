@@ -595,7 +595,7 @@ class SeleniumBrowser(object):
                             logger.info(f'find_anything :: done')
                             return MATCHED
 
-        logger.debug(f'find_anything :: {len(MATCH)} result(s) found')
+        logger.debug(f'find_anything :: {len(MATCHED)} results found')
         logger.info(f'find_anything :: done')
         return MATCHED
 
@@ -622,7 +622,7 @@ class SeleniumBrowser(object):
         logger.debug(f'find_elements :: {self.current_url} :: {value=} :: {by=} :: {kwargs=}')
 
         find_elements = self.webdriver.find_elements(value=value, by=by, **kwargs)
-        logger.debug(f'find_elements :: {len(find_elements)} element(s) found')
+        logger.debug(f'find_elements :: {len(find_elements)} elements found')
 
         logger.info(f'find_elements :: done')
         return find_elements
@@ -935,7 +935,7 @@ class SeleniumBrowser(object):
                     exact_match=exact_match,
                     return_first=return_first,
                     **kwargs)
-                logger.debug(f'wait_for_anything :: {len(find)} element(s) found')
+                logger.debug(f'wait_for_anything :: {len(find)} elements found')
 
                 if find:
                     logger.info(f'wait_for_anything :: done')
@@ -1007,7 +1007,7 @@ class SeleniumBrowser(object):
                     value=value,
                     by=by,
                     **kwargs)
-                logger.debug(f'wait_for_elements :: {len(find)} element(s) found')
+                logger.debug(f'wait_for_elements :: {len(find)} elements found')
 
                 if find:
                     logger.info(f'wait_for_elements :: done')
