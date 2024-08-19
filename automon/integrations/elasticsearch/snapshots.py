@@ -1,15 +1,16 @@
 import json
 # import requests
 
-from automon.log import Logging
+from automon import log
 from automon.integrations.elasticsearch.client import ElasticsearchClient
 from automon.integrations.elasticsearch.config import ElasticsearchConfig
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Snapshot:
     def __init__(self, snapshot: dict):
-        self._log = Logging(Snapshot.__name__, Logging.DEBUG)
-
         self._snapshot = snapshot
         self.id = snapshot.get('id')
         self.status = snapshot.get('status')
@@ -25,7 +26,7 @@ class Snapshot:
 
     def __eq__(self, other):
         if not isinstance(other, Snapshot):
-            self._log.warning(f'{other} != Snapshot')
+            logger.warning(f'{other} != Snapshot')
             return NotImplemented
 
         return self._snapshot == other._snapshot
@@ -34,7 +35,6 @@ class Snapshot:
 class ElasticsearchSnapshotMonitor:
     def __init__(self, elasticsearch_repository: str = 'found-snapshots', snapshots_prefix: str = '',
                  config: ElasticsearchConfig = ElasticsearchConfig()):
-        self._log = Logging(ElasticsearchSnapshotMonitor.__name__, Logging.DEBUG)
 
         self._config = config if config == ElasticsearchConfig else ElasticsearchConfig()
         self._client = ElasticsearchClient(config=self._config)
@@ -56,7 +56,7 @@ class ElasticsearchSnapshotMonitor:
                 url = f'{endpoint}/_cat/snapshots/{self.repository}?format=json'
                 # url = f'{endpoint}/_snapshot/{self.repository}?format=json'
 
-                self._log.info('Downloading snapshots list')
+                logger.info('Downloading snapshots list')
                 request = self._client.rest(url)
                 content = request.text
 
@@ -67,12 +67,12 @@ class ElasticsearchSnapshotMonitor:
         return False
 
     def _process_snapshots(self, snapshots: dict) -> bool:
-        self._log.info('Processing snapshots')
+        logger.info('Processing snapshots')
 
         try:
             self.total_snapshots = list(snapshots).__len__()
 
-            self._log.info(f'{self.total_snapshots} snapshots')
+            logger.info(f'{self.total_snapshots} snapshots')
 
             for snapshot in snapshots:
 
@@ -93,12 +93,12 @@ class ElasticsearchSnapshotMonitor:
             return True
 
         except Exception as e:
-            self._log.error(f'Unable to get snapshots: {e}')
+            logger.error(f'Unable to get snapshots: {e}')
             self.error = SnapshotError(snapshots)
             return False
 
     def read_file(self, file_path):
-        self._log.info('Reading snapshots from file')
+        logger.info('Reading snapshots from file')
 
         with open(file_path, 'rb') as snapshots:
             snapshots = json.load(snapshots)
@@ -106,7 +106,7 @@ class ElasticsearchSnapshotMonitor:
         self._process_snapshots(snapshots)
 
     def check_snapshots(self):
-        self._log.info('Checking snapshots')
+        logger.info('Checking snapshots')
         return self._get_all_snapshots()
 
 
@@ -154,7 +154,6 @@ class ElasticsearchSnapshotMonitor:
 
 class SnapshotError:
     def __init__(self, error: dict):
-        self._log = Logging(SnapshotError.__name__, Logging.DEBUG)
 
         self.error = error.get('error')
 
@@ -172,5 +171,5 @@ class SnapshotError:
     def __eq__(self, other):
         if isinstance(other, SnapshotError):
             return self.error == other.error
-        self._log.warning(NotImplemented)
+        logger.warning(NotImplemented)
         return NotImplemented

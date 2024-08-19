@@ -5,10 +5,14 @@
 # base
 requests>=2.26.0
 xmltodict>=0.12.0
+deprecation>=2.1.0
 
 # airport
 beautifulsoup4>=4.10.0
 lxml>=4.7.1
+
+# datadog
+ddtrace>=2.7.6
 
 # datascience
 pandas>=1.1.5
@@ -34,26 +38,40 @@ google-auth-oauthlib>=0.5.0
 minio>=7.1.0
 
 # neo4j
-neo4j-driver>=4.3.4
+neo4j>=4.4.9
 
 # openstack swift
 python-keystoneclient>=4.2.0
 python-swiftclient>=3.12.0
+
+# opentelemetry
+opentelemetry-distro==0.43b0
+opentelemetry-exporter-otlp==1.22.0
+opentelemetry-instrumentation-logging==0.43b0
+# workaround
+git+https://github.com/open-telemetry/opentelemetry-python-contrib.git@0.43b0hotfix#subdirectory=instrumentation/opentelemetry-instrumentation-aiohttp-server
 
 # splunk soar
 pytz>=2021.1
 
 # selenium
 selenium>=3.141.0
+beautifulsoup4>=4.10.0
 
 # sentry.io
 sentry-sdk>=1.5.1
+
+# scrapy
+Scrapy>=2.6.0
 
 # slack
 slackclient>=2.9.3
 
 # splunk
 splunk-sdk>=1.6.16
+
+# swimlane
+#swimlane>=10.14.0
 
 # unit testing
 pytest>=6.2.4

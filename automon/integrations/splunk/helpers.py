@@ -1,14 +1,14 @@
 import splunklib.client as client
 
-from automon.log import Logging
+from automon import log
 
-log = Logging(name=__name__, level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class JobError:
 
     def __init__(self, job: client.Job):
-        self._log = Logging(JobError.__name__, level=Logging.DEBUG)
         self._job = job
 
         self.messages = job.content['messages']
@@ -16,16 +16,15 @@ class JobError:
             self.fatal = self.messages['fatal']
             self.error = self.messages['error']
 
-            self._log.critical(self.fatal)
-            self._log.error(self.error)
+            logger.critical(self.fatal)
+            logger.error(self.error)
         except Exception as e:
-            self._log.error(e)
+            logger.error(e)
 
 
 class Job:
 
     def __init__(self, job: client.Job):
-        self._log = Logging(Job.__name__, level=Logging.DEBUG)
         self._job = job
 
         try:
@@ -47,7 +46,7 @@ class Job:
 
             self.error = JobError(job)
         except Exception as e:
-            self._log.error(e)
+            logger.error(e)
 
     def is_ready(self):
         return self._job.is_ready()

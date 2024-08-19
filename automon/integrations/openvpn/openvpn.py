@@ -1,11 +1,12 @@
 import os
 import io
 
-from automon.integrations.minio import MinioClient, MinioConfig
-from automon.log import Logging
+from automon.integrations.minioWrapper import MinioClient, MinioConfig
+from automon import log
 from automon.helpers.sleeper import Sleeper
 
-log = Logging(name='openvpn', level='info')
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.INFO)
 
 
 class ClientConfig:
@@ -46,7 +47,7 @@ class ClientConfig:
         </tls-auth>
         """
 
-        log.logging.debug('[ClientConfig] Creating new OpenVPN client config')
+        logger.debug('[ClientConfig] Creating new OpenVPN client config')
 
         self.name = name
 
@@ -114,7 +115,7 @@ class ClientConfig:
 def collector(minio_client, bucket, folder):
     """ Collect required files to build an OpenVPN client
     """
-    log.logging.debug('[collector] Collecting all Minio bucket files')
+    logger.debug('[collector] Collecting all Minio bucket files')
 
     ca = None
     cert = []
@@ -150,7 +151,7 @@ def collector(minio_client, bucket, folder):
 def put_object(minio_client: MinioClient, bucket, client_configs, config_name, config_data, config_len):
     """ Minio object uploader
     """
-    log.logging.debug(f'[put_object] Uploading: {config_name}')
+    logger.debug(f'[put_object] Uploading: {config_name}')
     return minio_client.put_object(bucket, f'{client_configs}/{config_name}', config_data, config_len)
 
 
@@ -176,11 +177,11 @@ def create_configs(minio_client: MinioClient, bucket: str, client_configs: str,
 
         put_object(minio_client, bucket, client_configs, config_name, config_data, config_len)
 
-        log.logging.debug(f'[create_configs] OpenVPN client config uploaded: {config_name}')
+        logger.debug(f'[create_configs] OpenVPN client config uploaded: {config_name}')
 
 
 def run(minio_config: MinioConfig, openvpn_config):
-    log.logging.info('Running...')
+    logger.info('Running...')
 
     while True:
         minio_config.secure = False
@@ -206,9 +207,9 @@ def run(minio_config: MinioConfig, openvpn_config):
             ca, cert, key, ta = collector(minio_client, minio_bucket, keys)
             create_configs(minio_client, minio_bucket, client_configs, ca, cert, key, ta, hosts, prefix, options)
 
-        log.logging.info('[build client configs] Finshed building all OpenVPN clients')
-        log.logging.debug('[ClientConfig] sleeping')
-        Sleeper.day('openvpn')
+        logger.info('[build client configs] Finshed building all OpenVPN clients')
+        logger.debug('[ClientConfig] sleeping')
+        Sleeper.day()
 
 
 def test_run(minio_config: MinioConfig, openvpn_config):

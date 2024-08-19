@@ -1,8 +1,10 @@
-name: 3.6
+name: 3.6 EOL
 
 on:
   push:
-    branches: [ 3.6 ]
+    branches: [ 'none' ]
+  pull_request:
+    branches: [ 'none' ]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -23,17 +25,19 @@ env:
 jobs:
 
   unittest:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.6
       - name: Install python packages
         run: pip3 install -r requirements.txt
+      - name: install chrome and chromedriver
+        run: /bin/bash docker/install.sh
       - name: Run tests
         run: /bin/bash test.sh
         env:

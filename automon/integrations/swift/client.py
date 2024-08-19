@@ -6,20 +6,21 @@ import datetime
 
 from swiftclient.service import SwiftService
 
-from automon.log import Logging
+from automon import log
 from automon.integrations.swift.error import SwiftError_
 # from automon.integrations.swift.config import SwiftConfig
 from automon.integrations.swift.iterables import SwiftList, SwiftItem
 
-log = Logging(__name__, Logging.INFO)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.INFO)
 
-Logging('requests', Logging.CRITICAL)
-Logging('swiftclient', Logging.CRITICAL)
+log.logging.getLogger('requests').setLevel(log.CRITICAL)
+log.logging.getLogger('swiftclient').setLevel(log.CRITICAL)
 
 
 class SwiftClient:
     def __init__(self):
-        self._log = Logging(SwiftClient.__name__, Logging.DEBUG)
+        pass
 
     @staticmethod
     def list_summary(files, folders):
@@ -28,7 +29,7 @@ class SwiftClient:
     def list_container(self, container, summary=False, filter='',
                        separate=False) -> [SwiftItem]:
 
-        self._log.info(f'listing {container} (filter: {filter})')
+        logger.info(f'listing {container} (filter: {filter})')
 
         swift_objects = []
         swift_objects_v2 = []
@@ -57,7 +58,7 @@ class SwiftClient:
                     files.append(item_v1)
                     files_v2.append(item_v2)
 
-        self._log.debug(f'Listing for {container}: {len(swift_objects)} objects')
+        logger.debug(f'Listing for {container}: {len(swift_objects)} objects')
 
         if summary:
             return len(swift_objects)
@@ -71,7 +72,7 @@ class SwiftClient:
 
         msg = (f'Starting cleanup \n'
                f'>Retention policy: {days} days \n')
-        self._log.info(msg)
+        logger.info(msg)
 
         today = datetime.date.today()
         start_time = time.time()
@@ -106,20 +107,20 @@ class SwiftClient:
                 regex = f'^{date}'
 
                 if re.search(regex, item_s.name):
-                    self._log.info(f"{percent}% ({progress}/{total}) cleanup retain: \'{regex}\', {name}")
+                    logger.info(f"{percent}% ({progress}/{total}) cleanup retain: \'{regex}\', {name}")
                     found = True
                     break
 
             if not found:
                 pending_deletion.append(item)
-                self._log.info(f"{percent}% ({progress}/{total}) pending deletion: {name}")
+                logger.info(f"{percent}% ({progress}/{total}) pending deletion: {name}")
 
         elapsed_time = time.time() - start_time
         minutes = int(elapsed_time / 60)
 
         msg = (f'>Created deletion list for past {days} days (Deleting: {len(pending_deletion)} objects)\n'
                f">Cleanup has been running for: {minutes} minutes")
-        self._log.debug(msg)
+        logger.debug(msg)
 
         objects = 0
         folders = 0
@@ -141,14 +142,14 @@ class SwiftClient:
             else:
                 objects += 1
 
-            self._log.info(f'{percent}% ({progress}/{total}) summarizing deletion: {name}')
+            logger.info(f'{percent}% ({progress}/{total}) summarizing deletion: {name}')
 
         msg = (f'Cleaning up older than {days} days: \n'
                f'>{total} *total objects* \n'
                f'>{objects} *objects* \n'
                f'>{folders} *folders* \n'
                f'see debug messages')
-        self._log.debug(msg)
+        logger.debug(msg)
 
         progress = 0
 
@@ -163,7 +164,7 @@ class SwiftClient:
 
             # this does the actual deletion
             self.delete_object(container, item)
-            self._log.info(f'{percent}% ({progress}/{total}) deleted: {name}')
+            logger.info(f'{percent}% ({progress}/{total}) deleted: {name}')
 
             if progress % 10000 == 0 or progress % total == 0:
                 elapsed_time = time.time() - start_time
@@ -171,12 +172,12 @@ class SwiftClient:
 
                 msg = (f'>Deletion is currently at `{percent}%` ({progress}/{total})\n'
                        f">Backup has been running for: {minutes} minutes")
-                self._log.debug(msg)
+                logger.debug(msg)
 
         if pending_deletion:
             msg = ('Cleanup Finished\n'
                    f">It took: {minutes} minutes")
-            self._log.debug(msg)
+            logger.debug(msg)
 
     def backup(self, source, destination, test=None, skip_known=True):
 
@@ -188,7 +189,7 @@ class SwiftClient:
         retries = 0
 
         msg = f'Backup {source} started'
-        self._log.debug(msg)
+        logger.debug(msg)
 
         items = self.list_container(source)
         backups = self.list_container(destination, filter=today)
@@ -206,7 +207,7 @@ class SwiftClient:
             if test:
                 regex = str(test)
                 if re.search(regex, item):
-                    self._log.debug(f'Test match: {test} \n>{item}')
+                    logger.debug(f'Test match: {test} \n>{item}')
 
                 else:
                     continue
@@ -219,7 +220,7 @@ class SwiftClient:
                 for b in backups:
                     b = SwiftItem(b)
                     if f'{today}/{s_item.name}' == b.name:
-                        self._log.info(f'{percent}% ({progress}/{total}) exists, skipping {s_item.name}')
+                        logger.info(f'{percent}% ({progress}/{total}) exists, skipping {s_item.name}')
                         exists = True
                         break
                 if exists:
@@ -230,7 +231,7 @@ class SwiftClient:
                 minutes = int(elapsed_time / 60)
                 msg = (f'>Backup {source} is currently at `{percent}%` ({progress}/{total})\n'
                        f">Backup has been running for: {minutes} minutes")
-                self._log.debug(msg)
+                logger.debug(msg)
 
                 self.stats(destination, filter=today)
 
@@ -250,19 +251,19 @@ class SwiftClient:
                                 for i in swift.upload(destination, [folder], options):
 
                                     if i["success"]:
-                                        self._log.info(
+                                        logger.info(
                                             f'{percent}% ({progress}/{total}) '
                                             f'created directory /{destination}/{today}/{name}')
 
                                         retry = False
 
                                     if "error" in i and isinstance(i["error"], Exception):
-                                        self._log.error(f'{SwiftError_(i)}')
+                                        logger.error(f'{SwiftError_(i)}')
 
                                         retries += 1
 
                             except Exception as _:
-                                self._log.error(item)
+                                logger.error(item)
 
                                 retries += 1
 
@@ -280,12 +281,12 @@ class SwiftClient:
 
                                 if i["success"]:
                                     if i["action"] == "copy_object":
-                                        self._log.info(
+                                        logger.info(
                                             f'{percent}% ({progress}/{total}) '
                                             f'copied {i["destination"]} from /{i["container"]}/{i["object"]}')
 
                                     if i["action"] == "create_container":
-                                        self._log.info(
+                                        logger.info(
                                             f'{percent}% ({progress}/{total}) '
                                             f'container {i["container"]} created')
 
@@ -304,29 +305,29 @@ class SwiftClient:
                                         else:
                                             error = f'{SwiftError_(i)}'
 
-                                        log.error(error)
+                                        logger.error(error)
                                         retries += 1
 
                     except Exception as _:
-                        log.error(item)
+                        logger.error(item)
                         retries += 1
 
                 if not retry:
                     break
 
-        self._log.info('building backup summary')
+        logger.info('building backup summary')
 
         source_total_objects, \
-        source_total_dirs, \
-        source_objects, _, _ = source_stats
+            source_total_dirs, \
+            source_objects, _, _ = source_stats
 
         filter_destination_total_objects, \
-        filter_destination_total_dirs, \
-        filter_objects, _, _ = self.stats(destination, post_log=True, filter=today)
+            filter_destination_total_dirs, \
+            filter_objects, _, _ = self.stats(destination, post_log=True, filter=today)
 
         destination_total_objects, \
-        destination_total_dirs, \
-        destination_objects, _, _ = self.stats(destination, post_log=False)
+            destination_total_dirs, \
+            destination_objects, _, _ = self.stats(destination, post_log=False)
 
         # elapsed_time = time.time() - start_time
         # minutes = int(elapsed_time / 60)
@@ -345,7 +346,7 @@ class SwiftClient:
             f'>{destination_total_objects} *total objects* \n'
             f'>{destination_objects} *objects* \n'
             f'>{destination_total_dirs} *dirs* \n')
-        log.debug(msg)
+        logger.debug(msg)
 
         # TODO: new files may be added during the backup, so need verify only the initial files being backed up
 
@@ -353,7 +354,7 @@ class SwiftClient:
         # missing_count = len(missing)
         # if missing:
         #     try:
-        #         self.log.info(
+        #         logger.info(
         #             f'Missing {missing_count} objects'
         #             '>'.join(missing)
         #         )
@@ -365,7 +366,7 @@ class SwiftClient:
         #
         #     msg = ('*Backup Finished* \n'
         #            f'>It took: {minutes} minutes ({retries} retries)\n')
-        #     self.log.debug(msg)
+        #     logger.debug(msg)
 
     def find_missing(self, source, destination, filter, post_log=True):
 
@@ -397,13 +398,13 @@ class SwiftClient:
                     found = True
                     break
             if not found:
-                self._log.info(f'{percent}% ({progress}/{total}) backup missing: {a_name}')
+                logger.info(f'{percent}% ({progress}/{total}) backup missing: {a_name}')
                 missing_objects + (tuple(f' * {a_item} \n'))
                 missing_objects_list.append(a_item)
             else:
-                self._log.info(f'{percent}% ({progress}/{total}) verified, {a_name}')
+                logger.info(f'{percent}% ({progress}/{total}) verified, {a_name}')
 
-        log.debug(f'missing_objects: {len(missing_objects)}')
+        logger.debug(f'missing_objects: {len(missing_objects)}')
 
         if missing_objects:
             msg = (f'Missing {len(missing_objects)} objects: \n'
@@ -414,7 +415,7 @@ class SwiftClient:
 
     def stats(self, container, filter='', post_log=True, show_types=False):
 
-        self._log.info(f'stat {container} (filter: {filter})')
+        logger.info(f'stat {container} (filter: {filter})')
 
         list_items = self.list_container(container, filter=filter)
         total_dirs = 0
@@ -462,10 +463,10 @@ class SwiftClient:
             try:
                 for i in swift.delete(container=container, objects=[name]):
                     if i['success']:
-                        self._log.info(f'deleted: {name}')
+                        logger.info(f'deleted: {name}')
 
             except Exception as e:
-                log.error(f'{e}')
+                logger.error(f'{e}')
 
     def delete(self, container, filter):
 
@@ -485,12 +486,12 @@ class SwiftClient:
                 try:
                     for i in swift.delete(container=container, objects=[name]):
                         if i['success']:
-                            self._log.info(f'{percent}% ({progress}/{deletion_count}) deleted: {name}')
+                            logger.info(f'{percent}% ({progress}/{deletion_count}) deleted: {name}')
 
                 except Exception as e:
-                    log.error(f'{e}')
+                    logger.error(f'{e}')
 
-        log.debug(
+        logger.debug(
             f'Deletion summary: \n>container: {container} \n>filter: {filter} \n>{deletion_count} objects deleted')
 
     def delete_container(self, container):
@@ -499,10 +500,10 @@ class SwiftClient:
             try:
 
                 for _ in swift.delete(container):
-                    self._log.info(f'deleting container: {container}')
+                    logger.info(f'deleting container: {container}')
 
             except Exception as e:
-                log.error(f'{e}')
+                logger.error(f'{e}')
 
     def restore(self):
         return warnings.warn(NotImplemented)

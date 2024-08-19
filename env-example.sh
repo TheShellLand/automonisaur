@@ -1,6 +1,11 @@
 # Codecov
 CODECOV_TOKEN=
 
+# Datadog
+DD_SITE=https://us5.datadoghq.com
+DD_API_KEY=
+DD_APP_KEY=
+
 # Elasticsearch
 ELASTICSEARCH_HOST=https://elastic-cloud.com:9200
 ELASTICSEARCH_USER=elastic
@@ -11,6 +16,11 @@ ELASTICSEARCH_API_KEY_ID=
 ELASTICSEARCH_API_KEY_SECRET=
 ELASTICSEARCH_PROXY=
 ELASTICSEARCH_REQUEST_TIMEOUT=
+
+# Flask
+FLASK_HOST=127.0.0.1
+FLASK_PORT=5000
+FLASK_DEBUG=true
 
 # Google
 GOOGLE_OAUTH_WEB=False
@@ -23,6 +33,10 @@ GOOGLE_TOKEN=
 GOOGLE_TOKEN_URI=
 GOOGLE_PROJECT_ID=
 GOOGLE_REFRESH_TOKEN=
+
+# Instagram
+INSTAGRAM_LOGIN=
+INSTAGRAM_PASSWORD=
 
 # Minio
 MINIO_ENDPOINT=play.minio.io:9000
@@ -51,6 +65,31 @@ OPENSTACK_INTERFACE=public
 OPENSTACK_IDENTITY_API_VERSION=3
 SWIFTCLIENT_INSECURE=True
 
+# OpenTelemetry
+# https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/logging/logging.html
+OTEL_PYTHON_LOG_CORRELATION=true
+OTEL_PYTHON_LOG_FORMAT='%(asctime)s\t%(levelname)s\t[%(name)s]\t[%(filename)s:%(lineno)d]\t[trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s trace_sampled=%(otelTraceSampled)s]\t%(message)s'
+OTEL_PYTHON_LOG_LEVEL=debug
+# https://opentelemetry.io/docs/languages/python/automatic/
+OTEL_SERVICE_NAME=your-service-name
+OTEL_TRACES_EXPORTER=console,otlp
+OTEL_METRICS_EXPORTER=console
+OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=0.0.0.0:4317
+
+# Splunk SOAR
+SPLUNK_SOAR_HOST=
+SPLUNK_SOAR_AUTH_TOKEN=
+SPLUNK_SOAR_USER=
+SPLUNK_SOAR_PASSWORD=
+
+# Swimlane
+SWIMLANE_HOST=
+SWIMLANE_USERNAME=
+SWIMLANE_PASSWORD=
+SWIMLANE_APIKEY=
+SWIMLANE_JWT_TOKEN=
+SWIMLANE_APP_ID=
+
 # Pypi
 PKG=automon
 PYPI=automonisaur
@@ -62,6 +101,9 @@ TWINE_PASSWORD=
 # Selenium
 SELENIUM_CHROMEDRIVER_PATH=
 SELENIUM_OPT=
+SELENIUM_COOKIES_AUTOSAVE=False
+SELENIUM_COOKIES_BASE64=
+SELENIUM_COOKIES_FILE=
 
 # Sentry.io
 SENTRY_DSN=
@@ -85,16 +127,11 @@ SLACK_TEST_CHANNEL=
 SHODAN_API=
 
 # Splunk
-SPLUNK_HOST=
-SPLUNK_PORT=
+SPLUNK_HOST=splunkcloud.com
+SPLUNK_PORT=8089
 SPLUNK_USERNAME=
 SPLUNK_PASSWORD=
 
-# Splunk SOAR
-SPLUNK_SOAR_HOST=
-SPLUNK_SOAR_AUTH_TOKEN=
-SPLUNK_SOAR_USER=
-SPLUNK_SOAR_PASSWORD=
 
 # Swift buckets
 SWIFT_SOURCE_BUCKET=
@@ -107,3 +144,11 @@ LDAP_PORT=
 VDS_BIND_USER=cn=automon,ou=people,dc=automon,dc=com
 VDS_BASE_DN=dc=automon,dc=com
 VDS_PASSWORD=
+
+# Wdutil
+WDUTIL_PASSWORD=
+
+# XSOAR
+XSOAR_FQDN=
+XSOAR_API_KEY=
+XSOAR_API_KEY_ID=

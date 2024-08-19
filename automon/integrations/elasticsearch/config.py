@@ -1,11 +1,13 @@
 import os
-import logging
 
-from automon.log import Logging
+from automon import log
 from automon.helpers.sanitation import Sanitation as S
 
-logging.getLogger('elasticsearch').setLevel(logging.ERROR)
-logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
+
+log.logging.getLogger('elasticsearch').setLevel(log.logging.ERROR)
+log.logging.getLogger('urllib3.connectionpool').setLevel(log.logging.ERROR)
 
 
 class ElasticsearchConfig:
@@ -19,13 +21,9 @@ class ElasticsearchConfig:
                  api_key_secret: str = None,
                  request_timeout: int = 1,
                  http_auth: tuple = None,
-                 use_ssl: bool = True,
                  verify_certs: bool = True,
-                 connection_class: object = None,
                  proxy=None):
         """elasticsearch config"""
-
-        self._log = Logging(ElasticsearchConfig.__name__, Logging.DEBUG)
 
         # hosts
         self.ELASTICSEARCH_HOST = host or os.getenv('ELASTICSEARCH_HOSTS')
@@ -46,9 +44,7 @@ class ElasticsearchConfig:
         self.ELASTICSEARCH_PROXY = proxy or os.getenv('ELASTICSEARCH_PROXY')
         self.ELASTICSEARCH_REQUEST_TIMEOUT = request_timeout or os.getenv('ELASTICSEARCH_REQUEST_TIMEOUT')
         self.request_timeout = self.ELASTICSEARCH_REQUEST_TIMEOUT
-        self.use_ssl = use_ssl
         self.verify_certs = verify_certs
-        self.connection_class = connection_class
 
         if self.ELASTICSEARCH_USER and self.ELASTICSEARCH_PASSWORD:
             self.http_auth = (self.ELASTICSEARCH_USER, self.ELASTICSEARCH_PASSWORD)
@@ -60,7 +56,7 @@ class ElasticsearchConfig:
 
     def __eq__(self, other):
         if not isinstance(other, ElasticsearchConfig):
-            self._log.warn(f'Not implemented')
+            logger.warning(f'Not implemented')
             return NotImplemented
 
         return self.ELASTICSEARCH_HOST == other.ELASTICSEARCH_HOST

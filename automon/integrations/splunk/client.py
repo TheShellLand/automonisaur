@@ -4,11 +4,12 @@ from queue import Queue
 import splunklib.results
 import splunklib.client
 
-from automon.log import Logging
+from automon import log
 from automon.integrations.splunk.config import SplunkConfig
 from automon.integrations.splunk.helpers import Job, Application
 
-log = Logging(name='SplunkClient', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class SplunkRestClient:
@@ -57,7 +58,7 @@ class SplunkClient(object):
                 self.client
                 return func(self, *args, **kwargs)
             except Exception as e:
-                log.error(f'not connected. {e}', enable_traceback=False)
+                logger.error(f'not connected. {e}')
             return False
 
         return wrapped

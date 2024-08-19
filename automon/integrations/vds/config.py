@@ -1,6 +1,9 @@
 import os
 
-from automon.log import Logging
+from automon import log
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.ERROR)
 
 
 class VdsConfig(object):
@@ -30,9 +33,7 @@ class VdsConfig(object):
 
         self.uri = f'{self.prot}://{self.server}:{self.port}/{self.path}'
 
-        self._log = Logging(name=VdsConfig.__name__, level=Logging.ERROR)
-
-        [self._log.debug(f'config: {x}') for x in self.__dict__.items()]
+        [logger.debug(f'config: {x}') for x in self.__dict__.items()]
 
     def __repr__(self):
         return f'{self.prot}://{self.server}:{self.port} ({self.bind_user}) ({self.basedn})'

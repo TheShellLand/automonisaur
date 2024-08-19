@@ -1,8 +1,10 @@
-from automon import Logging
+from automon import log
 from ..config import SplunkSoarConfig
 
 config = SplunkSoarConfig()
-log = Logging(name='Urls', level=Logging.DEBUG)
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Urls:
@@ -21,9 +23,19 @@ class Urls:
     ASSET = f'{REST}/asset'
     CLUSTER_NODE = f'{REST}/cluster_node'
     CONTAINER = f'{REST}/container'
+    CONTAINER_ATTACHMENT = f'{REST}/container_attachment'
     PLAYBOOK = f'{REST}/playbook'
     PLAYBOOK_RUN = f'{REST}/playbook_run'
     VAULT = f'{REST}/vault_document'
+    VAULT_ADD = f'{REST}/vault_add'
+    VAULT_DELETE = f'{REST}/vault_delete'
+    VAULT_INFO = f'{REST}/vault_info'
+
+    GENERIC = f'{REST}/'
+
+    @classmethod
+    def generic(cls, api: str, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.GENERIC}{api}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
     @classmethod
     def action_run(cls, identifier: int = None, detail: str = None, *args, **kwargs):
@@ -48,6 +60,10 @@ class Urls:
     @classmethod
     def container(cls, identifier: int = None, detail: str = None, *args, **kwargs):
         return f'{cls.CONTAINER}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
+
+    @classmethod
+    def container_attachment(cls, identifier: int = None, detail: str = None, *args, **kwargs):
+        return f'{cls.CONTAINER_ATTACHMENT}{cls.query(identifier=identifier, detail=detail, *args, **kwargs)}'
 
     @classmethod
     def cluster_node(cls, identifier: int = None, detail: str = None, *args, **kwargs):
@@ -270,10 +286,10 @@ class Urls:
             order=order, **kwargs
         )
 
-        if identifier:
+        if identifier is not None:
             query += f'/{identifier}'
 
-        if detail:
+        if detail is not None:
             query += f'/{detail}'
 
         if params:
@@ -284,3 +300,15 @@ class Urls:
     @classmethod
     def vault(cls, identifier: int = None, *args, **kwargs):
         return f'{cls.VAULT}{cls.query(identifier=identifier, *args, **kwargs)}'
+
+    @classmethod
+    def vault_add(cls, identifier: int = None, *args, **kwargs):
+        return f'{cls.VAULT_ADD}{cls.query(identifier=identifier, *args, **kwargs)}'
+
+    @classmethod
+    def vault_delete(cls, identifier: int = None, *args, **kwargs):
+        return f'{cls.VAULT_DELETE}{cls.query(identifier=identifier, *args, **kwargs)}'
+
+    @classmethod
+    def vault_info(cls, identifier: int = None, *args, **kwargs):
+        return f'{cls.VAULT_INFO}{cls.query(identifier=identifier, *args, **kwargs)}'

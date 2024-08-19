@@ -1,10 +1,12 @@
 import pandas
 
-from automon.log import Logging
+from automon import log
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 def DataFrame(*args, **kwargs) -> pandas.DataFrame:
-    log = Logging('DataFrame', level=Logging.ERROR)
     df = pandas.DataFrame(*args, **kwargs)
-    log.debug(df)
+    logger.debug(df)
     return df

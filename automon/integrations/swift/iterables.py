@@ -2,12 +2,14 @@ import re
 
 from swiftclient.service import SwiftService, SwiftError, ClientException
 
-from automon.log import Logging
+from automon import log
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class SwiftItem(object):
     def __init__(self, item: dict):
-        self._log = Logging(SwiftItem.__name__, Logging.DEBUG)
         self._item = item
         self._dict = item
 
@@ -48,7 +50,6 @@ class SwiftItem(object):
 
 class SwiftPage(SwiftService):
     def __init__(self, page: dict) -> SwiftService.list:
-        self._log = Logging(SwiftPage.__name__, Logging.ERROR)
 
         self._page = page
 
@@ -62,11 +63,11 @@ class SwiftPage(SwiftService):
         self.error_timestamp = self._page.get('error_timestamp')
 
         if self.error == ClientException:
-            self._log.error(f'{SwiftPage.__name__} {self.success} {self.error}')
+            logger.error(f'{SwiftPage.__name__} {self.success} {self.error}')
 
         if self.success:
             self.listing = self._page.get('listing')
-            self._log.debug(f'{SwiftPage.__name__} {self.success} {self.listing}')
+            logger.debug(f'{SwiftPage.__name__} {self.success} {self.listing}')
         else:
             self.listing = []
 
@@ -85,7 +86,7 @@ class SwiftPage(SwiftService):
 
     def _error_handler(self):
         if not self.success and isinstance(self.error, Exception):
-            self._log.error(f'{SwiftError(self._page)}')
+            logger.error(f'{SwiftError(self._page)}')
 
     def list_gen(self) -> object or SwiftItem:
         if self.success:
@@ -105,7 +106,6 @@ class SwiftList(SwiftService):
         see documentation
         """
 
-        self._log = Logging(SwiftList.__name__, Logging.DEBUG)
         self.container = container
 
     def list_gen(self) -> object or SwiftPage:
@@ -119,7 +119,7 @@ class SwiftList(SwiftService):
                         if page["success"]:
                             yield SwiftPage(page)
                         else:
-                            self._log.error(f'{page["error"]}')
+                            logger.error(f'{page["error"]}')
 
             except Exception as e:
-                self._log.error(f'page failed, {e}')
+                logger.error(f'page failed, {e}')

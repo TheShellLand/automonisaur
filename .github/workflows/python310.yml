@@ -1,0 +1,44 @@
+name: 3.10
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  #IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: theshellland/automonisaur
+
+  PKG: automon
+  PYPI: automonisaur
+  TWINE_REPOSITORY: https://upload.pypi.org/legacy/
+  TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
+  TWINE_USERNAME: __token__
+  TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+
+jobs:
+
+  unittest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install python packages
+        run: pip3 install -r requirements.txt
+      - name: install chrome and chromedriver
+        run: /bin/bash docker/install.sh
+      - name: Run tests
+        run: /bin/bash test.sh
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}

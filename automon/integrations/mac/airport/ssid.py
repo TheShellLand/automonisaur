@@ -1,6 +1,7 @@
-from automon.log import Logging
+from automon import log
 
-log = Logging(name='Ssid', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Ssid:
@@ -36,7 +37,7 @@ class Ssid:
         self.SSID = self.SSID_STR
         self.WPS_STATE = self.IE_KEY_WPS_SC_STATE
 
-        log.debug(f'{self.summary}')
+        self.summary
 
     def __repr__(self):
         return f'{self.summary}'
@@ -51,9 +52,12 @@ class Ssid:
 
     @property
     def summary(self):
-        return f'[rssi: {self.DISTANCE} dBm] ' \
-               f'{self.SSID} ' \
-               f'[ch: {self.CHANNEL}] ' \
-               f'[bssid: {self.MAC}] ' \
-               f'[noise: {self.NOISE}] ' \
-               f'[age: {self.AGE}] '
+        summary = f'[rssi: {self.DISTANCE} dBm] ' \
+                  f'{self.SSID} ' \
+                  f'[ch: {self.CHANNEL}] ' \
+                  f'[bssid: {self.MAC}] ' \
+                  f'[noise: {self.NOISE}] ' \
+                  f'[age: {self.AGE}] '
+
+        logger.debug(f'{summary}')
+        return summary

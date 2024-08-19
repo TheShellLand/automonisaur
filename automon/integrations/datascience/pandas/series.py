@@ -1,10 +1,12 @@
 import pandas
 
-from automon import Logging
+from automon import log
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 def Series(*args, **kwargs) -> pandas.Series:
-    log = Logging('Series', level=Logging.ERROR)
     s = pandas.Series(*args, **kwargs)
-    log.debug(s)
+    logger.debug(s)
     return s

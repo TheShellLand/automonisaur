@@ -1,9 +1,11 @@
 import re
 from ast import literal_eval
 
-from automon.log import Logging
+from automon import log
 
-log = Logging(__name__, Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
+
 
 
 def make_tuple(obj: str) -> tuple:

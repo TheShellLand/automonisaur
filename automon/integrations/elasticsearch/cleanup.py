@@ -1,7 +1,8 @@
-from automon.log import Logging
+from automon import log
 from automon.integrations.elasticsearch.client import ElasticsearchClient
 
-log = Logging(__name__, Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Cleanup:

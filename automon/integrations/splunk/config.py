@@ -1,9 +1,10 @@
 import splunklib.binding as binding
 
-from automon.log import Logging
+from automon import log
 from automon.helpers import environ
 
-log = Logging(name='SplunkConfig', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class SplunkConfig:
