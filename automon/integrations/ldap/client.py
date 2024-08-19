@@ -5,7 +5,10 @@ from queue import Queue
 from pandas import DataFrame
 from subprocess import Popen, PIPE
 
-from automon.log import Logging
+from automon import log
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class LdapResult(object):
@@ -26,7 +29,7 @@ class LdapResult(object):
 
 
 class LdapClient(object):
-    def __init__(self, log_level=Logging.INFO, **kwargs):
+    def __init__(self):
         """run ldap commands
 
         :param log_level:
@@ -40,8 +43,6 @@ class LdapClient(object):
 
         self.result = None
         self.results = Queue()
-
-        self._log = Logging(name=LdapClient.__name__, level=log_level, **kwargs)
 
     def __repr__(self) -> str:
         return f'{self.__dict__}'
@@ -64,11 +65,11 @@ class LdapClient(object):
         self.results.put_nowait(self.result)
 
         if not result_ldap.df.empty:
-            # self._log.debug(f'{result_ldap.df.iloc[0]}')
-            self._log.debug(f'FOUND {query} ({self.results.qsize()})')
+            # logger.debug(f'{result_ldap.df.iloc[0]}')
+            logger.debug(f'FOUND {query} ({self.results.qsize()})')
             # print('o', end='', flush=True)
         else:
-            self._log.debug(f'UNKNOWN {query} ({self.results.qsize()})')
+            logger.debug(f'UNKNOWN {query} ({self.results.qsize()})')
             # print('.', end='', flush=True)
 
         return result_ldap

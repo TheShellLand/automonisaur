@@ -1,8 +1,11 @@
 import logging
+import hashlib
 import traceback
 
 from automon.helpers import Dates
 from automon.helpers.markdown import Chat, Format
+
+from .attributes import LogRecordAttribute
 
 TEST = 5
 DEBUG = logging.DEBUG
@@ -12,7 +15,12 @@ ERROR = logging.ERROR
 CRITICAL = logging.CRITICAL
 NOTSET = logging.NOTSET
 
-logging.getLogger('logger').setLevel(CRITICAL)
+logger = logging.getLogger(__name__)
+logger.setLevel(CRITICAL)
+
+
+def log_secret(secret: str) -> str:
+    return len(hashlib.md5(str(secret).encode()).hexdigest()) * '*'
 
 
 class Callback(object):
@@ -21,7 +29,6 @@ class Callback(object):
         """Log to callbacks
         """
 
-        self.log = Logging(name=Callback.__name__, level=Logging.DEBUG)
         self.callbacks = callbacks
 
     def call(self, type: str, msg: str, *args, **kwargs) -> True:
@@ -100,8 +107,10 @@ class Logging(object):
                  encoding: str = 'utf-8',
                  filemode: str = 'a',
                  log_stream: LogStream = False,
+                 log_format: str = None,
                  callbacks: list = None,
-                 timestamp: bool = True, *args, **kwargs):
+                 timestamp: bool = True,
+                 *args, **kwargs):
 
         self.started = Dates.now()
 
@@ -110,26 +119,10 @@ class Logging(object):
 
         self.callbacks = callbacks or []
 
-        spacing = 4
-
-        # logging format
-        time = '%(asctime)s'
-        levelname = '%(levelname)s'
-        logger = '%(name)s'
-        filename = '%(filename)s'
-        pathname = '%(pathname)s'
-        func = '%(funcName)s'
-        line = '%(lineno)d'
-        module = '%(module)s'
-        message = '%(message)s'
-
-        # self.log_format = f'{levelname}\t[{logger}]\t{message}'
-        self.log_format = f'{levelname}\t[{logger}]\t[{filename} {func}:L{line}]\t{message}'
-        # self.log_format = '%(levelname)s\t%(message)s\t%(name)s'
-        # self.log_format = '%(levelname)s\t%(name)s\t%(module)s\t%(message)s'
-
-        if timestamp:
-            self.log_format = f'{time}\t{self.log_format}'
+        if log_format:
+            self.log_format = log_format
+        else:
+            self.log_format = f'{LogRecordAttribute(timestamp=timestamp).levelname().name().funcName().message()}'
 
         logging.basicConfig(level=level, format=self.log_format, **kwargs)
 

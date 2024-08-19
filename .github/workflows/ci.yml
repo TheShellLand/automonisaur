@@ -28,28 +28,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: '3.11'
       - name: Install python packages
         run: pip3 install -r requirements.txt
+      - name: install chrome and chromedriver
+        run: /bin/bash docker/install.sh
       - name: Run tests
         run: /bin/bash test.sh
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SELENIUM_CHROMEDRIVER_PATH: /usr/bin/chromedriver
 
 
   docker-build:
     needs: unittest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
       - name: Build docker
         run: docker build . --tag ${{ env.IMAGE_NAME }}
 
@@ -58,10 +61,10 @@ jobs:
     needs: docker-build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
       - name: Build docker
         run: docker build . --tag ${{ env.IMAGE_NAME }}
       - name: Run tests in docker
@@ -81,7 +84,7 @@ jobs:
     needs: unittest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Upload to pypi
         run: /bin/bash upload.sh --github
@@ -95,7 +98,7 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action

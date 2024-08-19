@@ -1,2 +1,2 @@
-from .client import PeopleClient
-from .config import PeopleConfig
+from .client import GooglePeopleClient
+from .config import GooglePeopleConfig

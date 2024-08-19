@@ -1,20 +1,17 @@
-from automon import Logging
+from automon import log
 
 from .datatypes import AbstractDataType
 
-log = Logging('Artifact', level=Logging.CRITICAL)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.CRITICAL)
 
 
 class Artifact(AbstractDataType):
-    name: str
-    container: int
-    id: int
-
-    def __init__(self, artifact: dict = {}):
-        self.container = None
-        self.id = None
-        self.name = None
-        self.__dict__.update(artifact)
+    name: str = None
+    container: int = None
+    id: int = None
 
     def __repr__(self):
-        return self.name
+        if self.name:
+            return self.name
+        return f'{self.to_dict()}'

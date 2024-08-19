@@ -5,9 +5,12 @@ from datetime import datetime
 from requests.auth import HTTPBasicAuth
 from elasticsearch import Elasticsearch
 
-from automon.log import Logging
+from automon import log
 from .config import ElasticsearchConfig
 from automon.helpers.sanitation import Sanitation
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class ElasticsearchClient(Elasticsearch):
@@ -30,8 +33,6 @@ class ElasticsearchClient(Elasticsearch):
         :param api_key_secret: str
         :param config: class ElasticsearchConfig
         """
-
-        self._log = Logging(ElasticsearchClient.__name__, Logging.DEBUG)
 
         self.config = config or ElasticsearchConfig(
             host=host,
@@ -61,14 +62,13 @@ class ElasticsearchClient(Elasticsearch):
                 api_key=self.config.ELASTICSEARCH_API_KEY,
                 request_timeout=self.config.ELASTICSEARCH_REQUEST_TIMEOUT,
                 http_auth=self.config.http_auth,
-                use_ssl=self.config.use_ssl,
-                verify_certs=self.config.verify_certs,
-                connection_class=self.config.connection_class)
-            self._log.info(f'Connected to elasticsearch: {client}')
+                verify_certs=self.config.verify_certs
+            )
+            logger.info(f'Connected to elasticsearch: {client}')
             return client
 
         except Exception as e:
-            self._log.error(f'Cannot connect to elasticsearch: {self.config.ELASTICSEARCH_HOST}, {e}')
+            logger.error(f'Cannot connect to elasticsearch: {self.config.ELASTICSEARCH_HOST}, {e}')
 
         return False
 
@@ -79,7 +79,7 @@ class ElasticsearchClient(Elasticsearch):
                 if self.client.ping():
                     return True
             except Exception as e:
-                self._log.error(f'{e}', enable_traceback=False)
+                logger.error(f'{e}')
         return False
 
     def create_document(self, doc: dict, index: str = 'default', id: str = None):
@@ -102,10 +102,10 @@ class ElasticsearchClient(Elasticsearch):
             r = self.results
             self.client.indices.refresh(index=index)
             self.success.append({'doc': doc, 'index': index, 'id': id, 'result': r})
-            self._log.debug(f'created document: {index} {id} {doc}')
+            logger.debug(f'created document: {index} {id} {doc}')
             return True
         except Exception as e:
-            self._log.error(f'Create document failed: {e}')
+            logger.error(f'Create document failed: {e}')
             self.errors.append({'index': index, 'doc': doc, 'id': id, 'error': e})
         return False
 
@@ -116,11 +116,11 @@ class ElasticsearchClient(Elasticsearch):
 
                 r = self.results
                 self.success.append({'delete index': index, 'result': r})
-                self._log.debug(f'deleted index: {index}')
+                logger.debug(f'deleted index: {index}')
                 return True
             except Exception as e:
                 self.errors.append({'index': index, 'error': e})
-                self._log.error(f'Delete index failed: {e}')
+                logger.error(f'Delete index failed: {e}')
 
         return False
 
@@ -131,10 +131,10 @@ class ElasticsearchClient(Elasticsearch):
 
                 r = self.results
                 self.success.append({'index': index, 'id': id, 'result': r})
-                self._log.debug(f'deleted document: {index} {id}')
+                logger.debug(f'deleted document: {index} {id}')
                 return True
             except Exception as e:
-                self._log.error(f'Delete document failed: {e}')
+                logger.error(f'Delete document failed: {e}')
                 self.errors.append({'index': index, 'id': id, 'error': e})
 
         return False
@@ -146,19 +146,19 @@ class ElasticsearchClient(Elasticsearch):
 
                 retrieved_indices = self.results
                 self.indices = retrieved_indices
-                self._log.info(f'Retrieved {len(retrieved_indices)} indices')
+                logger.info(f'Retrieved {len(retrieved_indices)} indices')
 
                 for i in retrieved_indices:
                     info = retrieved_indices.get(i)
                     date = int(info.get('settings').get('index').get('creation_date')) / 1000.0
                     date = datetime.fromtimestamp(date).strftime("%A, %B %d, %Y %I:%M:%S")
-                    self._log.debug(f'Index: (created: {date})\t{i}')
+                    logger.debug(f'Index: (created: {date})\t{i}')
 
                 self.success.append({'indices': retrieved_indices})
-                self._log.info(f'indices: {len(retrieved_indices)}')
+                logger.info(f'indices: {len(retrieved_indices)}')
                 return True
             except Exception as e:
-                self._log.error(f'Failed to get indices: {e}')
+                logger.error(f'Failed to get indices: {e}')
                 self.errors.append({'error': e})
 
         return False
@@ -169,7 +169,7 @@ class ElasticsearchClient(Elasticsearch):
             self.results = self.client.info()
             return True
         except Exception as e:
-            self._log.error(f'Failed to get info:{e}')
+            logger.error(f'Failed to get info:{e}')
             self.errors.append({'error': e})
 
         return False
@@ -181,11 +181,11 @@ class ElasticsearchClient(Elasticsearch):
         if self.connected():
             try:
                 self.client.ping()
-                self._log.debug(f'Ping successful')
+                logger.debug(f'Ping successful')
                 return True
             except Exception as e:
                 self.errors.append({'error': e})
-                self._log.error(f'Ping failed: {e}')
+                logger.error(f'Ping failed: {e}')
 
         return False
 
@@ -205,7 +205,7 @@ class ElasticsearchClient(Elasticsearch):
             return r
 
         except Exception as e:
-            self._log.error(f'REST request failed: {e}')
+            logger.error(f'REST request failed: {e}')
             self.errors.append({'url': url, 'error': e})
 
         return False
@@ -220,10 +220,10 @@ class ElasticsearchClient(Elasticsearch):
 
             r = self.results
             self.success.append({'search': search, 'index': index, 'result': r})
-            self._log.debug(f'search :{search} {index}, result {r}')
+            logger.debug(f'search :{search} {index}, result {r}')
             return True
         except Exception as e:
-            self._log.error(f'Search failed: {e}')
+            logger.error(f'Search failed: {e}')
             self.errors.append({'search': search, 'index': index, 'error': e})
         return False
 
@@ -238,7 +238,7 @@ class ElasticsearchClient(Elasticsearch):
             print(f'{hit.get("_source")}')
 
         self.success.append({'result': res})
-        self._log.debug(f'search summary {res}')
+        logger.debug(f'search summary {res}')
 
         return True
 
@@ -252,13 +252,13 @@ class ElasticsearchClient(Elasticsearch):
     #     num_indices = len(retrieved_indices)
     #
     #     if not num_indices:
-    #         self._log.debug(f'No indices found')
+    #         logger.debug(f'No indices found')
     #         return False
     #
-    #     self._log.info(f'Search found {num_indices} indices')
+    #     logger.info(f'Search found {num_indices} indices')
     #
     #     for index in retrieved_indices:
-    #         self._log.debug(index)
+    #         logger.debug(index)
     #
     #     # TODO: Find a way to undo index deletions
     #     #       One way could be to rename the indices and store a link to the new
@@ -292,17 +292,17 @@ class ElasticsearchClient(Elasticsearch):
 
                 retrieved_indices = self.results
                 num_indices = len(retrieved_indices)
-                self._log.info(f'Search found {num_indices} indices')
+                logger.info(f'Search found {num_indices} indices')
                 self.success.append({'index pattern': index_pattern, 'result': retrieved_indices})
-                self._log.debug(f'search indices: {index_pattern}')
+                logger.debug(f'search indices: {index_pattern}')
                 return True
 
             except elasticsearch.exceptions.NotFoundError as e:
-                self._log.error(
+                logger.error(
                     f"You provided the index pattern '{index_pattern}', but returned no results")
                 self.errors.append({'index pattern': index_pattern, 'error': e})
             except Exception as e:
-                self._log.error(f'Failed to search indices: {e}')
+                logger.error(f'Failed to search indices: {e}')
                 self.errors.append({'index pattern': index_pattern, 'error': e})
 
         return False

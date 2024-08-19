@@ -1,4 +1,6 @@
 from .dates import Dates
 from .markdown import Chat, Format
-from .os import environ
-from .subprocess import Run
+from .networking import Networking
+from .osWrapper import environ, environ_list
+from .sleeper import Sleeper
+from .subprocessWrapper import Run

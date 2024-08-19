@@ -1,16 +1,18 @@
 import os
 
-from automon.log import Logging
+from automon import log
 from automon.helpers import Run
 from automon.helpers.dates import Dates
 
 from .config import NmapConfig
 from .output import NmapResult
 
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.INFO)
+
 
 class Nmap(object):
     def __init__(self, command: str = None, config: NmapConfig = None, *args, **kwargs):
-        self._log = Logging(name=Nmap.__name__, level=Logging.INFO)
         self._runner = Run()
 
         self.config = config or NmapConfig()
@@ -53,7 +55,7 @@ class Nmap(object):
     def run(self, command: str, output: bool = True, cleanup: bool = True, **kwargs) -> bool:
 
         if not self.isReady():
-            self._log.error(enable_traceback=False, msg=f'nmap not found')
+            logger.error(msg=f'nmap not found')
             return False
 
         nmap_command = f'{self.config.nmap} '
@@ -64,9 +66,9 @@ class Nmap(object):
 
         nmap_command += f'{command}'
 
-        self._log.info(f'running {nmap_command}')
+        logger.info(f'running {nmap_command}')
         self._runner.run(nmap_command, **kwargs)
-        self._log.debug(f'finished')
+        logger.debug(f'finished')
 
         self.command = nmap_command
         self._stdout = self._runner.stdout
@@ -80,10 +82,10 @@ class Nmap(object):
 
             if cleanup:
                 os.remove(self.output_file)
-                self._log.info(f'deleted {self.output_file}')
+                logger.info(f'deleted {self.output_file}')
 
         if self._stderr:
-            self._log.error(enable_traceback=False, msg=f'{self._stderr.decode()}')
+            logger.error(msg=f'{self._stderr.decode()}')
             return False
 
         return True

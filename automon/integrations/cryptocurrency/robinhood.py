@@ -1,10 +1,12 @@
-from automon.log import Logging
+from automon import log
 from automon.integrations.datascience import Pandas
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Robinhood:
     def __init__(self, csv):
-        self._log = Logging(name=Robinhood.__name__, level=Logging.DEBUG)
 
         self.csv = None
         self.df = None
@@ -13,7 +15,7 @@ class Robinhood:
 
         r = RobinhoodCSV(csv)
         if r.matches:
-            self._log.info(f'matched {r}')
+            logger.info(f'matched {r}')
             self.is_match = True
             self.csv = csv
             self.df = r.df
@@ -39,14 +41,13 @@ class RobinhoodCSV:
         ASSET NAME,RECEIVED DATE,COST BASIS(USD),DATE SOLD,PROCEEDS
 
         """
-        self._log = Logging(name=RobinhoodCSV.__name__, level=Logging.DEBUG)
 
         self.csv = csv
         self.df = None
         self.matches = None
 
         if 'Provider: Robinhood Crypto LLC' in Pandas().read_csv(csv):
-            self._log.debug(f'matched {csv}')
+            logger.debug(f'matched {csv}')
             self.matches = True
 
             with open(csv) as f:
@@ -60,7 +61,18 @@ class RobinhoodCSV:
     def __eq__(self, other):
         if isinstance(other, RobinhoodCSV):
             if self.df == other.df:
-                self._log.debug(f'same {other}')
+                logger.debug(f'same {other}')
                 return True
-            self._log.debug(f'different {other}')
+            logger.debug(f'different {other}')
         return False
+
+
+class RobinhoodAPI(object):
+    summary = 'https://status.robinhood.com/api/v2/summary.json'
+    status = 'https://status.robinhood.com/api/v2/status.json'
+    components = 'https://status.robinhood.com/api/v2/components.json'
+    incidents_unresolved = 'https://status.robinhood.com/api/v2/incidents/unresolved.json'
+    incidents_all = 'https://status.robinhood.com/api/v2/incidents.json'
+    scheduled_maintenance_upcoming = 'https://status.robinhood.com/api/v2/scheduled-maintenances/upcoming.json'
+    scheduled_maintenance_active = 'https://status.robinhood.com/api/v2/scheduled-maintenances/active.json'
+    scheduled_maintenance_all = 'https://status.robinhood.com/api/v2/scheduled-maintenances.json'

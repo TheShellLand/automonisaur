@@ -1,19 +1,19 @@
 import os
 
-from automon.log import Logging
+from automon import log
 
-log = Logging(__name__, Logging.ERROR)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.ERROR)
 
 
 class ShodanConfig:
     token = os.getenv('SHODAN_API')
 
     def __init__(self):
-        self._log = Logging(ShodanConfig.__name__, Logging.ERROR)
         self.token = os.getenv('SHODAN_API')
 
         if not self.token:
-            self._log.error(f'Missing SHODAN_API')
+            logger.error(f'Missing SHODAN_API')
 
 
 class Shodan:

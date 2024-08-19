@@ -3,9 +3,10 @@ import datetime
 
 from dateutil import parser
 
-from automon import Logging
+from automon import log
 
-log = Logging('AbstractDataType', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class AbstractDataType:

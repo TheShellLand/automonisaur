@@ -1,10 +1,12 @@
-from automon.log import Logging
+from automon import log
 from automon.integrations.datascience import Pandas
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Coinbase:
     def __init__(self, csv):
-        self._log = Logging(name=Coinbase.__name__, level=Logging.DEBUG)
 
         self.csv = None
         self.df = None

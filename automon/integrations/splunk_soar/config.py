@@ -1,7 +1,8 @@
-from automon import Logging
-from automon.helpers.os import environ
+from automon import log
+from automon.helpers.osWrapper import environ
 
-log = Logging(name='SplunkSoarConfig', level=Logging.DEBUG)
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class SplunkSoarConfig:
@@ -19,14 +20,12 @@ class SplunkSoarConfig:
 
         self.headers = {'ph-auth-token': self.auth_token}
 
-        if not self.host:
-            log.warn(f'missing SPLUNK_SOAR_HOST')
-
     def __repr__(self):
         return f'{self.__dict__}'
 
-    def isReady(self) -> bool:
+    @property
+    def is_ready(self) -> bool:
         if self.host:
             return True
-        log.warn(f'bad config')
+        logger.error(f'missing SPLUNK_SOAR_HOST')
         return False

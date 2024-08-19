@@ -4,16 +4,18 @@ import pandas
 from io import StringIO
 from time import time as epoch_time
 
-from automon import Logging
+from automon import log
 
 from .series import Series
 from .dataframe import DataFrame
+
+logger = log.logging.getLogger(__name__)
+logger.setLevel(log.DEBUG)
 
 
 class Pandas:
 
     def __init__(self):
-        self._log = Logging(name=Pandas.__name__, level=Logging.DEBUG)
 
         self.df = None
         self.csv_name = None
@@ -31,14 +33,14 @@ class Pandas:
             self.csv_name = file
 
         self.df = pandas.read_csv(file, delimiter=delimiter, **kwargs)
-        self._log.info(f'imported {file}')
+        logger.info(f'imported {file}')
         return self.df
 
     def csv_from_string(self, csv, delimiter: str = None, **kwargs) -> pandas.read_csv:
         """read csv from string"""
 
         self.df = self.read_csv(StringIO(csv), delimiter=delimiter, **kwargs)
-        self._log.info(f'imported csv string {len(csv) / 1024 / 1024} MB')
+        logger.info(f'imported csv string {len(csv) / 1024 / 1024} MB')
         return self.df
 
     def export_csv(self, file: str = None, overwrite: bool = False,
