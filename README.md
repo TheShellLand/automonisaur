@@ -41,7 +41,7 @@ Github issues and feature requests welcomed.
 | API             | flask                                                       |
 | Chat            | slack                                                       |
 | Data Scraping   | beautifulsoup<br/>facebook groups<br/>instagram<br/>scrapy  |
-| Databases       | elasticsearch<br/>neo4j<br/>splunk                          |
+| Databases       | elasticsearch<br/>neo4j<br/>splunk<br/>pass                 |
 | Data Store      | minio<br/>swift                                             |
 | Devices         | snmp                                                        |
 | Google Cloud    | google auth api<br/>google people api<br/>google sheets api |
