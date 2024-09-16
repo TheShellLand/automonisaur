@@ -1,5 +1,5 @@
 import unittest
-import asyncio
+
 
 from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
@@ -13,10 +13,10 @@ browser.config.webdriver_wrapper.set_user_agent(agent)
 
 
 class SeleniumClientTest(unittest.TestCase):
-    if asyncio.run(browser.run()):
+    if browser.run():
         def test_user_agent(self):
             self.assertEqual(browser.user_agent, agent)
-            asyncio.run(browser.quit())
+            browser.quit()
 
 
 if __name__ == '__main__':

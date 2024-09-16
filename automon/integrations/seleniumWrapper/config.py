@@ -39,19 +39,19 @@ class SeleniumConfig(object):
         logger.debug(f'cookies_file :: {self._cookies_file}')
         return self._cookies_file
 
-    async def run(self):
+    def run(self):
         """run webdriver"""
         logger.debug(f'webdriver :: config :: run')
-        run = await self.webdriver_wrapper.run()
+        run = self.webdriver_wrapper.run()
         self._webdriver = self.webdriver_wrapper.webdriver
         logger.debug(f'webdriver :: config :: run :: {self.webdriver=}')
         logger.info(f'webdriver :: config :: run :: done')
         return run
 
-    async def start(self):
+    def start(self):
         """alias to run"""
-        return await self.run()
+        return self.run()
 
-    async def quit(self):
+    def quit(self):
         """quit webdriver"""
         return

@@ -1,5 +1,5 @@
 import unittest
-import asyncio
+
 
 from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
@@ -9,9 +9,9 @@ browser.config.webdriver_wrapper.enable_defaults().enable_headless()
 
 
 class SeleniumClientTest(unittest.TestCase):
-    if asyncio.run(browser.run()):
+    if browser.run():
         def test(self):
-            self.assertTrue(asyncio.run(browser.quit()))
+            self.assertTrue(browser.quit())
 
 
 if __name__ == '__main__':

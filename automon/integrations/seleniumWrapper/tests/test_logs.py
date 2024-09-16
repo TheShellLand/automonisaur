@@ -1,5 +1,5 @@
 import unittest
-import asyncio
+
 
 from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
@@ -9,19 +9,19 @@ browser.config.webdriver_wrapper.enable_defaults().enable_headless()
 
 
 class SeleniumClientTest(unittest.TestCase):
-    if asyncio.run(browser.run()):
+    if browser.run():
 
         def test_logs(self):
 
-            if asyncio.run(browser.get('http://binance.com')):
-                logs = asyncio.run(browser.get_log_performance())
-                logs = asyncio.run(browser.get_log_browser())
-                logs = asyncio.run(browser.get_log_driver())
-                logs = asyncio.run(browser.get_logs())
+            if browser.get('http://binance.com'):
+                logs = browser.get_log_performance()
+                logs = browser.get_log_browser()
+                logs = browser.get_log_driver()
+                logs = browser.get_logs()
 
                 pass
 
-            asyncio.run(browser.quit())
+            browser.quit()
 
 
 if __name__ == '__main__':

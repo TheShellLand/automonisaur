@@ -1,5 +1,5 @@
 import unittest
-import asyncio
+
 
 from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
@@ -9,17 +9,17 @@ browser.config.webdriver_wrapper.enable_defaults().enable_headless()
 
 
 class SeleniumClientTest(unittest.TestCase):
-    if asyncio.run(browser.run()):
+    if browser.run():
 
         def test(self):
 
-            if asyncio.run(browser.get('http://1.1.1.1')):
+            if browser.get('http://1.1.1.1'):
 
-                if asyncio.run(browser.check_page_load_finished()):
-                    self.assertTrue(asyncio.run(browser.save_screenshot()))
-                    self.assertTrue(asyncio.run(browser.save_screenshot(folder='./')))
+                if browser.check_page_load_finished():
+                    self.assertTrue(browser.save_screenshot())
+                    self.assertTrue(browser.save_screenshot(folder='./'))
 
-            asyncio.run(browser.quit())
+            browser.quit()
 
 
 if __name__ == '__main__':

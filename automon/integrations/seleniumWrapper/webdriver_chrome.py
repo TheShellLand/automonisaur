@@ -176,7 +176,7 @@ class ChromeWrapper(object):
         )))
         return self
 
-    async def close(self):
+    def close(self):
         """close
 
         """
@@ -295,7 +295,7 @@ class ChromeWrapper(object):
         self.disable_sandbox()
         return self
 
-    async def run(self) -> bool:
+    def run(self) -> bool:
         try:
             self.update_paths(self.chromedriver_path)
 
@@ -322,7 +322,7 @@ class ChromeWrapper(object):
         except Exception as exception:
             raise Exception(f'webdriver :: chrome :: run :: failed :: {exception}')
 
-    async def set_chromedriver(self, chromedriver_path: str):
+    def set_chromedriver(self, chromedriver_path: str):
         logger.debug(f'{chromedriver_path}')
         self._chromedriver_path.append(chromedriver_path)
         self.update_paths(chromedriver_path)
@@ -361,13 +361,13 @@ class ChromeWrapper(object):
         logger.info(f'webdriver :: chrome :: set_window_size :: {width=} {height=}')
         return self
 
-    async def start(self):
+    def start(self):
         """alias to run
 
         """
         return self.run()
 
-    async def stop_client(self):
+    def stop_client(self):
         """stop client
 
         """
@@ -392,7 +392,7 @@ class ChromeWrapper(object):
         logger.error(f'update_paths :: failed :: {path} not found')
         return False
 
-    async def quit(self):
+    def quit(self):
         """quit
 
         """
@@ -400,14 +400,14 @@ class ChromeWrapper(object):
         logger.info(f'{result}')
         return result
 
-    async def quit_gracefully(self):
+    def quit_gracefully(self):
         """gracefully quit webdriver
 
         """
         try:
-            await self.close()
-            await self.quit()
-            await self.stop_client()
+            self.close()
+            self.quit()
+            self.stop_client()
         except Exception as error:
             logger.error(f'failed to gracefully quit. {error}')
             return False
