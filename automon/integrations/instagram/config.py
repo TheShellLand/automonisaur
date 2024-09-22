@@ -30,7 +30,7 @@ class InstagramConfig(object):
             logger.error(f'missing INSTAGRAM_PASSWORD')
         return self._password
 
-    async def is_ready(self):
+    def is_ready(self) -> bool:
         if self.login and self.password:
             return True
-        raise Exception(f'not configured')
+        return False

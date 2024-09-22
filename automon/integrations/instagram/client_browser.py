@@ -127,17 +127,17 @@ class InstagramBrowserClient:
             logger.debug('[_next_story] no more stories')
             raise Exception
 
-    async def remove_save_login(self):
+    def remove_save_login(self):
         """check for "save your login info" dialogue"""
         try:
-            await self.browser.wait_for_anything(
+            self.browser.wait_for_anything(
                 by=self.browser.by.TAG_NAME,
                 value='Save your login info?',
                 timeout=60,
                 contains=False,
                 return_first=True,
             )
-            remove_save_login = await self.browser.wait_for_anything(
+            remove_save_login = self.browser.wait_for_anything(
                 by=self.browser.by.TAG_NAME,
                 value='Not now',
                 contains=False,
@@ -148,16 +148,16 @@ class InstagramBrowserClient:
                                  if x.text == 'Not now']
 
             if remove_save_login:
-                await self.browser.save_screenshot(folder='.')
-                await self.browser.action_click(remove_save_login[0])
+                self.browser.save_screenshot(folder='.')
+                self.browser.action_click(remove_save_login[0])
 
         except:
             return False
 
-    async def remove_notifications(self):
+    def remove_notifications(self):
         """check for "notifications" dialogue"""
         try:
-            remove_notifications = await self.browser.wait_for_elements(
+            remove_notifications = self.browser.wait_for_elements(
                 by=self.browser.by.TAG_NAME,
                 value='span',
                 timeout=60)
@@ -169,7 +169,7 @@ class InstagramBrowserClient:
             if not remove_notifications:
                 return False
 
-            remove_notifications = await self.browser.wait_for_elements(
+            remove_notifications = self.browser.wait_for_elements(
                 by=self.browser.by.TAG_NAME,
                 value='button',
                 timeout=60)
@@ -179,18 +179,18 @@ class InstagramBrowserClient:
                 if x.text == 'Not Now']
 
             if remove_notifications:
-                await self.browser.action_click(remove_notifications[0])
+                self.browser.action_click(remove_notifications[0])
 
         except Exception as error:
             return False
 
-    async def run_stories(self, limit=None):
+    def run_stories(self, limit=None):
         """Run
         """
 
         logger.debug('[login] {}'.format(self.login))
 
-        self.authenticated_browser = await self.authenticate()
+        self.authenticated_browser = self.authenticate()
 
         # if self.authenticated_browser:
         #
@@ -214,46 +214,46 @@ class InstagramBrowserClient:
         #     Sleeper.hour('instagram')
         #     self.run_stories()
 
-    async def authenticate(self):
+    def authenticate(self):
         """Authenticate to Instagram
         """
 
-        await self.browser.get(self.urls.login_page)
+        self.browser.get(self.urls.login_page)
 
         # user
-        login_user = await self.browser.wait_for_elements(
+        login_user = self.browser.wait_for_elements(
             by=self.browser.by.TAG_NAME, value='input', timeout=60)
         login_user = [x for x in login_user if x.accessible_name == 'Phone number, username, or email'][0]
-        await self.browser.action_click(login_user)
-        await self.browser.action_type(self.login, secret=True)
+        self.browser.action_click(login_user)
+        self.browser.action_type(self.login, secret=True)
 
         # password
-        login_pass = await self.browser.find_elements(by=self.browser.by.TAG_NAME, value='input')
+        login_pass = self.browser.find_elements(by=self.browser.by.TAG_NAME, value='input')
         login_pass = [x for x in login_pass if x.accessible_name == 'Password'][0]
-        await self.browser.action_click(login_pass)
-        await self.browser.action_type(self.config.password, secret=True)
-        await self.browser.action_type(self.browser.keys.ENTER)
+        self.browser.action_click(login_pass)
+        self.browser.action_type(self.config.password, secret=True)
+        self.browser.action_type(self.browser.keys.ENTER)
 
-        await self.remove_notifications()
-        await self.remove_save_login()
+        self.remove_notifications()
+        self.remove_save_login()
 
-        if await self.is_authenticated():
+        if self.is_authenticated():
             logger.info(f'logged in')
             return True
 
         logger.error(f'login failed')
         return False
 
-    async def get_followers(self, account: str):
+    def get_followers(self, account: str):
         url = self.urls.followers(account)
-        await self.browser.get(url)
+        self.browser.get(url)
 
-    async def is_authenticated(self):
+    def is_authenticated(self):
         try:
-            await self.remove_notifications()
-            await self.browser.get(self.urls.domain)
+            self.remove_notifications()
+            self.browser.get(self.urls.domain)
 
-            is_authenticated = await self.browser.wait_for_elements(
+            is_authenticated = self.browser.wait_for_elements(
                 by=self.browser.by.TAG_NAME,
                 value='img')
 
@@ -270,10 +270,10 @@ class InstagramBrowserClient:
 
         return False
 
-    async def is_ready(self) -> bool:
+    def is_ready(self) -> bool:
         try:
-            if await self.config.is_ready():
-                if await self.browser.is_running():
+            if self.config.is_ready():
+                if self.browser.is_running():
                     return True
         except Exception as error:
             logger.error(error)
@@ -283,19 +283,19 @@ class InstagramBrowserClient:
     def login(self) -> str:
         return self.config.login
 
-    async def start(self):
+    def start(self):
         try:
             self.browser = SeleniumBrowser()
             self.browser.config.webdriver_wrapper = ChromeWrapper()
 
-            self.useragent = await self.browser.get_random_user_agent()
+            self.useragent = self.browser.get_random_user_agent()
 
             if self.headless:
                 self.browser.config.webdriver_wrapper.in_headless().set_user_agent(self.useragent)
             else:
                 self.browser.config.webdriver_wrapper.set_user_agent(self.useragent)
 
-            await self.browser.start()
+            self.browser.start()
 
         except Exception as error:
             logger.error(error)
