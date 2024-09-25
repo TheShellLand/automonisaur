@@ -40,19 +40,19 @@ class SentryClient(object):
     def __repr__(self):
         return f'{self.__dict__}'
 
-    async def isConnected(self):
-        if await self.config.is_ready():
+    def isConnected(self):
+        if self.config.is_ready():
             return True
 
-    async def setLevel(self, level):
+    def setLevel(self, level):
         return self.config.setLevel(level)
 
-    async def capture_exception(self, exception):
+    def capture_exception(self, exception):
         if self.isConnected():
             return _capture_exception(exception)
         return False
 
-    async def capture_event(self, message: str, level):
+    def capture_event(self, message: str, level):
         if self.isConnected():
             return _capture_event(dict(
                 message=message,
@@ -60,30 +60,30 @@ class SentryClient(object):
             ))
         return False
 
-    async def capture_message(self, message):
-        if await self.isConnected():
+    def capture_message(self, message):
+        if self.isConnected():
             return _capture_message(message)
         return False
 
-    async def error(self, msg: str):
-        await self.setLevel('error')
-        return await self.capture_message(f'{msg}')
+    def error(self, msg: str):
+        self.setLevel('error')
+        return self.capture_message(f'{msg}')
 
-    async def warning(self, msg: str):
-        await self.setLevel('warning')
-        return await self.capture_message(f'{msg}')
+    def warning(self, msg: str):
+        self.setLevel('warning')
+        return self.capture_message(f'{msg}')
 
-    async def warn(self, msg: str):
+    def warn(self, msg: str):
         return self.warning(msg=msg)
 
-    async def info(self, msg: str):
-        await self.setLevel('info')
-        return await self.capture_message(f'{msg}')
+    def info(self, msg: str):
+        self.setLevel('info')
+        return self.capture_message(f'{msg}')
 
-    async def debug(self, msg: str):
-        await self.setLevel('debug')
-        return await self.capture_message(f'{msg}')
+    def debug(self, msg: str):
+        self.setLevel('debug')
+        return self.capture_message(f'{msg}')
 
-    async def critical(self, msg: str):
-        await self.setLevel('critical')
-        return await self.capture_message(f'{msg}')
+    def critical(self, msg: str):
+        self.setLevel('critical')
+        return self.capture_message(f'{msg}')

@@ -1,5 +1,4 @@
 import unittest
-import asyncio
 
 from automon import log
 from automon.integrations.sentryio.client import SentryClient
@@ -11,7 +10,7 @@ sentry = SentryClient()
 
 class CallbackTest(unittest.TestCase):
 
-    async def test_sentry(self):
+    def test_sentry(self):
         self.assertIsNone(logger.info('test'))
         self.assertIsNone(logger.debug('test'))
         self.assertIsNone(logger.error('test'))

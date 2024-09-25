@@ -1,5 +1,4 @@
 import unittest
-import asyncio
 
 from datetime import datetime
 
@@ -11,11 +10,11 @@ s = SentryClient()
 
 
 class SentryClientTest(unittest.TestCase):
-    async def test_sentry(self):
-        if await s.isConnected():
-            self.assertTrue(asyncio.run(s.capture_exception(Exception(f'test capture_exception'))))
-            self.assertTrue(asyncio.run(s.capture_message(f'test capture_message')))
-            # self.assertTrue(asyncio.run(s.capture_event('test capture_event', 'warning')))
+    def test_sentry(self):
+        if s.isConnected():
+            self.assertTrue(s.capture_exception(Exception(f'test capture_exception')))
+            self.assertTrue(s.capture_message(f'test capture_message'))
+            # self.assertTrue(s.capture_event('test capture_event', 'warning'))
 
 
 if __name__ == '__main__':
