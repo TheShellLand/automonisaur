@@ -29,6 +29,10 @@ class FacebookGroups(object):
 
     _xpath_visible = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[3]/div/div/div[2]/div/div[2]/span/span'
 
+    RATE_PER_MINUTE = 2
+    RATE_COUNTER = []
+    WAIT_BETWEEN_RETRIES = random.choice(range(1, 60))
+
     def __init__(self, url: str = None):
         """Facebook Groups object
 
@@ -36,10 +40,6 @@ class FacebookGroups(object):
         self._url = url
 
         self._browser = SeleniumBrowser()
-
-        self._rate_per_minute = 2
-        self._rate_counter = []
-        self._wait_between_retries = random.choice(range(1, 60))
 
     def content_unavailable(self):
         """This content isn't available right now"""
@@ -73,7 +73,7 @@ class FacebookGroups(object):
             return
 
     def current_rate_too_fast(self):
-        if self.average_rate() == 0 or len(self._rate_counter) < 2:
+        if self.average_rate() == 0 or len(self.RATE_COUNTER) < 2:
             logger.info(f'current_rate_too_fast :: False')
             return False
 
@@ -84,13 +84,13 @@ class FacebookGroups(object):
         return False
 
     def rate_per_minute(self) -> int:
-        rate = int(60 / self._rate_per_minute)
+        rate = int(60 / self.RATE_PER_MINUTE)
         logger.info(f'{rate=} sec')
         return rate
 
     def average_rate(self):
-        if self._rate_counter:
-            rate = int(statistics.mean(self._rate_counter))
+        if self.RATE_COUNTER:
+            rate = int(statistics.mean(self.RATE_COUNTER))
             logger.info(f'{rate=} sec')
             return rate
         return 0
@@ -109,9 +109,7 @@ class FacebookGroups(object):
 
     def temporarily_blocked(self):
         try:
-            text = self._browser.wait_for_anything(
-                self._xpath_temporarily_blocked
-            )
+            text = self._browser.wait_for_xpath(self._xpath_temporarily_blocked)
             text = text.text
             logger.debug(text)
             return text
@@ -159,7 +157,11 @@ class FacebookGroups(object):
     def posts_monthly(self):
 
         try:
-            text = self._browser.wait_for_anything(match='in the last month', value='span', by=self._browser.by.TAG_NAME)
+            text = self._browser.wait_for_anything(
+                match='in the last month',
+                value='span',
+                by=self._browser.by.TAG_NAME
+            )
             text = text.text
             logger.debug(text)
             return text
@@ -287,20 +289,14 @@ class FacebookGroups(object):
         start = datetime.datetime.now().timestamp()
 
         result = self._browser.get(url=url)
-        logger.info(str(dict(
-            url=url,
-            result=result,
-        )))
+        logger.info(f'{url} :: {result}')
         self.screenshot()
 
         end = datetime.datetime.now().timestamp()
         seconds_elapsed = int(end - start)
 
-        logger.info(str(dict(
-            seconds_elapsed=seconds_elapsed,
-            result=result,
-        )))
-        self._rate_counter.append(seconds_elapsed)
+        logger.info(f'{seconds_elapsed=} :: {result=}')
+        self.RATE_COUNTER.append(seconds_elapsed)
 
         return result
 
@@ -313,10 +309,7 @@ class FacebookGroups(object):
         else:
             result = self.get(url=url)
 
-        logger.info(str(dict(
-            url=url,
-            result=result,
-        )))
+        logger.info(f'{url} :: {result=}')
         self.screenshot()
         return result
 
@@ -330,7 +323,7 @@ class FacebookGroups(object):
     ) -> bool:
         """get with rate dynamic limit"""
         if wait_between_retries:
-            self._wait_between_retries = wait_between_retries
+            self.WAIT_BETWEEN_RETRIES = wait_between_retries
 
         result = None
         while retry < retries:
@@ -338,91 +331,83 @@ class FacebookGroups(object):
             if self.rate_limited():
                 self.rate_limit_increase()
 
-                self._rate_counter.append(self._wait_between_retries)
-                Sleeper.seconds(seconds=self._wait_between_retries)
-                logger.error(str(dict(
-                    url=url,
-                    retry=retry,
-                    retries=retries,
-                )))
+                self.RATE_COUNTER.append(self.WAIT_BETWEEN_RETRIES)
+                Sleeper.seconds(seconds=self.WAIT_BETWEEN_RETRIES)
+                logger.error(f'get_with_rate_limiter :: error :: {url} :: {retry=} :: {retries=}')
                 continue
             else:
                 self.rate_limit_decrease()
 
             result = self.get(url=url)
             self.screenshot()
-            logger.info(f'{result}')
+            logger.info(f'get_with_rate_limiter :: {result}')
             return result
 
             retry = retry + 1
 
-        logger.error(f'{url}')
+        logger.error(f'get_with_rate_limiter :: error :: {url}')
         self.screenshot_error()
         return result
 
     def rate_limit_decrease(self, multiplier: int = 0.75):
-        before = self._wait_between_retries
-        self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
+        before = self.WAIT_BETWEEN_RETRIES
+        after = abs(int(self.WAIT_BETWEEN_RETRIES * multiplier))
 
-        if self._wait_between_retries == 0:
-            self._wait_between_retries = 1
+        self.WAIT_BETWEEN_RETRIES = after
 
-        logger.info(str(dict(
-            before=before,
-            after=self._wait_between_retries,
-            multiplier=multiplier,
-        )))
-        return self._wait_between_retries
+        if self.WAIT_BETWEEN_RETRIES == 0:
+            self.WAIT_BETWEEN_RETRIES = 1
+
+        logger.info(f'{before=} :: {after=} :: {multiplier=}')
+        return after
 
     def rate_limit_increase(self, multiplier: int = 2):
-        before = self._wait_between_retries
-        self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
+        before = self.WAIT_BETWEEN_RETRIES
+        after = abs(int(self.WAIT_BETWEEN_RETRIES * multiplier))
 
-        logger.info(str(dict(
-            before=before,
-            after=self._wait_between_retries,
-            multiplier=multiplier,
-        )))
-        return self._wait_between_retries
+        self.WAIT_BETWEEN_RETRIES = after
+
+        logger.info(f'{before=} :: {after=} :: {multiplier=}')
+        return after
 
     def rate_limited(self):
         """rate limit checker"""
         if self.current_rate_too_fast():
-            logger.info(True)
+            logger.info(f'rate_limited :: True')
             self.screenshot()
             return True
 
         if self.temporarily_blocked() or self.must_login():
-            logger.info(True)
+            logger.info(f'rate_limited :: True')
             self.screenshot()
             return True
 
-        logger.error(False)
-        self.screenshot_error()
+        logger.error(f'rate_limited :: False')
+        self.screenshot()
         return False
 
     def run(self):
         """run selenium browser"""
         if self._browser:
-            logger.info(f'{self._browser}')
+            logger.info(f'run :: {self._browser}')
             return self._browser.run()
 
     def reset_rate_counter(self):
-        self._rate_counter = []
-        logger.info(self._rate_counter)
-        return self._rate_counter
+        self.RATE_COUNTER = []
+        logger.info(f'reset_rate_counter :: {self.RATE_COUNTER}')
+        return self.RATE_COUNTER
 
     def restart(self):
         """quit and start new instance of selenium"""
         if self._browser:
             self.quit()
-        logger.info(f'{self._browser}')
+        logger.info(f'restart :: {self._browser}')
         return self.start()
 
     def screenshot(self, filename: str = 'screenshot.png'):
         try:
             screenshot = self._browser.save_screenshot(filename=filename, folder='.')
-            logger.debug(f'{screenshot}')
+            logger.debug(f'screenshot :: {screenshot}')
             return screenshot
         except Exception as error:
             raise Exception(error)
@@ -430,13 +415,13 @@ class FacebookGroups(object):
     def screenshot_error(self):
         """get error screenshot"""
         screenshot = self.screenshot(filename='screenshot-error.png')
-        logger.debug(f'{screenshot}')
+        logger.debug(f'screenshot_error :: {screenshot}')
         return screenshot
 
     def screenshot_success(self):
         """get success screenshot"""
         screenshot = self.screenshot(filename='screenshot-success.png')
-        logger.debug(f'{screenshot}')
+        logger.debug(f'screenshot_success :: {screenshot}')
         return screenshot
 
     def set_url(self, url: str) -> str:
@@ -463,9 +448,7 @@ class FacebookGroups(object):
                 set_user_agent
             )
 
-        logger.info(str(dict(
-            browser=self._browser
-        )))
+        logger.info(f'start :: {self._browser}')
         browser = self._browser.run()
         self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
         return browser
@@ -496,5 +479,5 @@ class FacebookGroups(object):
     def quit(self):
         """quit selenium"""
         if self._browser:
-            logger.info(f'{self._browser}')
+            logger.info(f'quit :: {self._browser}')
             return self._browser.quit()
