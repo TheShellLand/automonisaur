@@ -51,12 +51,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     def creation_date(self):
@@ -69,12 +64,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     def creation_date_timestamp(self):
@@ -84,28 +74,24 @@ class FacebookGroups(object):
 
     def current_rate_too_fast(self):
         if self.average_rate() == 0 or len(self._rate_counter) < 2:
-            logger.info(False)
+            logger.info(f'current_rate_too_fast :: False')
             return False
 
         if self.average_rate() < self.rate_per_minute():
-            logger.info(True)
+            logger.info(f'current_rate_too_fast :: True')
             return True
 
         return False
 
     def rate_per_minute(self) -> int:
         rate = int(60 / self._rate_per_minute)
-        logger.info(str(dict(
-            seconds=rate,
-        )))
+        logger.info(f'{rate=} sec')
         return rate
 
     def average_rate(self):
         if self._rate_counter:
             rate = int(statistics.mean(self._rate_counter))
-            logger.info(str(dict(
-                seconds=rate,
-            )))
+            logger.info(f'{rate=} sec')
             return rate
         return 0
 
@@ -118,12 +104,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     def temporarily_blocked(self):
@@ -136,12 +117,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     def members(self):
@@ -155,12 +131,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     def members_count(self):
@@ -182,12 +153,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     def posts_monthly(self):
@@ -199,12 +165,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     def posts_monthly_count(self):
@@ -227,12 +188,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     def posts_today_count(self):
@@ -255,12 +211,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     def privacy_details(self):
@@ -272,12 +223,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     def title(self) -> str:
@@ -289,12 +235,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     @property
@@ -319,12 +260,7 @@ class FacebookGroups(object):
             return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
-            logger.error(str(dict(
-                url=self.url,
-                message=message,
-                session=session,
-                stacktrace=stacktrace,
-            )))
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
             self.screenshot_error()
 
     @staticmethod
