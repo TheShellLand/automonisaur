@@ -1,5 +1,4 @@
 import random
-import asyncio
 import datetime
 import statistics
 
@@ -82,11 +81,11 @@ class FacebookGroups(object):
         self._rate_counter = []
         self._wait_between_retries = random.choice(range(1, 60))
 
-    async def content_unavailable(self):
+    def content_unavailable(self):
         """This content isn't available right now"""
 
         try:
-            text = await self._browser.wait_for_list(self._xpath_content_unavailable)
+            text = self._browser.wait_for_anything(self._xpath_content_unavailable)
             text = text.text
             logger.debug(text)
             return text
@@ -98,12 +97,12 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
-    async def creation_date(self):
+    def creation_date(self):
 
         try:
-            text = await self._browser.wait_for_list(self._xpath_creation_date)
+            text = self._browser.wait_for_anything(self._xpath_creation_date)
             text = text.text
             logger.debug(text)
             return text
@@ -115,32 +114,32 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
-    async def creation_date_timestamp(self):
-        if await self.creation_date():
+    def creation_date_timestamp(self):
+        if self.creation_date():
             # TODO: convert date to datetime timestamp
             return
 
-    async def current_rate_too_fast(self):
-        if await self.average_rate() == 0 or len(self._rate_counter) < 2:
+    def current_rate_too_fast(self):
+        if self.average_rate() == 0 or len(self._rate_counter) < 2:
             logger.info(False)
             return False
 
-        if await self.average_rate() < await self.rate_per_minute():
+        if self.average_rate() < self.rate_per_minute():
             logger.info(True)
             return True
 
         return False
 
-    async def rate_per_minute(self) -> int:
+    def rate_per_minute(self) -> int:
         rate = int(60 / self._rate_per_minute)
         logger.info(str(dict(
             seconds=rate,
         )))
         return rate
 
-    async def average_rate(self):
+    def average_rate(self):
         if self._rate_counter:
             rate = int(statistics.mean(self._rate_counter))
             logger.info(str(dict(
@@ -149,10 +148,10 @@ class FacebookGroups(object):
             return rate
         return 0
 
-    async def history(self):
+    def history(self):
 
         try:
-            text = await self._browser.wait_for_list(self._xpath_history)
+            text = self._browser.wait_for_anything(self._xpath_history)
             text = text.text
             logger.debug(text)
             return text
@@ -164,11 +163,11 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
-    async def temporarily_blocked(self):
+    def temporarily_blocked(self):
         try:
-            text = await self._browser.wait_for_list(
+            text = self._browser.wait_for_anything(
                 self._xpath_temporarily_blocked
             )
             text = text.text
@@ -182,13 +181,13 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
-    async def members(self):
+    def members(self):
 
         try:
             # TODO: need to clean up string from members and remove bad chars
-            text = await self._browser.wait_for_list(self._xpath_members)
+            text = self._browser.wait_for_anything(self._xpath_members)
             text = text.text
             logger.debug(text)
             return text
@@ -200,12 +199,12 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
-    async def members_count(self):
+    def members_count(self):
 
-        if await self.members():
-            count = [x for x in await self.members()]
+        if self.members():
+            count = [x for x in self.members()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
                 members_count = int(''.join(count)) if count else 0
@@ -213,9 +212,9 @@ class FacebookGroups(object):
                 logger.debug(members_count)
                 return members_count
 
-    async def must_login(self):
+    def must_login(self):
         try:
-            text = await self._browser.wait_for_list(self._xpath_must_login)
+            text = self._browser.wait_for_anything(self._xpath_must_login)
             text = text.text
             logger.debug(text)
             return text
@@ -227,12 +226,12 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
-    async def posts_monthly(self):
+    def posts_monthly(self):
 
         try:
-            text = await self._browser.wait_for_list(self._xpath_posts_monthly)
+            text = self._browser.wait_for_anything(self._xpath_posts_monthly)
             text = text.text
             logger.debug(text)
             return text
@@ -244,12 +243,12 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
-    async def posts_monthly_count(self):
+    def posts_monthly_count(self):
 
-        if await self.posts_monthly():
-            count = [x for x in await self.posts_monthly()]
+        if self.posts_monthly():
+            count = [x for x in self.posts_monthly()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
                 posts_monthly_count = int(''.join(count)) if count else 0
@@ -257,10 +256,10 @@ class FacebookGroups(object):
                 logger.debug(posts_monthly_count)
                 return posts_monthly_count
 
-    async def posts_today(self):
+    def posts_today(self):
 
         try:
-            text = await self._browser.wait_for_list(self._xpath_posts_today)
+            text = self._browser.wait_for_anything(self._xpath_posts_today)
             text = text.text
             logger.debug(text)
             return text
@@ -272,12 +271,12 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
-    async def posts_today_count(self):
+    def posts_today_count(self):
 
-        if await self.posts_today():
-            count = [x for x in await self.posts_today()]
+        if self.posts_today():
+            count = [x for x in self.posts_today()]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
                 posts_today_count = int(''.join(count)) if count else 0
@@ -285,10 +284,10 @@ class FacebookGroups(object):
                 logger.debug(posts_today_count)
                 return posts_today_count
 
-    async def privacy(self):
+    def privacy(self):
 
         try:
-            text = await self._browser.wait_for_list(self._xpath_privacy)
+            text = self._browser.wait_for_anything(self._xpath_privacy)
             text = text.text
             logger.debug(text)
             return text
@@ -300,12 +299,12 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
-    async def privacy_details(self):
+    def privacy_details(self):
 
         try:
-            text = await self._browser.wait_for_list(self._xpath_privacy_details)
+            text = self._browser.wait_for_anything(self._xpath_privacy_details)
             text = text.text
             logger.debug(text)
             return text
@@ -317,12 +316,12 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
-    async def title(self) -> str:
+    def title(self) -> str:
 
         try:
-            text = await self._browser.wait_for_list(self._xpath_title)
+            text = self._browser.wait_for_anything(self._xpath_title)
             text = text.text
             logger.debug(text)
             return text
@@ -334,7 +333,7 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
     @property
     def url(self) -> str:
@@ -349,10 +348,10 @@ class FacebookGroups(object):
             url = url[:-1]
         return url
 
-    async def visible(self) -> str:
+    def visible(self) -> str:
 
         try:
-            text = await self._browser.wait_for_list(self._xpath_visible)
+            text = self._browser.wait_for_anything(self._xpath_visible)
             text = text.text
             logger.debug(text)
             return text
@@ -364,7 +363,7 @@ class FacebookGroups(object):
                 session=session,
                 stacktrace=stacktrace,
             )))
-            await self.screenshot_error()
+            self.screenshot_error()
 
     @staticmethod
     def error_parsing(error, enable_stacktrace: bool = False) -> tuple:
@@ -384,17 +383,17 @@ class FacebookGroups(object):
 
         return message, session, 'disabled'
 
-    async def get(self, url: str) -> bool:
+    def get(self, url: str) -> bool:
         """get url"""
 
         start = datetime.datetime.now().timestamp()
 
-        result = await self._browser.get(url=url)
+        result = self._browser.get(url=url)
         logger.info(str(dict(
             url=url,
             result=result,
         )))
-        await self.screenshot()
+        self.screenshot()
 
         end = datetime.datetime.now().timestamp()
         seconds_elapsed = int(end - start)
@@ -407,23 +406,23 @@ class FacebookGroups(object):
 
         return result
 
-    async def get_about(self, rate_limiting: bool = True):
+    def get_about(self, rate_limiting: bool = True):
         """get about page"""
         url = f'{self.url}/about'
 
         if rate_limiting:
-            result = await self.get_with_rate_limiter(url=url)
+            result = self.get_with_rate_limiter(url=url)
         else:
-            result = await self.get(url=url)
+            result = self.get(url=url)
 
         logger.info(str(dict(
             url=url,
             result=result,
         )))
-        await self.screenshot()
+        self.screenshot()
         return result
 
-    async def get_with_rate_limiter(
+    def get_with_rate_limiter(
             self,
             url: str,
             retry: int = 0,
@@ -438,8 +437,8 @@ class FacebookGroups(object):
         result = None
         while retry < retries:
 
-            if await self.rate_limited():
-                await self.rate_limit_increase()
+            if self.rate_limited():
+                self.rate_limit_increase()
 
                 self._rate_counter.append(self._wait_between_retries)
                 Sleeper.seconds(seconds=self._wait_between_retries)
@@ -450,20 +449,20 @@ class FacebookGroups(object):
                 )))
                 continue
             else:
-                await self.rate_limit_decrease()
+                self.rate_limit_decrease()
 
-            result = await self.get(url=url)
-            await self.screenshot()
+            result = self.get(url=url)
+            self.screenshot()
             logger.info(f'{result}')
             return result
 
             retry = retry + 1
 
         logger.error(f'{url}')
-        await self.screenshot_error()
+        self.screenshot_error()
         return result
 
-    async def rate_limit_decrease(self, multiplier: int = 0.75):
+    def rate_limit_decrease(self, multiplier: int = 0.75):
         before = self._wait_between_retries
         self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
 
@@ -477,7 +476,7 @@ class FacebookGroups(object):
         )))
         return self._wait_between_retries
 
-    async def rate_limit_increase(self, multiplier: int = 2):
+    def rate_limit_increase(self, multiplier: int = 2):
         before = self._wait_between_retries
         self._wait_between_retries = abs(int(self._wait_between_retries * multiplier))
 
@@ -488,66 +487,66 @@ class FacebookGroups(object):
         )))
         return self._wait_between_retries
 
-    async def rate_limited(self):
+    def rate_limited(self):
         """rate limit checker"""
-        if await self.current_rate_too_fast():
+        if self.current_rate_too_fast():
             logger.info(True)
-            await self.screenshot()
+            self.screenshot()
             return True
 
-        if await self.temporarily_blocked() or await self.must_login():
+        if self.temporarily_blocked() or self.must_login():
             logger.info(True)
-            await self.screenshot()
+            self.screenshot()
             return True
 
         logger.error(False)
-        await self.screenshot_error()
+        self.screenshot_error()
         return False
 
-    async def run(self):
+    def run(self):
         """run selenium browser"""
         if self._browser:
             logger.info(f'{self._browser}')
             return self._browser.run()
 
-    async def reset_rate_counter(self):
+    def reset_rate_counter(self):
         self._rate_counter = []
         logger.info(self._rate_counter)
         return self._rate_counter
 
-    async def restart(self):
+    def restart(self):
         """quit and start new instance of selenium"""
         if self._browser:
-            await self.quit()
+            self.quit()
         logger.info(f'{self._browser}')
         return self.start()
 
-    async def screenshot(self, filename: str = 'screenshot.png'):
+    def screenshot(self, filename: str = 'screenshot.png'):
         try:
-            screenshot = await self._browser.save_screenshot(filename=filename, folder='.')
+            screenshot = self._browser.save_screenshot(filename=filename, folder='.')
             logger.debug(f'{screenshot}')
             return screenshot
         except Exception as error:
             raise Exception(error)
 
-    async def screenshot_error(self):
+    def screenshot_error(self):
         """get error screenshot"""
-        screenshot = await self.screenshot(filename='screenshot-error.png')
+        screenshot = self.screenshot(filename='screenshot-error.png')
         logger.debug(f'{screenshot}')
         return screenshot
 
-    async def screenshot_success(self):
+    def screenshot_success(self):
         """get success screenshot"""
-        screenshot = await self.screenshot(filename='screenshot-success.png')
+        screenshot = self.screenshot(filename='screenshot-success.png')
         logger.debug(f'{screenshot}')
         return screenshot
 
-    async def set_url(self, url: str) -> str:
+    def set_url(self, url: str) -> str:
         """set new url"""
         self._url = url
         return self.url
 
-    async def start(self, headless: bool = True, random_user_agent: bool = False, set_user_agent: str = None):
+    def start(self, headless: bool = True, random_user_agent: bool = False, set_user_agent: str = None):
         """start new instance of selenium"""
         self._browser.config.webdriver_wrapper = ChromeWrapper()
 
@@ -559,7 +558,7 @@ class FacebookGroups(object):
 
         if random_user_agent:
             self._browser.config.webdriver_wrapper.set_user_agent(
-                await self._browser.get_random_user_agent()
+                self._browser.get_random_user_agent()
             )
         elif set_user_agent:
             self._browser.config.webdriver_wrapper.set_user_agent(
@@ -569,35 +568,35 @@ class FacebookGroups(object):
         logger.info(str(dict(
             browser=self._browser
         )))
-        browser = await self._browser.run()
+        browser = self._browser.run()
         self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
         return browser
 
-    async def stop(self):
+    def stop(self):
         """alias to quit"""
-        return await self.quit()
+        return self.quit()
 
-    async def to_dict(self):
+    def to_dict(self):
         return dict(
-            content_unavailable=await self.content_unavailable(),
-            creation_date=await self.creation_date(),
-            creation_date_timestamp=await self.creation_date_timestamp(),
-            history=await self.history(),
-            members=await self.members(),
-            members_count=await self.members_count(),
-            posts_monthly=await self.posts_monthly(),
-            posts_monthly_count=await self.posts_monthly_count(),
-            posts_today=await self.posts_today(),
-            posts_today_count=await self.posts_today_count(),
-            privacy=await self.privacy(),
-            privacy_details=await self.privacy_details(),
-            title=await self.title(),
+            content_unavailable=self.content_unavailable(),
+            creation_date=self.creation_date(),
+            creation_date_timestamp=self.creation_date_timestamp(),
+            history=self.history(),
+            members=self.members(),
+            members_count=self.members_count(),
+            posts_monthly=self.posts_monthly(),
+            posts_monthly_count=self.posts_monthly_count(),
+            posts_today=self.posts_today(),
+            posts_today_count=self.posts_today_count(),
+            privacy=self.privacy(),
+            privacy_details=self.privacy_details(),
+            title=self.title(),
             url=self.url,
-            visible=await self.visible(),
+            visible=self.visible(),
         )
 
-    async def quit(self):
+    def quit(self):
         """quit selenium"""
         if self._browser:
             logger.info(f'{self._browser}')
-            return await self._browser.quit()
+            return self._browser.quit()
