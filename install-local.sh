@@ -5,7 +5,7 @@
 cd "$(dirname $0)"; set -xe
 
 python3 -m pip uninstall automonisaur -y
-python3 -m pip install --use-pep517 -e ./
+python3 -m pip install ./
 
 set +x
 
