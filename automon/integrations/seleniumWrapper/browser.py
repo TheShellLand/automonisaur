@@ -236,7 +236,7 @@ class SeleniumBrowser(object):
             return True
 
         except Exception as error:
-            raise Exception(f'action_click :: failed :: {error=}')
+            raise Exception(f'action_click :: failed :: {error=} :: {element=}')
 
     def action_type(
             self,
@@ -256,7 +256,7 @@ class SeleniumBrowser(object):
             return action_type
 
         except Exception as error:
-            raise Exception(f'action_type :: failed :: {error=}')
+            raise Exception(f'action_type :: failed :: {error=} :: {key=}')
 
     def action_type_up(
             self,
@@ -276,7 +276,7 @@ class SeleniumBrowser(object):
             return action_type_up
 
         except Exception as error:
-            raise Exception(f'action_type_up :: failed :: {error=}')
+            raise Exception(f'action_type_up :: failed :: {error=} :: {key=}')
 
     def action_type_down(
             self,
@@ -296,7 +296,7 @@ class SeleniumBrowser(object):
             return action_type_down
 
         except Exception as error:
-            raise Exception(f'action_type_down :: failed :: {error=}')
+            raise Exception(f'action_type_down :: failed :: {error=} :: {key=}')
 
     def add_cookie(self, cookie_dict: dict) -> bool:
         logger.debug(f'add_cookie :: {cookie_dict=}')
@@ -809,6 +809,8 @@ class SeleniumBrowser(object):
             return run
         except Exception as exception:
             logger.error(f'webdriver :: run :: failed :: {exception=}')
+            raise Exception(f'webdriver :: run :: failed :: {exception=}')
+
             return False
 
     def save_cookies_for_current_url(self) -> bool:
@@ -942,12 +944,12 @@ class SeleniumBrowser(object):
                     return find
 
             except Exception as error:
-                logger.error(f'wait_for_anything :: failed :: {error=}')
+                logger.error(f'wait_for_anything :: failed :: {error=} :: {match=} :: {value=} :: {by=}')
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
             logger.debug(f'wait_for_anything :: {timeout_elapsed} seconds elapsed')
 
-        raise ElementNotFoundException(f'wait_for_anything :: failed :: {value=}')
+        raise ElementNotFoundException(f'wait_for_anything :: failed :: {match=} :: {value=} :: {by=}')
 
     def wait_for_element(
             self,
@@ -978,12 +980,12 @@ class SeleniumBrowser(object):
                     return find
 
             except Exception as error:
-                logger.error(f'wait_for_element :: failed :: {error=}')
+                logger.error(f'wait_for_element :: failed :: {error=} :: {value=} :: {by=}')
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
             logger.debug(f'wait_for_element :: {timeout_elapsed} seconds elapsed')
 
-        raise ElementNotFoundException(f'wait_for_element :: failed :: {value=}')
+        raise ElementNotFoundException(f'wait_for_element :: failed :: {value=} :: {by=}')
 
     def wait_for_elements(
             self,
@@ -1014,12 +1016,12 @@ class SeleniumBrowser(object):
                     return find
 
             except Exception as error:
-                logger.error(f'wait_for_elements :: failed :: {error=}')
+                logger.error(f'wait_for_elements :: failed :: {error=} :: {value=} :: {by=}')
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
             logger.debug(f'wait_for_elements :: {timeout_elapsed} seconds elapsed')
 
-        raise ElementNotFoundException(f'wait_for_elements :: failed :: {value=}')
+        raise ElementNotFoundException(f'wait_for_elements :: failed :: {value=} :: {by=}')
 
     def wait_for_id(
             self,
