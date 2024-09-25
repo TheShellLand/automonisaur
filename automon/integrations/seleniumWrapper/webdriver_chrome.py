@@ -316,11 +316,11 @@ class ChromeWrapper(object):
                 return True
 
             self._webdriver = selenium.webdriver.Chrome(options=self.chrome_options)
-            logger.info(f'{self}')
+            logger.info(f'webdriver :: chrome :: run :: {self=}')
 
             return True
         except Exception as exception:
-            raise Exception(f'webdriver :: chrome :: run :: failed :: {exception}')
+            raise Exception(f'webdriver :: chrome :: run :: failed :: {exception=}')
 
     def set_chromedriver(self, chromedriver_path: str):
         logger.debug(f'{chromedriver_path}')

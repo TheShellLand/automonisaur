@@ -809,8 +809,6 @@ class SeleniumBrowser(object):
             return run
         except Exception as exception:
             logger.error(f'webdriver :: run :: failed :: {exception=}')
-            raise Exception(f'webdriver :: run :: failed :: {exception=}')
-
             return False
 
     def save_cookies_for_current_url(self) -> bool:
