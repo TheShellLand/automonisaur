@@ -169,6 +169,7 @@ class SeleniumBrowser(object):
 
     @property
     def url(self):
+        """alias to current_url"""
         return self.current_url
 
     @property
@@ -367,7 +368,8 @@ class SeleniumBrowser(object):
             logger.info(f'add_cookie_from_url :: done')
             return add_cookie_from_url
 
-        raise Exception(f'add_cookie_from_url :: failed :: {cookie_file=}')
+        logger.error(f'add_cookie_from_url :: failed :: file not found :: {cookie_file=}')
+        raise Exception(f'add_cookie_from_url :: failed :: file not found :: {cookie_file=}')
 
     def add_cookie_from_base64(self, base64_str: str) -> bool:
         """add cookie from base64 string"""
@@ -385,14 +387,16 @@ class SeleniumBrowser(object):
 
     def autosave_cookies(self) -> bool:
         """auto save cookies for current url"""
-        logger.debug(f'autosave_cookies')
+        logger.debug(f'autosave_cookies :: {self.current_url=}')
 
         if self.current_url:
-            logger.debug(f'autosave_cookies :: {self.current_url=}')
 
             if not self.autosaved:
                 logger.debug(f'autosave_cookies :: {self.autosaved=}')
-                self.add_cookie_from_current_url()
+                try:
+                    self.add_cookie_from_current_url()
+                except:
+                    logger.debug(f'autosave_cookies :: no cookies for {self.current_url=}')
                 self.refresh()
                 self.autosaved = True
                 logger.debug(f'autosave_cookies :: {self.autosaved=}')
