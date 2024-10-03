@@ -305,13 +305,6 @@ class SeleniumBrowser(object):
         result = self.webdriver.add_cookie(cookie_dict=cookie_dict)
 
         if result is None:
-            logger.debug(dict(
-                domain=cookie_dict.get('domain'),
-                path=cookie_dict.get('path'),
-                secure=cookie_dict.get('secure'),
-                expiry=cookie_dict.get('expiry'),
-                name=cookie_dict.get('name'),
-            ))
             logger.debug(f'add_cookie :: domain :: {cookie_dict.get("domain")}')
             logger.debug(f'add_cookie :: path :: {cookie_dict.get("path")}')
             logger.debug(f'add_cookie :: secure :: {cookie_dict.get("secure")}')
@@ -765,10 +758,7 @@ class SeleniumBrowser(object):
         logger.debug(f'load_cookies_for_current_url :: ')
 
         filename = self._url_filename(url=self.url)
-        logger.debug(dict(
-            load_cookies_for_current_url=filename,
-            url=self.url,
-        ))
+        logger.debug(f'load_cookies_for_current_url :: {filename=} :: {self.url=}')
 
         load_cookies_for_current_url = self.add_cookie_from_file(file=filename)
         logger.info(f'load_cookies_for_current_url :: done')
@@ -916,19 +906,29 @@ class SeleniumBrowser(object):
             **kwargs) -> list:
         """wait for anything"""
         logger.debug(
-            f'wait_for_anything :: {match=} :: {value=} :: {by=} :: {case_sensitive=} :: {exact_match=} :: {timeout=} :: {return_first=} :: {kwargs=}')
+            f'wait_for_anything :: '
+            f'{match=} :: '
+            f'{value=} :: '
+            f'{by=} :: '
+            f'{case_sensitive=} :: '
+            f'{exact_match=} :: '
+            f'{timeout=} :: '
+            f'{return_first=} :: '
+            f'{kwargs=}'
+        )
 
         timeout_start = time.time()
         timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
         while timeout_elapsed < timeout:
 
-            logger.debug(str(dict(
-                timeout=f'{timeout_elapsed}/{timeout}',
-                current_url=self.current_url,
-                value=value,
-                by=by,
-            )))
+            logger.debug(
+                f'wait_for_anything :: '
+                f'timeout {timeout_elapsed}/{timeout} :: '
+                f'{self.current_url=} :: '
+                f'{value=} :: '
+                f'{by=}'
+            )
 
             try:
                 find = self.find_anything(
