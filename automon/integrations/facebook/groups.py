@@ -405,28 +405,29 @@ class FacebookGroups(object):
         return self.start()
 
     def screenshot(self, filename: str = 'screenshot.png'):
-        try:
-            screenshot = self._browser.save_screenshot(filename=filename, folder='.')
-            logger.debug(f'screenshot :: {screenshot}')
-            return screenshot
-        except Exception as error:
-            raise Exception(error)
+        if self._browser.save_screenshot(filename=filename, folder='.'):
+            logger.debug(f'screenshot :: done')
+            return True
+        return False
 
     def screenshot_error(self):
         """get error screenshot"""
-        screenshot = self.screenshot(filename='screenshot-error.png')
-        logger.debug(f'screenshot_error :: {screenshot}')
-        return screenshot
+        if self.screenshot(filename='screenshot-error.png'):
+            logger.debug(f'screenshot_error :: done')
+            return True
+        return False
 
     def screenshot_success(self):
         """get success screenshot"""
-        screenshot = self.screenshot(filename='screenshot-success.png')
-        logger.debug(f'screenshot_success :: {screenshot}')
-        return screenshot
+        if self.screenshot(filename='screenshot-success.png'):
+            logger.debug(f'screenshot_success :: done')
+            return True
+        return False
 
     def set_url(self, url: str) -> str:
         """set new url"""
         self._url = url
+        logger.debug(f'set_url :: {self.url=}')
         return self.url
 
     def start(self, headless: bool = True, random_user_agent: bool = False, set_user_agent: str = None):
