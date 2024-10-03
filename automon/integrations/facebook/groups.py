@@ -57,7 +57,11 @@ class FacebookGroups(object):
     def creation_date(self):
 
         try:
-            text = self._browser.find_anything(match='Created', value='span', by=self._browser.by.TAG_NAME)
+            text = self._browser.find_anything(
+                match='Created',
+                value='span',
+                by=self._browser.by.TAG_NAME
+            )
             text = [x for x in text if '\n' in x.text][0]
             text = text.text.splitlines()[-1]
             logger.debug(text)
@@ -122,7 +126,11 @@ class FacebookGroups(object):
 
         try:
             # TODO: need to clean up string from members and remove bad chars
-            text = self._browser.wait_for_anything(match='total members', value='span', by=self._browser.by.TAG_NAME)
+            text = self._browser.wait_for_anything(
+                match='total members',
+                value='span',
+                by=self._browser.by.TAG_NAME
+            )
             text = text[-1]
             text = text.text
             logger.debug(text)
@@ -184,7 +192,11 @@ class FacebookGroups(object):
     def posts_today(self):
 
         try:
-            text = self._browser.wait_for_anything(match='new posts today', value='span', by=self._browser.by.TAG_NAME)
+            text = self._browser.wait_for_anything(
+                match='new posts today',
+                value='span',
+                by=self._browser.by.TAG_NAME
+            )
             text = text.text
             logger.debug(text)
             return text
