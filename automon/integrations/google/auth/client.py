@@ -49,14 +49,16 @@ class GoogleAuthClient(object):
         """authenticate with credentials"""
 
         try:
-            return self.authenticate_oauth()
-        except:
-            pass
+            if self.authenticate_oauth():
+                return self.authenticate_oauth()
+        except Exception as error:
+            raise error
 
         try:
-            return self.authenticate_service_account()
-        except:
-            pass
+            if self.authenticate_service_account():
+                return self.authenticate_service_account()
+        except Exception as error:
+            raise error
 
         return False
 
