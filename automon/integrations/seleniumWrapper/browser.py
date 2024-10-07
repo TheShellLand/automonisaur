@@ -300,17 +300,17 @@ class SeleniumBrowser(object):
             raise Exception(f'action_type_down :: failed :: {error=} :: {key=}')
 
     def add_cookie(self, cookie_dict: dict) -> bool:
-        logger.debug(f'add_cookie :: {cookie_dict=}')
+        logger.debug(
+            f'add_cookie :: {cookie_dict.get("domain")} :: '
+            f'{cookie_dict.get("path")} :: '
+            f'{cookie_dict.get("secure")} :: '
+            f'{cookie_dict.get("expiry")} :: '
+            f'{cookie_dict.get("name")}'
+        )
 
         result = self.webdriver.add_cookie(cookie_dict=cookie_dict)
 
         if result is None:
-            logger.debug(f'add_cookie :: domain :: {cookie_dict.get("domain")}')
-            logger.debug(f'add_cookie :: path :: {cookie_dict.get("path")}')
-            logger.debug(f'add_cookie :: secure :: {cookie_dict.get("secure")}')
-            logger.debug(f'add_cookie :: expiry :: {cookie_dict.get("expiry")}')
-            logger.debug(f'add_cookie :: name :: {cookie_dict.get("name")}')
-
             logger.info(f'add_cookie :: done')
             return True
 
@@ -331,11 +331,9 @@ class SeleniumBrowser(object):
 
     def add_cookies_from_list(self, cookies_list: list) -> bool:
         """add cookies from a list of cookies"""
-        logger.debug(f'add_cookies_from_list :: start')
         logger.debug(f'add_cookies_from_list :: {len(cookies_list)} cookies found')
 
         for cookie in cookies_list:
-            logger.debug(f'add_cookies_from_list :: {cookie=}')
             self.add_cookie(cookie_dict=cookie)
 
         logger.debug(f'add_cookies_from_list :: {len(cookies_list)} cookies added')
