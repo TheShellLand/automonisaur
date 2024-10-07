@@ -58,12 +58,12 @@ class GoogleAuthConfig(object):
         except:
             pass
 
-        raise Exception(f'Missing GOOGLE_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64')
+        raise Exception(f'Missing GOOGLE_CREDENTIALS_FILE or GOOGLE_CREDENTIALS_BASE64')
 
     @property
-    def _GOOGLE_CREDENTIALS(self):
-        """env var GOOGLE_CREDENTIALS"""
-        return environ('GOOGLE_CREDENTIALS')
+    def _GOOGLE_CREDENTIALS_FILE(self):
+        """env var GOOGLE_CREDENTIALS_FILE"""
+        return environ('GOOGLE_CREDENTIALS_FILE')
 
     @property
     def _GOOGLE_CREDENTIALS_BASE64(self):
@@ -72,10 +72,10 @@ class GoogleAuthConfig(object):
 
     def CredentialsFile(self) -> google.oauth2.credentials.Credentials:
         """return Credentials object for web auth from file"""
-        if self._GOOGLE_CREDENTIALS:
-            if os.path.exists(self._GOOGLE_CREDENTIALS):
+        if self._GOOGLE_CREDENTIALS_FILE:
+            if os.path.exists(self._GOOGLE_CREDENTIALS_FILE):
                 return google.oauth2.credentials.Credentials.from_authorized_user_file(
-                    self._GOOGLE_CREDENTIALS
+                    self._GOOGLE_CREDENTIALS_FILE
                 )
 
     def CredentialsInfo(self) -> google.oauth2.credentials.Credentials:
@@ -87,10 +87,10 @@ class GoogleAuthConfig(object):
 
     def CredentialsServiceAccountFile(self) -> google.oauth2.service_account.Credentials:
         """return Credentials object for service account from file"""
-        if self._GOOGLE_CREDENTIALS:
-            if os.path.exists(self._GOOGLE_CREDENTIALS):
+        if self._GOOGLE_CREDENTIALS_FILE:
+            if os.path.exists(self._GOOGLE_CREDENTIALS_FILE):
                 return google.oauth2.service_account.Credentials.from_service_account_file(
-                    self._GOOGLE_CREDENTIALS
+                    self._GOOGLE_CREDENTIALS_FILE
                 )
 
     def CredentialsServiceAccountInfo(self) -> google.oauth2.service_account.Credentials:
@@ -112,8 +112,8 @@ class GoogleAuthConfig(object):
 
     def file_to_base64(self, path: str = None):
         """convert file to base64"""
-        if not path and self._GOOGLE_CREDENTIALS:
-            path = self._GOOGLE_CREDENTIALS
+        if not path and self._GOOGLE_CREDENTIALS_FILE:
+            path = self._GOOGLE_CREDENTIALS_FILE
 
         with open(path, 'rb') as f:
             return base64.b64encode(f.read()).decode()
