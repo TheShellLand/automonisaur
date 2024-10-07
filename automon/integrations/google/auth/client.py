@@ -66,9 +66,8 @@ class GoogleAuthClient(object):
         """authenticate web token"""
 
         creds = self.config.Credentials()
-        refresh_token = creds.refresh_token
 
-        if refresh_token:
+        if hasattr(creds, 'refresh_token'):
             try:
                 creds.refresh(google.auth.transport.requests.Request())
                 logger.info(f'token refresh success')
