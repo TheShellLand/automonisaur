@@ -40,6 +40,7 @@ class SeleniumBrowser(object):
         self.autosaved = None
 
         self.logs = {}
+        self.cache = {}
 
     def __repr__(self):
         try:
@@ -524,6 +525,7 @@ class SeleniumBrowser(object):
             case_sensitive: bool = False,
             exact_match: bool = False,
             return_first: bool = False,
+            caching: bool = True,
             **kwargs) -> list:
         """fuzzy search through everything
 
@@ -531,7 +533,16 @@ class SeleniumBrowser(object):
         find all matches within meta data
         """
         logger.debug(
-            f'find_anything :: {match=} :: {value=} :: {by=} : {case_sensitive=} :: {exact_match=} :: {return_first=} :: {kwargs=}')
+            f'find_anything :: '
+            f'{match=} :: '
+            f'{value=} :: '
+            f'{by=} :: '
+            f'{case_sensitive=} :: '
+            f'{exact_match=} :: '
+            f'{return_first=} :: '
+            f'{caching=} :: '
+            f' {kwargs=}'
+        )
 
         by_types = [
             self.by.TAG_NAME,
@@ -553,7 +564,8 @@ class SeleniumBrowser(object):
         MATCHED = []
 
         for by_ in by_types:
-            elements = self.find_elements(value=value, by=by_, **kwargs)
+            elements = self.find_elements(value=value, by=by_, caching=caching, **kwargs)
+
             for element in elements:
                 dirs = dir(element)
                 dir_meta = []
@@ -612,11 +624,25 @@ class SeleniumBrowser(object):
             self,
             value: str,
             by: selenium.webdriver.common.by.By,
+            caching: bool = True,
             **kwargs) -> list:
         """find elements"""
         logger.debug(f'find_elements :: {self.current_url} :: {value=} :: {by=} :: {kwargs=}')
 
-        find_elements = self.webdriver.find_elements(value=value, by=by, **kwargs)
+        # try caching the elements
+        if caching:
+            if by not in self.cache.keys():
+                self.cache[by] = {}
+                self.cache[by][value] = self.webdriver.find_elements(value=value, by=by, **kwargs)
+
+            elif value not in self.cache[by].keys():
+                self.cache[by][value] = self.webdriver.find_elements(value=value, by=by, **kwargs)
+
+        else:
+            self.cache[by] = {}
+            self.cache[by][value] = self.webdriver.find_elements(value=value, by=by, **kwargs)
+
+        find_elements = self.cache[by][value]
         logger.debug(f'find_elements :: {len(find_elements)} elements found')
 
         logger.info(f'find_elements :: done')
@@ -922,7 +948,7 @@ class SeleniumBrowser(object):
 
             logger.debug(
                 f'wait_for_anything :: '
-                f'timeout {timeout_elapsed}/{timeout} :: '
+                f'timeout {timeout_elapsed}/{timeout} sec :: '
                 f'{self.current_url=} :: '
                 f'{value=} :: '
                 f'{by=}'
@@ -947,7 +973,6 @@ class SeleniumBrowser(object):
                 logger.error(f'wait_for_anything :: failed :: {error=} :: {match=} :: {value=} :: {by=}')
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
-            logger.debug(f'wait_for_anything :: {timeout_elapsed} seconds elapsed')
 
         raise ElementNotFoundException(f'wait_for_anything :: failed :: {match=} :: {value=} :: {by=}')
 
@@ -966,7 +991,12 @@ class SeleniumBrowser(object):
         while timeout_elapsed < timeout:
 
             logger.debug(
-                f'wait_for_element :: {f"{timeout_elapsed}/{timeout}"} :: {by=} :: {self.current_url} :: {value=}')
+                f'wait_for_element :: '
+                f'timeout {timeout_elapsed}/{timeout} sec :: '
+                f'{by=} :: '
+                f'{self.current_url} :: '
+                f'{value=}'
+            )
 
             try:
                 find = self.find_element(
@@ -983,7 +1013,6 @@ class SeleniumBrowser(object):
                 logger.error(f'wait_for_element :: failed :: {error=} :: {value=} :: {by=}')
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
-            logger.debug(f'wait_for_element :: {timeout_elapsed} seconds elapsed')
 
         raise ElementNotFoundException(f'wait_for_element :: failed :: {value=} :: {by=}')
 
@@ -1002,7 +1031,12 @@ class SeleniumBrowser(object):
         while timeout_elapsed < timeout:
 
             logger.debug(
-                f'wait_for_element :: {f"{timeout_elapsed}/{timeout}"} :: {by=} :: {self.current_url} :: {value=}')
+                f'wait_for_element :: '
+                f'timeout {timeout_elapsed}/{timeout} sec :: '
+                f'{by=} :: '
+                f'{self.current_url} :: '
+                f'{value=}'
+            )
 
             try:
                 find = self.find_elements(
@@ -1019,7 +1053,6 @@ class SeleniumBrowser(object):
                 logger.error(f'wait_for_elements :: failed :: {error=} :: {value=} :: {by=}')
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
-            logger.debug(f'wait_for_elements :: {timeout_elapsed} seconds elapsed')
 
         raise ElementNotFoundException(f'wait_for_elements :: failed :: {value=} :: {by=}')
 
