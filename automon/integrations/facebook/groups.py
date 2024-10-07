@@ -15,17 +15,11 @@ class FacebookGroups(object):
 
     _xpath_content_unavailable = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div[1]/span'
 
-    _xpath_history = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[4]/div/div/div[2]/div/div[2]/span/span'
-
     _xpath_title = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[1]/div[2]/div/div/div/div/div[1]/div/div/div/div/div/div[1]/h1/span/a'
 
     _xpath_temporarily_blocked = '/html/body/div[1]/div[2]/div[1]/div/div/div[1]/div/div[2]'
 
     _xpath_must_login = '/html/body/div[1]/div[1]/div[1]/div/div[2]/div/div'
-
-    _xpath_privacy = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div/div[1]/span/span'
-
-    _xpath_privacy_details = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div/div[2]/span/span'
 
     _xpath_visible = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[3]/div/div/div[2]/div/div[2]/span/span'
 
@@ -56,7 +50,7 @@ class FacebookGroups(object):
         """This content isn't available right now"""
 
         try:
-            text = self._browser.wait_for_anything(self._xpath_content_unavailable)
+            text = self._browser.wait_for_xpath(self._xpath_content_unavailable, timeout=5)
             text = text.text
             logger.debug(text)
             return text
@@ -113,8 +107,16 @@ class FacebookGroups(object):
     def history(self):
 
         try:
-            text = self._browser.wait_for_anything(self._xpath_history)
+            text = self._browser.wait_for_anything(
+                match='Group created',
+                value='span',
+                by=self._browser.by.TAG_NAME
+            )
+            text = text[-1]
             text = text.text
+            if 'See more' in text:
+                text = text.split('See more')
+                text = text[0]
             logger.debug(text)
             return text
         except Exception as error:
@@ -124,7 +126,7 @@ class FacebookGroups(object):
 
     def temporarily_blocked(self):
         try:
-            text = self._browser.wait_for_xpath(self._xpath_temporarily_blocked)
+            text = self._browser.wait_for_xpath(self._xpath_temporarily_blocked, timeout=5)
             text = text.text
             logger.debug(text)
             return text
@@ -181,6 +183,7 @@ class FacebookGroups(object):
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
+            text = text[-1]
             text = text.text
             logger.debug(text)
             return text
@@ -208,6 +211,7 @@ class FacebookGroups(object):
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
+            text = text[-1]
             text = text.text
             logger.debug(text)
             return text
@@ -230,7 +234,24 @@ class FacebookGroups(object):
     def privacy(self):
 
         try:
-            text = self._browser.wait_for_anything(self._xpath_privacy)
+            known_privacy = [
+                'Public',
+                'Private',
+                'Visible',
+            ]
+
+            for privacy in known_privacy:
+                text = self._browser.wait_for_anything(
+                    match=privacy,
+                    value='span',
+                    by=self._browser.by.TAG_NAME,
+                    exact_match=True,
+                    return_first=True,
+                )
+                if text:
+                    break
+
+            text = text[-1]
             text = text.text
             logger.debug(text)
             return text
@@ -242,7 +263,21 @@ class FacebookGroups(object):
     def privacy_details(self):
 
         try:
-            text = self._browser.wait_for_anything(self._xpath_privacy_details)
+            known_privacy_details = [
+                'Anyone can find this group.'
+            ]
+
+            for privacy_details in known_privacy_details:
+                text = self._browser.wait_for_anything(
+                    match=privacy_details,
+                    value='span',
+                    by=self._browser.by.TAG_NAME,
+                    exact_match=True
+                )
+                if text:
+                    break
+
+            text = text[0]
             text = text.text
             logger.debug(text)
             return text
@@ -254,8 +289,10 @@ class FacebookGroups(object):
     def title(self) -> str:
 
         try:
-            text = self._browser.wait_for_anything(self._xpath_title)
-            text = text.text
+            text = self._browser.webdriver.title
+            text = text.split('|')
+            text = text[0]
+            text = text.strip()
             logger.debug(text)
             return text
         except Exception as error:
