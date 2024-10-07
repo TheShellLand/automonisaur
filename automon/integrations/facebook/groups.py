@@ -41,6 +41,17 @@ class FacebookGroups(object):
 
         self._browser = SeleniumBrowser()
 
+    def close_login_popup(self):
+        try:
+            button = self._browser.find_anything(
+                match='Close',
+                value='[aria-label="Close"]',
+                by=self._browser.by.CSS_SELECTOR,
+            )
+            button[0].click()
+        except Exception as error:
+            logger.error(error)
+
     def content_unavailable(self):
         """This content isn't available right now"""
 
