@@ -58,7 +58,7 @@ class GoogleAuthConfig(object):
         except:
             pass
 
-        logger.error(f'Missing GOOGLE_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64')
+        raise Exception(f'Missing GOOGLE_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64')
 
     @property
     def _GOOGLE_CREDENTIALS(self):
