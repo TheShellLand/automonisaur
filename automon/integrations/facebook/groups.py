@@ -81,6 +81,10 @@ class FacebookGroups(object):
             # TODO: convert date to datetime timestamp
             return
 
+    @property
+    def current_url(self):
+        return self._browser.current_url
+
     def current_rate_too_fast(self):
         if self.average_rate() == 0 or len(self.RATE_COUNTER) < 2:
             logger.info(f'current_rate_too_fast :: False')
