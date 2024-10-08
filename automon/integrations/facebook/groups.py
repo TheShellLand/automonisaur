@@ -264,7 +264,7 @@ class FacebookGroups(object):
 
         try:
             known_privacy_details = [
-                'Anyone can find this group.'
+                "Anyone can see who's in the group and what they post.",
             ]
 
             for privacy_details in known_privacy_details:
@@ -316,7 +316,21 @@ class FacebookGroups(object):
     def visible(self) -> str:
 
         try:
-            text = self._browser.wait_for_anything(self._xpath_visible)
+            known_visible = [
+                'Anyone can find this group.',
+            ]
+
+            for visible in known_visible:
+                text = self._browser.wait_for_anything(
+                    match=visible,
+                    value='span',
+                    by=self._browser.by.TAG_NAME,
+                    exact_match=True
+                )
+                if text:
+                    break
+
+            text = text[-1]
             text = text.text
             logger.debug(text)
             return text
