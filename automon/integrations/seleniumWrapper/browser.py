@@ -595,7 +595,14 @@ class SeleniumBrowser(object):
 
                     if FOUND and FOUND not in MATCHED:
                         logger.debug(
-                            f'find_anything :: {self.current_url} :: {MATCH=} :: {AGAINST=} :: attribute={dir_} :: {element=} :: found')
+                            f'find_anything :: '
+                            f'{self.current_url} :: '
+                            f'{MATCH=} :: '
+                            f'{AGAINST=} :: '
+                            f'attribute={dir_} :: '
+                            f'{element=} :: '
+                            f'found'
+                        )
                         MATCHED.append(FOUND)
 
                         if return_first:
@@ -982,7 +989,15 @@ class SeleniumBrowser(object):
                     return find
 
             except Exception as error:
-                logger.error(f'wait_for_anything :: failed :: {error=} :: {match=} :: {value=} :: {by=}')
+                logger.error(
+                    f'wait_for_anything :: '
+                    f'failed :: '
+                    f'timeout {timeout_elapsed}/{timeout} sec :: '
+                    f'{error=} :: '
+                    f'{match=} :: '
+                    f'{value=} :: '
+                    f'{by=}'
+                )
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
@@ -1022,7 +1037,14 @@ class SeleniumBrowser(object):
                     return find
 
             except Exception as error:
-                logger.error(f'wait_for_element :: failed :: {error=} :: {value=} :: {by=}')
+                logger.error(
+                    f'wait_for_element :: '
+                    f'failed :: '
+                    f'timeout {timeout_elapsed}/{timeout} sec :: '
+                    f'{error=} :: '
+                    f'{value=} :: '
+                    f'{by=}'
+                )
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
