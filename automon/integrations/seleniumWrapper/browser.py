@@ -937,8 +937,8 @@ class SeleniumBrowser(object):
             by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
             exact_match: bool = False,
-            timeout: int = 30,
             return_first: bool = False,
+            timeout: int = 30,
             **kwargs) -> list:
         """wait for anything"""
         logger.debug(
