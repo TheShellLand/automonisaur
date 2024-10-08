@@ -918,6 +918,18 @@ class SeleniumBrowser(object):
         """alias to run"""
         return self.run()
 
+    def switch_to_new_window_tab(self):
+        """Opens a new tab and switches to new tab"""
+        self.webdriver.switch_to.new_window('tab')
+        logger.debug(f'switch_to_new_window_tab :: {self.webdriver.current_window_handle=}')
+        logger.info(f'switch_to_new_window_tab :: done')
+
+    def switch_to_new_window_window(self):
+        """Opens a new window and switches to new window"""
+        self.webdriver.switch_to.new_window('window')
+        logger.debug(f'switch_to_new_window_window :: {self.webdriver.current_window_handle=}')
+        logger.info(f'switch_to_new_window_window :: done')
+
     def wait_for_anything(
             self,
             match: str,
