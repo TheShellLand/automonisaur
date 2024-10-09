@@ -97,9 +97,12 @@ class ChromeWrapper(object):
             "prefs", {"profile.default_content_setting_values.notifications": 2}
         )
 
-        logger.debug(str(dict(
-            add_experimental_option=("prefs", {"profile.default_content_setting_values.notifications": 2})
-        )))
+        logger.debug(
+            f'webdriver :: chrome :: '
+            f'disable_notifications :: '
+            f'{dict(name="prefs", value={"profile.default_content_setting_values.notifications": 2})}'
+        )
+
         return self
 
     def disable_sandbox(self):
@@ -148,9 +151,12 @@ class ChromeWrapper(object):
         self.chrome_options.add_experimental_option(
             "prefs", {"profile.default_content_setting_values.notifications": 1}
         )
-        logger.debug(str(dict(
-            add_experimental_option=("prefs", {"profile.default_content_setting_values.notifications": 1})
-        )))
+        logger.debug(
+            f'webdriver :: chrome :: '
+            f'enable_notifications :: '
+            f'{dict(name="prefs", value={"profile.default_content_setting_values.notifications": 1})}'
+        )
+
         return self
 
     def enable_maximized(self):
@@ -168,12 +174,12 @@ class ChromeWrapper(object):
             value=prefs,
         )
 
-        logger.debug(str(dict(
-            add_experimental_option=dict(
-                name="prefs",
-                value=prefs,
-            )
-        )))
+        logger.debug(
+            f'webdriver :: chrome :: '
+            f'enable_translate :: '
+            f'{dict(name="prefs", value=prefs)}'
+        )
+
         return self
 
     def close(self):
@@ -181,7 +187,7 @@ class ChromeWrapper(object):
 
         """
         result = self.webdriver.close()
-        logger.info(f'{result}')
+        logger.info(f'webdriver :: chrome :: close :: {result}')
         return result
 
     def in_docker(self):
@@ -339,12 +345,12 @@ class ChromeWrapper(object):
             value={'intl.accept_languages': locale}
         )
 
-        logger.debug(str(dict(
-            add_experimental_option=dict(
-                name='prefs',
-                value={'intl.accept_languages': locale}
-            )
-        )))
+        logger.debug(
+            f'webdriver :: chrome :: '
+            f'add_experimental_option :: '
+            f"{dict(name='prefs', value={'intl.accept_languages': locale})}"
+        )
+
         return self
 
     def set_user_agent(self, user_agent: str):
@@ -384,12 +390,12 @@ class ChromeWrapper(object):
                     os.environ['PATH'] = f"{os.getenv('PATH')}:{path}"
 
                 # logger.debug(f'update_paths :: {path=} :: {os.environ['PATH']}')
-                logger.debug(f'update_paths :: {path}')
+                logger.debug(f'webdriver :: chrome :: update_paths :: {path}')
 
-                logger.info(f'update_paths :: done')
+                logger.info(f'webdriver :: chrome :: update_paths :: done')
                 return True
 
-        logger.error(f'update_paths :: failed :: {path} not found')
+        logger.error(f'webdriver :: chrome :: update_paths :: failed :: {path} not found')
         return False
 
     def quit(self):
@@ -397,7 +403,7 @@ class ChromeWrapper(object):
 
         """
         result = self.webdriver.quit()
-        logger.info(f'{result}')
+        logger.info(f'webdriver :: chrome :: quit :: {result}')
         return result
 
     def quit_gracefully(self):
@@ -409,6 +415,6 @@ class ChromeWrapper(object):
             self.quit()
             self.stop_client()
         except Exception as error:
-            logger.error(f'failed to gracefully quit. {error}')
+            logger.error(f'webdriver :: chrome :: quit :: error :: failed to gracefully quit. {error}')
             return False
         return True
