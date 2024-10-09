@@ -57,7 +57,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     def creation_date(self):
 
@@ -74,7 +73,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     def creation_date_timestamp(self):
         if self.creation_date():
@@ -126,7 +124,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     def temporarily_blocked(self):
         try:
@@ -137,7 +134,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     def members(self):
 
@@ -155,7 +151,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     def members_count(self):
 
@@ -177,7 +172,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     def posts_monthly(self):
 
@@ -194,7 +188,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     def posts_monthly_count(self):
 
@@ -222,7 +215,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     def posts_today_count(self):
 
@@ -262,7 +254,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     def privacy_details(self):
 
@@ -288,7 +279,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     def title(self) -> str:
 
@@ -302,7 +292,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     @property
     def url(self) -> str:
@@ -341,7 +330,6 @@ class FacebookGroups(object):
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-            self.screenshot_error()
 
     @staticmethod
     def error_parsing(error, enable_stacktrace: bool = False) -> tuple:
@@ -368,7 +356,6 @@ class FacebookGroups(object):
 
         result = self._browser.get(url=url)
         logger.info(f'{url} :: {result}')
-        self.screenshot()
 
         end = datetime.datetime.now().timestamp()
         seconds_elapsed = int(end - start)
@@ -388,7 +375,7 @@ class FacebookGroups(object):
             result = self.get(url=url)
 
         logger.info(f'{url} :: {result=}')
-        self.screenshot()
+
         return result
 
     def get_with_rate_limiter(
@@ -417,7 +404,7 @@ class FacebookGroups(object):
                 self.rate_limit_decrease()
 
             result = self.get(url=url)
-            self.screenshot()
+
             logger.info(f'get_with_rate_limiter :: {result}')
             return result
 
@@ -452,16 +439,16 @@ class FacebookGroups(object):
         """rate limit checker"""
         if self.current_rate_too_fast():
             logger.info(f'rate_limited :: True')
-            self.screenshot()
+
             return True
 
         if self.temporarily_blocked() or self.must_login():
             logger.info(f'rate_limited :: True')
-            self.screenshot()
+
             return True
 
         logger.error(f'rate_limited :: False')
-        self.screenshot()
+
         return False
 
     def run(self):
