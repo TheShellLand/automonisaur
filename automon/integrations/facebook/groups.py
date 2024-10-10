@@ -66,8 +66,8 @@ class FacebookGroups(object):
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            text = [x for x in text if '\n' in x.text][0]
-            text = text.text.splitlines()[-1]
+            text = text[0]
+            text = text.text.split(' See more')[0]
             logger.debug(text)
             return text
         except Exception as error:
@@ -284,6 +284,11 @@ class FacebookGroups(object):
 
         try:
             text = self._browser.webdriver.title
+
+            if 'Log into Facebook' in text:
+                logger.error(text)
+                return ''
+
             text = text.split('|')
             text = text[0]
             text = text.strip()
