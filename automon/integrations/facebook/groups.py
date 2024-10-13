@@ -51,7 +51,8 @@ class FacebookGroups(object):
 
         try:
             text = self._browser.wait_for_xpath(self._xpath_content_unavailable, timeout=5)
-            text = text.text
+            if text:
+                text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -66,9 +67,10 @@ class FacebookGroups(object):
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            text = text[0]
-            text = text.text.split('See more')[0]
-            text = text.strip()
+            if text:
+                text = text[0]
+                text = text.text.split('See more')[0]
+                text = text.strip()
             logger.debug(text)
             return text
         except Exception as error:
@@ -115,11 +117,12 @@ class FacebookGroups(object):
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            text = text[-1]
-            text = text.text
-            if 'See more' in text:
-                text = text.split('See more')
-                text = text[0]
+            if text:
+                text = text[-1]
+                text = text.text
+                if 'See more' in text:
+                    text = text.split('See more')
+                    text = text[0]
             logger.debug(text)
             return text
         except Exception as error:
@@ -129,7 +132,8 @@ class FacebookGroups(object):
     def temporarily_blocked(self):
         try:
             text = self._browser.wait_for_xpath(self._xpath_temporarily_blocked, timeout=5)
-            text = text.text
+            if text:
+                text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -145,8 +149,9 @@ class FacebookGroups(object):
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            text = text[-1]
-            text = text.text
+            if text:
+                text = text[-1]
+                text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -167,7 +172,8 @@ class FacebookGroups(object):
     def must_login(self):
         try:
             text = self._browser.wait_for_anything(self._xpath_must_login)
-            text = text.text
+            if text:
+                text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -182,8 +188,9 @@ class FacebookGroups(object):
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            text = text[-1]
-            text = text.text
+            if text:
+                text = text[-1]
+                text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -209,8 +216,9 @@ class FacebookGroups(object):
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            text = text[-1]
-            text = text.text
+            if text:
+                text = text[-1]
+                text = text.text
             logger.debug(text)
             return text
         except Exception as error:
@@ -246,12 +254,10 @@ class FacebookGroups(object):
                     return_first=True,
                 )
                 if text:
-                    break
-
-            text = text[-1]
-            text = text.text
-            logger.debug(text)
-            return text
+                    text = text[-1]
+                    text = text.text
+                    logger.debug(text)
+                    return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -272,12 +278,10 @@ class FacebookGroups(object):
                     exact_match=True
                 )
                 if text:
-                    break
-
-            text = text[0]
-            text = text.text
-            logger.debug(text)
-            return text
+                    text = text[0]
+                    text = text.text
+                    logger.debug(text)
+                    return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -291,9 +295,10 @@ class FacebookGroups(object):
                 logger.error(text)
                 return ''
 
-            text = text.split('|')
-            text = text[0]
-            text = text.strip()
+            if text:
+                text = text.split('|')
+                text = text[0]
+                text = text.strip()
             logger.debug(text)
             return text
         except Exception as error:
@@ -328,12 +333,10 @@ class FacebookGroups(object):
                     exact_match=True
                 )
                 if text:
-                    break
-
-            text = text[-1]
-            text = text.text
-            logger.debug(text)
-            return text
+                    text = text[-1]
+                    text = text.text
+                    logger.debug(text)
+                    return text
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
