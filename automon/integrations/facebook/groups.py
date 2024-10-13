@@ -261,6 +261,7 @@ class FacebookGroups(object):
         try:
             known_privacy_details = [
                 "Anyone can see who's in the group and what they post.",
+                "Only members can see who's in the group and what they post.",
             ]
 
             for privacy_details in known_privacy_details:
