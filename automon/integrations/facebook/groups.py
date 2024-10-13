@@ -67,7 +67,8 @@ class FacebookGroups(object):
                 by=self._browser.by.TAG_NAME
             )
             text = text[0]
-            text = text.text.split(' See more')[0]
+            text = text.text.split('See more')[0]
+            text = text.strip()
             logger.debug(text)
             return text
         except Exception as error:
