@@ -1001,7 +1001,8 @@ class SeleniumBrowser(object):
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
-        raise ElementNotFoundException(f'wait_for_anything :: failed :: {match=} :: {value=} :: {by=}')
+        logger.error(f'wait_for_anything :: failed :: {match=} :: {value=} :: {by=}')
+        return []
 
     def wait_for_element(
             self,
@@ -1048,7 +1049,8 @@ class SeleniumBrowser(object):
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
-        raise ElementNotFoundException(f'wait_for_element :: failed :: {value=} :: {by=}')
+        logger.error(f'wait_for_element :: failed :: {value=} :: {by=}')
+        return
 
     def wait_for_elements(
             self,
@@ -1088,7 +1090,8 @@ class SeleniumBrowser(object):
 
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
-        raise ElementNotFoundException(f'wait_for_elements :: failed :: {value=} :: {by=}')
+        logger.error(f'wait_for_elements :: failed :: {value=} :: {by=}')
+        return []
 
     def wait_for_id(
             self,
