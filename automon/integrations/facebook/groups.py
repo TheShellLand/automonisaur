@@ -42,7 +42,10 @@ class FacebookGroups(object):
                 value='[aria-label="Close"]',
                 by=self._browser.by.CSS_SELECTOR,
             )
-            button[0].click()
+
+            if button:
+                button[0].click()
+            logger.debug(button)
         except Exception as error:
             logger.error(error)
 
