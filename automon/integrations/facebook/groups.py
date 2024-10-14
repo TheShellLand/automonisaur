@@ -35,6 +35,22 @@ class FacebookGroups(object):
 
         self._browser = SeleniumBrowser()
 
+    def blocked_by_login(self):
+        try:
+            element = self._browser.wait_for_anything(
+                match='You must log in to continue.',
+                value='div',
+                by=self._browser.by.TAG_NAME,
+                exact_match=True
+            )
+            if element:
+                element = element[0]
+                element = element.text
+            logger.debug(element)
+            return element
+        except Exception as error:
+            logger.error(error)
+
     def close_login_popup(self):
         try:
             button = self._browser.find_anything(
@@ -553,6 +569,7 @@ class FacebookGroups(object):
             title=self.title(),
             url=self.url,
             visible=self.visible(),
+            blocked_by_login=self.blocked_by_login()
         )
 
     def quit(self):
