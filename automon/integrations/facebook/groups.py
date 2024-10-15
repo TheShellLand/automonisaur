@@ -51,6 +51,24 @@ class FacebookGroups(object):
         except Exception as error:
             logger.error(error)
 
+    def browser_not_supported(self):
+        try:
+            element = self._browser.wait_for_anything(
+                match='This browser is not supported',
+                value='div',
+                by=self._browser.by.TAG_NAME,
+                exact_match=True
+            )
+            if element:
+                element = element[0]
+                element = element.text
+                logger.debug(self._browser.user_agent)
+            logger.debug(element)
+            return element
+        except Exception as error:
+            logger.error(error)
+
+
     def close_login_popup(self):
         try:
             button = self._browser.find_anything(
@@ -569,7 +587,8 @@ class FacebookGroups(object):
             title=self.title(),
             url=self.url,
             visible=self.visible(),
-            blocked_by_login=self.blocked_by_login()
+            blocked_by_login=self.blocked_by_login(),
+            browser_not_supported=self.browser_not_supported()
         )
 
     def quit(self):
