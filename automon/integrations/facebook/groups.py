@@ -68,7 +68,6 @@ class FacebookGroups(object):
         except Exception as error:
             logger.error(error)
 
-
     def close_login_popup(self):
         try:
             button = self._browser.find_anything(
@@ -436,6 +435,9 @@ class FacebookGroups(object):
         """get with rate dynamic limit"""
         if wait_between_retries:
             self.WAIT_BETWEEN_RETRIES = wait_between_retries
+
+        if rate_per_minute:
+            self.RATE_PER_MINUTE = rate_per_minute
 
         result = None
         while retry < retries:
