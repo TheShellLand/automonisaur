@@ -216,6 +216,23 @@ class FacebookGroups(object):
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
 
+    def not_available_right_not(self):
+        try:
+            text = self._browser.wait_for_anything(
+                match="This content isn't available right now",
+                value='span',
+                by=self._browser.by.TAG_NAME,
+                exact_match=True
+            )
+            if text:
+                text = text[0]
+                text = text.text
+            logger.debug(text)
+            return text
+        except Exception as error:
+            message, session, stacktrace = self.error_parsing(error)
+            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+
     def posts_monthly(self):
 
         try:
@@ -590,7 +607,8 @@ class FacebookGroups(object):
             url=self.url,
             visible=self.visible(),
             blocked_by_login=self.blocked_by_login(),
-            browser_not_supported=self.browser_not_supported()
+            browser_not_supported=self.browser_not_supported(),
+            not_available_right_not=self.not_available_right_not(),
         )
 
     def quit(self):
