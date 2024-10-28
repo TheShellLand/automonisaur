@@ -35,36 +35,55 @@ class FacebookGroups(object):
 
         self._browser = SeleniumBrowser()
 
+        self._content_unavailable = None
+        self._creation_date = None
+        self._creation_date_timestamp = None
+        self._history = None
+        self._members = None
+        self._members_count = None
+        self._posts_monthly = None
+        self._posts_monthly_count = None
+        self._posts_today = None
+        self._posts_today_count = None
+        self._privacy = None
+        self._privacy_details = None
+        self._title = None
+        self._visible = None
+        self._blocked_by_login = None
+        self._browser_not_supported = None
+        self._not_available_right_not = None
+
     def blocked_by_login(self):
         try:
-            element = self._browser.wait_for_anything(
+            self._blocked_by_login = self._browser.wait_for_anything(
                 match='You must log in to continue.',
                 value='div',
                 by=self._browser.by.TAG_NAME,
                 exact_match=True
             )
-            if element:
-                element = element[0]
-                element = element.text
-            logger.debug(element)
-            return element
+            if self._blocked_by_login:
+                self._blocked_by_login = self._blocked_by_login[0]
+                self._blocked_by_login = self._blocked_by_login.text
+            logger.debug(self._blocked_by_login)
+            return self._blocked_by_login
         except Exception as error:
             logger.error(error)
 
     def browser_not_supported(self):
         try:
-            element = self._browser.wait_for_anything(
+            self._browser_not_supported = self._browser.wait_for_anything(
                 match='This browser is not supported',
                 value='div',
                 by=self._browser.by.TAG_NAME,
                 exact_match=True
             )
-            if element:
-                element = element[0]
-                element = element.text
+            if self._browser_not_supported:
+                self._browser_not_supported = self._browser_not_supported[0]
+                self._browser_not_supported = self._browser_not_supported.text
                 logger.debug(self._browser.user_agent)
-            logger.debug(element)
-            return element
+            logger.debug(self._browser_not_supported)
+            return self._browser_not_supported
+
         except Exception as error:
             logger.error(error)
 
@@ -86,11 +105,11 @@ class FacebookGroups(object):
         """This content isn't available right now"""
 
         try:
-            text = self._browser.wait_for_xpath(self._xpath_content_unavailable, timeout=5)
-            if text:
-                text = text.text
-            logger.debug(text)
-            return text
+            self._content_unavailable = self._browser.wait_for_xpath(self._xpath_content_unavailable, timeout=5)
+            if self._content_unavailable:
+                self._content_unavailable = self._content_unavailable.text
+            logger.debug(self._content_unavailable)
+            return self._content_unavailable
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -98,23 +117,23 @@ class FacebookGroups(object):
     def creation_date(self):
 
         try:
-            text = self._browser.find_anything(
+            self._creation_date = self._browser.find_anything(
                 match='Created',
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            if text:
-                text = text[0]
-                text = text.text.split('See more')[0]
-                text = text.strip()
-            logger.debug(text)
-            return text
+            if self._creation_date:
+                self._creation_date = self._creation_date[0]
+                self._creation_date = self._creation_date.text.split('See more')[0]
+                self._creation_date = self._creation_date.strip()
+            logger.debug(self._creation_date)
+            return self._creation_date
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
 
     def creation_date_timestamp(self):
-        if self.creation_date():
+        if self._creation_date is not None or self.creation_date():
             # TODO: convert date to datetime timestamp
             return
 
@@ -148,19 +167,19 @@ class FacebookGroups(object):
     def history(self):
 
         try:
-            text = self._browser.wait_for_anything(
+            self._history = self._browser.wait_for_anything(
                 match='Group created',
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            if text:
-                text = text[-1]
-                text = text.text
-                if 'See more' in text:
-                    text = text.split('See more')
-                    text = text[0]
-            logger.debug(text)
-            return text
+            if self._history:
+                self._history = self._history[-1]
+                self._history = self._history.text
+                if 'See more' in self._history:
+                    self._history = self._history.split('See more')
+                    self._history = self._history[0]
+            logger.debug(self._history)
+            return self._history
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -180,30 +199,30 @@ class FacebookGroups(object):
 
         try:
             # TODO: need to clean up string from members and remove bad chars
-            text = self._browser.wait_for_anything(
+            self._members = self._browser.wait_for_anything(
                 match='total members',
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            if text:
-                text = text[-1]
-                text = text.text
-            logger.debug(text)
-            return text
+            if self._members:
+                self._members = self._members[-1]
+                self._members = self._members.text
+            logger.debug(self._members)
+            return self._members
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
 
     def members_count(self):
 
-        if self.members():
-            count = [x for x in self.members()]
+        if self._members is not None or self.members():
+            count = [x for x in self._members]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
-                members_count = int(''.join(count)) if count else 0
+                self._members_count = int(''.join(count)) if count else 0
 
-                logger.debug(members_count)
-                return members_count
+                logger.debug(self._members_count)
+                return self._members_count
 
     def must_login(self):
         try:
@@ -218,17 +237,17 @@ class FacebookGroups(object):
 
     def not_available_right_not(self):
         try:
-            text = self._browser.wait_for_anything(
+            self._not_available_right_not = self._browser.wait_for_anything(
                 match="This content isn't available right now",
                 value='span',
                 by=self._browser.by.TAG_NAME,
                 exact_match=True
             )
-            if text:
-                text = text[0]
-                text = text.text
-            logger.debug(text)
-            return text
+            if self._not_available_right_not:
+                self._not_available_right_not = self._not_available_right_not[0]
+                self._not_available_right_not = self._not_available_right_not.text
+            logger.debug(self._not_available_right_not)
+            return self._not_available_right_not
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -236,58 +255,58 @@ class FacebookGroups(object):
     def posts_monthly(self):
 
         try:
-            text = self._browser.wait_for_anything(
+            self._posts_monthly = self._browser.wait_for_anything(
                 match='in the last month',
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            if text:
-                text = text[-1]
-                text = text.text
-            logger.debug(text)
-            return text
+            if self._posts_monthly:
+                self._posts_monthly = self._posts_monthly[-1]
+                self._posts_monthly = self._posts_monthly.text
+            logger.debug(self._posts_monthly)
+            return self._posts_monthly
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
 
     def posts_monthly_count(self):
 
-        if self.posts_monthly():
-            count = [x for x in self.posts_monthly()]
+        if self._posts_monthly is not None or self.posts_monthly():
+            count = [x for x in self._posts_monthly]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
-                posts_monthly_count = int(''.join(count)) if count else 0
+                self._posts_monthly_count = int(''.join(count)) if count else 0
 
-                logger.debug(posts_monthly_count)
-                return posts_monthly_count
+                logger.debug(self._posts_monthly_count)
+                return self._posts_monthly_count
 
     def posts_today(self):
 
         try:
-            text = self._browser.wait_for_anything(
+            self._posts_today = self._browser.wait_for_anything(
                 match='new posts today',
                 value='span',
                 by=self._browser.by.TAG_NAME
             )
-            if text:
-                text = text[-1]
-                text = text.text
-            logger.debug(text)
-            return text
+            if self._posts_today:
+                self._posts_today = self._posts_today[-1]
+                self._posts_today = self._posts_today.text
+            logger.debug(self._posts_today)
+            return self._posts_today
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
 
     def posts_today_count(self):
 
-        if self.posts_today():
-            count = [x for x in self.posts_today()]
+        if self._posts_today is not None or self.posts_today():
+            count = [x for x in self._posts_today]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
             if count:
-                posts_today_count = int(''.join(count)) if count else 0
+                self._posts_today_count = int(''.join(count)) if count else 0
 
-                logger.debug(posts_today_count)
-                return posts_today_count
+                logger.debug(self._posts_today_count)
+                return self._posts_today_count
 
     def privacy(self):
 
@@ -299,18 +318,18 @@ class FacebookGroups(object):
             ]
 
             for privacy in known_privacy:
-                text = self._browser.wait_for_anything(
+                self._privacy = self._browser.wait_for_anything(
                     match=privacy,
                     value='span',
                     by=self._browser.by.TAG_NAME,
                     exact_match=True,
                     return_first=True,
                 )
-                if text:
-                    text = text[-1]
-                    text = text.text
-                    logger.debug(text)
-                    return text
+                if self._privacy:
+                    self._privacy = self._privacy[-1]
+                    self._privacy = self._privacy.text
+                    logger.debug(self._privacy)
+                    return self._privacy
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -324,17 +343,17 @@ class FacebookGroups(object):
             ]
 
             for privacy_details in known_privacy_details:
-                text = self._browser.wait_for_anything(
+                self._privacy_details = self._browser.wait_for_anything(
                     match=privacy_details,
                     value='span',
                     by=self._browser.by.TAG_NAME,
                     exact_match=True
                 )
-                if text:
-                    text = text[0]
-                    text = text.text
-                    logger.debug(text)
-                    return text
+                if self._privacy_details:
+                    self._privacy_details = self._privacy_details[0]
+                    self._privacy_details = self._privacy_details.text
+                    logger.debug(self._privacy_details)
+                    return self._privacy_details
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -342,18 +361,18 @@ class FacebookGroups(object):
     def title(self) -> str:
 
         try:
-            text = self._browser.webdriver.title
+            self._title = self._browser.webdriver.title
 
-            if 'Log into Facebook' in text:
-                logger.error(text)
+            if 'Log into Facebook' in self._title:
+                logger.error(self._title)
                 return ''
 
-            if text:
-                text = text.split('|')
-                text = text[0]
-                text = text.strip()
-            logger.debug(text)
-            return text
+            if self._title:
+                self._title = self._title.split('|')
+                self._title = self._title[0]
+                self._title = self._title.strip()
+            logger.debug(self._title)
+            return self._title
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -379,17 +398,17 @@ class FacebookGroups(object):
             ]
 
             for visible in known_visible:
-                text = self._browser.wait_for_anything(
+                self._visible = self._browser.wait_for_anything(
                     match=visible,
                     value='span',
                     by=self._browser.by.TAG_NAME,
                     exact_match=True
                 )
-                if text:
-                    text = text[-1]
-                    text = text.text
-                    logger.debug(text)
-                    return text
+                if self._visible:
+                    self._visible = self._visible[-1]
+                    self._visible = self._visible.text
+                    logger.debug(self._visible)
+                    return self._visible
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -591,24 +610,24 @@ class FacebookGroups(object):
 
     def to_dict(self):
         return dict(
-            content_unavailable=self.content_unavailable(),
-            creation_date=self.creation_date(),
-            creation_date_timestamp=self.creation_date_timestamp(),
-            history=self.history(),
-            members=self.members(),
-            members_count=self.members_count(),
-            posts_monthly=self.posts_monthly(),
-            posts_monthly_count=self.posts_monthly_count(),
-            posts_today=self.posts_today(),
-            posts_today_count=self.posts_today_count(),
-            privacy=self.privacy(),
-            privacy_details=self.privacy_details(),
-            title=self.title(),
+            content_unavailable=self._content_unavailable or self.content_unavailable(),
+            creation_date=self._creation_date or self.creation_date(),
+            creation_date_timestamp=self._creation_date_timestamp or self.creation_date_timestamp(),
+            history=self._history or self.history(),
+            members=self._members or self.members(),
+            members_count=self._members_count or self.members_count(),
+            posts_monthly=self._posts_monthly or self.posts_monthly(),
+            posts_monthly_count=self._posts_monthly_count or self.posts_monthly_count(),
+            posts_today=self._posts_today or self.posts_today(),
+            posts_today_count=self._posts_today_count or self.posts_today_count(),
+            privacy=self._privacy or self.privacy(),
+            privacy_details=self._privacy_details or self.privacy_details(),
+            title=self._title or self.title(),
             url=self.url,
-            visible=self.visible(),
-            blocked_by_login=self.blocked_by_login(),
-            browser_not_supported=self.browser_not_supported(),
-            not_available_right_not=self.not_available_right_not(),
+            visible=self._visible or self.visible(),
+            blocked_by_login=self._blocked_by_login or self.blocked_by_login(),
+            browser_not_supported=self._browser_not_supported or self.browser_not_supported(),
+            not_available_right_not=self._not_available_right_not or self.not_available_right_not(),
         )
 
     def quit(self):
