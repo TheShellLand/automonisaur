@@ -225,6 +225,11 @@ class ChromeWrapper(object):
         self.chrome_options.add_argument('--start-maximized')
         return self
 
+    def enable_proxy(self, proxy: str):
+        logger.debug(f'webdriver :: chrome :: add_argument :: --proxy-server')
+        self.chrome_options.add_argument(f"--proxy-server={proxy}")
+        return self
+
     def enable_translate(self, native_language: str = 'en'):
         prefs = {
             "translate_whitelists": {"your native language": native_language},
