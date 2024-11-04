@@ -39,7 +39,7 @@ class SeleniumBrowser(object):
 
         self.autosaved = None
 
-        self.logs = {}
+        self._logs = {}
         self.cache = {}
 
     def __repr__(self):
@@ -79,6 +79,10 @@ class SeleniumBrowser(object):
             return
 
     @property
+    def logs(self):
+        return self.get_logs()
+
+    @property
     def webdriver(self):
         """get webdriver"""
         return self.config.webdriver
@@ -101,15 +105,21 @@ class SeleniumBrowser(object):
 
         for log_type in self.webdriver.log_types:
             logger.debug(f'get_logs :: {log_type}')
-            self.logs.update({
-                log_type: self.webdriver.get_log(log_type)
-            })
-            logger.debug(f'get_logs :: {log_type} :: {len(self.logs[log_type])} logs')
+
+            logs = self.webdriver.get_log(log_type)
+
+            if logs:
+                if log_type in self._logs.keys():
+                    self._logs[log_type].append(logs)
+                else:
+                    self._logs[log_type] = logs
+
+            logger.debug(f'get_logs :: {log_type} :: {len(self._logs[log_type])} logs')
             logger.info(f'get_logs :: {log_type} :: done')
 
-        logger.debug(f'get_logs :: {len(self.logs)} logs')
+        logger.debug(f'get_logs :: {len(self._logs)} logs')
         logger.info(f'get_logs :: done')
-        return self.logs
+        return self._logs
 
     def get_log_browser(self) -> list:
         """Get browser logs"""
