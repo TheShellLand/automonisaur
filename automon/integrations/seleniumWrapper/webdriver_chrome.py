@@ -191,7 +191,7 @@ class ChromeWrapper(object):
     def enable_defaults(self):
         self.enable_maximized()
         self.enable_logging()
-        self.set_logging_level(level='DEBUG')
+        self.set_logging_level(level='ALL')
         return self
 
     def enable_fullscreen(self):
@@ -407,8 +407,10 @@ class ChromeWrapper(object):
     def service_args(self):
         return self._service_args
 
-    def set_logging_level(self, level: str = 'DEBUG'):
-        """INFO, DEBUG, ERROR, WARNING
+    def set_logging_level(self, level: str = 'ALL'):
+        """There are 6 available log levels: ALL, DEBUG, INFO, WARNING, SEVERE, and OFF.
+        Note that --verbose is equivalent to --log-level=ALL and --silent is equivalent
+        to --log-level=OFF, so this example is just setting the log level generically
 
         """
         logger.debug(f'webdriver :: chrome :: service_args :: {level}')
