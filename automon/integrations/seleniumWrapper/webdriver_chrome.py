@@ -79,6 +79,8 @@ class ChromeWrapper(object):
         """exclude the collection of enable-automation switches
 
         """
+        warnings.warn(DeprecationWarning)
+
         self.chrome_options.add_experimental_option(
             "excludeSwitches", ["enable-automation"]
         )
