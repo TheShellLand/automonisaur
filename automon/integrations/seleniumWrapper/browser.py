@@ -108,6 +108,10 @@ class SeleniumBrowser(object):
 
             logs = self.webdriver.get_log(log_type)
 
+            if log_type == 'performance':
+                for x in logs:
+                    x['message'] = json.loads(x['message'])
+
             if logs:
                 if log_type in self._logs.keys():
                     self._logs[log_type].append(logs)
