@@ -117,6 +117,8 @@ class SeleniumBrowser(object):
                     self._logs[log_type].append(logs)
                 else:
                     self._logs[log_type] = logs
+            else:
+                self._logs[log_type] = []
 
             logger.debug(f'get_logs :: {log_type} :: {len(self._logs[log_type])} logs')
             logger.info(f'get_logs :: {log_type} :: done')
