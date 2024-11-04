@@ -23,6 +23,7 @@ class ChromeWrapper(object):
         self._ChromeService = None
         self._window_size = set_window_size()
         self._enable_antibot_detection = None
+        self._service_args = []
 
     def __repr__(self):
         if self._webdriver:
@@ -190,6 +191,7 @@ class ChromeWrapper(object):
     def enable_defaults(self):
         self.enable_maximized()
         self.enable_logging()
+        self.set_logging_level(level='DEBUG')
         return self
 
     def enable_fullscreen(self):
@@ -375,7 +377,8 @@ class ChromeWrapper(object):
 
             if self.chromedriver_path:
                 self._ChromeService = selenium.webdriver.ChromeService(
-                    executable_path=self.chromedriver_path
+                    executable_path=self.chromedriver_path,
+                    service_args=self._service_args
                 )
 
                 logger.debug(f'webdriver :: chrome :: run :: {self.ChromeService=}')
@@ -399,6 +402,14 @@ class ChromeWrapper(object):
             return True
         except Exception as exception:
             raise Exception(f'webdriver :: chrome :: run :: failed :: {exception=}')
+
+    def set_logging_level(self, level: str = 'DEBUG'):
+        """INFO, DEBUG, ERROR, WARNING
+
+        """
+        logger.debug(f'webdriver :: chrome :: service_args :: {level}')
+        self._service_args.append(f'--log-level={level.upper()}')
+        return self
 
     def set_chromedriver(self, chromedriver_path: str):
         logger.debug(f'{chromedriver_path}')
