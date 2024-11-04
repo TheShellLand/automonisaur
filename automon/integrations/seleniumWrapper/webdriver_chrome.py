@@ -378,7 +378,7 @@ class ChromeWrapper(object):
             if self.chromedriver_path:
                 self._ChromeService = selenium.webdriver.ChromeService(
                     executable_path=self.chromedriver_path,
-                    service_args=self._service_args
+                    service_args=self.service_args
                 )
 
                 logger.debug(f'webdriver :: chrome :: run :: {self.ChromeService=}')
@@ -403,12 +403,16 @@ class ChromeWrapper(object):
         except Exception as exception:
             raise Exception(f'webdriver :: chrome :: run :: failed :: {exception=}')
 
+    @property
+    def service_args(self):
+        return self._service_args
+
     def set_logging_level(self, level: str = 'DEBUG'):
         """INFO, DEBUG, ERROR, WARNING
 
         """
         logger.debug(f'webdriver :: chrome :: service_args :: {level}')
-        self._service_args.append(f'--log-level={level.upper()}')
+        self.service_args.append(f'--log-level={level.upper()}')
         return self
 
     def set_chromedriver(self, chromedriver_path: str):
