@@ -100,12 +100,9 @@ class SeleniumBrowser(object):
         you can only run this once
         afterwards the logs are cleared from the webdriver
         """
-        logger.debug(f'get_logs')
-        logger.debug(f'get_logs :: {len(self.webdriver.log_types)} types found')
+        logger.debug(f'get_logs :: {len(self.webdriver.log_types)} types found :: {self.webdriver.log_types}')
 
         for log_type in self.webdriver.log_types:
-            logger.debug(f'get_logs :: {log_type}')
-
             logs = self.webdriver.get_log(log_type)
 
             if log_type == 'performance':
@@ -123,7 +120,7 @@ class SeleniumBrowser(object):
             logger.debug(f'get_logs :: {log_type} :: {len(self._logs[log_type])} logs')
             logger.info(f'get_logs :: {log_type} :: done')
 
-        logger.debug(f'get_logs :: {len(self._logs)} logs')
+        logger.debug(f'get_logs :: {len(self._logs)} total logs')
         logger.info(f'get_logs :: done')
         return self._logs
 
