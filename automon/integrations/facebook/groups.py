@@ -135,6 +135,7 @@ class FacebookGroups(object):
     def creation_date_timestamp(self):
         if self._creation_date is not None or self.creation_date():
             # TODO: convert date to datetime timestamp
+            logger.warn(NotImplemented)
             return
 
     @property
