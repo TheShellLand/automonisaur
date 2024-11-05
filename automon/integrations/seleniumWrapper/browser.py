@@ -109,13 +109,11 @@ class SeleniumBrowser(object):
                 for x in logs:
                     x['message'] = json.loads(x['message'])
 
-            if logs:
-                if log_type in self._logs.keys():
+            if log_type in self._logs.keys():
+                if logs:
                     self._logs[log_type].append(logs)
-                else:
-                    self._logs[log_type] = logs
             else:
-                self._logs[log_type] = []
+                self._logs[log_type] = logs
 
             logger.debug(f'get_logs :: {log_type} :: {len(self._logs[log_type])} logs')
             logger.info(f'get_logs :: {log_type} :: done')
