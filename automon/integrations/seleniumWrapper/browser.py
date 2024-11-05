@@ -532,6 +532,7 @@ class SeleniumBrowser(object):
             self,
             match: str,
             value: str = None,
+            value_attr: str = None,
             by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
             exact_match: bool = False,
@@ -547,6 +548,7 @@ class SeleniumBrowser(object):
             f'find_anything :: '
             f'{match=} :: '
             f'{value=} :: '
+            f'{value_attr=} :: '
             f'{by=} :: '
             f'{case_sensitive=} :: '
             f'{exact_match=} :: '
@@ -578,9 +580,15 @@ class SeleniumBrowser(object):
             elements = self.find_elements(value=value, by=by_, caching=caching, **kwargs)
 
             for element in elements:
-                dirs = dir(element)
+
+                if value_attr:
+                    dirs = [value_attr]
+                else:
+                    dirs = dir(element)
+
                 dir_meta = []
                 for dir_ in dirs:
+
                     try:
                         dir_meta.append(
                             getattr(element, f'{dir_}')
@@ -952,6 +960,7 @@ class SeleniumBrowser(object):
             self,
             match: str,
             value: str = None,
+            value_attr: str = None,
             by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
             exact_match: bool = False,
@@ -963,6 +972,7 @@ class SeleniumBrowser(object):
             f'wait_for_anything :: '
             f'{match=} :: '
             f'{value=} :: '
+            f'{value_attr=} :: '
             f'{by=} :: '
             f'{case_sensitive=} :: '
             f'{exact_match=} :: '
