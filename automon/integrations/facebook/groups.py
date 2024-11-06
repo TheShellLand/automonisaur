@@ -637,6 +637,28 @@ class FacebookGroups(object):
             not_available_right_not=self._not_available_right_not or self.not_available_right_not(),
         )
 
+    def to_empty(self):
+        return dict(
+            content_unavailable=None,
+            creation_date=None,
+            creation_date_timestamp=None,
+            history=None,
+            members=None,
+            members_count=None,
+            posts_monthly=None,
+            posts_monthly_count=None,
+            posts_today=None,
+            posts_today_count=None,
+            privacy=None,
+            privacy_details=None,
+            title=None,
+            url=self.url,
+            visible=None,
+            blocked_by_login=None,
+            browser_not_supported=None,
+            not_available_right_not=None,
+        )
+
     def quit(self):
         """quit selenium"""
         if self._browser:
