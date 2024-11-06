@@ -58,6 +58,7 @@ class FacebookGroups(object):
             self._blocked_by_login = self._browser.wait_for_anything(
                 match='You must log in to continue.',
                 value='div',
+                value_attr='text',
                 by=self._browser.by.TAG_NAME,
                 exact_match=True
             )
@@ -74,6 +75,7 @@ class FacebookGroups(object):
             self._browser_not_supported = self._browser.wait_for_anything(
                 match='This browser is not supported',
                 value='div',
+                value_attr='text',
                 by=self._browser.by.TAG_NAME,
                 exact_match=True
             )
@@ -208,10 +210,12 @@ class FacebookGroups(object):
             self._members = self._browser.wait_for_anything(
                 match='total members',
                 value='span',
-                by=self._browser.by.TAG_NAME
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                return_first=True
             )
             if self._members:
-                self._members = self._members[-1]
+                self._members = self._members[0]
                 self._members = self._members.text
             logger.debug(self._members)
             return self._members
@@ -265,10 +269,12 @@ class FacebookGroups(object):
             self._posts_monthly = self._browser.wait_for_anything(
                 match='in the last month',
                 value='span',
-                by=self._browser.by.TAG_NAME
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                return_first=True
             )
             if self._posts_monthly:
-                self._posts_monthly = self._posts_monthly[-1]
+                self._posts_monthly = self._posts_monthly[0]
                 self._posts_monthly = self._posts_monthly.text
             logger.debug(self._posts_monthly)
             return self._posts_monthly
