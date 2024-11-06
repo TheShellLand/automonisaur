@@ -120,7 +120,9 @@ class FacebookGroups(object):
             self._creation_date = self._browser.find_anything(
                 match='Created',
                 value='span',
-                by=self._browser.by.TAG_NAME
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                return_first=True
             )
             if self._creation_date:
                 self._creation_date = self._creation_date[0]
@@ -147,12 +149,13 @@ class FacebookGroups(object):
             logger.info(f'current_rate_too_fast :: False')
             return False
 
-        if self.average_rate() < self.rate_per_minute():
+        if self.average_rate() < self.rate_per_minute:
             logger.info(f'current_rate_too_fast :: True')
             return True
 
         return False
 
+    @property
     def rate_per_minute(self) -> int:
         rate = int(60 / self.RATE_PER_MINUTE)
         logger.info(f'{rate=} sec')
@@ -171,10 +174,12 @@ class FacebookGroups(object):
             self._history = self._browser.wait_for_anything(
                 match='Group created',
                 value='span',
-                by=self._browser.by.TAG_NAME
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                return_first=True
             )
             if self._history:
-                self._history = self._history[-1]
+                self._history = self._history[0]
                 self._history = self._history.text
                 if 'See more' in self._history:
                     self._history = self._history.split('See more')
@@ -241,6 +246,7 @@ class FacebookGroups(object):
             self._not_available_right_not = self._browser.wait_for_anything(
                 match="This content isn't available right now",
                 value='span',
+                value_attr='text',
                 by=self._browser.by.TAG_NAME,
                 exact_match=True
             )
