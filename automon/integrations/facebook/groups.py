@@ -444,7 +444,7 @@ class FacebookGroups(object):
         start = datetime.datetime.now().timestamp()
 
         result = self._browser.get(url=url)
-        logger.info(f'{url} :: {result}')
+        logger.info(f'{url} :: {round(len(self._browser.webdriver.page_source) / 1024)} KB')
 
         end = datetime.datetime.now().timestamp()
         seconds_elapsed = int(end - start)
