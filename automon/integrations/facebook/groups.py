@@ -147,7 +147,7 @@ class FacebookGroups(object):
         return self._browser.current_url
 
     def current_rate_too_fast(self):
-        if self.average_rate() == 0 or len(self.RATE_COUNTER) < 2:
+        if self.average_rate() == 0:
             logger.info(f'current_rate_too_fast :: False')
             return False
 
@@ -165,9 +165,10 @@ class FacebookGroups(object):
 
     def average_rate(self):
         if self.RATE_COUNTER:
-            rate = int(statistics.mean(self.RATE_COUNTER))
-            logger.info(f'{rate=} sec')
-            return rate
+            seconds = round(abs(statistics.mean(self.RATE_COUNTER) - datetime.datetime.now().timestamp()), 1)
+            minutes = round(seconds / 60, 1)
+            logger.info(f'{len(self.RATE_COUNTER)=} :: {seconds=} :: {minutes=}')
+            return seconds
         return 0
 
     def history(self):
@@ -446,18 +447,10 @@ class FacebookGroups(object):
 
     def get(self, url: str) -> bool:
         """get url"""
-
-        start = datetime.datetime.now().timestamp()
+        self.RATE_COUNTER.append(round(datetime.datetime.now().timestamp(), 1))
 
         result = self._browser.get(url=url)
-        logger.info(f'{url} :: {round(len(self._browser.webdriver.page_source) / 1024)} KB')
-
-        end = datetime.datetime.now().timestamp()
-        seconds_elapsed = int(end - start)
-
-        logger.info(f'{seconds_elapsed=} :: {result=}')
-        self.RATE_COUNTER.append(seconds_elapsed)
-
+        logger.info(f'{result=} :: {url} :: {round(len(self._browser.webdriver.page_source) / 1024)} KB')
         return result
 
     def get_about(self, rate_limiting: bool = True):
@@ -502,7 +495,6 @@ class FacebookGroups(object):
                 self.rate_limit_decrease()
 
             result = self.get(url=url)
-
             logger.info(f'get_with_rate_limiter :: {result}')
             return result
 
@@ -537,12 +529,10 @@ class FacebookGroups(object):
         """rate limit checker"""
         if self.current_rate_too_fast():
             logger.info(f'rate_limited :: True')
-
             return True
 
         if self.temporarily_blocked() or self.must_login():
             logger.info(f'rate_limited :: True')
-
             return True
 
         logger.error(f'rate_limited :: False')
