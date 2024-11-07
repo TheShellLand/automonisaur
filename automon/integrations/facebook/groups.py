@@ -167,7 +167,7 @@ class FacebookGroups(object):
         if self.RATE_COUNTER:
             seconds = round(abs(statistics.mean(self.RATE_COUNTER) - datetime.datetime.now().timestamp()), 1)
             minutes = round(seconds / 60, 1)
-            logger.info(f'{len(self.RATE_COUNTER)=} :: {seconds=} :: {minutes=}')
+            logger.info(f'total requests={len(self.RATE_COUNTER)} :: {seconds=} :: {minutes=}')
             return seconds
         return 0
 
