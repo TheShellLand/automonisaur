@@ -539,11 +539,24 @@ class FacebookGroups(object):
 
         return False
 
-    def run(self):
-        """run selenium browser"""
-        if self._browser:
-            logger.info(f'run :: {self._browser}')
-            return self._browser.run()
+    def reset_cache(self):
+        self.content_unavailable = None
+        self.creation_date = None
+        self.creation_date_timestamp = None
+        self.history = None
+        self.members = None
+        self.members_count = None
+        self.posts_monthly = None
+        self.posts_monthly_count = None
+        self.posts_today = None
+        self.posts_today_count = None
+        self.privacy = None
+        self.privacy_details = None
+        self.title = None
+        self.visible = None
+        self.blocked_by_login = None
+        self.browser_not_supported = None
+        self.not_available_right_not = None
 
     def reset_rate_counter(self):
         self.RATE_COUNTER = []
@@ -556,6 +569,12 @@ class FacebookGroups(object):
             self.quit()
         logger.info(f'restart :: {self._browser}')
         return self.start()
+
+    def run(self):
+        """run selenium browser"""
+        if self._browser:
+            logger.info(f'run :: {self._browser}')
+            return self._browser.run()
 
     def screenshot(self, filename: str = 'screenshot.png'):
         if self._browser.save_screenshot(filename=filename, folder='.'):
