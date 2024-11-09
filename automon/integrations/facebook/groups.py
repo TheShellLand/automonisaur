@@ -25,6 +25,7 @@ class FacebookGroups(object):
 
     RATE_PER_MINUTE = 2
     RATE_COUNTER = []
+    LAST_REQUEST = None
     WAIT_BETWEEN_RETRIES = random.choice(range(1, 60))
 
     def __init__(self, url: str = None):
@@ -165,7 +166,7 @@ class FacebookGroups(object):
 
     def average_rate(self):
         if self.RATE_COUNTER:
-            seconds = round(abs(statistics.mean(self.RATE_COUNTER) - datetime.datetime.now().timestamp()), 1)
+            seconds = round(statistics.mean(self.RATE_COUNTER), 1)
             minutes = round(seconds / 60, 1)
             logger.info(f'total requests={len(self.RATE_COUNTER)} :: {seconds=} :: {minutes=}')
             return seconds
@@ -447,7 +448,13 @@ class FacebookGroups(object):
 
     def get(self, url: str) -> bool:
         """get url"""
-        self.RATE_COUNTER.append(round(datetime.datetime.now().timestamp(), 1))
+
+        now = datetime.datetime.now().timestamp()
+
+        if self.LAST_REQUEST:
+             self.RATE_COUNTER.append(abs(round(self.LAST_REQUEST - now, 1)))
+        else:
+            self.LAST_REQUEST = round(now, 1)
 
         result = self._browser.get(url=url)
         logger.info(f'{result=} :: {url} :: {round(len(self._browser.webdriver.page_source) / 1024)} KB')
@@ -486,8 +493,6 @@ class FacebookGroups(object):
 
             if self.rate_limited():
                 self.rate_limit_increase()
-
-                self.RATE_COUNTER.append(self.WAIT_BETWEEN_RETRIES)
                 Sleeper.seconds(seconds=self.WAIT_BETWEEN_RETRIES)
                 logger.error(f'get_with_rate_limiter :: error :: {url} :: {retry=} :: {retries=}')
                 continue
