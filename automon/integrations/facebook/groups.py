@@ -168,6 +168,7 @@ class FacebookGroups(object):
         if self.RATE_COUNTER:
             seconds = round(statistics.mean(self.RATE_COUNTER), 1)
             minutes = round(seconds / 60, 1)
+            hours = round(minutes / 60, 1)
             logger.info(f'total requests={len(self.RATE_COUNTER)} :: {seconds=} :: {minutes=}')
             return seconds
         return 0
@@ -452,7 +453,7 @@ class FacebookGroups(object):
         now = datetime.datetime.now().timestamp()
 
         if self.LAST_REQUEST:
-             self.RATE_COUNTER.append(abs(round(self.LAST_REQUEST - now, 1)))
+            self.RATE_COUNTER.append(abs(round(self.LAST_REQUEST - now, 1)))
         else:
             self.LAST_REQUEST = round(now, 1)
 
@@ -522,6 +523,9 @@ class FacebookGroups(object):
         return after
 
     def rate_limit_increase(self, multiplier: int = 2):
+        if self.WAIT_BETWEEN_RETRIES == 0:
+            self.WAIT_BETWEEN_RETRIES = random.choice(range(1, 60))
+
         before = self.WAIT_BETWEEN_RETRIES
         after = abs(int(self.WAIT_BETWEEN_RETRIES * multiplier))
 
