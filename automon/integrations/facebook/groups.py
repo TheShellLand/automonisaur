@@ -550,23 +550,23 @@ class FacebookGroups(object):
         return False
 
     def reset_cache(self):
-        self.content_unavailable = None
-        self.creation_date = None
-        self.creation_date_timestamp = None
-        self.history = None
-        self.members = None
-        self.members_count = None
-        self.posts_monthly = None
-        self.posts_monthly_count = None
-        self.posts_today = None
-        self.posts_today_count = None
-        self.privacy = None
-        self.privacy_details = None
-        self.title = None
-        self.visible = None
-        self.blocked_by_login = None
-        self.browser_not_supported = None
-        self.not_available_right_not = None
+        self._content_unavailable = None
+        self._creation_date = None
+        self._creation_date_timestamp = None
+        self._history = None
+        self._members = None
+        self._members_count = None
+        self._posts_monthly = None
+        self._posts_monthly_count = None
+        self._posts_today = None
+        self._posts_today_count = None
+        self._privacy = None
+        self._privacy_details = None
+        self._title = None
+        self._visible = None
+        self._blocked_by_login = None
+        self._browser_not_supported = None
+        self._not_available_right_not = None
 
     def reset_rate_counter(self):
         self.RATE_COUNTER = []
