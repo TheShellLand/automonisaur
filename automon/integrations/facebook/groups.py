@@ -454,6 +454,7 @@ class FacebookGroups(object):
 
         if self.LAST_REQUEST:
             self.RATE_COUNTER.append(abs(round(self.LAST_REQUEST - now, 1)))
+            self.LAST_REQUEST = round(now, 1)
         else:
             self.LAST_REQUEST = round(now, 1)
 
