@@ -52,7 +52,6 @@ class FacebookGroups(object):
         self._visible = None
         self._blocked_by_login = None
         self._browser_not_supported = None
-        self._not_available_right_now = None
 
     def blocked_by_login(self):
         try:
@@ -108,8 +107,15 @@ class FacebookGroups(object):
         """This content isn't available right now"""
 
         try:
-            self._content_unavailable = self._browser.wait_for_xpath(self._xpath_content_unavailable, timeout=5)
+            self._content_unavailable = self._browser.wait_for_anything(
+                match="This content isn't available right now",
+                value='span',
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                exact_match=True
+            )
             if self._content_unavailable:
+                self._content_unavailable = self._content_unavailable[0]
                 self._content_unavailable = self._content_unavailable.text
             logger.debug(self._content_unavailable)
             return self._content_unavailable
@@ -244,24 +250,6 @@ class FacebookGroups(object):
                 text = text.text
             logger.debug(text)
             return text
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
-
-    def not_available_right_now(self):
-        try:
-            self._not_available_right_now = self._browser.wait_for_anything(
-                match="This content isn't available right now",
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                exact_match=True
-            )
-            if self._not_available_right_now:
-                self._not_available_right_now = self._not_available_right_now[0]
-                self._not_available_right_now = self._not_available_right_now.text
-            logger.debug(self._not_available_right_now)
-            return self._not_available_right_now
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -566,7 +554,6 @@ class FacebookGroups(object):
         self._visible = None
         self._blocked_by_login = None
         self._browser_not_supported = None
-        self._not_available_right_now = None
 
     def reset_rate_counter(self):
         self.RATE_COUNTER = []
@@ -659,7 +646,6 @@ class FacebookGroups(object):
             visible=self._visible or self.visible(),
             blocked_by_login=self._blocked_by_login or self.blocked_by_login(),
             browser_not_supported=self._browser_not_supported or self.browser_not_supported(),
-            not_available_right_now=self._not_available_right_now or self.not_available_right_now(),
         )
 
     def to_empty(self):
@@ -681,7 +667,6 @@ class FacebookGroups(object):
             visible=None,
             blocked_by_login=None,
             browser_not_supported=None,
-            not_available_right_now=self._not_available_right_now or self.not_available_right_now(),
         )
 
     def quit(self):
