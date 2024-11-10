@@ -10,13 +10,15 @@
 **[codecov](https://codecov.io/gh/TheShellLand/automonisaur)** |
 **[pypi](https://pypi.org/project/automonisaur/)**
 
-[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/ci.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/ci.yml)
-[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python312.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python312.yml)
-[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python311.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python311.yml)
-[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python310.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python310.yml)
-[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml)
-[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python38.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python38.yml)
-[![master](https://github.com/TheShellLand/automonisaur/actions/workflows/python37.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python37.yml)
+[![cicd](https://github.com/TheShellLand/automonisaur/actions/workflows/ci.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/ci.yml)
+[![3.14](https://github.com/TheShellLand/automonisaur/actions/workflows/python314.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python314.yml)
+[![3.13](https://github.com/TheShellLand/automonisaur/actions/workflows/python313.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python313.yml)
+[![3.12](https://github.com/TheShellLand/automonisaur/actions/workflows/python312.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python312.yml)
+[![3.11](https://github.com/TheShellLand/automonisaur/actions/workflows/python311.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python311.yml)
+[![3.10](https://github.com/TheShellLand/automonisaur/actions/workflows/python310.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python310.yml)
+[![3.9](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python39.yml)
+[![3.8](https://github.com/TheShellLand/automonisaur/actions/workflows/python38.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python38.yml)
+[![3,7](https://github.com/TheShellLand/automonisaur/actions/workflows/python37.yml/badge.svg)](https://github.com/TheShellLand/automonisaur/actions/workflows/python37.yml)
 
 [![Downloads](https://static.pepy.tech/badge/automonisaur)](https://pepy.tech/project/automonisaur)
 [![Downloads](https://static.pepy.tech/badge/automonisaur/month)](https://pepy.tech/project/automonisaur)
