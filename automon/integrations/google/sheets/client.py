@@ -156,8 +156,7 @@ class GoogleSheetsClient(GoogleAuthClient):
                 body=body
             ).execute()
 
-            logger.info(f'google :: sheets :: {result=}')
-            logger.info(f"google :: sheets :: {result.get('updatedCells')} cells updated.")
+            logger.info(f'google :: sheets :: {result.get("updatedCells")} cells updated :: {result=}')
             return result
         except Exception as error:
             logger.error(f"google :: sheets :: {error=}")
