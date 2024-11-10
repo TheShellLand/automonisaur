@@ -54,6 +54,10 @@ class FacebookGroups(object):
         self._browser_not_supported = None
 
     def blocked_by_login(self):
+
+        if self._blocked_by_login is not None:
+            return self._blocked_by_login
+
         try:
             self._blocked_by_login = self._browser.wait_for_anything(
                 match='You must log in to continue.',
@@ -71,6 +75,10 @@ class FacebookGroups(object):
             logger.error(error)
 
     def browser_not_supported(self):
+
+        if self._browser_not_supported is not None:
+            return self._browser_not_supported
+
         try:
             self._browser_not_supported = self._browser.wait_for_anything(
                 match='This browser is not supported',
@@ -106,6 +114,9 @@ class FacebookGroups(object):
     def content_unavailable(self):
         """This content isn't available right now"""
 
+        if self._content_unavailable is not None:
+            return self._content_unavailable
+
         try:
             self._content_unavailable = self._browser.wait_for_anything(
                 match="This content isn't available right now",
@@ -124,6 +135,9 @@ class FacebookGroups(object):
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
 
     def creation_date(self):
+
+        if self._creation_date is not None:
+            return self._creation_date
 
         try:
             self._creation_date = self._browser.find_anything(
@@ -144,6 +158,10 @@ class FacebookGroups(object):
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
 
     def creation_date_timestamp(self):
+
+        if self._creation_date_timestamp is not None:
+            return self._creation_date_timestamp
+
         if self._creation_date is not None or self.creation_date():
             # TODO: convert date to datetime timestamp
             logger.warn(NotImplemented)
@@ -181,6 +199,9 @@ class FacebookGroups(object):
 
     def history(self):
 
+        if self._history is not None:
+            return self._history
+
         try:
             self._history = self._browser.wait_for_anything(
                 match='Group created',
@@ -214,6 +235,9 @@ class FacebookGroups(object):
 
     def members(self):
 
+        if self._members is not None:
+            return self._members
+
         try:
             # TODO: need to clean up string from members and remove bad chars
             self._members = self._browser.wait_for_anything(
@@ -233,6 +257,9 @@ class FacebookGroups(object):
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
 
     def members_count(self):
+
+        if self._members_count is not None:
+            return self._members_count
 
         if self._members is not None or self.members():
             count = [x for x in self._members]
@@ -256,6 +283,9 @@ class FacebookGroups(object):
 
     def posts_monthly(self):
 
+        if self._posts_monthly is not None:
+            return self._posts_monthly
+
         try:
             self._posts_monthly = self._browser.wait_for_anything(
                 match='in the last month',
@@ -275,6 +305,9 @@ class FacebookGroups(object):
 
     def posts_monthly_count(self):
 
+        if self._posts_monthly_count is not None:
+            return self._posts_monthly_count
+
         if self._posts_monthly is not None or self.posts_monthly():
             count = [x for x in self._posts_monthly]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
@@ -285,6 +318,9 @@ class FacebookGroups(object):
                 return self._posts_monthly_count
 
     def posts_today(self):
+
+        if self._posts_today is not None:
+            return self._posts_today
 
         try:
             self._posts_today = self._browser.wait_for_anything(
@@ -303,6 +339,9 @@ class FacebookGroups(object):
 
     def posts_today_count(self):
 
+        if self._posts_today_count is not None:
+            return self._posts_today_count
+
         if self._posts_today is not None or self.posts_today():
             count = [x for x in self._posts_today]
             count = [x for x in count if x in [str(x) for x in range(0, 10)]]
@@ -313,6 +352,9 @@ class FacebookGroups(object):
                 return self._posts_today_count
 
     def privacy(self):
+
+        if self._privacy is not None:
+            return self._privacy
 
         try:
             known_privacy = [
@@ -340,6 +382,9 @@ class FacebookGroups(object):
 
     def privacy_details(self):
 
+        if self._privacy_details is not None:
+            return self._privacy_details
+
         try:
             known_privacy_details = [
                 "Anyone can see who's in the group and what they post.",
@@ -363,6 +408,9 @@ class FacebookGroups(object):
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
 
     def title(self) -> str:
+
+        if self._title is not None:
+            return self._title
 
         try:
             self._title = self._browser.webdriver.title
@@ -395,6 +443,9 @@ class FacebookGroups(object):
         return url
 
     def visible(self) -> str:
+
+        if self._visible is not None:
+            return self._visible
 
         try:
             known_visible = [
@@ -629,28 +680,28 @@ class FacebookGroups(object):
 
     def to_dict(self):
         return dict(
-            content_unavailable=self._content_unavailable or self.content_unavailable(),
-            creation_date=self._creation_date or self.creation_date(),
-            creation_date_timestamp=self._creation_date_timestamp or self.creation_date_timestamp(),
-            history=self._history or self.history(),
-            members=self._members or self.members(),
-            members_count=self._members_count or self.members_count(),
-            posts_monthly=self._posts_monthly or self.posts_monthly(),
-            posts_monthly_count=self._posts_monthly_count or self.posts_monthly_count(),
-            posts_today=self._posts_today or self.posts_today(),
-            posts_today_count=self._posts_today_count or self.posts_today_count(),
-            privacy=self._privacy or self.privacy(),
-            privacy_details=self._privacy_details or self.privacy_details(),
-            title=self._title or self.title(),
+            content_unavailable=self.content_unavailable(),
+            creation_date=self.creation_date(),
+            creation_date_timestamp=self.creation_date_timestamp(),
+            history=self.history(),
+            members=self.members(),
+            members_count=self.members_count(),
+            posts_monthly=self.posts_monthly(),
+            posts_monthly_count=self.posts_monthly_count(),
+            posts_today=self.posts_today(),
+            posts_today_count=self.posts_today_count(),
+            privacy=self.privacy(),
+            privacy_details=self.privacy_details(),
+            title=self.title(),
             url=self.url,
-            visible=self._visible or self.visible(),
-            blocked_by_login=self._blocked_by_login or self.blocked_by_login(),
-            browser_not_supported=self._browser_not_supported or self.browser_not_supported(),
+            visible=self.visible(),
+            blocked_by_login=self.blocked_by_login(),
+            browser_not_supported=self.browser_not_supported(),
         )
 
     def to_empty(self):
         return dict(
-            content_unavailable=None,
+            content_unavailable=self.content_unavailable(),
             creation_date=None,
             creation_date_timestamp=None,
             history=None,
