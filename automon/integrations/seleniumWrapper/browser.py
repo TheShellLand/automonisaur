@@ -537,7 +537,7 @@ class SeleniumBrowser(object):
             case_sensitive: bool = False,
             exact_match: bool = False,
             return_first: bool = False,
-            caching: bool = True,
+            caching: bool = False,
             **kwargs) -> list:
         """fuzzy search through everything
 
@@ -601,32 +601,32 @@ class SeleniumBrowser(object):
                             MATCH = f'{match}'.lower()
                             AGAINST = f'''{getattr(element, f'{dir_}')}'''.lower()
 
-                    except:
-                        pass
+                        FOUND = None
 
-                    FOUND = None
+                        if MATCH == AGAINST and exact_match:
+                            FOUND = element
 
-                    if MATCH == AGAINST and exact_match:
-                        FOUND = element
+                        if MATCH in AGAINST and not exact_match:
+                            FOUND = element
 
-                    if MATCH in AGAINST and not exact_match:
-                        FOUND = element
+                        if FOUND and FOUND not in MATCHED:
+                            logger.debug(
+                                f'find_anything :: '
+                                f'{self.current_url} :: '
+                                f'{MATCH=} :: '
+                                f'{AGAINST=} :: '
+                                f'attribute={dir_} :: '
+                                f'{element=} :: '
+                                f'found'
+                            )
+                            MATCHED.append(FOUND)
 
-                    if FOUND and FOUND not in MATCHED:
-                        logger.debug(
-                            f'find_anything :: '
-                            f'{self.current_url} :: '
-                            f'{MATCH=} :: '
-                            f'{AGAINST=} :: '
-                            f'attribute={dir_} :: '
-                            f'{element=} :: '
-                            f'found'
-                        )
-                        MATCHED.append(FOUND)
+                            if return_first:
+                                logger.info(f'find_anything :: done')
+                                return MATCHED
 
-                        if return_first:
-                            logger.info(f'find_anything :: done')
-                            return MATCHED
+                    except Exception as error:
+                        logger.error(f'find_anything :: error :: {error=} :: {error.msg=}')
 
         logger.debug(f'find_anything :: {len(MATCHED)} results found')
         logger.info(f'find_anything :: done')
@@ -650,7 +650,7 @@ class SeleniumBrowser(object):
             self,
             value: str,
             by: selenium.webdriver.common.by.By,
-            caching: bool = True,
+            caching: bool = False,
             **kwargs) -> list:
         """find elements"""
         logger.debug(f'find_elements :: {self.current_url} :: {value=} :: {by=} :: {kwargs=}')
@@ -998,6 +998,7 @@ class SeleniumBrowser(object):
                 find = self.find_anything(
                     match=match,
                     value=value,
+                    value_attr=value_attr,
                     by=by,
                     case_sensitive=case_sensitive,
                     exact_match=exact_match,
