@@ -6,6 +6,7 @@ import selenium.webdriver
 
 from automon import log
 from automon.helpers.osWrapper.environ import environ_list
+from automon.integrations.seleniumWrapper.user_agents import SeleniumUserAgentBuilder
 
 from .config_window_size import set_window_size
 
@@ -21,6 +22,8 @@ class ChromeWrapper(object):
         self._chromedriver_path = environ_list('SELENIUM_CHROMEDRIVER_PATH')
         self._ChromeService = None
         self._window_size = set_window_size()
+        self._enable_antibot_detection = None
+        self._service_args = []
 
     def __repr__(self):
         if self._webdriver:
@@ -73,6 +76,31 @@ class ChromeWrapper(object):
     def window_size(self):
         return self._window_size
 
+    def disable_automation_switch(self):
+        """exclude the collection of enable-automation switches
+
+        """
+        warnings.warn(DeprecationWarning)
+
+        self.chrome_options.add_experimental_option(
+            "excludeSwitches", ["enable-automation"]
+        )
+        logger.debug(
+            f'webdriver :: chrome :: '
+            f'add_experimental_option :: '
+            f'{dict(name="excludeSwitches", value=["enable-automation"])}'
+        )
+
+        return self
+
+    def disable_AutomationControlled(self):
+        """adding argument to disable the AutomationControlled flag
+
+        """
+        logger.debug(f'webdriver :: chrome :: add_argument :: --disable-blink-features=AutomationControlled')
+        self.chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        return self
+
     def disable_certificate_verification(self):
         logger.debug(f'webdriver :: chrome :: add_argument :: --ignore-certificate-errors')
         logger.warning('Certificates are not verified')
@@ -89,6 +117,13 @@ class ChromeWrapper(object):
         self.chrome_options.add_argument("--disable-infobars")
         return self
 
+    def disable_javascript_webdriver_prop(self):
+        """changing the property of the navigator value for webdriver to undefined
+
+        """
+        self.webdriver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        return self
+
     def disable_notifications(self):
         """Pass the argument 1 to allow and 2 to block
 
@@ -99,7 +134,7 @@ class ChromeWrapper(object):
 
         logger.debug(
             f'webdriver :: chrome :: '
-            f'disable_notifications :: '
+            f'add_experimental_option :: '
             f'{dict(name="prefs", value={"profile.default_content_setting_values.notifications": 2})}'
         )
 
@@ -116,9 +151,38 @@ class ChromeWrapper(object):
         self.chrome_options.add_argument('--disable-dev-shm-usage')
         return self
 
+    def disable_userAutomationExtension(self):
+        """turn-off userAutomationExtension
+
+        """
+        self.chrome_options.add_experimental_option(
+            "useAutomationExtension", False
+        )
+        logger.debug(
+            f'webdriver :: chrome :: '
+            f'add_experimental_option :: '
+            f'{dict(name="useAutomationExtension", value=False)}'
+        )
+
+        return self
+
     def download_chromedriver(self):
         versions = 'https://googlechromelabs.github.io/chrome-for-testing/latest-versions-per-milestone-with-downloads.json'
         raise
+
+    def enable_antibot_detection(self):
+        """Disabling the Automation Indicator WebDriver Flags
+
+        """
+        self.disable_AutomationControlled()
+        self.disable_automation_switch()
+        self.disable_userAutomationExtension()
+
+        useragent = SeleniumUserAgentBuilder().get_top()
+        self.set_user_agent(useragent)
+
+        self._enable_antibot_detection = True
+        return self
 
     def enable_bigshm(self):
         logger.warning('Big shm not yet implemented')
@@ -127,6 +191,7 @@ class ChromeWrapper(object):
     def enable_defaults(self):
         self.enable_maximized()
         self.enable_logging()
+        self.set_logging_level(level='ALL')
         return self
 
     def enable_fullscreen(self):
@@ -153,7 +218,7 @@ class ChromeWrapper(object):
         )
         logger.debug(
             f'webdriver :: chrome :: '
-            f'enable_notifications :: '
+            f'add_experimental_option :: '
             f'{dict(name="prefs", value={"profile.default_content_setting_values.notifications": 1})}'
         )
 
@@ -162,6 +227,11 @@ class ChromeWrapper(object):
     def enable_maximized(self):
         logger.debug(f'webdriver :: chrome :: add_argument :: --start-maximized')
         self.chrome_options.add_argument('--start-maximized')
+        return self
+
+    def enable_proxy(self, proxy: str):
+        logger.debug(f'webdriver :: chrome :: add_argument :: --proxy-server')
+        self.chrome_options.add_argument(f"--proxy-server={proxy}")
         return self
 
     def enable_translate(self, native_language: str = 'en'):
@@ -176,7 +246,7 @@ class ChromeWrapper(object):
 
         logger.debug(
             f'webdriver :: chrome :: '
-            f'enable_translate :: '
+            f'add_experimental_option :: '
             f'{dict(name="prefs", value=prefs)}'
         )
 
@@ -307,7 +377,8 @@ class ChromeWrapper(object):
 
             if self.chromedriver_path:
                 self._ChromeService = selenium.webdriver.ChromeService(
-                    executable_path=self.chromedriver_path
+                    executable_path=self.chromedriver_path,
+                    service_args=self.service_args
                 )
 
                 logger.debug(f'webdriver :: chrome :: run :: {self.ChromeService=}')
@@ -316,6 +387,10 @@ class ChromeWrapper(object):
                     service=self.ChromeService,
                     options=self.chrome_options
                 )
+
+                if self._enable_antibot_detection:
+                    self.disable_javascript_webdriver_prop()
+
                 logger.debug(f'webdriver :: chrome :: run :: {self=}')
 
                 logger.info(f'webdriver :: chrome :: run :: done')
@@ -327,6 +402,20 @@ class ChromeWrapper(object):
             return True
         except Exception as exception:
             raise Exception(f'webdriver :: chrome :: run :: failed :: {exception=}')
+
+    @property
+    def service_args(self):
+        return self._service_args
+
+    def set_logging_level(self, level: str = 'ALL'):
+        """There are 6 available log levels: ALL, DEBUG, INFO, WARNING, SEVERE, and OFF.
+        Note that --verbose is equivalent to --log-level=ALL and --silent is equivalent
+        to --log-level=OFF, so this example is just setting the log level generically
+
+        """
+        logger.debug(f'webdriver :: chrome :: service_args :: {level}')
+        self.service_args.append(f'--log-level={level.upper()}')
+        return self
 
     def set_chromedriver(self, chromedriver_path: str):
         logger.debug(f'{chromedriver_path}')

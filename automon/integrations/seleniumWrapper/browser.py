@@ -39,7 +39,7 @@ class SeleniumBrowser(object):
 
         self.autosaved = None
 
-        self.logs = {}
+        self._logs = {}
         self.cache = {}
 
     def __repr__(self):
@@ -79,6 +79,10 @@ class SeleniumBrowser(object):
             return
 
     @property
+    def logs(self):
+        return self.get_logs()
+
+    @property
     def webdriver(self):
         """get webdriver"""
         return self.config.webdriver
@@ -96,20 +100,27 @@ class SeleniumBrowser(object):
         you can only run this once
         afterwards the logs are cleared from the webdriver
         """
-        logger.debug(f'get_logs')
-        logger.debug(f'get_logs :: {len(self.webdriver.log_types)} types found')
+        logger.debug(f'get_logs :: {len(self.webdriver.log_types)} types found :: {self.webdriver.log_types}')
 
         for log_type in self.webdriver.log_types:
-            logger.debug(f'get_logs :: {log_type}')
-            self.logs.update({
-                log_type: self.webdriver.get_log(log_type)
-            })
-            logger.debug(f'get_logs :: {log_type} :: {len(self.logs[log_type])} logs')
+            logs = self.webdriver.get_log(log_type)
+
+            if log_type == 'performance':
+                for x in logs:
+                    x['message'] = json.loads(x['message'])
+
+            if log_type in self._logs.keys():
+                if logs:
+                    self._logs[log_type].append(logs)
+            else:
+                self._logs[log_type] = logs
+
+            logger.debug(f'get_logs :: {log_type} :: {len(self._logs[log_type])} logs')
             logger.info(f'get_logs :: {log_type} :: done')
 
-        logger.debug(f'get_logs :: {len(self.logs)} logs')
+        logger.debug(f'get_logs :: {len(self._logs)} total logs')
         logger.info(f'get_logs :: done')
-        return self.logs
+        return self._logs
 
     def get_log_browser(self) -> list:
         """Get browser logs"""
@@ -521,11 +532,12 @@ class SeleniumBrowser(object):
             self,
             match: str,
             value: str = None,
+            value_attr: str = None,
             by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
             exact_match: bool = False,
             return_first: bool = False,
-            caching: bool = True,
+            caching: bool = False,
             **kwargs) -> list:
         """fuzzy search through everything
 
@@ -536,6 +548,7 @@ class SeleniumBrowser(object):
             f'find_anything :: '
             f'{match=} :: '
             f'{value=} :: '
+            f'{value_attr=} :: '
             f'{by=} :: '
             f'{case_sensitive=} :: '
             f'{exact_match=} :: '
@@ -567,9 +580,15 @@ class SeleniumBrowser(object):
             elements = self.find_elements(value=value, by=by_, caching=caching, **kwargs)
 
             for element in elements:
-                dirs = dir(element)
+
+                if value_attr:
+                    dirs = [value_attr]
+                else:
+                    dirs = dir(element)
+
                 dir_meta = []
                 for dir_ in dirs:
+
                     try:
                         dir_meta.append(
                             getattr(element, f'{dir_}')
@@ -582,32 +601,32 @@ class SeleniumBrowser(object):
                             MATCH = f'{match}'.lower()
                             AGAINST = f'''{getattr(element, f'{dir_}')}'''.lower()
 
-                    except:
-                        pass
+                        FOUND = None
 
-                    FOUND = None
+                        if MATCH == AGAINST and exact_match:
+                            FOUND = element
 
-                    if MATCH == AGAINST and exact_match:
-                        FOUND = element
+                        if MATCH in AGAINST and not exact_match:
+                            FOUND = element
 
-                    if MATCH in AGAINST and not exact_match:
-                        FOUND = element
+                        if FOUND and FOUND not in MATCHED:
+                            logger.debug(
+                                f'find_anything :: '
+                                f'{self.current_url} :: '
+                                f'{MATCH=} :: '
+                                f'{AGAINST=} :: '
+                                f'attribute={dir_} :: '
+                                f'{element=} :: '
+                                f'found'
+                            )
+                            MATCHED.append(FOUND)
 
-                    if FOUND and FOUND not in MATCHED:
-                        logger.debug(
-                            f'find_anything :: '
-                            f'{self.current_url} :: '
-                            f'{MATCH=} :: '
-                            f'{AGAINST=} :: '
-                            f'attribute={dir_} :: '
-                            f'{element=} :: '
-                            f'found'
-                        )
-                        MATCHED.append(FOUND)
+                            if return_first:
+                                logger.info(f'find_anything :: done')
+                                return MATCHED
 
-                        if return_first:
-                            logger.info(f'find_anything :: done')
-                            return MATCHED
+                    except Exception as error:
+                        logger.error(f'find_anything :: error :: {error=} :: {error.msg=}')
 
         logger.debug(f'find_anything :: {len(MATCHED)} results found')
         logger.info(f'find_anything :: done')
@@ -631,7 +650,7 @@ class SeleniumBrowser(object):
             self,
             value: str,
             by: selenium.webdriver.common.by.By,
-            caching: bool = True,
+            caching: bool = False,
             **kwargs) -> list:
         """find elements"""
         logger.debug(f'find_elements :: {self.current_url} :: {value=} :: {by=} :: {kwargs=}')
@@ -941,6 +960,7 @@ class SeleniumBrowser(object):
             self,
             match: str,
             value: str = None,
+            value_attr: str = None,
             by: selenium.webdriver.common.by.By = None,
             case_sensitive: bool = False,
             exact_match: bool = False,
@@ -952,6 +972,7 @@ class SeleniumBrowser(object):
             f'wait_for_anything :: '
             f'{match=} :: '
             f'{value=} :: '
+            f'{value_attr=} :: '
             f'{by=} :: '
             f'{case_sensitive=} :: '
             f'{exact_match=} :: '
@@ -977,6 +998,7 @@ class SeleniumBrowser(object):
                 find = self.find_anything(
                     match=match,
                     value=value,
+                    value_attr=value_attr,
                     by=by,
                     case_sensitive=case_sensitive,
                     exact_match=exact_match,

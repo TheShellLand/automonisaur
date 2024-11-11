@@ -1,10 +1,10 @@
-name: 3.8 EOL
+name: 3.14
 
 on:
   push:
-    branches: [ 'none' ]
+    branches: [ '*' ]
   pull_request:
-    branches: [ 'none' ]
+    branches: [ '*' ]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -33,7 +33,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: '3.14'
       - name: Install python packages
         run: pip3 install -r requirements.txt
       - name: install chrome and chromedriver
