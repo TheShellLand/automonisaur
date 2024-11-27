@@ -1,14 +1,14 @@
+import automon
+import warnings
 import functools
 import googleapiclient.http
 import googleapiclient.discovery
 import google.auth.transport.requests
 
-from automon import log
-
 from .config import GoogleAuthConfig
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = automon.log.logging.getLogger(__name__)
+logger.setLevel(automon.log.DEBUG)
 
 
 class GoogleAuthClient(object):
@@ -70,14 +70,15 @@ class GoogleAuthClient(object):
         if hasattr(creds, 'refresh_token'):
             try:
                 creds.refresh(google.auth.transport.requests.Request())
-                logger.info(f'token refresh success')
+                logger.info(f'[authenticate_oauth] :: token refresh :: {getattr(creds, "refresh_token")}')
+                logger.info(f'[authenticate_oauth] :: token refresh :: done')
                 return True
-            except Exception as e:
-                logger.error(msg=f'token refresh failed: {e}')
+            except Exception as error:
+                logger.error(msg=f'[authenticate_oauth] :: error :: token refresh failed: {error}')
 
         else:
-            # TODO: add google flow() authentication here
-            logger.info(f'flow login success')
+            warnings.warn(f'TODO: add google flow() authentication')
+            logger.info(f'[authenticate_oauth] :: done')
             return True
 
         return False
