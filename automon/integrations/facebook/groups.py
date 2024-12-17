@@ -415,11 +415,12 @@ class FacebookGroups(object):
         try:
             self._title = self._browser.webdriver.title
 
-            if 'Log into Facebook' in self._title:
-                logger.error(self._title)
-                return ''
+            return_empty = [
+                'Log into Facebook',
+                'www.facebook.com'
+            ]
 
-            if 'www.facebook.com' in self._title:
+            if self._title in return_empty:
                 logger.error(self._title)
                 return ''
 
