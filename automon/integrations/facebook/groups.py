@@ -419,6 +419,10 @@ class FacebookGroups(object):
                 logger.error(self._title)
                 return ''
 
+            if 'www.facebook.com' in self._title:
+                logger.error(self._title)
+                return ''
+
             if self._title:
                 self._title = self._title.split('|')
                 self._title = self._title[0]
