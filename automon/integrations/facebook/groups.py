@@ -421,7 +421,6 @@ class FacebookGroups(object):
             ]
 
             if self._title in return_empty:
-                logger.error(self._title)
                 self._title = ''
 
             if self._title:
