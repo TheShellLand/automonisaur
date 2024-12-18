@@ -422,7 +422,7 @@ class FacebookGroups(object):
 
             if self._title in return_empty:
                 logger.error(self._title)
-                return ''
+                self._title = ''
 
             if self._title:
                 self._title = self._title.split('|')
