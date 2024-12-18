@@ -445,6 +445,9 @@ class FacebookGroups(object):
             return
         if url[-1] == '/':
             url = url[:-1]
+        # https://m.facebook.com/groups/ -> https://www.facebook.com/groups/
+        if '://m.' in url:
+            url = url.replace('://m.', '://www.')
         return url
 
     def visible(self) -> str:
