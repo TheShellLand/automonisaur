@@ -70,15 +70,15 @@ class GoogleAuthClient(object):
         if hasattr(creds, 'refresh_token'):
             try:
                 creds.refresh(google.auth.transport.requests.Request())
-                logger.info(f'[authenticate_oauth] :: token refresh :: {getattr(creds, "refresh_token")}')
-                logger.info(f'[authenticate_oauth] :: token refresh :: done')
+                logger.info(f'[google] :: auth :: oauth :: token refresh :: {getattr(creds, "refresh_token")}')
+                logger.info(f'[google] :: auth :: oauth :: token refresh :: done')
                 return True
             except Exception as error:
-                logger.error(msg=f'[authenticate_oauth] :: error :: token refresh failed: {error}')
+                logger.error(msg=f'[google] :: auth :: oauth :: error :: token refresh failed: {error}')
 
         else:
             warnings.warn(f'TODO: add google flow() authentication')
-            logger.info(f'[authenticate_oauth] :: done')
+            logger.info(f'[google] :: auth :: oauth :: done')
             return True
 
         return False
