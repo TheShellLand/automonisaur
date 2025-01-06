@@ -68,12 +68,11 @@ class GoogleSheetsClient(GoogleAuthClient):
                 **kwargs,
             ).execute()
 
-            logger.info(f'google :: sheets :: {result=}')
-            logger.info(f"google :: sheets :: {result.get('clearedRange')} cells cleared.")
+            logger.info(f'[google] :: sheets :: clear :: {result=}')
+            logger.info(f"[google] :: sheets :: clear :: {result.get('clearedRange')} cells cleared.")
             return result
         except Exception as error:
-            logger.error(f"google :: sheets :: {error=}")
-            return error
+            raise Exception(f'[google] :: sheets :: clear :: error :: {error}')
 
     def spreadsheets(self):
         """spreadsheet service"""
@@ -98,9 +97,9 @@ class GoogleSheetsClient(GoogleAuthClient):
                 fields=fields,
                 **kwargs,
             ).execute()
-            logger.info(f'google :: sheets :: {self.worksheet}!{self.range} ({self.config.spreadsheetId=})')
+            logger.info(f'[google] :: sheets :: get :: {self.worksheet}!{self.range} ({self.config.spreadsheetId=})')
         except Exception as error:
-            logger.error(f'google :: sheets :: {error=}')
+            raise Exception(f'[google] :: sheets :: get :: error {error=}')
 
         return self
 
@@ -119,15 +118,15 @@ class GoogleSheetsClient(GoogleAuthClient):
                 **kwargs,
             ).execute()
 
-            logger.info(f'google :: sheets :: {self.worksheet=} :: {self.range=} :: {self.config.spreadsheetId=}')
+            logger.info(f'[google] :: sheets :: get values :: {self.worksheet=} :: {self.range=} :: {self.config.spreadsheetId=}')
         except Exception as error:
-            logger.error(f'google :: sheets :: {error=}')
+            logger.error(f'[google] :: sheets :: get values :: {error=}')
 
         return self
 
     def list(self):
         # list(pageSize=1).execute()
-        logger.warning(f'{NotImplemented}')
+        logger.warning(f'[google] :: sheets :: list :: {NotImplemented}')
         return
 
     def update(
@@ -146,7 +145,7 @@ class GoogleSheetsClient(GoogleAuthClient):
                 'values': values
             }
 
-            logger.debug(f'google :: sheets :: {body=}')
+            logger.debug(f'[google] :: sheets :: update :: {body=}')
 
             spreadsheets = self.spreadsheets()
             result = spreadsheets.values().update(
@@ -156,8 +155,7 @@ class GoogleSheetsClient(GoogleAuthClient):
                 body=body
             ).execute()
 
-            logger.info(f'google :: sheets :: {result.get("updatedCells")} cells updated :: {result=}')
+            logger.info(f'[google] :: sheets :: update :: {result.get("updatedCells")} cells updated :: {result=}')
             return result
         except Exception as error:
-            logger.error(f"google :: sheets :: {error=}")
-            return error
+            raise Exception(f'[google] :: sheets :: update :: error :: {error}')
