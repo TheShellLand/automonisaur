@@ -11,22 +11,29 @@ logger.setLevel(log.DEBUG)
 
 
 class FacebookGroups(object):
-    _xpath_popup_close = '/html/body/div[1]/div/div[1]/div/div[5]/div/div/div[1]/div/div[2]/div/div/div/div[1]/div/i'
-
-    _xpath_content_unavailable = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div[1]/span'
-
+    _xpath_close_login_popup = '/html/body/div[1]/div/div[1]/div/div[5]/div/div/div[1]/div/div[2]/div/div/div/div[1]/div'
+    _xpath_content_unavailable = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div[1]/h2/span'
     _xpath_title = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[1]/div[2]/div/div/div/div/div[1]/div/div/div/div/div/div[1]/h1/span/a'
-
     _xpath_temporarily_blocked = '/html/body/div[1]/div[2]/div[1]/div/div/div[1]/div/div[2]'
-
     _xpath_must_login = '/html/body/div[1]/div[1]/div[1]/div/div[2]/div/div'
+    _xpath_blocked_by_login = ''
+    _xpath_browser_not_supported = ''
 
-    _xpath_visible = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[3]/div/div/div[2]/div/div[2]/span/span'
+    _xpath_creation_date = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div/div/span'
+    _xpath_history = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[3]/div/div/div[2]/div/div[2]/span/span'
+    _xpath_members = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]'
+    _xpath_posts_monthly = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[2]'
+    _xpath_posts_today = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]'
+    _xpath_privacy = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[1]/span/span'
+    _xpath_privacy_details = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[2]/span/span'
+    _xpath_visible = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div/div[2]/span/span'
 
     RATE_PER_MINUTE = 2
     RATE_COUNTER = []
     LAST_REQUEST = None
     WAIT_BETWEEN_RETRIES = random.choice(range(1, 60))
+
+    USE_XPATH = False
 
     def __init__(self, url: str = None):
         """Facebook Groups object
@@ -59,18 +66,24 @@ class FacebookGroups(object):
             return self._blocked_by_login
 
         try:
-            self._blocked_by_login = self._browser.wait_for_anything(
-                match='You must log in to continue.',
-                value='div',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                exact_match=True
-            )
-            if self._blocked_by_login:
-                self._blocked_by_login = self._blocked_by_login[0]
-                self._blocked_by_login = self._blocked_by_login.text
-            logger.debug(self._blocked_by_login)
-            return self._blocked_by_login
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=3)
+
+            else:
+                element = self._browser.wait_for_anything(
+                    match='You must log in to continue.',
+                    value='div',
+                    value_attr='text',
+                    by=self._browser.by.TAG_NAME,
+                    exact_match=True
+                )
+                element = element[0]
+
+            if element:
+                element = element.text
+            logger.debug(element)
+            self._blocked_by_login = element
+            return element
         except Exception as error:
             logger.error(error)
 
@@ -80,34 +93,47 @@ class FacebookGroups(object):
             return self._browser_not_supported
 
         try:
-            self._browser_not_supported = self._browser.wait_for_anything(
-                match='This browser is not supported',
-                value='div',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                exact_match=True
-            )
-            if self._browser_not_supported:
-                self._browser_not_supported = self._browser_not_supported[0]
-                self._browser_not_supported = self._browser_not_supported.text
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_browser_not_supported,
+                                                       timeout=3)
+
+            else:
+                element = self._browser.wait_for_anything(
+                    match='This browser is not supported',
+                    value='div',
+                    value_attr='text',
+                    by=self._browser.by.TAG_NAME,
+                    exact_match=True
+                )
+                element = element[0]
+
+            if element:
+                element = element.text
                 logger.debug(self._browser.user_agent)
-            logger.debug(self._browser_not_supported)
-            return self._browser_not_supported
+            logger.debug(element)
+            self._browser_not_supported = element
+            return element
 
         except Exception as error:
             logger.error(error)
 
     def close_login_popup(self):
         try:
-            button = self._browser.find_anything(
-                match='Close',
-                value='[aria-label="Close"]',
-                by=self._browser.by.CSS_SELECTOR,
-            )
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=3)
 
-            if button:
-                button[0].click()
-            logger.debug(button)
+            else:
+                element = self._browser.find_anything(
+                    match='Close',
+                    value='[aria-label="Close"]',
+                    by=self._browser.by.CSS_SELECTOR,
+                )
+                element = element[0]
+
+            if element:
+                element.click()
+            logger.debug(element)
+            return element
         except Exception as error:
             logger.error(error)
 
@@ -118,18 +144,24 @@ class FacebookGroups(object):
             return self._content_unavailable
 
         try:
-            self._content_unavailable = self._browser.wait_for_anything(
-                match="This content isn't available right now",
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                exact_match=True
-            )
-            if self._content_unavailable:
-                self._content_unavailable = self._content_unavailable[0]
-                self._content_unavailable = self._content_unavailable.text
-            logger.debug(self._content_unavailable)
-            return self._content_unavailable
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_content_unavailable, timeout=3)
+
+            else:
+                element = self._browser.wait_for_anything(
+                    match="This content isn't available right now",
+                    value='span',
+                    value_attr='text',
+                    by=self._browser.by.TAG_NAME,
+                    exact_match=True
+                )
+                element = element[0]
+
+            if element:
+                element = element.text
+            logger.debug(element)
+            self._content_unavailable = element
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -140,19 +172,26 @@ class FacebookGroups(object):
             return self._creation_date
 
         try:
-            self._creation_date = self._browser.find_anything(
-                match='Created',
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                return_first=True
-            )
-            if self._creation_date:
-                self._creation_date = self._creation_date[0]
-                self._creation_date = self._creation_date.text.split('See more')[0]
-                self._creation_date = self._creation_date.strip()
-            logger.debug(self._creation_date)
-            return self._creation_date
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_creation_date)
+                element = element.text
+                element = element.splitlines()[0]
+
+            else:
+                element = self._browser.find_anything(
+                    match='Created',
+                    value='span',
+                    value_attr='text',
+                    by=self._browser.by.TAG_NAME,
+                    return_first=True
+                )
+                element = element[0]
+                element = element.text.split('See more')[0]
+                element = element.strip()
+
+            logger.debug(element)
+            self._creation_date = element
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -203,32 +242,38 @@ class FacebookGroups(object):
             return self._history
 
         try:
-            self._history = self._browser.wait_for_anything(
-                match='Group created',
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                return_first=True
-            )
-            if self._history:
-                self._history = self._history[0]
-                self._history = self._history.text
-                if 'See more' in self._history:
-                    self._history = self._history.split('See more')
-                    self._history = self._history[0]
-            logger.debug(self._history)
-            return self._history
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_history)
+
+            else:
+                element = self._browser.wait_for_anything(
+                    match='Group created',
+                    value='span',
+                    value_attr='text',
+                    by=self._browser.by.TAG_NAME,
+                    return_first=True
+                )
+                element = element[0]
+
+            if element:
+                element = element.text
+                if 'See more' in element:
+                    element = element.split('See more')
+                    element = element[0]
+            logger.debug(element)
+            self._history = element
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
 
     def temporarily_blocked(self):
         try:
-            text = self._browser.wait_for_xpath(self._xpath_temporarily_blocked, timeout=5)
-            if text:
-                text = text.text
-            logger.debug(text)
-            return text
+            element = self._browser.wait_for_xpath(value=self._xpath_temporarily_blocked, timeout=3)
+            if element:
+                element = element.text
+            logger.debug(element)
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -239,19 +284,25 @@ class FacebookGroups(object):
             return self._members
 
         try:
-            # TODO: need to clean up string from members and remove bad chars
-            self._members = self._browser.wait_for_anything(
-                match='total members',
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                return_first=True
-            )
-            if self._members:
-                self._members = self._members[0]
-                self._members = self._members.text
-            logger.debug(self._members)
-            return self._members
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_members, timeout=3)
+
+            else:
+                # TODO: need to clean up string from members and remove bad chars
+                element = self._browser.wait_for_anything(
+                    match='total members',
+                    value='span',
+                    value_attr='text',
+                    by=self._browser.by.TAG_NAME,
+                    return_first=True
+                )
+                element = element[0]
+
+            if element:
+                element = element.text
+            logger.debug(element)
+            self._members = element
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -272,11 +323,11 @@ class FacebookGroups(object):
 
     def must_login(self):
         try:
-            text = self._browser.wait_for_anything(self._xpath_must_login)
-            if text:
-                text = text.text
-            logger.debug(text)
-            return text
+            element = self._browser.wait_for_xpath(self._xpath_must_login)
+            if element:
+                element = element.text
+            logger.debug(element)
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -287,18 +338,24 @@ class FacebookGroups(object):
             return self._posts_monthly
 
         try:
-            self._posts_monthly = self._browser.wait_for_anything(
-                match='in the last month',
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                return_first=True
-            )
-            if self._posts_monthly:
-                self._posts_monthly = self._posts_monthly[0]
-                self._posts_monthly = self._posts_monthly.text
-            logger.debug(self._posts_monthly)
-            return self._posts_monthly
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_posts_monthly, timeout=3)
+
+            else:
+                element = self._browser.wait_for_anything(
+                    match='in the last month',
+                    value='span',
+                    value_attr='text',
+                    by=self._browser.by.TAG_NAME,
+                    return_first=True
+                )
+                element = element[0]
+
+            if element:
+                element = element.text
+            logger.debug(element)
+            self._posts_monthly = element
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -323,16 +380,22 @@ class FacebookGroups(object):
             return self._posts_today
 
         try:
-            self._posts_today = self._browser.wait_for_anything(
-                match='new posts today',
-                value='span',
-                by=self._browser.by.TAG_NAME
-            )
-            if self._posts_today:
-                self._posts_today = self._posts_today[-1]
-                self._posts_today = self._posts_today.text
-            logger.debug(self._posts_today)
-            return self._posts_today
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_posts_today, timeout=3)
+
+            else:
+                element = self._browser.wait_for_anything(
+                    match='new posts today',
+                    value='span',
+                    by=self._browser.by.TAG_NAME
+                )
+                element = element[-1]
+
+            if element:
+                element = element.text
+            logger.debug(element)
+            self._posts_today = element
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -357,25 +420,33 @@ class FacebookGroups(object):
             return self._privacy
 
         try:
-            known_privacy = [
-                'Public',
-                'Private',
-                'Visible',
-            ]
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_privacy)
 
-            for privacy in known_privacy:
-                self._privacy = self._browser.wait_for_anything(
-                    match=privacy,
-                    value='span',
-                    by=self._browser.by.TAG_NAME,
-                    exact_match=True,
-                    return_first=True,
-                )
-                if self._privacy:
-                    self._privacy = self._privacy[-1]
-                    self._privacy = self._privacy.text
-                    logger.debug(self._privacy)
-                    return self._privacy
+            else:
+                known_privacy = [
+                    'Public',
+                    'Private',
+                    'Visible',
+                ]
+
+                for privacy in known_privacy:
+                    element = self._browser.wait_for_anything(
+                        match=privacy,
+                        value='span',
+                        by=self._browser.by.TAG_NAME,
+                        exact_match=True,
+                        return_first=True,
+                    )
+                    if element:
+                        element = element[-1]
+                        break
+
+            if element:
+                element = element.text
+            logger.debug(element)
+            self._privacy = element
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -386,23 +457,31 @@ class FacebookGroups(object):
             return self._privacy_details
 
         try:
-            known_privacy_details = [
-                "Anyone can see who's in the group and what they post.",
-                "Only members can see who's in the group and what they post.",
-            ]
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_privacy_details)
 
-            for privacy_details in known_privacy_details:
-                self._privacy_details = self._browser.wait_for_anything(
-                    match=privacy_details,
-                    value='span',
-                    by=self._browser.by.TAG_NAME,
-                    exact_match=True
-                )
-                if self._privacy_details:
-                    self._privacy_details = self._privacy_details[0]
-                    self._privacy_details = self._privacy_details.text
-                    logger.debug(self._privacy_details)
-                    return self._privacy_details
+            else:
+                known_privacy_details = [
+                    "Anyone can see who's in the group and what they post.",
+                    "Only members can see who's in the group and what they post.",
+                ]
+
+                for privacy_details in known_privacy_details:
+                    element = self._browser.wait_for_anything(
+                        match=privacy_details,
+                        value='span',
+                        by=self._browser.by.TAG_NAME,
+                        exact_match=True
+                    )
+                    if element:
+                        element = element[0]
+                        break
+
+            if element:
+                element = element.text
+            self._privacy_details = element
+            logger.debug(element)
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -455,22 +534,30 @@ class FacebookGroups(object):
             return self._visible
 
         try:
-            known_visible = [
-                'Anyone can find this group.',
-            ]
+            if self.USE_XPATH:
+                element = self._browser.wait_for_xpath(value=self._xpath_visible)
 
-            for visible in known_visible:
-                self._visible = self._browser.wait_for_anything(
-                    match=visible,
-                    value='span',
-                    by=self._browser.by.TAG_NAME,
-                    exact_match=True
-                )
-                if self._visible:
-                    self._visible = self._visible[-1]
-                    self._visible = self._visible.text
-                    logger.debug(self._visible)
-                    return self._visible
+            else:
+                known_visible = [
+                    'Anyone can find this group.',
+                ]
+
+                for visible in known_visible:
+                    element = self._browser.wait_for_anything(
+                        match=visible,
+                        value='span',
+                        by=self._browser.by.TAG_NAME,
+                        exact_match=True
+                    )
+                    if element:
+                        element = element[-1]
+                        break
+
+            if element:
+                element = element.text
+            logger.debug(element)
+            self._visible = element
+            return element
         except Exception as error:
             message, session, stacktrace = self.error_parsing(error)
             logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
@@ -543,7 +630,6 @@ class FacebookGroups(object):
                 self.rate_limit_increase()
                 Sleeper.seconds(seconds=self.WAIT_BETWEEN_RETRIES)
                 logger.error(f'get_with_rate_limiter :: error :: {url} :: {retry=} :: {retries=}')
-                continue
             else:
                 self.rate_limit_decrease()
 
@@ -591,7 +677,7 @@ class FacebookGroups(object):
             logger.info(f'rate_limited :: True')
             return True
 
-        logger.error(f'rate_limited :: False')
+        logger.info(f'rate_limited :: False')
 
         return False
 
