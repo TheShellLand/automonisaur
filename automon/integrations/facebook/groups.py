@@ -65,77 +65,68 @@ class FacebookGroups(object):
         if self._blocked_by_login is not None:
             return self._blocked_by_login
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=3)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=3)
 
-            else:
-                element = self._browser.wait_for_anything(
-                    match='You must log in to continue.',
-                    value='div',
-                    value_attr='text',
-                    by=self._browser.by.TAG_NAME,
-                    exact_match=True
-                )
-                element = element[0]
+        else:
+            element = self._browser.wait_for_anything(
+                match='You must log in to continue.',
+                value='div',
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                exact_match=True
+            )
+            element = element[0]
 
-            if element:
-                element = element.text
-            logger.debug(element)
-            self._blocked_by_login = element
-            return element
-        except Exception as error:
-            logger.error(error)
+        if element:
+            element = element.text
+        logger.debug(element)
+        self._blocked_by_login = element
+        return element
 
     def browser_not_supported(self):
 
         if self._browser_not_supported is not None:
             return self._browser_not_supported
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_browser_not_supported,
-                                                       timeout=3)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_browser_not_supported,
+                                                   timeout=3)
 
-            else:
-                element = self._browser.wait_for_anything(
-                    match='This browser is not supported',
-                    value='div',
-                    value_attr='text',
-                    by=self._browser.by.TAG_NAME,
-                    exact_match=True
-                )
-                element = element[0]
+        else:
+            element = self._browser.wait_for_anything(
+                match='This browser is not supported',
+                value='div',
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                exact_match=True
+            )
+            element = element[0]
 
-            if element:
-                element = element.text
-                logger.debug(self._browser.user_agent)
-            logger.debug(element)
-            self._browser_not_supported = element
-            return element
+        if element:
+            element = element.text
+            logger.debug(self._browser.user_agent)
+        logger.debug(element)
+        self._browser_not_supported = element
+        return element
 
-        except Exception as error:
-            logger.error(error)
 
     def close_login_popup(self):
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=3)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=3)
 
-            else:
-                element = self._browser.find_anything(
-                    match='Close',
-                    value='[aria-label="Close"]',
-                    by=self._browser.by.CSS_SELECTOR,
-                )
-                element = element[0]
+        else:
+            element = self._browser.find_anything(
+                match='Close',
+                value='[aria-label="Close"]',
+                by=self._browser.by.CSS_SELECTOR,
+            )
+            element = element[0]
 
-            if element:
-                element.click()
-            logger.debug(element)
-            return element
-        except Exception as error:
-            logger.error(error)
+        if element:
+            element.click()
+        logger.debug(element)
+        return element
 
     def content_unavailable(self):
         """This content isn't available right now"""
@@ -143,58 +134,50 @@ class FacebookGroups(object):
         if self._content_unavailable is not None:
             return self._content_unavailable
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_content_unavailable, timeout=3)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_content_unavailable, timeout=3)
 
-            else:
-                element = self._browser.wait_for_anything(
-                    match="This content isn't available right now",
-                    value='span',
-                    value_attr='text',
-                    by=self._browser.by.TAG_NAME,
-                    exact_match=True
-                )
-                element = element[0]
+        else:
+            element = self._browser.wait_for_anything(
+                match="This content isn't available right now",
+                value='span',
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                exact_match=True
+            )
+            element = element[0]
 
-            if element:
-                element = element.text
-            logger.debug(element)
-            self._content_unavailable = element
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        if element:
+            element = element.text
+        logger.debug(element)
+        self._content_unavailable = element
+        return element
 
     def creation_date(self):
 
         if self._creation_date is not None:
             return self._creation_date
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_creation_date)
-                element = element.text
-                element = element.splitlines()[0]
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_creation_date)
+            element = element.text
+            element = element.splitlines()[0]
 
-            else:
-                element = self._browser.find_anything(
-                    match='Created',
-                    value='span',
-                    value_attr='text',
-                    by=self._browser.by.TAG_NAME,
-                    return_first=True
-                )
-                element = element[0]
-                element = element.text.split('See more')[0]
-                element = element.strip()
+        else:
+            element = self._browser.find_anything(
+                match='Created',
+                value='span',
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                return_first=True
+            )
+            element = element[0]
+            element = element.text.split('See more')[0]
+            element = element.strip()
 
-            logger.debug(element)
-            self._creation_date = element
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        logger.debug(element)
+        self._creation_date = element
+        return element
 
     def creation_date_timestamp(self):
 
@@ -241,71 +224,59 @@ class FacebookGroups(object):
         if self._history is not None:
             return self._history
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_history)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_history)
 
-            else:
-                element = self._browser.wait_for_anything(
-                    match='Group created',
-                    value='span',
-                    value_attr='text',
-                    by=self._browser.by.TAG_NAME,
-                    return_first=True
-                )
+        else:
+            element = self._browser.wait_for_anything(
+                match='Group created',
+                value='span',
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                return_first=True
+            )
+            element = element[0]
+
+        if element:
+            element = element.text
+            if 'See more' in element:
+                element = element.split('See more')
                 element = element[0]
-
-            if element:
-                element = element.text
-                if 'See more' in element:
-                    element = element.split('See more')
-                    element = element[0]
-            logger.debug(element)
-            self._history = element
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        logger.debug(element)
+        self._history = element
+        return element
 
     def temporarily_blocked(self):
-        try:
-            element = self._browser.wait_for_xpath(value=self._xpath_temporarily_blocked, timeout=3)
-            if element:
-                element = element.text
-            logger.debug(element)
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        element = self._browser.wait_for_xpath(value=self._xpath_temporarily_blocked, timeout=3)
+        if element:
+            element = element.text
+        logger.debug(element)
+        return element
 
     def members(self):
 
         if self._members is not None:
             return self._members
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_members, timeout=3)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_members, timeout=3)
 
-            else:
-                # TODO: need to clean up string from members and remove bad chars
-                element = self._browser.wait_for_anything(
-                    match='total members',
-                    value='span',
-                    value_attr='text',
-                    by=self._browser.by.TAG_NAME,
-                    return_first=True
-                )
-                element = element[0]
+        else:
+            # TODO: need to clean up string from members and remove bad chars
+            element = self._browser.wait_for_anything(
+                match='total members',
+                value='span',
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                return_first=True
+            )
+            element = element[0]
 
-            if element:
-                element = element.text
-            logger.debug(element)
-            self._members = element
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        if element:
+            element = element.text
+        logger.debug(element)
+        self._members = element
+        return element
 
     def members_count(self):
 
@@ -322,43 +293,35 @@ class FacebookGroups(object):
                 return self._members_count
 
     def must_login(self):
-        try:
-            element = self._browser.wait_for_xpath(self._xpath_must_login)
-            if element:
-                element = element.text
-            logger.debug(element)
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        element = self._browser.wait_for_xpath(self._xpath_must_login)
+        if element:
+            element = element.text
+        logger.debug(element)
+        return element
 
     def posts_monthly(self):
 
         if self._posts_monthly is not None:
             return self._posts_monthly
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_posts_monthly, timeout=3)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_posts_monthly, timeout=3)
 
-            else:
-                element = self._browser.wait_for_anything(
-                    match='in the last month',
-                    value='span',
-                    value_attr='text',
-                    by=self._browser.by.TAG_NAME,
-                    return_first=True
-                )
-                element = element[0]
+        else:
+            element = self._browser.wait_for_anything(
+                match='in the last month',
+                value='span',
+                value_attr='text',
+                by=self._browser.by.TAG_NAME,
+                return_first=True
+            )
+            element = element[0]
 
-            if element:
-                element = element.text
-            logger.debug(element)
-            self._posts_monthly = element
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        if element:
+            element = element.text
+        logger.debug(element)
+        self._posts_monthly = element
+        return element
 
     def posts_monthly_count(self):
 
@@ -379,26 +342,22 @@ class FacebookGroups(object):
         if self._posts_today is not None:
             return self._posts_today
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_posts_today, timeout=3)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_posts_today, timeout=3)
 
-            else:
-                element = self._browser.wait_for_anything(
-                    match='new posts today',
-                    value='span',
-                    by=self._browser.by.TAG_NAME
-                )
-                element = element[-1]
+        else:
+            element = self._browser.wait_for_anything(
+                match='new posts today',
+                value='span',
+                by=self._browser.by.TAG_NAME
+            )
+            element = element[-1]
 
-            if element:
-                element = element.text
-            logger.debug(element)
-            self._posts_today = element
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        if element:
+            element = element.text
+        logger.debug(element)
+        self._posts_today = element
+        return element
 
     def posts_today_count(self):
 
@@ -419,98 +378,86 @@ class FacebookGroups(object):
         if self._privacy is not None:
             return self._privacy
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_privacy)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_privacy)
 
-            else:
-                known_privacy = [
-                    'Public',
-                    'Private',
-                    'Visible',
-                ]
+        else:
+            known_privacy = [
+                'Public',
+                'Private',
+                'Visible',
+            ]
 
-                for privacy in known_privacy:
-                    element = self._browser.wait_for_anything(
-                        match=privacy,
-                        value='span',
-                        by=self._browser.by.TAG_NAME,
-                        exact_match=True,
-                        return_first=True,
-                    )
-                    if element:
-                        element = element[-1]
-                        break
+            for privacy in known_privacy:
+                element = self._browser.wait_for_anything(
+                    match=privacy,
+                    value='span',
+                    by=self._browser.by.TAG_NAME,
+                    exact_match=True,
+                    return_first=True,
+                )
+                if element:
+                    element = element[-1]
+                    break
 
-            if element:
-                element = element.text
-            logger.debug(element)
-            self._privacy = element
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        if element:
+            element = element.text
+        logger.debug(element)
+        self._privacy = element
+        return element
 
     def privacy_details(self):
 
         if self._privacy_details is not None:
             return self._privacy_details
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_privacy_details)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_privacy_details)
 
-            else:
-                known_privacy_details = [
-                    "Anyone can see who's in the group and what they post.",
-                    "Only members can see who's in the group and what they post.",
-                ]
+        else:
+            known_privacy_details = [
+                "Anyone can see who's in the group and what they post.",
+                "Only members can see who's in the group and what they post.",
+            ]
 
-                for privacy_details in known_privacy_details:
-                    element = self._browser.wait_for_anything(
-                        match=privacy_details,
-                        value='span',
-                        by=self._browser.by.TAG_NAME,
-                        exact_match=True
-                    )
-                    if element:
-                        element = element[0]
-                        break
+            for privacy_details in known_privacy_details:
+                element = self._browser.wait_for_anything(
+                    match=privacy_details,
+                    value='span',
+                    by=self._browser.by.TAG_NAME,
+                    exact_match=True
+                )
+                if element:
+                    element = element[0]
+                    break
 
-            if element:
-                element = element.text
-            self._privacy_details = element
-            logger.debug(element)
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        if element:
+            element = element.text
+        self._privacy_details = element
+        logger.debug(element)
+        return element
 
     def title(self) -> str:
 
         if self._title is not None:
             return self._title
 
-        try:
-            self._title = self._browser.webdriver.title
+        self._title = self._browser.webdriver.title
 
-            return_empty = [
-                'Log into Facebook',
-                'www.facebook.com'
-            ]
+        return_empty = [
+            'Log into Facebook',
+            'www.facebook.com'
+        ]
 
-            if self._title in return_empty:
-                self._title = ''
+        if self._title in return_empty:
+            self._title = ''
 
-            if self._title:
-                self._title = self._title.split('|')
-                self._title = self._title[0]
-                self._title = self._title.strip()
-            logger.debug(self._title)
-            return self._title
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        if self._title:
+            self._title = self._title.split('|')
+            self._title = self._title[0]
+            self._title = self._title.strip()
+        logger.debug(self._title)
+        return self._title
 
     @property
     def url(self) -> str:
@@ -533,34 +480,30 @@ class FacebookGroups(object):
         if self._visible is not None:
             return self._visible
 
-        try:
-            if self.USE_XPATH:
-                element = self._browser.wait_for_xpath(value=self._xpath_visible)
+        if self.USE_XPATH:
+            element = self._browser.wait_for_xpath(value=self._xpath_visible)
 
-            else:
-                known_visible = [
-                    'Anyone can find this group.',
-                ]
+        else:
+            known_visible = [
+                'Anyone can find this group.',
+            ]
 
-                for visible in known_visible:
-                    element = self._browser.wait_for_anything(
-                        match=visible,
-                        value='span',
-                        by=self._browser.by.TAG_NAME,
-                        exact_match=True
-                    )
-                    if element:
-                        element = element[-1]
-                        break
+            for visible in known_visible:
+                element = self._browser.wait_for_anything(
+                    match=visible,
+                    value='span',
+                    by=self._browser.by.TAG_NAME,
+                    exact_match=True
+                )
+                if element:
+                    element = element[-1]
+                    break
 
-            if element:
-                element = element.text
-            logger.debug(element)
-            self._visible = element
-            return element
-        except Exception as error:
-            message, session, stacktrace = self.error_parsing(error)
-            logger.error(f'{self.url} :: {message=} :: {session=} :: {stacktrace=}')
+        if element:
+            element = element.text
+        logger.debug(element)
+        self._visible = element
+        return element
 
     @staticmethod
     def error_parsing(error, enable_stacktrace: bool = False) -> tuple:
