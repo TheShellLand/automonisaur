@@ -110,7 +110,6 @@ class FacebookGroups(object):
         self._browser_not_supported = element
         return element
 
-
     def close_login_popup(self):
         if self.USE_XPATH:
             element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=3)
@@ -346,12 +345,22 @@ class FacebookGroups(object):
             element = self._browser.wait_for_xpath(value=self._xpath_posts_today, timeout=3)
 
         else:
-            element = self._browser.wait_for_anything(
-                match='new posts today',
-                value='span',
-                by=self._browser.by.TAG_NAME
-            )
-            element = element[-1]
+            known_posts_today = [
+                'new post today'
+                'new posts today',
+            ]
+
+            for posts in known_posts_today:
+
+                element = self._browser.wait_for_anything(
+                    match=posts,
+                    value='span',
+                    by=self._browser.by.TAG_NAME
+                )
+
+                if element:
+                    element = element[0]
+                    break
 
         if element:
             element = element.text
