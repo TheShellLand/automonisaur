@@ -19,21 +19,19 @@ class FacebookGroups(object):
     _xpath_blocked_by_login = ''
     _xpath_browser_not_supported = ''
 
-    _xpath_creation_date = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div/div/span'
-    _xpath_history = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[3]/div/div/div[2]/div/div[2]/span/span'
+    _xpath_creation_date = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div'
+    _xpath_history = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[3]/div/div/div[2]/div/div[2]'
     _xpath_members = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]'
-    _xpath_posts_monthly = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[2]'
-    _xpath_posts_today = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]'
-    _xpath_privacy = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[1]/span/span'
-    _xpath_privacy_details = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[2]/span/span'
-    _xpath_visible = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div/div[2]/span/span'
+    _xpath_posts_monthly = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[2]'
+    _xpath_posts_today = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]'
+    _xpath_privacy = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[1]'
+    _xpath_privacy_details = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[2]'
+    _xpath_visible = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div/div[1]'
 
     RATE_PER_MINUTE = 2
     RATE_COUNTER = []
     LAST_REQUEST = None
     WAIT_BETWEEN_RETRIES = random.choice(range(1, 60))
-
-    USE_XPATH = False
 
     def __init__(self, url: str = None):
         """Facebook Groups object
@@ -65,10 +63,9 @@ class FacebookGroups(object):
         if self._blocked_by_login is not None:
             return self._blocked_by_login
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=3)
 
-        else:
+        if not element:
             element = self._browser.wait_for_anything(
                 match='You must log in to continue.',
                 value='div',
@@ -76,7 +73,8 @@ class FacebookGroups(object):
                 by=self._browser.by.TAG_NAME,
                 exact_match=True
             )
-            element = element[0]
+            if element:
+                element = element[0]
 
         if element:
             element = element.text
@@ -89,11 +87,9 @@ class FacebookGroups(object):
         if self._browser_not_supported is not None:
             return self._browser_not_supported
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_browser_not_supported,
-                                                   timeout=3)
-
-        else:
+        element = self._browser.wait_for_xpath(value=self._xpath_browser_not_supported,
+                                               timeout=3)
+        if not element:
             element = self._browser.wait_for_anything(
                 match='This browser is not supported',
                 value='div',
@@ -101,7 +97,8 @@ class FacebookGroups(object):
                 by=self._browser.by.TAG_NAME,
                 exact_match=True
             )
-            element = element[0]
+            if element:
+                element = element[0]
 
         if element:
             element = element.text
@@ -111,10 +108,9 @@ class FacebookGroups(object):
         return element
 
     def close_login_popup(self):
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=3)
 
-        else:
+        if not element:
             element = self._browser.find_anything(
                 match='Close',
                 value='[aria-label="Close"]',
@@ -133,10 +129,9 @@ class FacebookGroups(object):
         if self._content_unavailable is not None:
             return self._content_unavailable
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_content_unavailable, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_content_unavailable, timeout=3)
 
-        else:
+        if not element:
             element = self._browser.wait_for_anything(
                 match="This content isn't available right now",
                 value='span',
@@ -144,7 +139,8 @@ class FacebookGroups(object):
                 by=self._browser.by.TAG_NAME,
                 exact_match=True
             )
-            element = element[0]
+            if element:
+                element = element[0]
 
         if element:
             element = element.text
@@ -157,12 +153,13 @@ class FacebookGroups(object):
         if self._creation_date is not None:
             return self._creation_date
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_creation_date)
+        element = self._browser.wait_for_xpath(value=self._xpath_creation_date, timeout=3)
+
+        if element:
             element = element.text
             element = element.splitlines()[0]
 
-        else:
+        if not element:
             element = self._browser.find_anything(
                 match='Created',
                 value='span',
@@ -223,10 +220,9 @@ class FacebookGroups(object):
         if self._history is not None:
             return self._history
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_history)
+        element = self._browser.wait_for_xpath(value=self._xpath_history)
 
-        else:
+        if not element:
             element = self._browser.wait_for_anything(
                 match='Group created',
                 value='span',
@@ -257,10 +253,9 @@ class FacebookGroups(object):
         if self._members is not None:
             return self._members
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_members, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_members, timeout=3)
 
-        else:
+        if not element:
             # TODO: need to clean up string from members and remove bad chars
             element = self._browser.wait_for_anything(
                 match='total members',
@@ -271,8 +266,7 @@ class FacebookGroups(object):
             )
             element = element[0]
 
-        if element:
-            element = element.text
+        element = element.text
         logger.debug(element)
         self._members = element
         return element
@@ -303,10 +297,9 @@ class FacebookGroups(object):
         if self._posts_monthly is not None:
             return self._posts_monthly
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_posts_monthly, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_posts_monthly, timeout=3)
 
-        else:
+        if not element:
             element = self._browser.wait_for_anything(
                 match='in the last month',
                 value='span',
@@ -341,12 +334,11 @@ class FacebookGroups(object):
         if self._posts_today is not None:
             return self._posts_today
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_posts_today, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_posts_today, timeout=3)
 
-        else:
+        if not element:
             known_posts_today = [
-                'new post today'
+                'new post today',
                 'new posts today',
             ]
 
@@ -387,10 +379,9 @@ class FacebookGroups(object):
         if self._privacy is not None:
             return self._privacy
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_privacy)
+        element = self._browser.wait_for_xpath(value=self._xpath_privacy)
 
-        else:
+        if not element:
             known_privacy = [
                 'Public',
                 'Private',
@@ -420,10 +411,9 @@ class FacebookGroups(object):
         if self._privacy_details is not None:
             return self._privacy_details
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_privacy_details)
+        element = self._browser.wait_for_xpath(value=self._xpath_privacy_details)
 
-        else:
+        if not element:
             known_privacy_details = [
                 "Anyone can see who's in the group and what they post.",
                 "Only members can see who's in the group and what they post.",
@@ -489,10 +479,9 @@ class FacebookGroups(object):
         if self._visible is not None:
             return self._visible
 
-        if self.USE_XPATH:
-            element = self._browser.wait_for_xpath(value=self._xpath_visible)
+        element = self._browser.wait_for_xpath(value=self._xpath_visible)
 
-        else:
+        if not element:
             known_visible = [
                 'Anyone can find this group.',
             ]
