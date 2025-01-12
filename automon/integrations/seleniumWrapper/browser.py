@@ -539,7 +539,7 @@ class SeleniumBrowser(object):
             string=None,
             limit=None,
             ignore_case=True,
-            **kwargs):
+            **kwargs) -> list:
         """find all with BeautifulSoup"""
 
         string_compiled = re.compile(string)
