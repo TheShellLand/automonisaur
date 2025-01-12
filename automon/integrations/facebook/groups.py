@@ -675,7 +675,6 @@ class FacebookGroups(object):
 
     def to_dict(self):
         return dict(
-            content_unavailable=self.content_unavailable(),
             creation_date=self.creation_date(),
             creation_date_timestamp=self.creation_date_timestamp(),
             history=self.history(),
@@ -690,13 +689,13 @@ class FacebookGroups(object):
             title=self.title(),
             url=self.url,
             visible=self.visible(),
-            blocked_by_login=self.blocked_by_login(),
-            browser_not_supported=self.browser_not_supported(),
+            check_blocked_by_login=self.check_blocked_by_login(),
+            check_browser_not_supported=self.check_browser_not_supported(),
+            check_content_unavailable=self.check_content_unavailable(),
         )
 
     def to_empty(self):
         return dict(
-            content_unavailable=self.content_unavailable(),
             creation_date=None,
             creation_date_timestamp=None,
             history=None,
@@ -711,8 +710,9 @@ class FacebookGroups(object):
             title=None,
             url=self.url,
             visible=None,
-            blocked_by_login=None,
-            browser_not_supported=None,
+            check_blocked_by_login=None,
+            check_browser_not_supported=None,
+            check_content_unavailable=self.check_content_unavailable(),
         )
 
     @property
