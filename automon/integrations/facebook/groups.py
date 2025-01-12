@@ -125,7 +125,8 @@ class FacebookGroups(object):
                 value='[aria-label="Close"]',
                 by=self._browser.by.CSS_SELECTOR,
             )
-            element = element[0]
+            if element:
+                element = element[0]
 
         if element:
             element.click()
@@ -189,6 +190,10 @@ class FacebookGroups(object):
 
         logger.debug(element)
         self._creation_date = element
+
+        if not element:
+            raise
+
         return element
 
     def creation_date_timestamp(self):
@@ -333,6 +338,10 @@ class FacebookGroups(object):
                 element = element[0]
         logger.debug(element)
         self._history = element
+
+        if not element:
+            raise
+
         return element
 
     def rate_limit_decrease(self, multiplier: int = 0.75):
@@ -463,8 +472,6 @@ class FacebookGroups(object):
         """alias to quit"""
         return self.quit()
 
-
-
     def members(self):
 
         if self._members is not None:
@@ -486,6 +493,10 @@ class FacebookGroups(object):
         element = element.text
         logger.debug(element)
         self._members = element
+
+        if not element:
+            raise
+
         return element
 
     def members_count(self):
@@ -530,6 +541,10 @@ class FacebookGroups(object):
             element = element.text
         logger.debug(element)
         self._posts_monthly = element
+
+        if not element:
+            raise
+
         return element
 
     def posts_monthly_count(self):
@@ -575,6 +590,10 @@ class FacebookGroups(object):
             element = element.text
         logger.debug(element)
         self._posts_today = element
+
+        if not element:
+            raise
+
         return element
 
     def posts_today_count(self):
@@ -621,6 +640,10 @@ class FacebookGroups(object):
             element = element.text
         logger.debug(element)
         self._privacy = element
+
+        if not element:
+            raise
+
         return element
 
     def privacy_details(self):
@@ -651,6 +674,10 @@ class FacebookGroups(object):
             element = element.text
         self._privacy_details = element
         logger.debug(element)
+
+        if not element:
+            raise
+
         return element
 
     def title(self) -> str:
@@ -760,4 +787,8 @@ class FacebookGroups(object):
             element = element.text
         logger.debug(element)
         self._visible = element
+
+        if not element:
+            raise
+
         return element
