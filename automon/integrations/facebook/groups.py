@@ -60,11 +60,11 @@ class FacebookGroups(object):
 
     def average_rate(self):
         if self.RATE_COUNTER:
-            seconds = round(statistics.mean(self.RATE_COUNTER), 1)
-            minutes = round(seconds / 60, 1)
-            hours = round(minutes / 60, 1)
-            logger.info(f'total requests={len(self.RATE_COUNTER)} :: {seconds=} :: {minutes=}')
-            return seconds
+            avg_seconds = round(statistics.mean(self.RATE_COUNTER), 1)
+            avg_minutes = round(avg_seconds / 60, 1)
+            avg_hours = round(avg_minutes / 60, 1)
+            logger.info(f'total requests={len(self.RATE_COUNTER)} :: {avg_seconds=} :: {avg_minutes=} :: last request {self.RATE_COUNTER[-1]} sec')
+            return avg_seconds
         return 0
 
     def check_blocked_by_login(self):
@@ -243,7 +243,8 @@ class FacebookGroups(object):
         now = datetime.datetime.now().timestamp()
 
         if self.LAST_REQUEST:
-            self.RATE_COUNTER.append(abs(round(self.LAST_REQUEST - now, 1)))
+            seconds_elapsed_since_last_request = abs(self.LAST_REQUEST - now)
+            self.RATE_COUNTER.append(round(seconds_elapsed_since_last_request, 1))
             self.LAST_REQUEST = round(now, 1)
         else:
             self.LAST_REQUEST = round(now, 1)
