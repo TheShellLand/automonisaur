@@ -73,22 +73,19 @@ class FacebookGroups(object):
             return self._blocked_by_login
 
         element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=3)
+        if element:
+            element = element.text
         method = 'by XPATH'
 
         if not element:
-            element = self._browser.wait_for_anything(
-                match='You must log in to continue.',
-                value='div',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                exact_match=True
+            element = self._browser.find_all_with_beautifulsoup(
+                string='You must log in to continue.',
+                ignore_case=False
             )
             if element:
                 element = element[0]
             method = 'by SEARCH'
 
-        if element:
-            element = element.text
         logger.debug(f':: {method} :: {element}')
         self._blocked_by_login = element
         return element
@@ -98,23 +95,22 @@ class FacebookGroups(object):
         if self._browser_not_supported is not None:
             return self._browser_not_supported
 
-        element = self._browser.wait_for_xpath(value=self._xpath_browser_not_supported,
-                                               timeout=3)
+        element = self._browser.wait_for_xpath(
+            value=self._xpath_browser_not_supported,
+            timeout=3)
+        if element:
+            element = element.text
+        method = 'by XPATH'
+
         if not element:
-            element = self._browser.wait_for_anything(
-                match='This browser is not supported',
-                value='div',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                exact_match=True
+            element = self._browser.find_all_with_beautifulsoup(
+                string='This browser is not supported',
+                ignore_case=False
             )
             if element:
                 element = element[0]
             method = 'by SEARCH'
 
-        if element:
-            element = element.text
-            logger.debug(self._browser.user_agent)
         logger.debug(f':: {method} :: {element}')
         self._browser_not_supported = element
         return element
@@ -145,22 +141,19 @@ class FacebookGroups(object):
             return self._content_unavailable
 
         element = self._browser.wait_for_xpath(value=self._xpath_content_unavailable, timeout=3)
+        if element:
+            element = element.text
         method = 'by XPATH'
 
         if not element:
-            element = self._browser.wait_for_anything(
-                match="This content isn't available right now",
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                exact_match=True
+            element = self._browser.find_all_with_beautifulsoup(
+                string="This content isn't available right now",
+                ignore_case=False
             )
             if element:
                 element = element[0]
             method = 'by SEARCH'
 
-        if element:
-            element = element.text
         logger.debug(f':: {method} :: {element}')
         self._content_unavailable = element
         return element
@@ -179,24 +172,18 @@ class FacebookGroups(object):
             return self._creation_date
 
         element = self._browser.wait_for_xpath(value=self._xpath_creation_date, timeout=3)
-        method = 'by XPATH'
-
         if element:
             element = element.text
             element = element.splitlines()[0]
+        method = 'by XPATH'
 
         if not element:
-            element = self._browser.find_anything(
-                match='Created',
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                return_first=True
+            element = self._browser.find_all_with_beautifulsoup(
+                string='Created',
+                ignore_case=False
             )
             if element:
                 element = element[0]
-                element = element.text.split('See more')[0]
-                element = element.strip()
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -331,25 +318,22 @@ class FacebookGroups(object):
             return self._history
 
         element = self._browser.wait_for_xpath(value=self._xpath_history)
-        method = 'by XPATH'
-
-        if not element:
-            element = self._browser.wait_for_anything(
-                match='Group created',
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                return_first=True
-            )
-            if element:
-                element = element[0]
-            method = 'by SEARCH'
-
         if element:
             element = element.text
             if 'See more' in element:
                 element = element.split('See more')
                 element = element[0]
+        method = 'by XPATH'
+
+        if not element:
+            element = self._browser.find_all_with_beautifulsoup(
+                string='Group created',
+                ignore_case=False
+            )
+            if element:
+                element = element[0]
+            method = 'by SEARCH'
+
         logger.debug(f':: {method} :: {element}')
         self._history = element
 
@@ -492,22 +476,19 @@ class FacebookGroups(object):
             return self._members
 
         element = self._browser.wait_for_xpath(value=self._xpath_members, timeout=3)
+        if element:
+            element = element.text
         method = 'by XPATH'
 
         if not element:
-            # TODO: need to clean up string from members and remove bad chars
-            element = self._browser.wait_for_anything(
-                match='total members',
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                return_first=True
+            element = self._browser.find_all_with_beautifulsoup(
+                string='total members',
+                ignore_case=False
             )
             if element:
                 element = element[0]
             method = 'by SEARCH'
 
-        element = element.text
         logger.debug(f':: {method} :: {element}')
         self._members = element
 
@@ -544,22 +525,19 @@ class FacebookGroups(object):
             return self._posts_monthly
 
         element = self._browser.wait_for_xpath(value=self._xpath_posts_monthly, timeout=3)
+        if element:
+            element = element.text
         method = 'by XPATH'
 
         if not element:
-            element = self._browser.wait_for_anything(
-                match='in the last month',
-                value='span',
-                value_attr='text',
-                by=self._browser.by.TAG_NAME,
-                return_first=True
+            element = self._browser.find_all_with_beautifulsoup(
+                string='in the last month',
+                ignore_case=False
             )
             if element:
                 element = element[0]
             method = 'by SEARCH'
 
-        if element:
-            element = element.text
         logger.debug(f':: {method} :: {element}')
         self._posts_monthly = element
 
@@ -588,29 +566,19 @@ class FacebookGroups(object):
             return self._posts_today
 
         element = self._browser.wait_for_xpath(value=self._xpath_posts_today, timeout=3)
+        if element:
+            element = element.text
         method = 'by XPATH'
 
         if not element:
-            known_posts_today = [
-                'new post today',
-                'new posts today',
-            ]
-
-            for posts in known_posts_today:
-
-                element = self._browser.wait_for_anything(
-                    match=posts,
-                    value='span',
-                    by=self._browser.by.TAG_NAME
-                )
-
-                if element:
-                    element = element[0]
-                    break
+            element = self._browser.find_all_with_beautifulsoup(
+                string='new post[s]? today',
+                ignore_case=False
+            )
+            if element:
+                element = element[0]
             method = 'by SEARCH'
 
-        if element:
-            element = element.text
         logger.debug(f':: {method} :: {element}')
         self._posts_today = element
 
@@ -639,6 +607,8 @@ class FacebookGroups(object):
             return self._privacy
 
         element = self._browser.wait_for_xpath(value=self._xpath_privacy)
+        if element:
+            element = element.text
         method = 'by XPATH'
 
         if not element:
@@ -649,20 +619,16 @@ class FacebookGroups(object):
             ]
 
             for privacy in known_privacy:
-                element = self._browser.wait_for_anything(
-                    match=privacy,
-                    value='span',
-                    by=self._browser.by.TAG_NAME,
-                    exact_match=True,
-                    return_first=True,
+                element = self._browser.find_all_with_beautifulsoup(
+                    string=privacy,
+                    ignore_case=False
                 )
                 if element:
-                    element = element[-1]
+                    element = element[0]
                     break
+
             method = 'by SEARCH'
 
-        if element:
-            element = element.text
         logger.debug(f':: {method} :: {element}')
         self._privacy = element
 
@@ -677,6 +643,8 @@ class FacebookGroups(object):
             return self._privacy_details
 
         element = self._browser.wait_for_xpath(value=self._xpath_privacy_details)
+        if element:
+            element = element.text
         method = 'by XPATH'
 
         if not element:
@@ -686,19 +654,16 @@ class FacebookGroups(object):
             ]
 
             for privacy_details in known_privacy_details:
-                element = self._browser.wait_for_anything(
-                    match=privacy_details,
-                    value='span',
-                    by=self._browser.by.TAG_NAME,
-                    exact_match=True
+                element = self._browser.find_all_with_beautifulsoup(
+                    string=privacy_details,
+                    ignore_case=False
                 )
                 if element:
                     element = element[0]
                     break
+
             method = 'by SEARCH'
 
-        if element:
-            element = element.text
         self._privacy_details = element
         logger.debug(f':: {method} :: {element}')
 
@@ -793,6 +758,8 @@ class FacebookGroups(object):
             return self._visible
 
         element = self._browser.wait_for_xpath(value=self._xpath_visible)
+        if element:
+            element = element.text
         method = 'by XPATH'
 
         if not element:
@@ -801,19 +768,16 @@ class FacebookGroups(object):
             ]
 
             for visible in known_visible:
-                element = self._browser.wait_for_anything(
-                    match=visible,
-                    value='span',
-                    by=self._browser.by.TAG_NAME,
-                    exact_match=True
+                element = self._browser.find_all_with_beautifulsoup(
+                    string=visible,
+                    ignore_case=False
                 )
                 if element:
-                    element = element[-1]
+                    element = element[0]
                     break
+
             method = 'by SEARCH'
 
-        if element:
-            element = element.text
         logger.debug(f':: {method} :: {element}')
         self._visible = element
 
