@@ -21,7 +21,7 @@ class FacebookGroups(object):
 
     _xpath_creation_date = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div'
     _xpath_history = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[3]/div/div/div[2]/div/div[2]'
-    _xpath_members = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]'
+    _xpath_members = '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]'
     _xpath_posts_monthly = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[2]'
     _xpath_posts_today = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]'
     _xpath_privacy = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[1]'
@@ -73,6 +73,7 @@ class FacebookGroups(object):
             return self._blocked_by_login
 
         element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=3)
+        method = 'by XPATH'
 
         if not element:
             element = self._browser.wait_for_anything(
@@ -84,10 +85,11 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0]
+            method = 'by SEARCH'
 
         if element:
             element = element.text
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         self._blocked_by_login = element
         return element
 
@@ -108,16 +110,18 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0]
+            method = 'by SEARCH'
 
         if element:
             element = element.text
             logger.debug(self._browser.user_agent)
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         self._browser_not_supported = element
         return element
 
     def check_close_login_popup(self):
         element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=3)
+        method = 'by XPATH'
 
         if not element:
             element = self._browser.find_anything(
@@ -127,10 +131,11 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0]
+            method = 'by SEARCH'
 
         if element:
             element.click()
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         return element
 
     def check_content_unavailable(self):
@@ -140,6 +145,7 @@ class FacebookGroups(object):
             return self._content_unavailable
 
         element = self._browser.wait_for_xpath(value=self._xpath_content_unavailable, timeout=3)
+        method = 'by XPATH'
 
         if not element:
             element = self._browser.wait_for_anything(
@@ -151,18 +157,20 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0]
+            method = 'by SEARCH'
 
         if element:
             element = element.text
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         self._content_unavailable = element
         return element
 
     def check_temporarily_blocked(self):
         element = self._browser.wait_for_xpath(value=self._xpath_temporarily_blocked, timeout=3)
+        method = 'by XPATH'
         if element:
             element = element.text
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         return element
 
     def creation_date(self):
@@ -171,6 +179,7 @@ class FacebookGroups(object):
             return self._creation_date
 
         element = self._browser.wait_for_xpath(value=self._xpath_creation_date, timeout=3)
+        method = 'by XPATH'
 
         if element:
             element = element.text
@@ -184,11 +193,13 @@ class FacebookGroups(object):
                 by=self._browser.by.TAG_NAME,
                 return_first=True
             )
-            element = element[0]
-            element = element.text.split('See more')[0]
-            element = element.strip()
+            if element:
+                element = element[0]
+                element = element.text.split('See more')[0]
+                element = element.strip()
+            method = 'by SEARCH'
 
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         self._creation_date = element
 
         if not element:
@@ -320,6 +331,7 @@ class FacebookGroups(object):
             return self._history
 
         element = self._browser.wait_for_xpath(value=self._xpath_history)
+        method = 'by XPATH'
 
         if not element:
             element = self._browser.wait_for_anything(
@@ -329,14 +341,16 @@ class FacebookGroups(object):
                 by=self._browser.by.TAG_NAME,
                 return_first=True
             )
-            element = element[0]
+            if element:
+                element = element[0]
+            method = 'by SEARCH'
 
         if element:
             element = element.text
             if 'See more' in element:
                 element = element.split('See more')
                 element = element[0]
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         self._history = element
 
         if not element:
@@ -478,6 +492,7 @@ class FacebookGroups(object):
             return self._members
 
         element = self._browser.wait_for_xpath(value=self._xpath_members, timeout=3)
+        method = 'by XPATH'
 
         if not element:
             # TODO: need to clean up string from members and remove bad chars
@@ -488,10 +503,12 @@ class FacebookGroups(object):
                 by=self._browser.by.TAG_NAME,
                 return_first=True
             )
-            element = element[0]
+            if element:
+                element = element[0]
+            method = 'by SEARCH'
 
         element = element.text
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         self._members = element
 
         if not element:
@@ -515,9 +532,10 @@ class FacebookGroups(object):
 
     def must_login(self):
         element = self._browser.wait_for_xpath(self._xpath_must_login)
+        method = 'by XPATH'
         if element:
             element = element.text
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         return element
 
     def posts_monthly(self):
@@ -526,6 +544,7 @@ class FacebookGroups(object):
             return self._posts_monthly
 
         element = self._browser.wait_for_xpath(value=self._xpath_posts_monthly, timeout=3)
+        method = 'by XPATH'
 
         if not element:
             element = self._browser.wait_for_anything(
@@ -535,11 +554,13 @@ class FacebookGroups(object):
                 by=self._browser.by.TAG_NAME,
                 return_first=True
             )
-            element = element[0]
+            if element:
+                element = element[0]
+            method = 'by SEARCH'
 
         if element:
             element = element.text
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         self._posts_monthly = element
 
         if not element:
@@ -567,6 +588,7 @@ class FacebookGroups(object):
             return self._posts_today
 
         element = self._browser.wait_for_xpath(value=self._xpath_posts_today, timeout=3)
+        method = 'by XPATH'
 
         if not element:
             known_posts_today = [
@@ -585,10 +607,11 @@ class FacebookGroups(object):
                 if element:
                     element = element[0]
                     break
+            method = 'by SEARCH'
 
         if element:
             element = element.text
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         self._posts_today = element
 
         if not element:
@@ -616,6 +639,7 @@ class FacebookGroups(object):
             return self._privacy
 
         element = self._browser.wait_for_xpath(value=self._xpath_privacy)
+        method = 'by XPATH'
 
         if not element:
             known_privacy = [
@@ -635,10 +659,11 @@ class FacebookGroups(object):
                 if element:
                     element = element[-1]
                     break
+            method = 'by SEARCH'
 
         if element:
             element = element.text
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         self._privacy = element
 
         if not element:
@@ -652,6 +677,7 @@ class FacebookGroups(object):
             return self._privacy_details
 
         element = self._browser.wait_for_xpath(value=self._xpath_privacy_details)
+        method = 'by XPATH'
 
         if not element:
             known_privacy_details = [
@@ -669,11 +695,12 @@ class FacebookGroups(object):
                 if element:
                     element = element[0]
                     break
+            method = 'by SEARCH'
 
         if element:
             element = element.text
         self._privacy_details = element
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
 
         if not element:
             raise
@@ -766,6 +793,7 @@ class FacebookGroups(object):
             return self._visible
 
         element = self._browser.wait_for_xpath(value=self._xpath_visible)
+        method = 'by XPATH'
 
         if not element:
             known_visible = [
@@ -782,10 +810,11 @@ class FacebookGroups(object):
                 if element:
                     element = element[-1]
                     break
+            method = 'by SEARCH'
 
         if element:
             element = element.text
-        logger.debug(element)
+        logger.debug(f':: {method} :: {element}')
         self._visible = element
 
         if not element:
