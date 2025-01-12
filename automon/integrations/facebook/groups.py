@@ -157,6 +157,13 @@ class FacebookGroups(object):
         self._content_unavailable = element
         return element
 
+    def check_temporarily_blocked(self):
+        element = self._browser.wait_for_xpath(value=self._xpath_temporarily_blocked, timeout=3)
+        if element:
+            element = element.text
+        logger.debug(element)
+        return element
+
     def creation_date(self):
 
         if self._creation_date is not None:
@@ -358,7 +365,7 @@ class FacebookGroups(object):
             logger.info(f'rate_limited :: True')
             return True
 
-        if self.temporarily_blocked() or self.must_login():
+        if self.check_temporarily_blocked() or self.must_login():
             logger.info(f'rate_limited :: True')
             return True
 
@@ -456,12 +463,7 @@ class FacebookGroups(object):
         """alias to quit"""
         return self.quit()
 
-    def temporarily_blocked(self):
-        element = self._browser.wait_for_xpath(value=self._xpath_temporarily_blocked, timeout=3)
-        if element:
-            element = element.text
-        logger.debug(element)
-        return element
+
 
     def members(self):
 
