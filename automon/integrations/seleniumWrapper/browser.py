@@ -1,9 +1,12 @@
 import os
+import re
 import json
 import time
 import base64
 import datetime
 import tempfile
+
+import bs4
 import selenium
 import selenium.webdriver
 import selenium.webdriver.common.by
@@ -528,6 +531,37 @@ class SeleniumBrowser(object):
             logger.error(f'error_parsing :: failed :: {exception=}')
             return error, None, None
 
+    def find_all_with_beautifulsoup(
+            self,
+            name=None,
+            attrs={},
+            recursive=True,
+            string=None,
+            limit=None,
+            ignore_case=True,
+            **kwargs):
+        """find all with BeautifulSoup"""
+
+        string_compiled = re.compile(string)
+        BeautifulSoup = bs4.BeautifulSoup(self.page_source, features="lxml")
+
+        if ignore_case:
+            string_compiled = re.compile(string, re.IGNORECASE)
+
+        RESULTS = BeautifulSoup.find_all(
+            name=name,
+            attrs=attrs,
+            recursive=recursive,
+            string=string_compiled,
+            limit=limit,
+            **kwargs,
+        )
+
+        logger.debug(f'find_all_with_beautifulsoup :: {RESULTS}')
+        logger.info(f'find_all_with_beautifulsoup :: {len(RESULTS)} results')
+
+        return RESULTS
+
     def find_anything(
             self,
             match: str,
@@ -543,6 +577,9 @@ class SeleniumBrowser(object):
 
         find all tags
         find all matches within meta data
+
+        this is very slow. it takes upwards of 1 minutes per loop of all elements
+
         """
         logger.debug(
             f'find_anything :: '
@@ -558,6 +595,7 @@ class SeleniumBrowser(object):
         )
 
         by_types = [
+            self.by.XPATH,
             self.by.TAG_NAME,
             self.by.ID,
             self.by.NAME,
@@ -565,7 +603,6 @@ class SeleniumBrowser(object):
             self.by.LINK_TEXT,
             self.by.PARTIAL_LINK_TEXT,
             self.by.CSS_SELECTOR,
-            self.by.XPATH,
         ]
 
         if by:
