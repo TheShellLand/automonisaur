@@ -1,3 +1,4 @@
+import re
 import random
 import datetime
 import statistics
@@ -63,7 +64,11 @@ class FacebookGroups(object):
             avg_seconds = round(statistics.mean(self.RATE_COUNTER), 1)
             avg_minutes = round(avg_seconds / 60, 1)
             avg_hours = round(avg_minutes / 60, 1)
-            logger.info(f'total requests={len(self.RATE_COUNTER)} :: {avg_seconds=} :: {avg_minutes=} :: last request {self.RATE_COUNTER[-1]} sec')
+            logger.info(
+                f'total requests={len(self.RATE_COUNTER)} :: '
+                f'{avg_seconds=} :: '
+                f'{avg_minutes=} :: '
+                f'last request {self.RATE_COUNTER[-1]} sec')
             return avg_seconds
         return 0
 
@@ -80,7 +85,7 @@ class FacebookGroups(object):
         if not element:
             element = self._browser.find_all_with_beautifulsoup(
                 string='You must log in to continue.',
-                ignore_case=False
+                case_sensitive=True
             )
             if element:
                 element = element[0]
@@ -105,7 +110,7 @@ class FacebookGroups(object):
         if not element:
             element = self._browser.find_all_with_beautifulsoup(
                 string='This browser is not supported',
-                ignore_case=False
+                case_sensitive=True
             )
             if element:
                 element = element[0]
@@ -148,7 +153,7 @@ class FacebookGroups(object):
         if not element:
             element = self._browser.find_all_with_beautifulsoup(
                 string="This content isn't available right now",
-                ignore_case=False
+                case_sensitive=True
             )
             if element:
                 element = element[0]
@@ -178,12 +183,14 @@ class FacebookGroups(object):
         method = 'by XPATH'
 
         if not element:
-            element = self._browser.find_all_with_beautifulsoup(
-                string='Created',
-                ignore_case=False
+            element = self._browser.find_anything_with_beautifulsoup(
+                match='Created.*year[s]? ago',
+                name='span',
+                case_sensitive=True
             )
             if element:
-                element = element[0]
+                element = element[0].text
+                element = re.compile('Created [0-9]+ year[s]? ago').match(element)[0]
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -329,7 +336,7 @@ class FacebookGroups(object):
         if not element:
             element = self._browser.find_all_with_beautifulsoup(
                 string='Group created',
-                ignore_case=False
+                case_sensitive=True
             )
             if element:
                 element = element[0]
@@ -484,7 +491,7 @@ class FacebookGroups(object):
         if not element:
             element = self._browser.find_all_with_beautifulsoup(
                 string='total members',
-                ignore_case=False
+                case_sensitive=True
             )
             if element:
                 element = element[0]
@@ -533,7 +540,7 @@ class FacebookGroups(object):
         if not element:
             element = self._browser.find_all_with_beautifulsoup(
                 string='in the last month',
-                ignore_case=False
+                case_sensitive=True
             )
             if element:
                 element = element[0]
@@ -574,7 +581,7 @@ class FacebookGroups(object):
         if not element:
             element = self._browser.find_all_with_beautifulsoup(
                 string='new post[s]? today',
-                ignore_case=False
+                case_sensitive=True
             )
             if element:
                 element = element[0]
@@ -622,7 +629,7 @@ class FacebookGroups(object):
             for privacy in known_privacy:
                 element = self._browser.find_all_with_beautifulsoup(
                     string=privacy,
-                    ignore_case=False
+                    case_sensitive=True
                 )
                 if element:
                     element = element[0]
@@ -657,7 +664,7 @@ class FacebookGroups(object):
             for privacy_details in known_privacy_details:
                 element = self._browser.find_all_with_beautifulsoup(
                     string=privacy_details,
-                    ignore_case=False
+                    case_sensitive=True
                 )
                 if element:
                     element = element[0]
@@ -771,7 +778,7 @@ class FacebookGroups(object):
             for visible in known_visible:
                 element = self._browser.find_all_with_beautifulsoup(
                     string=visible,
-                    ignore_case=False
+                    case_sensitive=True
                 )
                 if element:
                     element = element[0]
