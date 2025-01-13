@@ -1,12 +1,12 @@
 import os
 import re
+import bs4
 import json
 import time
 import base64
 import datetime
 import tempfile
 
-import bs4
 import selenium
 import selenium.webdriver
 import selenium.webdriver.common.by
@@ -14,7 +14,6 @@ import selenium.webdriver.remote.webelement
 
 from selenium.webdriver.common.keys import Keys
 from urllib.parse import urlparse
-from bs4 import BeautifulSoup
 
 from automon import log
 from automon.helpers.dates import Dates
@@ -538,21 +537,25 @@ class SeleniumBrowser(object):
             recursive=True,
             string=None,
             limit=None,
-            ignore_case=True,
+            case_sensitive=False,
             **kwargs) -> list:
         """find all with BeautifulSoup"""
 
-        string_compiled = re.compile(string)
-        BeautifulSoup = bs4.BeautifulSoup(self.page_source, features="lxml")
+        BeautifulSoup = self.get_page_source_beautifulsoup()
 
-        if ignore_case:
-            string_compiled = re.compile(string, re.IGNORECASE)
+        if string:
+            string_compiled = re.compile(string)
+
+            if case_sensitive is False:
+                string_compiled = re.compile(string, re.IGNORECASE)
+
+            string = string_compiled
 
         RESULTS = BeautifulSoup.find_all(
             name=name,
             attrs=attrs,
             recursive=recursive,
-            string=string_compiled,
+            string=string,
             limit=limit,
             **kwargs,
         )
@@ -669,6 +672,51 @@ class SeleniumBrowser(object):
         logger.info(f'find_anything :: done')
         return MATCHED
 
+    def find_anything_with_beautifulsoup(
+            self,
+            match: str,
+            name: str = None,
+            attrs: dict = {},
+            recursive: bool = True,
+            string: str = None,
+            limit: int = None,
+            case_sensitive: bool = False,
+            **kwargs) -> bs4.BeautifulSoup:
+        """find anything with fuzzy search in beaurifulsoup
+
+        """
+        logger.debug(
+            f'find_anything_with_beautifulsoup :: '
+            f'{match=} :: '
+            f'{name=} :: '
+            f'{attrs=} :: '
+            f'{recursive=} :: '
+            f'{string=} :: '
+            f'{limit=} :: '
+            f'{case_sensitive=} :: '
+            f' {kwargs=}'
+        )
+
+        MATCHES = []
+
+        results = self.find_all_with_beautifulsoup(
+            name=name,
+            attrs=attrs,
+            recursive=recursive,
+            string=string,
+            limit=limit,
+            case_sensitive=case_sensitive)
+
+        for element in results:
+
+            findall = re.compile(match).findall(str(element))
+            if findall:
+                logger.debug(f'find_anything_with_beautifulsoup :: found :: {element}')
+                MATCHES.append(element)
+
+        logger.info(f'find_anything_with_beautifulsoup :: MATCHES :: {len(MATCHES)} found')
+        return MATCHES
+
     def find_element(
             self,
             value: str,
@@ -765,14 +813,15 @@ class SeleniumBrowser(object):
     def get_page_source_beautifulsoup(
             self,
             markup: str = None,
-            features: str = 'lxml') -> BeautifulSoup:
+            features: str = 'lxml') -> bs4.BeautifulSoup:
         """read page source with beautifulsoup"""
-        logger.debug(f'get_page_source_beautifulsoup :: {features=} :: {len(markup) / 1024} KB')
 
         if not markup:
             markup = self.get_page_source()
 
-        get_page_source_beautifulsoup = BeautifulSoup(
+        logger.debug(f'get_page_source_beautifulsoup :: {features=} :: {len(markup) / 1024} KB')
+
+        get_page_source_beautifulsoup = bs4.BeautifulSoup(
             markup=markup,
             features=features)
         logger.debug(f'get_page_source_beautifulsoup :: {len(get_page_source_beautifulsoup)} size')
