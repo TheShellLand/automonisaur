@@ -20,9 +20,16 @@ class FacebookGroups(object):
     _xpath_blocked_by_login = ''
     _xpath_browser_not_supported = ''
 
-    _xpath_creation_date = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div'
+    _xpath_creation_date = [
+        '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div',
+        '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]',
+
+    ]
     _xpath_history = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[3]/div/div/div[2]/div/div[2]'
-    _xpath_members = '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]'
+    _xpath_members = [
+        '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]',
+        '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]',
+    ]
     _xpath_posts_monthly = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[2]'
     _xpath_posts_today = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]'
     _xpath_privacy = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[1]'
@@ -176,9 +183,11 @@ class FacebookGroups(object):
         if self._creation_date is not None:
             return self._creation_date
 
-        element = self._browser.wait_for_xpath(value=self._xpath_creation_date, timeout=3)
+        element = [
+            x for x in
+            [self._browser.wait_for_xpath(value=xpath, timeout=3) for xpath in self._xpath_creation_date] if x]
         if element:
-            element = element.text
+            element = element[0].text
             element = element.splitlines()[0]
         method = 'by XPATH'
 
@@ -483,9 +492,11 @@ class FacebookGroups(object):
         if self._members is not None:
             return self._members
 
-        element = self._browser.wait_for_xpath(value=self._xpath_members, timeout=3)
+        element = [
+            x for x in
+            [self._browser.wait_for_xpath(value=xpath, timeout=3) for xpath in self._xpath_members] if x]
         if element:
-            element = element.text
+            element = element[0].text
         method = 'by XPATH'
 
         if not element:
