@@ -3,6 +3,8 @@ import re
 import bs4
 import json
 import time
+import urllib
+import urllib.parse
 import base64
 import datetime
 import tempfile
@@ -13,7 +15,6 @@ import selenium.webdriver.common.by
 import selenium.webdriver.remote.webelement
 
 from selenium.webdriver.common.keys import Keys
-from urllib.parse import urlparse
 
 from automon import log
 from automon.helpers.dates import Dates
@@ -212,7 +213,7 @@ class SeleniumBrowser(object):
         title = self.webdriver.title
         url = self.current_url
 
-        hostname = urlparse(url).hostname
+        hostname = self.urlparse(url).hostname
 
         timestamp = Dates.filename_timestamp()
         hostname_ = Sanitation.ascii_numeric_only(hostname)
@@ -904,10 +905,14 @@ class SeleniumBrowser(object):
     def page_source(self):
         return self.webdriver.page_source
 
+    @property
+    def _urllib(self):
+        return urllib
+
     def urlparse(self, url: str):
         """parse url"""
         logger.debug(f'urlparse :: {url=}')
-        parsed = urlparse(url=url)
+        parsed = urllib.parse.urlparse(url=url)
         logger.debug(f'urlparse :: {parsed=}')
         logger.info(f'urlparse :: done')
         return parsed
