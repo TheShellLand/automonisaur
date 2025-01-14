@@ -295,14 +295,16 @@ class FacebookGroups(object):
     def get_about(self, rate_limiting: bool = True):
         """get about page"""
 
-        url = f'{self.url}/about'
-
         if rate_limiting:
-            result = self.get_with_rate_limiter(url=url)
+            result = self.get_with_rate_limiter(url=self.url)
+            about = self._browser._urllib.parse.urljoin(self._browser.current_url, 'about')
+            result = self.get_with_rate_limiter(url=about)
         else:
-            result = self.get(url=url)
+            result = self.get(url=self.url)
+            about = self._browser._urllib.parse.urljoin(self._browser.current_url, 'about')
+            result = self.get(url=about)
 
-        logger.info(f'{url} :: {result=}')
+        logger.info(f'{about} :: {result=}')
 
         return result
 
