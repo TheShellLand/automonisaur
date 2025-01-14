@@ -118,7 +118,13 @@ class GoogleSheetsClient(GoogleAuthClient):
                 **kwargs,
             ).execute()
 
-            logger.info(f'[google] :: sheets :: get values :: {self.worksheet=} :: {self.range=} :: {self.config.spreadsheetId=}')
+            logger.info(
+                f'[google] :: '
+                f'sheets :: '
+                f'get values :: '
+                f'{self.worksheet=} :: '
+                f'{self.range=} :: '
+                f'{self.config.spreadsheetId=}')
         except Exception as error:
             logger.error(f'[google] :: sheets :: get values :: {error=}')
 
@@ -158,4 +164,6 @@ class GoogleSheetsClient(GoogleAuthClient):
             logger.info(f'[google] :: sheets :: update :: {result.get("updatedCells")} cells updated :: {result=}')
             return result
         except Exception as error:
+            import traceback
+            traceback.print_exc()
             raise Exception(f'[google] :: sheets :: update :: error :: {error}')
