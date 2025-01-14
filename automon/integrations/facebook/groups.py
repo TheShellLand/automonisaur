@@ -86,6 +86,7 @@ class FacebookGroups(object):
         element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=3)
         if element:
             element = element.text
+
         method = 'by XPATH'
 
         if not element:
@@ -95,6 +96,7 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0].text
+
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -111,6 +113,7 @@ class FacebookGroups(object):
             timeout=3)
         if element:
             element = element.text
+
         method = 'by XPATH'
 
         if not element:
@@ -144,6 +147,7 @@ class FacebookGroups(object):
 
         if element:
             element.click()
+
         logger.debug(f':: {method} :: {element}')
         return element
 
@@ -165,6 +169,7 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0]
+
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -190,6 +195,7 @@ class FacebookGroups(object):
         method = 'by XPATH'
         if element:
             element = element.text
+
         logger.debug(f':: {method} :: {element}')
         return element
 
@@ -215,6 +221,7 @@ class FacebookGroups(object):
             if element:
                 element = element[0].text
                 element = re.compile('Created [a0-9]+ year[s]? ago').match(element)[0]
+
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -253,6 +260,7 @@ class FacebookGroups(object):
     @staticmethod
     def error_parsing(error, enable_stacktrace: bool = False) -> tuple:
         """parses selenium exeption error"""
+
         error_parsed = f'{error}'.splitlines()
         error_parsed = [f'{x}'.strip() for x in error_parsed]
         message = error_parsed[0]
@@ -286,6 +294,7 @@ class FacebookGroups(object):
 
     def get_about(self, rate_limiting: bool = True):
         """get about page"""
+
         url = f'{self.url}/about'
 
         if rate_limiting:
@@ -306,6 +315,7 @@ class FacebookGroups(object):
             rate_per_minute: int = None,
     ) -> bool:
         """get with rate dynamic limit"""
+
         if wait_between_retries:
             self.WAIT_BETWEEN_RETRIES = wait_between_retries
 
@@ -334,6 +344,7 @@ class FacebookGroups(object):
 
     def quit(self):
         """quit selenium"""
+
         if self._browser:
             logger.info(f'quit :: {self._browser}')
             return self._browser.quit()
@@ -364,6 +375,7 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0].text
+
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -400,6 +412,7 @@ class FacebookGroups(object):
 
     def rate_limited(self):
         """rate limit checker"""
+
         if self.current_rate_too_fast():
             logger.info(f'rate_limited :: True')
             return True
@@ -437,6 +450,7 @@ class FacebookGroups(object):
 
     def restart(self):
         """quit and start new instance of selenium"""
+
         if self._browser:
             self.quit()
         logger.info(f'restart :: {self._browser}')
@@ -444,6 +458,7 @@ class FacebookGroups(object):
 
     def run(self):
         """run selenium browser"""
+
         if self._browser:
             logger.info(f'run :: {self._browser}')
             return self._browser.run()
@@ -456,6 +471,7 @@ class FacebookGroups(object):
 
     def screenshot_error(self):
         """get error screenshot"""
+
         if self.screenshot(filename='screenshot-error.png'):
             logger.debug(f'screenshot_error :: done')
             return True
@@ -463,6 +479,7 @@ class FacebookGroups(object):
 
     def screenshot_success(self):
         """get success screenshot"""
+
         if self.screenshot(filename='screenshot-success.png'):
             logger.debug(f'screenshot_success :: done')
             return True
@@ -470,12 +487,14 @@ class FacebookGroups(object):
 
     def set_url(self, url: str) -> str:
         """set new url"""
+
         self._url = url
         logger.debug(f'set_url :: {self.url=}')
         return self.url
 
     def start(self, headless: bool = True, random_user_agent: bool = False, set_user_agent: str = None):
         """start new instance of selenium"""
+
         self._browser.config.webdriver_wrapper = ChromeWrapper()
 
         if headless:
@@ -500,6 +519,7 @@ class FacebookGroups(object):
 
     def stop(self):
         """alias to quit"""
+
         return self.quit()
 
     def members(self):
@@ -521,6 +541,7 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0].text
+
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -570,6 +591,7 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0].text
+
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -611,6 +633,7 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0].text
+
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -778,6 +801,7 @@ class FacebookGroups(object):
     @staticmethod
     def url_cleaner(url: str):
         """simple url cleaner"""
+
         if not url:
             return
         if url[-1] == '/':
