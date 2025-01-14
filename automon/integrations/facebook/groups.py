@@ -27,8 +27,7 @@ class FacebookGroups(object):
     _xpath_history = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[3]/div/div/div[2]/div/div[2]'
     _xpath_members = [
         '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]',
-        '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]',
-        '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]'
+        '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]/span',
     ]
     _xpath_posts_monthly = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[2]'
     _xpath_posts_today = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]'
@@ -95,7 +94,7 @@ class FacebookGroups(object):
                 case_sensitive=True
             )
             if element:
-                element = element[0]
+                element = element[0].text
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -120,7 +119,8 @@ class FacebookGroups(object):
                 case_sensitive=True
             )
             if element:
-                element = element[0]
+                element = element[0].text
+
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -139,6 +139,7 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0]
+
             method = 'by SEARCH'
 
         if element:
@@ -199,7 +200,7 @@ class FacebookGroups(object):
             )
             if element:
                 element = element[0].text
-                element = re.compile('Created [0-9]+ year[s]? ago').match(element)[0]
+                element = re.compile('Created [a0-9]+ year[s]? ago').match(element)[0]
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -348,7 +349,7 @@ class FacebookGroups(object):
                 case_sensitive=True
             )
             if element:
-                element = element[0]
+                element = element[0].text
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -505,7 +506,7 @@ class FacebookGroups(object):
                 case_sensitive=True
             )
             if element:
-                element = element[0]
+                element = element[0].text
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -554,7 +555,7 @@ class FacebookGroups(object):
                 case_sensitive=True
             )
             if element:
-                element = element[0]
+                element = element[0].text
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -595,7 +596,7 @@ class FacebookGroups(object):
                 case_sensitive=True
             )
             if element:
-                element = element[0]
+                element = element[0].text
             method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
@@ -639,11 +640,12 @@ class FacebookGroups(object):
 
             for privacy in known_privacy:
                 element = self._browser.find_all_with_beautifulsoup(
+                    name='span',
                     string=privacy,
                     case_sensitive=True
                 )
                 if element:
-                    element = element[0]
+                    element = element[0].text
                     break
 
             method = 'by SEARCH'
@@ -678,7 +680,7 @@ class FacebookGroups(object):
                     case_sensitive=True
                 )
                 if element:
-                    element = element[0]
+                    element = element[0].text
                     break
 
             method = 'by SEARCH'
@@ -792,7 +794,7 @@ class FacebookGroups(object):
                     case_sensitive=True
                 )
                 if element:
-                    element = element[0]
+                    element = element[0].text
                     break
 
             method = 'by SEARCH'
