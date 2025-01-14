@@ -3,6 +3,7 @@ import random
 import datetime
 import statistics
 
+import automon
 from automon import log
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
@@ -177,8 +178,9 @@ class FacebookGroups(object):
         return element
 
     def check_something_went_wrong(self):
-        element = self._browser.wait_for_anything(
+        element = self._browser.wait_for_anything_with_beautifulsoup(
             match='Sorry, something went wrong.',
+            string='Sorry, something went wrong.',
             case_sensitive=True,
             timeout=3,
         )
@@ -295,13 +297,11 @@ class FacebookGroups(object):
     def get_about(self, rate_limiting: bool = True):
         """get about page"""
 
+        about = self._browser._urllib.parse.urljoin(self.url + '/', 'about')
+
         if rate_limiting:
-            result = self.get_with_rate_limiter(url=self.url)
-            about = self._browser._urllib.parse.urljoin(self._browser.current_url, 'about')
             result = self.get_with_rate_limiter(url=about)
         else:
-            result = self.get(url=self.url)
-            about = self._browser._urllib.parse.urljoin(self._browser.current_url, 'about')
             result = self.get(url=about)
 
         logger.info(f'{about} :: {result=}')
@@ -569,7 +569,7 @@ class FacebookGroups(object):
                 return self._members_count
 
     def must_login(self):
-        element = self._browser.wait_for_xpath(self._xpath_must_login)
+        element = self._browser.wait_for_xpath(self._xpath_must_login, timeout=3)
         method = 'by XPATH'
         if element:
             element = element.text
