@@ -807,7 +807,7 @@ class SeleniumBrowser(object):
         """get page source"""
         logger.debug(f'get_page_source :: ')
         get_page_source = self.webdriver.page_source
-        logger.debug(f'get_page_source :: {len(get_page_source) / 1024} KB')
+        logger.debug(f'get_page_source :: {round(len(get_page_source) / 1024)} KB')
         logger.info(f'get_page_source :: done')
         return get_page_source
 
@@ -820,7 +820,7 @@ class SeleniumBrowser(object):
         if not markup:
             markup = self.get_page_source()
 
-        logger.debug(f'get_page_source_beautifulsoup :: {features=} :: {len(markup) / 1024} KB')
+        logger.debug(f'get_page_source_beautifulsoup :: {features=} :: {round(len(markup) / 1024)} KB')
 
         get_page_source_beautifulsoup = bs4.BeautifulSoup(
             markup=markup,
@@ -1176,7 +1176,7 @@ class SeleniumBrowser(object):
                     f'{match=} :: '
                 )
 
-        timeout_elapsed = round(abs(timeout_start - time.time()), 1)
+            timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
         return RESULT
 
