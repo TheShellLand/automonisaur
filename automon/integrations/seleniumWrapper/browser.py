@@ -594,7 +594,7 @@ class SeleniumBrowser(object):
             f'{exact_match=} :: '
             f'{return_first=} :: '
             f'{caching=} :: '
-            f' {kwargs=}'
+            f'{kwargs=}'
         )
 
         by_types = [
@@ -681,7 +681,7 @@ class SeleniumBrowser(object):
             string: str = None,
             limit: int = None,
             case_sensitive: bool = False,
-            **kwargs) -> bs4.BeautifulSoup:
+            **kwargs) -> list:
         """find anything with fuzzy search in beaurifulsoup
 
         """
@@ -1054,21 +1054,17 @@ class SeleniumBrowser(object):
             timeout: int = 30,
             **kwargs) -> list:
         """wait for anything"""
+
         logger.debug(
             f'wait_for_anything :: '
             f'{match=} :: '
-            f'{value=} :: '
-            f'{value_attr=} :: '
-            f'{by=} :: '
-            f'{case_sensitive=} :: '
-            f'{exact_match=} :: '
             f'{timeout=} :: '
-            f'{return_first=} :: '
-            f'{kwargs=}'
         )
 
         timeout_start = time.time()
         timeout_elapsed = round(abs(timeout_start - time.time()), 1)
+
+        RESULT = []
 
         while timeout_elapsed < timeout:
 
@@ -1081,7 +1077,7 @@ class SeleniumBrowser(object):
             )
 
             try:
-                find = self.find_anything(
+                RESULT = self.find_anything(
                     match=match,
                     value=value,
                     value_attr=value_attr,
@@ -1090,11 +1086,12 @@ class SeleniumBrowser(object):
                     exact_match=exact_match,
                     return_first=return_first,
                     **kwargs)
-                logger.debug(f'wait_for_anything :: {len(find)} elements found')
 
-                if find:
+                logger.debug(f'wait_for_anything :: {len(RESULT)} elements found')
+
+                if RESULT:
                     logger.info(f'wait_for_anything :: done')
-                    return find
+                    return RESULT
 
             except Exception as error:
                 logger.error(
@@ -1110,7 +1107,73 @@ class SeleniumBrowser(object):
             timeout_elapsed = round(abs(timeout_start - time.time()), 1)
 
         logger.error(f'wait_for_anything :: failed :: {match=} :: {value=} :: {by=}')
+
         return []
+
+    def wait_for_anything_with_beautifulsoup(
+            self,
+            match: str,
+            name: str = None,
+            attrs: dict = {},
+            recursive: bool = True,
+            string: str = None,
+            limit: int = None,
+            case_sensitive: bool = False,
+            timeout: int = 30,
+            **kwargs) -> list:
+        """wait for anything with beautifulsoup"""
+
+        logger.debug(
+            f'wait_for_anything_with_beautifulsoup :: '
+            f'{match=} :: '
+            f'{timeout=} :: '
+        )
+
+        timeout_start = time.time()
+        timeout_elapsed = round(abs(timeout_start - time.time()), 1)
+
+        RESULT = []
+
+        while timeout_elapsed < timeout:
+
+            logger.debug(
+                f'wait_for_anything_with_beautifulsoup :: '
+                f'timeout {timeout_elapsed}/{timeout} sec :: '
+                f'{self.current_url=} :: '
+            )
+
+            try:
+                RESULT = self.find_anything_with_beautifulsoup(
+                    match=match,
+                    name=name,
+                    attrs=attrs,
+                    recursive=recursive,
+                    string=string,
+                    limit=limit,
+                    case_sensitive=case_sensitive,
+                    **kwargs)
+
+                logger.debug(
+                    f'wait_for_anything_with_beautifulsoup :: '
+                    f'{len(RESULT)} elements found'
+                )
+
+                if RESULT:
+                    logger.info(f'wait_for_anything_with_beautifulsoup :: done')
+                    return RESULT
+
+            except Exception as error:
+                logger.error(
+                    f'wait_for_anything_with_beautifulsoup :: '
+                    f'failed :: '
+                    f'timeout {timeout_elapsed}/{timeout} sec :: '
+                    f'{error=} :: '
+                    f'{match=} :: '
+                )
+
+        timeout_elapsed = round(abs(timeout_start - time.time()), 1)
+
+        return RESULT
 
     def wait_for_element(
             self,
