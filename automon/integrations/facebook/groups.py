@@ -171,6 +171,20 @@ class FacebookGroups(object):
         self._content_unavailable = element
         return element
 
+    def check_something_went_wrong(self):
+        element = self._browser.wait_for_anything(
+            match='Sorry, something went wrong.',
+            case_sensitive=True,
+            timeout=3,
+        )
+        if element:
+            element = element[0]
+
+        method = 'by SEARCH'
+
+        logger.debug(f':: {method} :: {element}')
+        return element
+
     def check_temporarily_blocked(self):
         element = self._browser.wait_for_xpath(value=self._xpath_temporarily_blocked, timeout=3)
         method = 'by XPATH'
