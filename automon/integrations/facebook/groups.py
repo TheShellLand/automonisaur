@@ -383,12 +383,16 @@ class FacebookGroups(object):
                 'Created [0-9]+ year[s] ago',
             ]
 
-            element = [self._browser.find_all_with_beautifulsoup(
-                string=known,
-                case_sensitive=True
-            ) for known in known_elements]
-            if element:
-                element = element[0].text
+            for known in known_elements:
+                element = self._browser.find_anything_with_beautifulsoup(
+                    match=known,
+                    name='span',
+                    case_sensitive=True,
+                )
+
+                if element:
+                    element = element[0].text
+                    element = re.compile(known).match(element)[0]
 
             method = 'by SEARCH'
 
