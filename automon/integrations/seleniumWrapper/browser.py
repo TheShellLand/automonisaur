@@ -572,7 +572,7 @@ class SeleniumBrowser(object):
 
             string = string_compiled
 
-        RESULTS = BeautifulSoup.find_all(
+        elements = BeautifulSoup.find_all(
             name=name,
             attrs=attrs,
             recursive=recursive,
@@ -581,10 +581,10 @@ class SeleniumBrowser(object):
             **kwargs,
         )
 
-        logger.debug(f'find_all_with_beautifulsoup :: {RESULTS}')
-        logger.info(f'find_all_with_beautifulsoup :: {len(RESULTS)} results')
+        logger.debug(f'find_all_with_beautifulsoup :: {elements=}')
+        logger.info(f'find_all_with_beautifulsoup :: {len(elements)} results')
 
-        return RESULTS
+        return elements
 
     def find_anything(
             self,
@@ -720,7 +720,7 @@ class SeleniumBrowser(object):
 
         MATCHES = []
 
-        results = self.find_all_with_beautifulsoup(
+        elements = self.find_all_with_beautifulsoup(
             name=name,
             attrs=attrs,
             recursive=recursive,
@@ -729,21 +729,27 @@ class SeleniumBrowser(object):
             case_sensitive=case_sensitive)
 
         # search both element as string and attribute text
-        for element in results:
+        for element in elements:
 
             places_to_search = [
                 element.text,
                 str(element),
             ]
 
-            for in_here in places_to_search:
+            for search in places_to_search:
+
+                logger.debug(
+                    f'find_anything_with_beautifulsoup :: '
+                    f'{search=}'
+                )
 
                 re_compile = re.compile(match)
 
-                findall = re_compile.findall(in_here)
-                re_match = re_compile.match(in_here)
+                findall = re_compile.findall(search)
+                re_match = re_compile.match(search)
 
                 if findall:
+                    logger.debug(f'find_anything_with_beautifulsoup :: found :: {match=} :: {re_match=} :: {element}')
                     logger.debug(
                         f'find_anything_with_beautifulsoup :: found :: {match=} :: {re_match.group()=} :: {element}')
                     MATCHES.append(element)
