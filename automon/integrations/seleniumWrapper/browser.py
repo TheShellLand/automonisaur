@@ -263,7 +263,6 @@ class SeleniumBrowser(object):
     def action_scroll_up(self):
         return self.webdriver.execute_script("window.scrollBy(0,-350)", "")
 
-
     def action_type(
             self,
             key: str or Keys,
@@ -552,6 +551,17 @@ class SeleniumBrowser(object):
             **kwargs) -> list:
         """find all with BeautifulSoup"""
 
+        logger.debug(
+            f'find_all_with_beautifulsoup :: '
+            f'{name=} :: '
+            f'{attrs=} :: '
+            f'{recursive=} :: '
+            f'{string=} :: '
+            f'{limit=} :: '
+            f'{case_sensitive=} :: '
+            f'{kwargs=}'
+        )
+
         BeautifulSoup = self.get_page_source_beautifulsoup()
 
         if string:
@@ -718,12 +728,25 @@ class SeleniumBrowser(object):
             limit=limit,
             case_sensitive=case_sensitive)
 
+        # search both element as string and attribute text
         for element in results:
 
-            findall = re.compile(match).findall(str(element))
-            if findall:
-                logger.debug(f'find_anything_with_beautifulsoup :: found :: {element}')
-                MATCHES.append(element)
+            places_to_search = [
+                element.text,
+                str(element),
+            ]
+
+            for in_here in places_to_search:
+
+                re_compile = re.compile(match)
+
+                findall = re_compile.findall(in_here)
+                re_match = re_compile.match(in_here)
+
+                if findall:
+                    logger.debug(
+                        f'find_anything_with_beautifulsoup :: found :: {match=} :: {re_match.group()=} :: {element}')
+                    MATCHES.append(element)
 
         logger.info(f'find_anything_with_beautifulsoup :: MATCHES :: {len(MATCHES)} found')
         return MATCHES
