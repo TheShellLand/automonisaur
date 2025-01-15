@@ -371,10 +371,15 @@ class FacebookGroups(object):
         method = 'by XPATH'
 
         if not element:
-            element = self._browser.find_all_with_beautifulsoup(
-                string='Group created',
+            known_elements = [
+                'Group created[ ]?[on]+',
+                'Created [0-9]+ year[s] ago',
+            ]
+
+            element = [self._browser.find_all_with_beautifulsoup(
+                string=known,
                 case_sensitive=True
-            )
+            ) for known in known_elements]
             if element:
                 element = element[0].text
 
