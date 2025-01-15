@@ -215,14 +215,21 @@ class FacebookGroups(object):
         method = 'by XPATH'
 
         if not element:
-            element = self._browser.find_anything_with_beautifulsoup(
-                match='Created.*year[s]? ago',
-                name='span',
-                case_sensitive=True
-            )
-            if element:
-                element = element[0].text
-                element = re.compile('Created [a0-9]+ year[s]? ago').match(element)[0]
+            re_matches = [
+                'Created [0-9]+ year[s]? ago',
+                'Group created on [a-zA-Z]+ [0-9]+, [0-9]+',
+            ]
+
+            for re_match in re_matches:
+                element = self._browser.find_anything_with_beautifulsoup(
+                    match=re_match,
+                    name='span',
+                    case_sensitive=True,
+                )
+
+                if element:
+                    element = element[0].text
+                    element = re.compile(re_match).match(element)[0]
 
             method = 'by SEARCH'
 
