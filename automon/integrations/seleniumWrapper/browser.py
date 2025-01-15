@@ -254,6 +254,16 @@ class SeleniumBrowser(object):
         except Exception as error:
             raise Exception(f'action_click :: failed :: {error=} :: {element=}')
 
+    def action_scroll_to_bottom(driver):
+        return self.webdriver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+    def action_scroll_down(self):
+        return self.webdriver.execute_script("window.scrollBy(0,350)", "")
+
+    def action_scroll_up(self):
+        return self.webdriver.execute_script("window.scrollBy(0,-350)", "")
+
+
     def action_type(
             self,
             key: str or Keys,
@@ -695,7 +705,7 @@ class SeleniumBrowser(object):
             f'{string=} :: '
             f'{limit=} :: '
             f'{case_sensitive=} :: '
-            f' {kwargs=}'
+            f'{kwargs=}'
         )
 
         MATCHES = []
