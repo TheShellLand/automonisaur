@@ -29,6 +29,7 @@ class FacebookGroups(object):
     _xpath_members = [
         '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]',
         '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]/span',
+        '//*[@id="mount_0_0_S5"]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]/span',
     ]
     _xpath_posts_monthly = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[2]'
     _xpath_posts_today = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]'
@@ -379,20 +380,25 @@ class FacebookGroups(object):
 
         if not element:
             known_elements = [
-                'Group created[ ]?[on]+',
-                'Created [0-9]+ year[s] ago',
+                'Group created on \w+ \d+, \d+',
+                'Created \d+ year[s] ago',
             ]
 
             for known in known_elements:
-                element = self._browser.find_anything_with_beautifulsoup(
+                elements = self._browser.find_anything_with_beautifulsoup(
                     match=known,
                     name='span',
                     case_sensitive=True,
                 )
 
-                if element:
-                    element = element[0].text
-                    element = re.compile(known).match(element)[0]
+                if elements:
+
+                    for element in elements:
+                        element = element.text
+                        element = re.compile(known).match(element)[0]
+
+                        if element:
+                            break
 
             method = 'by SEARCH'
 
@@ -545,11 +551,13 @@ class FacebookGroups(object):
         if self._members is not None:
             return self._members
 
-        element = [
-            x for x in
-            [self._browser.wait_for_xpath(value=xpath, timeout=3) for xpath in self._xpath_members] if x]
-        if element:
-            element = element[0].text
+        for xpath in self._xpath_members:
+            element = self._browser.wait_for_xpath(value=xpath, timeout=3)
+
+            if element:
+                element = element.text
+                break
+
         method = 'by XPATH'
 
         if not element:
