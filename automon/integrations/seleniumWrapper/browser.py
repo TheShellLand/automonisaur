@@ -750,7 +750,8 @@ class SeleniumBrowser(object):
                 if re_search:
                     logger.debug(
                         f'find_anything_with_beautifulsoup :: found :: {match=} :: {re_search.group()} :: {re_search.string=} :: {element=}')
-                    MATCHES.append(element)
+                    if element not in MATCHES:
+                        MATCHES.append(element)
 
         logger.info(f'find_anything_with_beautifulsoup :: MATCHES :: {len(MATCHES)} found')
         return MATCHES
