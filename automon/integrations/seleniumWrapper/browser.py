@@ -745,13 +745,11 @@ class SeleniumBrowser(object):
 
                 re_compile = re.compile(match)
 
-                findall = re_compile.findall(search)
-                re_match = re_compile.match(search)
+                re_search = re_compile.search(search)
 
-                if findall:
-                    logger.debug(f'find_anything_with_beautifulsoup :: found :: {match=} :: {re_match=} :: {element}')
+                if re_search:
                     logger.debug(
-                        f'find_anything_with_beautifulsoup :: found :: {match=} :: {re_match.group()=} :: {element}')
+                        f'find_anything_with_beautifulsoup :: found :: {match=} :: {re_search.group()} :: {re_search.string=} :: {element=}')
                     MATCHES.append(element)
 
         logger.info(f'find_anything_with_beautifulsoup :: MATCHES :: {len(MATCHES)} found')
