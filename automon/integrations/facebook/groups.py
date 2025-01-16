@@ -562,7 +562,7 @@ class FacebookGroups(object):
 
         if not element:
             element = self._browser.find_all_with_beautifulsoup(
-                string='total members',
+                string='[0-9]+ total member[s]?',
                 case_sensitive=True
             )
             if element:
