@@ -63,8 +63,11 @@ class FacebookGroups(object):
         self._privacy_details = None
         self._title = None
         self._visible = None
-        self._blocked_by_login = None
         self._browser_not_supported = None
+
+        self._check_blocked_by_login = None
+        self._check_temporarily_blocked = None
+        self._check_something_went_wrong = None
 
     def average_rate(self):
         if self.RATE_COUNTER:
@@ -81,8 +84,8 @@ class FacebookGroups(object):
 
     def check_blocked_by_login(self):
 
-        if self._blocked_by_login is not None:
-            return self._blocked_by_login
+        if self._check_blocked_by_login is not None:
+            return self._check_blocked_by_login
 
         element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=3)
         if element:
@@ -178,6 +181,11 @@ class FacebookGroups(object):
         return element
 
     def check_something_went_wrong(self):
+        """Happens when facebook server has issues"""
+
+        if self._check_something_went_wrong:
+            return self._check_something_went_wrong
+
         element = self._browser.wait_for_anything_with_beautifulsoup(
             match='Sorry, something went wrong.',
             string='Sorry, something went wrong.',
@@ -193,6 +201,11 @@ class FacebookGroups(object):
         return element
 
     def check_temporarily_blocked(self):
+        """check if your IP is blocked by facebook"""
+
+        if self._check_temporarily_blocked:
+            return self._check_temporarily_blocked
+
         element = self._browser.wait_for_xpath(value=self._xpath_temporarily_blocked, timeout=3)
         method = 'by XPATH'
         if element:
@@ -814,8 +827,8 @@ class FacebookGroups(object):
             title=None,
             url=self.url,
             visible=None,
-            check_blocked_by_login=None,
-            check_browser_not_supported=None,
+            check_blocked_by_login=self.check_blocked_by_login(),
+            check_browser_not_supported=self.check_browser_not_supported(),
             check_content_unavailable=self.check_content_unavailable(),
         )
 
