@@ -217,6 +217,7 @@ class FacebookGroups(object):
         if not element:
             re_matches = [
                 'Created \d+ year[s]? ago',
+                'Created a year ago',
             ]
 
             for re_match in re_matches:
@@ -229,6 +230,7 @@ class FacebookGroups(object):
                 if element:
                     element = element[0].text
                     element = re.compile(re_match).match(element)[0]
+                    break
 
             method = 'by SEARCH'
 
