@@ -22,8 +22,7 @@ class FacebookGroups(object):
     _xpath_browser_not_supported = ''
 
     _xpath_creation_date = [
-        '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div',
-        '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]',
+        '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div/div/span',
     ]
     _xpath_history = '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[3]/div/div/div[2]/div/div[2]/span/span'
     _xpath_members = [
@@ -369,7 +368,7 @@ class FacebookGroups(object):
         if self._history is not None:
             return self._history
 
-        element = self._browser.wait_for_xpath(value=self._xpath_history)
+        element = self._browser.wait_for_xpath(value=self._xpath_history, timeout=3)
         if element:
             element = element.text
             if 'See more' in element:
@@ -687,7 +686,7 @@ class FacebookGroups(object):
         if self._privacy is not None:
             return self._privacy
 
-        element = self._browser.wait_for_xpath(value=self._xpath_privacy)
+        element = self._browser.wait_for_xpath(value=self._xpath_privacy, timeout=3)
         if element:
             element = element.text
         method = 'by XPATH'
@@ -724,7 +723,7 @@ class FacebookGroups(object):
         if self._privacy_details is not None:
             return self._privacy_details
 
-        element = self._browser.wait_for_xpath(value=self._xpath_privacy_details)
+        element = self._browser.wait_for_xpath(value=self._xpath_privacy_details, timeout=3)
         if element:
             element = element.text
         method = 'by XPATH'
@@ -840,7 +839,7 @@ class FacebookGroups(object):
         if self._visible is not None:
             return self._visible
 
-        element = self._browser.wait_for_xpath(value=self._xpath_visible)
+        element = self._browser.wait_for_xpath(value=self._xpath_visible, timeout=3)
         if element:
             element = element.text
         method = 'by XPATH'
