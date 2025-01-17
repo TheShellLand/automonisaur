@@ -25,7 +25,7 @@ class FacebookGroups(object):
         '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div',
         '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]',
     ]
-    _xpath_history = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[3]/div/div/div[2]/div/div[2]'
+    _xpath_history = '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[3]/div/div/div[2]/div/div[2]/span/span'
     _xpath_members = [
         '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]',
         '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[2]/div/div/div[2]/div/div[1]/span',
@@ -217,8 +217,7 @@ class FacebookGroups(object):
 
         if not element:
             re_matches = [
-                'Created [0-9]+ year[s]? ago',
-                'Group created on [a-zA-Z]+ [0-9]+, [0-9]+',
+                'Created \d+ year[s]? ago',
             ]
 
             for re_match in re_matches:
@@ -381,7 +380,6 @@ class FacebookGroups(object):
         if not element:
             known_elements = [
                 'Group created on \w+ \d+, \d+',
-                'Created \d+ year[s] ago',
             ]
 
             for known in known_elements:
