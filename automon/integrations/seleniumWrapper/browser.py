@@ -565,12 +565,12 @@ class SeleniumBrowser(object):
         BeautifulSoup = self.get_page_source_beautifulsoup()
 
         if string:
-            string_compiled = re.compile(string)
+            _string_compiled = re.compile(string)
 
             if case_sensitive is False:
-                string_compiled = re.compile(string, re.IGNORECASE)
+                _string_compiled = re.compile(string, re.IGNORECASE)
 
-            string = string_compiled
+            string = _string_compiled
 
         elements = BeautifulSoup.find_all(
             name=name,
@@ -732,11 +732,15 @@ class SeleniumBrowser(object):
         for element in elements:
 
             places_to_search = [
+                element.string,
                 element.text,
                 str(element),
             ]
 
             for search in places_to_search:
+
+                if not search:
+                    continue
 
                 logger.debug(
                     f'find_anything_with_beautifulsoup :: '
@@ -797,6 +801,78 @@ class SeleniumBrowser(object):
 
         logger.info(f'find_elements :: done')
         return find_elements
+
+    def find_elements_with_beautifulsoup(
+            self,
+            match: str,
+            name: str = None,
+            attrs: dict = {},
+            recursive: bool = True,
+            string: str = None,
+            limit: int = None,
+            case_sensitive: bool = False):
+
+        # find all tags
+        _bs_elements = self.find_anything_with_beautifulsoup(
+            match=match,
+            name=name,
+            attrs=attrs,
+            recursive=recursive,
+            string=string,
+            limit=limit,
+            case_sensitive=case_sensitive)
+
+        logger.debug(f'find_elements_with_beautifulsoup :: {len(_bs_elements)} beautifulsoup elements')
+
+        elements = []
+
+        _re_match = re.compile(match)
+
+        if case_sensitive:
+            _re_match = re.compile(match, re.IGNORECASE)
+
+        for _bs_element in _bs_elements:
+
+            if type(_bs_element) != bs4.element.Tag:
+                continue
+
+            _name = _bs_element.name
+
+            for _attrs, _values in _bs_element.attrs.items():
+
+                if not _values:
+                    continue
+
+                _attrs_list = [
+                    'class',
+                    'id',
+                ]
+
+                if _attrs not in _attrs_list:
+                    continue
+
+                if type(_values) == list:
+                    _values = ' '.join(_values)
+
+                _selenium_css_selector = f'{_name}[{_attrs}="{_values}"]'
+
+                logger.debug(f'find_elements_with_beautifulsoup :: {_selenium_css_selector=}')
+
+                _selenium_elements = self.find_elements(by=self.by.CSS_SELECTOR, value=_selenium_css_selector)
+
+                for _selenium_element in _selenium_elements:
+
+                    _selenium_text = _selenium_element.text
+
+                    if _re_match.search(_selenium_text):
+
+                        if _selenium_element not in elements:
+                            elements.append(_selenium_element)
+
+            logger.debug(f'find_elements_with_beautifulsoup :: {len(elements)} elements')
+            logger.info(f'find_elements_with_beautifulsoup :: done')
+
+        return elements
 
     def find_xpath(
             self,
