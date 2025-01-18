@@ -87,7 +87,7 @@ class FacebookGroups(object):
         if self._check_blocked_by_login is not None:
             return self._check_blocked_by_login
 
-        element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=0)
         if element:
             element = element.text
 
@@ -114,7 +114,7 @@ class FacebookGroups(object):
 
         element = self._browser.wait_for_xpath(
             value=self._xpath_browser_not_supported,
-            timeout=3)
+            timeout=0)
         if element:
             element = element.text
 
@@ -135,7 +135,7 @@ class FacebookGroups(object):
         return element
 
     def check_close_login_popup(self):
-        element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=0)
         method = 'by XPATH'
 
         if not element:
@@ -161,7 +161,7 @@ class FacebookGroups(object):
         if self._content_unavailable is not None:
             return self._content_unavailable
 
-        element = self._browser.wait_for_xpath(value=self._xpath_content_unavailable, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_content_unavailable, timeout=0)
         if element:
             element = element.text
         method = 'by XPATH'
@@ -190,7 +190,7 @@ class FacebookGroups(object):
             match='Sorry, something went wrong.',
             string='Sorry, something went wrong.',
             case_sensitive=True,
-            timeout=3,
+            timeout=0,
         )
         if element:
             element = element[0]
@@ -206,7 +206,7 @@ class FacebookGroups(object):
         if self._check_temporarily_blocked:
             return self._check_temporarily_blocked
 
-        element = self._browser.wait_for_xpath(value=self._xpath_temporarily_blocked, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_temporarily_blocked, timeout=0)
         method = 'by XPATH'
         if element:
             element = element.text
@@ -221,7 +221,7 @@ class FacebookGroups(object):
 
         element = [
             x for x in
-            [self._browser.wait_for_xpath(value=xpath, timeout=3) for xpath in self._xpath_creation_date] if x]
+            [self._browser.wait_for_xpath(value=xpath, timeout=0) for xpath in self._xpath_creation_date] if x]
         if element:
             element = element[0].text
             element = element.splitlines()[0]
@@ -384,7 +384,7 @@ class FacebookGroups(object):
         if self._history is not None:
             return self._history
 
-        element = self._browser.wait_for_xpath(value=self._xpath_history, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_history, timeout=0)
         if element:
             element = element.text
             if 'See more' in element:
@@ -566,7 +566,7 @@ class FacebookGroups(object):
             return self._members
 
         for xpath in self._xpath_members:
-            element = self._browser.wait_for_xpath(value=xpath, timeout=3)
+            element = self._browser.wait_for_xpath(value=xpath, timeout=0)
 
             if element:
                 element = element.text
@@ -607,7 +607,7 @@ class FacebookGroups(object):
                 return self._members_count
 
     def must_login(self):
-        element = self._browser.wait_for_xpath(self._xpath_must_login, timeout=3)
+        element = self._browser.wait_for_xpath(self._xpath_must_login, timeout=0)
         method = 'by XPATH'
         if element:
             element = element.text
@@ -619,7 +619,7 @@ class FacebookGroups(object):
         if self._posts_monthly is not None:
             return self._posts_monthly
 
-        element = self._browser.wait_for_xpath(value=self._xpath_posts_monthly, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_posts_monthly, timeout=0)
         if element:
             element = element.text
         method = 'by XPATH'
@@ -662,7 +662,7 @@ class FacebookGroups(object):
         if self._posts_today is not None:
             return self._posts_today
 
-        element = self._browser.wait_for_xpath(value=self._xpath_posts_today, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_posts_today, timeout=0)
         if element:
             element = element.text
         method = 'by XPATH'
@@ -704,7 +704,7 @@ class FacebookGroups(object):
         if self._privacy is not None:
             return self._privacy
 
-        element = self._browser.wait_for_xpath(value=self._xpath_privacy, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_privacy, timeout=0)
         if element:
             element = element.text
         method = 'by XPATH'
@@ -741,7 +741,7 @@ class FacebookGroups(object):
         if self._privacy_details is not None:
             return self._privacy_details
 
-        element = self._browser.wait_for_xpath(value=self._xpath_privacy_details, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_privacy_details, timeout=0)
         if element:
             element = element.text
         method = 'by XPATH'
@@ -857,7 +857,7 @@ class FacebookGroups(object):
         if self._visible is not None:
             return self._visible
 
-        element = self._browser.wait_for_xpath(value=self._xpath_visible, timeout=3)
+        element = self._browser.wait_for_xpath(value=self._xpath_visible, timeout=0)
         if element:
             element = element.text
         method = 'by XPATH'
