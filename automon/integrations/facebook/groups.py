@@ -234,7 +234,8 @@ class FacebookGroups(object):
             ]
 
             for re_match in re_matches:
-                element = self._browser.find_anything_with_beautifulsoup(
+
+                element = self._browser.find_elements_with_beautifulsoup(
                     match=re_match,
                     name='span',
                     case_sensitive=True,
@@ -397,7 +398,8 @@ class FacebookGroups(object):
             ]
 
             for re_match in re_matches:
-                elements = self._browser.find_anything_with_beautifulsoup(
+
+                elements = self._browser.find_elements_with_beautifulsoup(
                     match=re_match,
                     name='span',
                     case_sensitive=True,
@@ -627,6 +629,7 @@ class FacebookGroups(object):
                 string='in the last month',
                 case_sensitive=True
             )
+
             if element:
                 element = element[0].text
 
