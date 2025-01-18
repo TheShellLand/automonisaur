@@ -251,7 +251,7 @@ class FacebookGroups(object):
         self._creation_date = element
 
         if not element:
-            raise
+            raise f'{element=}'
 
         return element
 
@@ -351,7 +351,7 @@ class FacebookGroups(object):
             if self.rate_limited():
                 self.rate_limit_increase()
                 Sleeper.seconds(seconds=self.WAIT_BETWEEN_RETRIES)
-                logger.error(f'get_with_rate_limiter :: error :: {url} :: {retry=} :: {retries=}')
+                logger.debug(f'get_with_rate_limiter :: retrying :: {url} :: {retry=} :: {retries=}')
             else:
                 self.rate_limit_decrease()
 
@@ -392,13 +392,13 @@ class FacebookGroups(object):
         method = 'by XPATH'
 
         if not element:
-            known_elements = [
+            re_matches = [
                 'Group created on \w+ \d+, \d+',
             ]
 
-            for known in known_elements:
+            for re_match in re_matches:
                 elements = self._browser.find_anything_with_beautifulsoup(
-                    match=known,
+                    match=re_match,
                     name='span',
                     case_sensitive=True,
                 )
@@ -407,7 +407,7 @@ class FacebookGroups(object):
 
                     for element in elements:
                         element = element.text
-                        element = re.compile(known).match(element)[0]
+                        element = re.compile(re_match).match(element)[0]
 
                         if element:
                             break
@@ -418,7 +418,7 @@ class FacebookGroups(object):
         self._history = element
 
         if not element:
-            raise
+            raise f'{element=}'
 
         return element
 
@@ -586,7 +586,7 @@ class FacebookGroups(object):
         self._members = element
 
         if not element:
-            raise
+            raise f'{element=}'
 
         return element
 
@@ -636,7 +636,7 @@ class FacebookGroups(object):
         self._posts_monthly = element
 
         if not element:
-            raise
+            raise f'{element=}'
 
         return element
 
@@ -678,7 +678,7 @@ class FacebookGroups(object):
         self._posts_today = element
 
         if not element:
-            raise
+            raise f'{element=}'
 
         return element
 
@@ -707,16 +707,16 @@ class FacebookGroups(object):
         method = 'by XPATH'
 
         if not element:
-            known_privacy = [
+            re_matches = [
                 'Public',
                 'Private',
                 'Visible',
             ]
 
-            for privacy in known_privacy:
+            for re_match in re_matches:
                 element = self._browser.find_all_with_beautifulsoup(
                     name='span',
-                    string=privacy,
+                    string=re_match,
                     case_sensitive=True
                 )
                 if element:
@@ -729,7 +729,7 @@ class FacebookGroups(object):
         self._privacy = element
 
         if not element:
-            raise
+            raise f'{element=}'
 
         return element
 
@@ -744,14 +744,14 @@ class FacebookGroups(object):
         method = 'by XPATH'
 
         if not element:
-            known_privacy_details = [
+            re_matches = [
                 "Anyone can see who's in the group and what they post.",
                 "Only members can see who's in the group and what they post.",
             ]
 
-            for privacy_details in known_privacy_details:
+            for re_match in re_matches:
                 element = self._browser.find_all_with_beautifulsoup(
-                    string=privacy_details,
+                    string=re_match,
                     case_sensitive=True
                 )
                 if element:
@@ -764,7 +764,7 @@ class FacebookGroups(object):
         logger.debug(f':: {method} :: {element}')
 
         if not element:
-            raise
+            raise f'{element=}'
 
         return element
 
@@ -860,13 +860,13 @@ class FacebookGroups(object):
         method = 'by XPATH'
 
         if not element:
-            known_visible = [
+            re_matches = [
                 'Anyone can find this group.',
             ]
 
-            for visible in known_visible:
+            for re_match in re_matches:
                 element = self._browser.find_all_with_beautifulsoup(
-                    string=visible,
+                    string=re_match,
                     case_sensitive=True
                 )
                 if element:
@@ -879,6 +879,6 @@ class FacebookGroups(object):
         self._visible = element
 
         if not element:
-            raise
+            raise f'{element=}'
 
         return element
