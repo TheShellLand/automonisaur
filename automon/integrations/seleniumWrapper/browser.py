@@ -1015,6 +1015,11 @@ class SeleniumBrowser(object):
         logger.info(f'load_cookies_for_current_url :: done')
         return load_cookies_for_current_url
 
+    def open_file(self, file_path: str):
+        """open local html file path"""
+        logger.debug(f'open_file :: {file_path}')
+        return self.get(f'file:///{file_path}')
+
     @property
     def page_source(self):
         return self.webdriver.page_source
@@ -1086,6 +1091,39 @@ class SeleniumBrowser(object):
             return True
 
         logger.error(f'save_cookies_to_file :: failed :: {file=}')
+        return False
+
+    def save_page_to_file(
+            self,
+            filename: str = None,
+            prefix: str = None,
+            folder: str = None,
+            **kwargs):
+        """save page to file"""
+        logger.debug(f'save_page_to_file :: {self.current_url} :: {filename=} :: {prefix=} :: {folder=} :: {kwargs=}')
+
+        if not filename:
+            filename = self._screenshot_name(prefix)
+            logger.debug(f'save_page_to_file :: {filename=}')
+
+        if not folder:
+            path = os.path.abspath(tempfile.gettempdir())
+            logger.debug(f'save_page_to_file :: {path=}')
+        else:
+            path = os.path.abspath(folder)
+            logger.debug(f'save_page_to_file :: {path=}')
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        save = os.path.join(path, filename)
+
+        if self.webdriver.save_screenshot(save, **kwargs):
+            logger.debug(f'save_page_to_file :: {save} :: {round(os.stat(save).st_size / 1024)} KB')
+            logger.info(f'save_page_to_file :: done')
+            return True
+
+        logger.error(f'save_page_to_file :: failed')
         return False
 
     def save_screenshot(
