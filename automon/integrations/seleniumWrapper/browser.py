@@ -731,29 +731,29 @@ class SeleniumBrowser(object):
         # search both element as string and attribute text
         for element in elements:
 
-            places_to_search = [
+            _places_to_search = [
                 element.string,
                 element.text,
                 str(element),
             ]
 
-            for search in places_to_search:
+            for _search in _places_to_search:
 
-                if not search:
+                if not _search:
                     continue
 
                 logger.debug(
                     f'find_anything_with_beautifulsoup :: '
-                    f'{search=}'
+                    f'{_search=}'
                 )
 
-                re_compile = re.compile(match)
+                _re_compile = re.compile(match)
 
-                re_search = re_compile.search(search)
+                _re_search = _re_compile.search(_search)
 
-                if re_search:
+                if _re_search:
                     logger.debug(
-                        f'find_anything_with_beautifulsoup :: found :: {match=} :: {re_search.group()} :: {re_search.string=} :: {element=}')
+                        f'find_anything_with_beautifulsoup :: found :: {match=} :: {_re_search.group()} :: {_re_search.string=} :: {element=}')
                     if element not in MATCHES:
                         MATCHES.append(element)
 
