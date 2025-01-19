@@ -541,6 +541,26 @@ class SeleniumBrowser(object):
             logger.error(f'error_parsing :: failed :: {exception=}')
             return error, None, None
 
+    def find_all_with_re(self, regex: str, case_sensitive: bool = False):
+        """find all with regex"""
+
+        logger.debug(
+            f'find_all_with_re :: '
+            f'{regex=} :: '
+            f'{case_sensitive=}'
+        )
+
+        results = re.compile(regex)
+
+        if case_sensitive:
+            results = re.compile(regex, re.IGNORECASE)
+
+        results = results.findall(self.page_source)
+
+        logger.debug(f'find_all_with_re :: {len(results)} results')
+        logger.info(f'find_all_with_re :: done')
+        return results
+
     def find_all_with_beautifulsoup(
             self,
             name=None,
