@@ -230,6 +230,7 @@ class ChromeWrapper(object):
         return self
 
     def enable_proxy(self, proxy: str):
+        # PROXY = "11.456.448.110:8080"
         logger.debug(f'webdriver :: chrome :: add_argument :: --proxy-server')
         self.chrome_options.add_argument(f"--proxy-server={proxy}")
         return self

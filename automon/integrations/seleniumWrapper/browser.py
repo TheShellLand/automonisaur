@@ -563,12 +563,12 @@ class SeleniumBrowser(object):
 
     def find_all_with_beautifulsoup(
             self,
-            name=None,
-            attrs={},
-            recursive=True,
-            string=None,
-            limit=None,
-            case_sensitive=False,
+            name: str = None,
+            attrs: dict = {},
+            recursive: bool = True,
+            string: str = None,
+            limit: int = None,
+            case_sensitive: bool = False,
             **kwargs) -> list:
         """find all with BeautifulSoup"""
 
@@ -941,7 +941,7 @@ class SeleniumBrowser(object):
     def get_page_source(self) -> str:
         """get page source"""
         logger.debug(f'get_page_source :: ')
-        get_page_source = self.webdriver.page_source
+        get_page_source = self.page_source
         logger.debug(f'get_page_source :: {round(len(get_page_source) / 1024)} KB')
         logger.info(f'get_page_source :: done')
         return get_page_source
