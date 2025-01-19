@@ -8,9 +8,9 @@ logger.setLevel(log.INFO)
 
 class RequestsConfig(object):
 
-    def __init__(self, randomize_proxies: bool = False):
+    def __init__(self, use_random_proxies: bool = False):
         self.proxies = []
-        self.randomize_proxies = randomize_proxies
+        self.use_random_proxies = use_random_proxies
 
         # $ export HTTP_PROXY="http://10.10.1.10:3128"
         # $ export HTTPS_PROXY="http://10.10.1.10:1080"
@@ -41,7 +41,7 @@ class RequestsConfig(object):
 
     def delete_proxies(self):
         self.proxies = []
-        logger.debug(f'RequestsConfig :: DELETE PROXIES :: DONE')
+        logger.info(f'RequestsConfig :: DELETE PROXIES :: DONE')
         return self
 
     def get_random_proxy(self) -> dict:

@@ -4,7 +4,7 @@ from automon.integrations.requestsWrapper import RequestsClient
 from automon.integrations.requestsWrapper import RequestsConfig
 
 r = RequestsClient()
-r.config.randomize_proxies = True
+r.config.use_random_proxies = True
 
 working_proxies = []
 

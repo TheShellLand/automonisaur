@@ -110,7 +110,7 @@ class RequestsClient(object):
 
     def _set_proxy(self):
         if self.config.proxies:
-            if self.config.randomize_proxies:
+            if self.config.use_random_proxies:
                 self.proxies = self.config.get_random_proxy()
             else:
                 self.proxies = self.config.get_proxy()
