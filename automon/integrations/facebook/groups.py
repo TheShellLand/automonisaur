@@ -36,7 +36,7 @@ class FacebookGroups(object):
     _xpath_privacy_details = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[2]'
     _xpath_visible = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div/div[1]'
 
-    RATE_PER_MINUTE = 2
+    RATE_PER_MINUTE = 1
     RATE_COUNTER = []
     LAST_REQUEST = None
     WAIT_BETWEEN_RETRIES = random.choice(range(1, 60))
@@ -201,7 +201,7 @@ class FacebookGroups(object):
         return element
 
     def check_temporarily_blocked(self):
-        """check if your IP is blocked by facebook"""
+        """check if blocked by facebook"""
 
         if self._check_temporarily_blocked:
             return self._check_temporarily_blocked
@@ -210,6 +210,26 @@ class FacebookGroups(object):
         method = 'by XPATH'
         if element:
             element = element.text
+
+        if not element:
+            re_matches = [
+                "You.re Temporarily Blocked"
+            ]
+
+            for re_match in re_matches:
+
+                elements = self._browser.find_elements_with_beautifulsoup(
+                    match=re_match,
+                    case_sensitive=True,
+                )
+
+                for element in elements:
+                    element = element.text
+                    element = re.compile(re_match).match(element)
+
+                    if element:
+                        element = element[0]
+                        break
 
         logger.debug(f':: {method} :: {element}')
         return element
