@@ -6,6 +6,7 @@ import time
 import urllib
 import urllib.parse
 import base64
+import pandas
 import datetime
 import tempfile
 
@@ -924,6 +925,16 @@ class SeleniumBrowser(object):
         logger.debug(f'get_page_source :: {round(len(get_page_source) / 1024)} KB')
         logger.info(f'get_page_source :: done')
         return get_page_source
+
+    def get_page_source_pandas(self, html: str = None):
+        """get page source read by pands"""
+        if not html:
+            html = self.page_source
+
+        dataframes = pandas.read_html(html)
+        logger.debug(f'get_page_source_pandas :: ')
+
+        return dataframes
 
     def get_page_source_beautifulsoup(
             self,
