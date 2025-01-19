@@ -14,13 +14,13 @@ class DatadogConfigRest(object):
         self.api_key = api_key or environ('DD_API_KEY')
         self.app_key = app_key or environ('DD_APP_KEY')
 
-    async def is_ready(self):
+    def is_ready(self):
         if self.host and self.api_key and self.app_key:
             return True
         logger.error(f'missing DD_SITE DD_API_KEY DD_APP_KEY')
 
-    async def headers(self):
-        if await self.is_ready():
+    def headers(self):
+        if self.is_ready():
             return {
                 'DD-API-KEY': f'{self.api_key}',
                 'DD-APPLICATION-KEY': f'{self.app_key}',

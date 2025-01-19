@@ -30,7 +30,7 @@ class RequestsClient(object):
         if self.content:
             len(self.content)
 
-    async def _log_result(self):
+    def _log_result(self):
         if self.status_code == 200:
             msg = [
                 self.response.request.method,
@@ -52,7 +52,7 @@ class RequestsClient(object):
         msg = ' '.join(msg)
         return logger.error(msg)
 
-    async def _params(self, url, data, headers):
+    def _params(self, url, data, headers):
         if url is None:
             url = self.url
 
@@ -72,10 +72,10 @@ class RequestsClient(object):
         if 'content' in dir(self.response):
             return self.response.content
 
-    async def content_to_dict(self):
-        return await self.to_dict()
+    def content_to_dict(self):
+        return self.to_dict()
 
-    async def delete(
+    def delete(
             self,
             url: str = None,
             data: dict = None,
@@ -130,7 +130,7 @@ class RequestsClient(object):
             logger.error(f'{e}')
         return False
 
-    async def patch(
+    def patch(
             self,
             url: str = None,
             data: dict = None,
@@ -161,7 +161,7 @@ class RequestsClient(object):
             logger.error(f'patch failed. {e}')
         return False
 
-    async def post(
+    def post(
             self,
             url: str = None,
             data: dict = None,
@@ -192,7 +192,7 @@ class RequestsClient(object):
             logger.error(f'post failed. {e}')
         return False
 
-    async def put(
+    def put(
             self,
             url: str = None,
             data: dict = None,
@@ -238,21 +238,21 @@ class RequestsClient(object):
         if self.response:
             return self.response.text
 
-    async def to_dict(self):
+    def to_dict(self):
         if self.response is not None:
             try:
                 return json.loads(self.content)
             except Exception as error:
                 logger.error(error)
 
-    async def to_json(self):
+    def to_json(self):
         if self.content:
             try:
                 return json.dumps(json.loads(self.content))
             except Exception as error:
                 logger.error(error)
 
-    async def update_headers(self, headers: dict):
+    def update_headers(self, headers: dict):
         return self.session.headers.update(headers)
 
 

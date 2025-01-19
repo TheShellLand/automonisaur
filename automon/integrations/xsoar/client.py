@@ -24,23 +24,23 @@ class XSOARClient(object):
         self.config = config or XSOARConfig(host=host, api_key=api_key, api_key_id=api_key_id)
         self._requests = RequestsClient()
 
-    async def is_ready(self):
+    def is_ready(self):
         if self.config.is_ready():
             return True
         return False
 
-    async def auth(self):
+    def auth(self):
         return
 
     @property
     def errors(self):
         return self._requests.errors
 
-    async def get(self, endpoint: str):
+    def get(self, endpoint: str):
         logger.info(dict(
             endpoint=f'{self.config.host}/{endpoint}'
         ))
-        response = await self._requests.get(url=f'{self.config.host}/{endpoint}', headers=self.config.headers)
+        response = self._requests.get(url=f'{self.config.host}/{endpoint}', headers=self.config.headers)
 
         if response:
             return response
@@ -48,7 +48,7 @@ class XSOARClient(object):
         logger.error(self.errors)
         raise Exception(self.errors)
 
-    async def post(self, endpoint: str):
+    def post(self, endpoint: str):
         logger.info(dict(
             endpoint=f'{self.config.host}/{endpoint}'
         ))
@@ -60,8 +60,8 @@ class XSOARClient(object):
         logger.error(self.errors)
         raise Exception(self.errors)
 
-    async def reports(self):
-        reports = await self.get(endpoint=v1.Reports.reports)
+    def reports(self):
+        reports = self.get(endpoint=v1.Reports.reports)
         logger.info(dict(
             reports=self._requests.content
         ))
