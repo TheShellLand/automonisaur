@@ -24,7 +24,7 @@ class SeleniumConfig(object):
     def add_proxy(self, proxy: str):
         """add proxy"""
 
-        if not re.compile('\d+.\d+.\d+.\d+:\d+').match(proxy):
+        if not re.compile(r'\d+.\d+.\d+.\d+:\d+').match(proxy):
             raise ValueError(f'SeleniumConfig :: ADD PROXY :: ERROR :: bad proxy format (e.g. IP:PORT) :: {proxy=}')
 
         self.proxies.append(proxy)
