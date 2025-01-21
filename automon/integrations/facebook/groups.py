@@ -61,6 +61,8 @@ class FacebookGroups(object):
         'ERR_PROXY_CONNECTION_FAILED': -100,
     }
 
+    PROXY = None
+
     def __init__(self, url: str = None):
         """Facebook Groups object
 
@@ -637,6 +639,7 @@ class FacebookGroups(object):
 
                 proxy['weight'] = proxy['weight'] + 10
                 logger.debug(f'start :: PROXY FOUND :: {proxy}')
+                self.PROXY = proxy
                 return True
         else:
 
