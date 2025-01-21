@@ -290,7 +290,7 @@ class FacebookGroups(object):
         self._creation_date = element
 
         if not element:
-            raise f'{element=}'
+            raise Exception(f'{element=}')
 
         return element
 
@@ -457,7 +457,7 @@ class FacebookGroups(object):
         self._history = element
 
         if not element:
-            raise f'{element=}'
+            Exception(f'{element=}')
 
         return element
 
@@ -673,7 +673,7 @@ class FacebookGroups(object):
         self._members = element
 
         if not element:
-            raise f'{element=}'
+            Exception(f'{element=}')
 
         return element
 
@@ -724,7 +724,7 @@ class FacebookGroups(object):
         self._posts_monthly = element
 
         if not element:
-            raise f'{element=}'
+            Exception(f'{element=}')
 
         return element
 
@@ -766,7 +766,7 @@ class FacebookGroups(object):
         self._posts_today = element
 
         if not element:
-            raise f'{element=}'
+            Exception(f'{element=}')
 
         return element
 
@@ -817,7 +817,7 @@ class FacebookGroups(object):
         self._privacy = element
 
         if not element:
-            raise f'{element=}'
+            Exception(f'{element=}')
 
         return element
 
@@ -852,7 +852,7 @@ class FacebookGroups(object):
         logger.debug(f':: {method} :: {element}')
 
         if not element:
-            raise f'{element=}'
+            Exception(f'{element=}')
 
         return element
 
@@ -967,6 +967,6 @@ class FacebookGroups(object):
         self._visible = element
 
         if not element:
-            raise f'{element=}'
+            Exception(f'{element=}')
 
         return element
