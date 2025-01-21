@@ -437,7 +437,7 @@ class FacebookGroups(object):
 
         if not element:
             re_matches = [
-                'Group created on \w+ \d+, \d+',
+                r'Group created on \w+ \d+, \d+',
             ]
 
             for re_match in re_matches:
