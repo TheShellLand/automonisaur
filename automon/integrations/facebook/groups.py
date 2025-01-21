@@ -4,6 +4,9 @@ import datetime
 import statistics
 
 import automon
+import automon.integrations.seleniumWrapper
+import automon.integrations.seleniumWrapper.public_proxies
+
 from automon import log
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
@@ -40,6 +43,19 @@ class FacebookGroups(object):
     RATE_COUNTER = []
     LAST_REQUEST = None
     WAIT_BETWEEN_RETRIES = random.choice(range(1, 60))
+
+    PROXIES = [
+        dict(proxy=x, weight=0) for x in
+        automon.integrations.seleniumWrapper.public_proxies.filter_https_ips_and_ports()
+    ]
+
+    PROXIES_WEIGHT = {
+        'Connect to Wi-Fi': -10,
+        'ERR_TIMED_OUT': -10,
+        'ERR_CERT_AUTHORITY_INVALID': -10,
+        'ERR_CONNECTION_RESET': -100,
+        'ERR_TUNNEL_CONNECTION_FAILED': -100,
+    }
 
     def __init__(self, url: str = None):
         """Facebook Groups object
@@ -249,8 +265,8 @@ class FacebookGroups(object):
 
         if not element:
             re_matches = [
-                'Created \d+ year[s]? ago',
-                'Created \d+ week[s]? ago',
+                r'Created \d+ year[s]? ago',
+                r'Created \d+ week[s]? ago',
                 'Created a year ago',
                 'Created a week ago'
             ]
@@ -398,7 +414,6 @@ class FacebookGroups(object):
     @property
     def rate_per_minute(self) -> int:
         rate = int(60 / self.RATE_PER_MINUTE)
-        logger.info(f'{rate=} sec')
         return rate
 
     def history(self):
@@ -552,7 +567,13 @@ class FacebookGroups(object):
         logger.debug(f'set_url :: {self.url=}')
         return self.url
 
-    def start(self, headless: bool = True, random_user_agent: bool = False, set_user_agent: str = None):
+    def start(
+            self,
+            headless: bool = True,
+            random_user_agent: bool = False,
+            set_user_agent: str = None,
+            use_proxy: bool = True,
+            use_random_proxy: bool = True):
         """start new instance of selenium"""
 
         self._browser.config.webdriver_wrapper = ChromeWrapper()
@@ -572,10 +593,52 @@ class FacebookGroups(object):
                 set_user_agent
             )
 
-        logger.info(f'start :: {self._browser}')
-        browser = self._browser.run()
-        self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
-        return browser
+        if use_proxy:
+
+            # find a working proxy
+            while True:
+
+                if use_random_proxy:
+                    proxies_weight_gt_one = [x for x in self.PROXIES if x['weight'] > 1]
+
+                    if proxies_weight_gt_one:
+                        proxy = random.choice(proxies_weight_gt_one)
+                    else:
+                        proxy = random.choice(self.PROXIES)
+
+                else:
+                    proxy = self.PROXIES[0]
+
+                weight = proxy['weight'] + 1
+                proxy['weight'] = weight
+
+                self._browser.config.webdriver_wrapper.enable_proxy(proxy['proxy'])
+
+                self._browser.run()
+                self._browser.get(self.url)
+
+                for key in self.PROXIES_WEIGHT.keys():
+                    search = self._browser.find_page_source_with_regex(key)
+                    if search:
+                        proxy['weight'] = proxy['weight'] + self.PROXIES_WEIGHT[key]
+                        self._browser.quit()
+                        return self.start(
+                            headless=headless,
+                            random_user_agent=random_user_agent,
+                            set_user_agent=set_user_agent,
+                            use_proxy=use_proxy,
+                            use_random_proxy=use_random_proxy,
+                        )
+
+                proxy['weight'] = proxy['weight'] + 10
+                return True
+
+        else:
+
+            logger.info(f'start :: {self._browser}')
+            browser = self._browser.run()
+            self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
+            return browser
 
     def stop(self):
         """alias to quit"""
