@@ -579,10 +579,14 @@ class FacebookGroups(object):
             random_user_agent: bool = False,
             set_user_agent: str = None,
             use_proxy: bool = True,
-            use_random_proxy: bool = True):
+            use_random_proxy: bool = True,
+            set_page_load_timeout: int = 2):
         """start new instance of selenium"""
 
         self._browser.config.webdriver_wrapper = ChromeWrapper()
+
+        self._browser.config.webdriver_wrapper.set_page_load_timeout = set_page_load_timeout
+
 
         if headless:
             self._browser.config.webdriver_wrapper.enable_headless()
@@ -643,6 +647,7 @@ class FacebookGroups(object):
                 return True
         else:
 
+            logger.info(f'start :: {self._browser}')
             logger.info(f'start :: {self._browser}')
             browser = self._browser.run()
             self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
