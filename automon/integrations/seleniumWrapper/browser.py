@@ -970,7 +970,7 @@ class SeleniumBrowser(object):
         get_page_source_beautifulsoup = bs4.BeautifulSoup(
             markup=markup,
             features=features)
-        logger.debug(f'get_page_source_beautifulsoup :: {len(get_page_source_beautifulsoup)} size')
+        logger.debug(f'get_page_source_beautifulsoup :: {len(get_page_source_beautifulsoup)} lines')
 
         logger.info(f'get_page_source_beautifulsoup :: done')
         return get_page_source_beautifulsoup
