@@ -541,7 +541,7 @@ class SeleniumBrowser(object):
             logger.error(f'error_parsing :: failed :: {exception=}')
             return error, None, None
 
-    def find_all_with_re(self, regex: str, case_sensitive: bool = False):
+    def find_page_source_with_regex(self, regex: str, case_sensitive: bool = False):
         """find all with regex"""
 
         logger.debug(
