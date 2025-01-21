@@ -19,12 +19,12 @@ class DatadogOpenTelemetryConfig(object):
         self.set_tracer_provider = False
         self.ddtrace_provider = None
 
-    async def is_ready(self):
+    def is_ready(self):
         if self.set_tracer_provider:
             return True
         logger.error(f'run {DatadogOpenTelemetryConfig.__name__}.{self.instrumentation.__name__}')
 
-    async def instrumentation(self):
+    def instrumentation(self):
         # Must be set before ddtrace is imported!
         os.environ["DD_TRACE_OTEL_ENABLED"] = "true"
 

@@ -10,20 +10,20 @@ class MyTestCase(unittest.TestCase):
     client_tracer = OpenTelemetryClient()
 
     def test_log(self):
-        if asyncio.run(self.client.is_ready()):
+        if self.client.is_ready():
 
-            asyncio.run(self.client_tracer.config.test())
+            self.client_tracer.config.test()
 
-            spans = asyncio.run(self.client_tracer.to_datadog())
+            spans = self.client_tracer.to_datadog()
             for span in spans:
-                asyncio.run(
+
                     self.client.log(
                         ddsource=span['ddsource'],
                         ddtags=span['ddtags'],
                         hostname=span['hostname'],
                         service=span['service'],
                         message=span['message'],
-                    ))
+                    )
 
             pass
 

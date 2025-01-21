@@ -1,4 +1,3 @@
-import asyncio
 import unittest
 
 from automon.integrations.datadogWrapper import DatadogClientRest
@@ -7,11 +6,11 @@ from automon.integrations.datadogWrapper import DatadogClientRest
 class MyTestCase(unittest.TestCase):
     client = DatadogClientRest()
 
-    if asyncio.run(client.is_ready()):
+    if client.is_ready():
         def test_auth(self):
-            self.assertTrue(asyncio.run(
+            self.assertTrue(
                 self.client.validate()
-            ))
+            )
 
         pass
 

@@ -7,13 +7,13 @@ from automon.integrations.datadogWrapper import DatadogOpenTelemetryClient
 class MyTestCase(unittest.TestCase):
     client = DatadogOpenTelemetryClient()
 
-    asyncio.run(client.config.instrumentation())
+    client.config.instrumentation()
 
-    if asyncio.run(client.is_ready()):
+    if client.is_ready():
         def test_ready(self):
-            self.assertTrue(asyncio.run(
+            self.assertTrue(
                 self.client.is_ready()
-            ))
+            )
 
         pass
 
