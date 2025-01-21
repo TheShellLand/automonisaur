@@ -483,6 +483,8 @@ class ChromeWrapper(object):
 
                 logger.info(f'webdriver :: chrome :: update_paths :: done')
                 return True
+            else:
+                return True
 
         logger.error(f'webdriver :: chrome :: update_paths :: failed :: {path} not found')
         return False
