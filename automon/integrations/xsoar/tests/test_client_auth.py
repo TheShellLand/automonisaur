@@ -1,4 +1,3 @@
-import asyncio
 import unittest
 
 from automon.integrations.xsoar import XSOARClient
@@ -7,9 +6,9 @@ from automon.integrations.xsoar import XSOARClient
 class MyTestCase(unittest.TestCase):
     test = XSOARClient()
 
-    if asyncio.run(test.is_ready()):
+    if test.is_ready():
         def test_auth(self):
-            result = asyncio.run(self.test.reports())
+            result = self.test.reports()
             pass
 
 
