@@ -19,7 +19,7 @@ class SeleniumConfig(object):
         self._cookies_file = environ('SELENIUM_COOKIES_FILE')
 
         self.proxies = []
-        self.use_random_proxies = False
+        self.use_random_proxy = False
 
     def add_proxy(self, proxy: str):
         """add proxy"""
@@ -81,7 +81,7 @@ class SeleniumConfig(object):
         logger.debug(f'SeleniumConfig :: RUN :: ')
 
         if self.proxies:
-            if self.use_random_proxies:
+            if self.use_random_proxy:
                 proxy = self.get_random_proxy()
             else:
                 proxy = self.get_proxy()
