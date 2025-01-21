@@ -250,7 +250,9 @@ class FacebookGroups(object):
         if not element:
             re_matches = [
                 'Created \d+ year[s]? ago',
+                'Created \d+ week[s]? ago',
                 'Created a year ago',
+                'Created a week ago'
             ]
 
             for re_match in re_matches:
