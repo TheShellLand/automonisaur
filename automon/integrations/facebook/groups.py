@@ -51,10 +51,14 @@ class FacebookGroups(object):
 
     PROXIES_WEIGHT = {
         'Connect to Wi-Fi': -10,
+        "You’re Temporarily Blocked": -10,
+        "You must log in to continue": -10,
         'ERR_TIMED_OUT': -10,
         'ERR_CERT_AUTHORITY_INVALID': -10,
         'ERR_CONNECTION_RESET': -100,
         'ERR_TUNNEL_CONNECTION_FAILED': -100,
+        'ERR_EMPTY_RESPONSE': -100,
+        'ERR_PROXY_CONNECTION_FAILED': -100,
     }
 
     def __init__(self, url: str = None):
@@ -621,7 +625,8 @@ class FacebookGroups(object):
                     search = self._browser.find_page_source_with_regex(key)
                     if search:
                         proxy['weight'] = proxy['weight'] + self.PROXIES_WEIGHT[key]
-                        self._browser.quit()
+                        logger.error(f'start :: PROXY FAILED :: {proxy} :: {key}')
+                        self.quit()
                         return self.start(
                             headless=headless,
                             random_user_agent=random_user_agent,
@@ -631,8 +636,8 @@ class FacebookGroups(object):
                         )
 
                 proxy['weight'] = proxy['weight'] + 10
+                logger.debug(f'start :: PROXY FOUND :: {proxy}')
                 return True
-
         else:
 
             logger.info(f'start :: {self._browser}')
