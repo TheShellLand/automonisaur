@@ -54,8 +54,8 @@ class FacebookGroups(object):
         'Connect to Wi-Fi': -10,
         "You’re Temporarily Blocked": -10,
         "You must log in to continue": -10,
-        'ERR_TIMED_OUT': -10,
         'ERR_CERT_AUTHORITY_INVALID': -10,
+        'ERR_TIMED_OUT': -50,
         'ERR_CONNECTION_RESET': -100,
         'ERR_TUNNEL_CONNECTION_FAILED': -100,
         'ERR_EMPTY_RESPONSE': -100,
@@ -637,7 +637,7 @@ class FacebookGroups(object):
                         proxy['weight'] = proxy['weight'] + self.PROXIES_WEIGHT[_proxy_error]
 
                         for _proxy in self.PROXIES:
-                            if _proxy['weight'] == proxy['weight']:
+                            if _proxy['proxy'] == proxy['proxy']:
                                 _proxy.update(proxy)
 
                         logger.error(f'start :: PROXY FAILED :: {proxy} :: {_proxy_error=}')
