@@ -83,6 +83,14 @@ class SeleniumBrowser(object):
             return
 
     @property
+    def current_url(self):
+        if self.webdriver:
+            if self._current_url == 'data:,':
+                return ''
+            return self._current_url
+        return ''
+
+    @property
     def logs(self):
         return self.get_logs()
 
@@ -196,14 +204,6 @@ class SeleniumBrowser(object):
             return None
 
     @property
-    def current_url(self):
-        if self.webdriver:
-            if self._current_url == 'data:,':
-                return ''
-            return self._current_url
-        return ''
-
-    @property
     def window_size(self):
         return self.config.webdriver_wrapper.window_size
 
@@ -255,7 +255,7 @@ class SeleniumBrowser(object):
         except Exception as error:
             raise Exception(f'action_click :: failed :: {error=} :: {element=}')
 
-    def action_scroll_to_bottom(driver):
+    def action_scroll_to_bottom(self):
         return self.webdriver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
     def action_scroll_down(self):
