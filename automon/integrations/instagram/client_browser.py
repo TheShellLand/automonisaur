@@ -27,7 +27,7 @@ class InstagramBrowserClient:
                  headless: bool = True):
         """Instagram Browser Client"""
         self.config = config or InstagramConfig(login=login, password=password)
-        self.browser = None
+        self.browser = SeleniumBrowser()
 
         self.authenticated_browser = None
         self.useragent = None

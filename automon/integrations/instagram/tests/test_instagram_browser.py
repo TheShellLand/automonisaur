@@ -1,13 +1,15 @@
 import unittest
 
 from automon.integrations.instagram.client_browser import InstagramBrowserClient
+from automon.integrations.seleniumWrapper import ChromeWrapper
 
 
 class InstagramClientTest(unittest.TestCase):
     c = InstagramBrowserClient(headless=False)
-    c.browser.run()
+    c.browser.config.webdriver_wrapper = ChromeWrapper()
 
-    if c.is_running():
+    if c.browser.run():
+
         c.browser.get(c.urls.login_page)
 
         # user
