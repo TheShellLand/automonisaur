@@ -5,7 +5,7 @@ import statistics
 
 import automon
 import automon.integrations.seleniumWrapper
-import automon.integrations.seleniumWrapper.public_proxies
+import automon.integrations.seleniumWrapper.proxies_public
 
 from automon import log
 from automon.helpers.sleeper import Sleeper
@@ -46,7 +46,7 @@ class FacebookGroups(object):
 
     PROXIES = [
         dict(proxy=x, weight=0) for x in
-        automon.integrations.seleniumWrapper.public_proxies.filter_https_ips_and_ports()
+        automon.integrations.seleniumWrapper.proxies_public.proxy_filter_https_ips_and_ports()
     ]
 
     PROXIES_WEIGHT = {

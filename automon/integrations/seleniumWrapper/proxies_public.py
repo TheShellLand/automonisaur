@@ -6,7 +6,7 @@ import random
 import automon.integrations.requestsWrapper
 
 
-def site_spys():
+def proxy_site_spys():
     # https://spys.me/proxy.txt
     proxies_table = automon.integrations.requestsWrapper.RequestsClient('https://spys.me/proxy.txt')
     proxies_table.get()
@@ -93,7 +93,7 @@ def site_spys():
     return proxies_table
 
 
-def site_free_proxy_list():
+def proxy_site_free_proxy_list():
     # https://free-proxy-list.net/
     proxies_table = automon.integrations.requestsWrapper.RequestsClient('https://free-proxy-list.net/')
     proxies_table.get()
@@ -111,7 +111,7 @@ def site_free_proxy_list():
     return proxies_table
 
 
-def get_random_proxy() -> list:
+def proxy_get_random_proxy() -> list:
     """Get proxies and return a list"""
 
     proxies_master_list = pandas.DataFrame()
@@ -119,8 +119,8 @@ def get_random_proxy() -> list:
     proxies_master_list = pandas.concat(
         [
             proxies_master_list,
-            site_spys(),
-            site_free_proxy_list(),
+            proxy_site_spys(),
+            proxy_site_free_proxy_list(),
         ],
         ignore_index=True
     )
@@ -128,17 +128,17 @@ def get_random_proxy() -> list:
     return proxies_master_list
 
 
-def filter_https_proxies():
-    proxies_master_list = get_random_proxy()
+def proxy_filter_https_proxies():
+    proxies_master_list = proxy_get_random_proxy()
     return proxies_master_list[proxies_master_list['Https'] == True]
 
 
-def filter_https_ips_and_ports():
-    proxies_master_list = filter_https_proxies()
+def proxy_filter_https_ips_and_ports():
+    proxies_master_list = proxy_filter_https_proxies()
     ips_and_ports = [f'{x}:{y}' for x, y in proxies_master_list[['IP Address', 'Port']].to_records(index=False)]
 
     return ips_and_ports
 
 
-def filter_https_ips_and_ports_get_random():
-    return random.choice(filter_https_ips_and_ports())
+def proxy_filter_https_ips_and_ports_get_random():
+    return random.choice(proxy_filter_https_ips_and_ports())
