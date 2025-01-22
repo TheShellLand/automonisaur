@@ -37,10 +37,8 @@ class Ssid:
         self.SSID = self.SSID_STR
         self.WPS_STATE = self.IE_KEY_WPS_SC_STATE
 
-        self.summary
-
     def __repr__(self):
-        return f'{self.summary}'
+        return f'{self.summary()}'
 
     def __eq__(self, other):
         if isinstance(other, Ssid):
@@ -50,7 +48,6 @@ class Ssid:
         if isinstance(other, Ssid):
             return self.RSSI < other.RSSI
 
-    @property
     def summary(self):
         summary = f'[rssi: {self.DISTANCE} dBm] ' \
                   f'{self.SSID} ' \
