@@ -9,7 +9,10 @@ def environ(env_var: str, default: any = None) -> bool or str or None:
             return True
         if f'{env}'.lower() == 'false':
             return False
-        return f'{env}'.strip()
+        env = f'{env}'.strip()
+        env = f'{env}'.strip("'")
+        env = f'{env}'.strip('"')
+        return env
     return default
 
 
@@ -19,5 +22,7 @@ def environ_list(env_var: str, delimiter: str = ',', default: list = []) -> list
     if env:
         env = env.split(delimiter)
         env = [str(x).strip() for x in env]
+        env = [str(x).strip("'") for x in env]
+        env = [str(x).strip('"') for x in env]
         return env
     return default
