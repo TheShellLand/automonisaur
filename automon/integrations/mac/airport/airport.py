@@ -3,7 +3,7 @@ import sys
 
 from bs4 import BeautifulSoup
 
-from automon import log
+from automon.log import logger
 from automon.helpers import Run
 from automon.helpers import Dates
 
@@ -21,8 +21,8 @@ flags = {
 
 }
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+log = logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
 
 
 class Airport:
@@ -74,34 +74,31 @@ class Airport:
     def _command(command: str) -> list:
         return f'{command}'.split(' ')
 
-    async def create_psk(self, ssid: str, passphrase: str):
+    def create_psk(self, ssid: str, passphrase: str):
         """Create PSK from specified pass phrase and SSID."""
-        if await self.run(args=f'-P --ssid={ssid} --password={passphrase}'):
+        if self.run(args=f'-P --ssid={ssid} --password={passphrase}'):
             return f'{bytes(self._scan_output).decode()}'.strip()
         return False
 
-    async def disassociate(self):
+    def disassociate(self):
         """Disassociate from any network."""
-        return await self.run(args='-z')
+        return self.run(args='-z')
 
-    async def getinfo(self):
+    def getinfo(self):
         """Print current wireless status, e.g. signal info, BSSID, port type etc."""
-        return await self.run(args='-I')
+        return self.run(args='-I')
 
-    async def isReady(self):
+    def isReady(self):
         if sys.platform == 'darwin':
             if os.path.exists(self._airport):
-                logger.debug(f'Airport found! {self._airport}')
+                log.debug(f'Airport found! {self._airport}')
                 return True
             else:
-                logger.error(f'Airport not found! {self._airport}')
+                log.error(f'Airport not found! {self._airport}')
         return False
 
-    async def run(self, args: str = None):
+    def run(self, args: str = None):
         """Run airport"""
-        if not await self.isReady():
-            return False
-
         command = f'{self._airport}'
 
         if args:
@@ -111,21 +108,21 @@ class Airport:
         self.scan_date = Dates.iso()
 
         try:
-            logger.info(command)
+            log.info(command)
             if self._runner.Popen(command=command, text=True):
                 self._scan_output = self._runner.stdout
                 return True
         except Exception as e:
-            logger.error(e)
+            log.error(e)
             raise (Exception(e))
 
         return False
 
-    async def set_channel(self, channel: int):
+    def set_channel(self, channel: int):
         """Set arbitrary channel on the card."""
-        return await self.run(args=f'-c {channel}')
+        return self.run(args=f'-c {channel}')
 
-    async def scan(self, channel: int = None, args: str = None, ssid: str = None):
+    def scan(self, channel: int = None, args: str = None, ssid: str = None):
         """Perform a wireless broadcast scan."""
 
         cmd = f'-s'
@@ -139,20 +136,20 @@ class Airport:
         if args:
             cmd = f'{cmd} {args}'
 
-        if await self.run(args=cmd):
+        if self.run(args=cmd):
             self._scan_output = self._runner.stdout
             self._scan_error = self._runner.stderr
             return True
 
         return False
 
-    async def scan_channel(self, channel: int = None):
-        return await self.scan(channel=channel)
+    def scan_channel(self, channel: int = None):
+        return self.scan(channel=channel)
 
-    async def scan_summary(self, channel: int = None, args: str = None, output: bool = True):
-        if await self.scan(channel=channel, args=args):
+    def scan_summary(self, channel: int = None, args: str = None, output: bool = True):
+        if self.scan(channel=channel, args=args):
             if output:
-                logger.info(f'{self._scan_output}')
+                log.info(f'{self._scan_output}')
             return True
         return False
 
@@ -160,10 +157,10 @@ class Airport:
     def ssids(self):
         return self.scan_result.ssids
 
-    async def scan_xml(self, ssid: str = None, channel: int = None) -> [Ssid]:
+    def scan_xml(self, ssid: str = None, channel: int = None) -> [Ssid]:
         """Run scan and process xml output."""
 
-        await self.scan(ssid=ssid, args='-x', channel=channel)
+        self.scan(ssid=ssid, args='-x', channel=channel)
 
         data = self._scan_output
         data = [x for x in data.splitlines()]
@@ -185,6 +182,6 @@ class Airport:
                 return True
 
         except Exception as e:
-            logger.error(f'Scan not parsed: {e}, {self.scan_cmd}')
+            log.error(f'Scan not parsed: {e}, {self.scan_cmd}')
 
         return False
