@@ -1008,7 +1008,6 @@ class SeleniumBrowser(object):
         logger.debug(f'get_screenshot_as_file :: {filename=} :: {prefix=} :: {folder=} :: {kwargs=}')
 
         get_screenshot_as_file = self.save_screenshot(
-            self,
             filename=filename,
             prefix=prefix,
             folder=folder,
