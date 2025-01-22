@@ -91,6 +91,11 @@ class SeleniumBrowser(object):
         return ''
 
     @property
+    def current_window_handle(self):
+        if self.webdriver:
+            return self.webdriver.current_window_handle
+
+    @property
     def logs(self):
         return self.get_logs()
 
