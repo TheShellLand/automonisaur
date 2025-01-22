@@ -1,4 +1,5 @@
 import automon
+import io
 import re
 import pandas
 import random
@@ -98,7 +99,7 @@ def proxy_site_free_proxy_list():
     proxies_table = automon.integrations.requestsWrapper.RequestsClient('https://free-proxy-list.net/')
     proxies_table.get()
 
-    proxies_table = pandas.read_html(proxies_table.text)[0]
+    proxies_table = pandas.read_html(io.StringIO(proxies_table.text))[0]
     proxies_table['Https'] = proxies_table['Https'].apply(
         lambda x: True if x == 'yes' else x).apply(
         lambda x: False if x == 'no' else x
