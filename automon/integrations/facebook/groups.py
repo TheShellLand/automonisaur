@@ -54,8 +54,8 @@ class FacebookGroups(object):
         'Connect to Wi-Fi': -10,
         "You’re Temporarily Blocked": -10,
         "You must log in to continue": -10,
-        'ERR_CERT_AUTHORITY_INVALID': -10,
         'ERR_TIMED_OUT': -50,
+        'ERR_CERT_AUTHORITY_INVALID': -100,
         'ERR_CONNECTION_RESET': -100,
         'ERR_TUNNEL_CONNECTION_FAILED': -100,
         'ERR_EMPTY_RESPONSE': -100,
@@ -616,7 +616,10 @@ class FacebookGroups(object):
                         proxy = random.choice(proxies_weight_gt_one)
                     else:
                         proxies_sorted_by_weight = pandas.DataFrame(self.PROXIES)
-                        proxies_sorted_by_weight = proxies_sorted_by_weight.sort_values(by='weight').to_dict('records')
+                        proxies_sorted_by_weight = proxies_sorted_by_weight.sort_values(by='weight', ascending=False)
+                        # get the medium percentile
+                        proxies_sorted_by_weight = proxies_sorted_by_weight[proxies_sorted_by_weight.weight >= proxies_sorted_by_weight.weight.quantile(0.5)]
+                        proxies_sorted_by_weight = proxies_sorted_by_weight.to_dict('records')
 
                         proxy = random.choice(proxies_sorted_by_weight)
 
