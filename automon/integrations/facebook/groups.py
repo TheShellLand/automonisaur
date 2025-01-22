@@ -617,8 +617,8 @@ class FacebookGroups(object):
                     else:
                         proxies_sorted_by_weight = pandas.DataFrame(self.PROXIES)
                         proxies_sorted_by_weight = proxies_sorted_by_weight.sort_values(by='weight', ascending=False)
-                        # get the medium percentile
-                        proxies_sorted_by_weight = proxies_sorted_by_weight[proxies_sorted_by_weight.weight >= proxies_sorted_by_weight.weight.quantile(0.5)]
+                        # get the 90th percentile
+                        proxies_sorted_by_weight = proxies_sorted_by_weight[proxies_sorted_by_weight.weight >= proxies_sorted_by_weight.weight.quantile(0.9)]
                         proxies_sorted_by_weight = proxies_sorted_by_weight.to_dict('records')
 
                         proxy = random.choice(proxies_sorted_by_weight)
