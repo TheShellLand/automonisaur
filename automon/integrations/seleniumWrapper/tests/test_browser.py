@@ -31,6 +31,39 @@ class SeleniumClientTest(unittest.TestCase):
                     self.assertTrue(browser.save_screenshot())
                     self.assertTrue(browser.save_screenshot(folder='./'))
 
+            def test_by(self):
+                self.assertTrue(browser.by)
+
+            def test_config(self):
+                self.assertTrue(browser.config)
+
+            def test_current_url(self):
+                if browser.get('http://1.1.1.1'):
+                    self.assertTrue(browser._current_url)
+
+            def test_logs(self):
+                if browser.get('http://1.1.1.1'):
+                    self.assertTrue(browser.logs)
+
+            def test_webdriver(self):
+                self.assertTrue(browser.webdriver)
+
+            def test_get_logs(self):
+                if browser.get('http://1.1.1.1'):
+                    self.assertTrue(browser.get_logs())
+
+            def test_get_log_browser(self):
+                if browser.get('http://1.1.1.1'):
+                    self.assertTrue(browser.get_log_browser())
+
+            def get_log_driver(self):
+                if browser.get('http://1.1.1.1'):
+                    self.assertTrue(browser.get_log_driver())
+
+            def get_log_performance(self):
+                if browser.get('http://1.1.1.1'):
+                    self.assertTrue(browser.get_log_performance())
+
         browser.quit()
 
     except:
