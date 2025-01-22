@@ -1,4 +1,5 @@
 import re
+import pandas
 import random
 import datetime
 import statistics
@@ -587,7 +588,6 @@ class FacebookGroups(object):
 
         self._browser.config.webdriver_wrapper.set_page_load_timeout = set_page_load_timeout
 
-
         if headless:
             self._browser.config.webdriver_wrapper.enable_headless()
             self._browser.config.webdriver_wrapper.set_locale_experimental()
@@ -609,12 +609,16 @@ class FacebookGroups(object):
             while True:
 
                 if use_random_proxy:
-                    proxies_weight_gt_one = [x for x in self.PROXIES if x['weight'] > 1]
+                    proxies_weight_gt_one = pandas.DataFrame(self.PROXIES)
+                    proxies_weight_gt_one = proxies_weight_gt_one[proxies_weight_gt_one.weight > 0].to_dict('records')
 
                     if proxies_weight_gt_one:
                         proxy = random.choice(proxies_weight_gt_one)
                     else:
-                        proxy = random.choice(self.PROXIES)
+                        proxies_sorted_by_weight = pandas.DataFrame(self.PROXIES)
+                        proxies_sorted_by_weight = proxies_sorted_by_weight.sort_values(by='weight').to_dict('records')
+
+                        proxy = random.choice(proxies_sorted_by_weight)
 
                 else:
                     proxy = self.PROXIES[0]
@@ -627,11 +631,16 @@ class FacebookGroups(object):
                 self._browser.run()
                 self._browser.get(self.url)
 
-                for error in self.PROXIES_WEIGHT.keys():
-                    search = self._browser.find_page_source_with_regex(error)
+                for _proxy_error in self.PROXIES_WEIGHT.keys():
+                    search = self._browser.find_page_source_with_regex(_proxy_error)
                     if search:
-                        proxy['weight'] = proxy['weight'] + self.PROXIES_WEIGHT[error]
-                        logger.error(f'start :: PROXY FAILED :: {proxy} :: {error=}')
+                        proxy['weight'] = proxy['weight'] + self.PROXIES_WEIGHT[_proxy_error]
+
+                        for _proxy in self.PROXIES:
+                            if _proxy['weight'] == proxy['weight']:
+                                _proxy.update(proxy)
+
+                        logger.error(f'start :: PROXY FAILED :: {proxy} :: {_proxy_error=}')
                         self.quit()
                         return self.start(
                             headless=headless,
@@ -643,6 +652,11 @@ class FacebookGroups(object):
 
                 proxy['weight'] = proxy['weight'] + 5
                 logger.debug(f'start :: PROXY FOUND :: {proxy}')
+
+                for _proxy in self.PROXIES:
+                    if _proxy['proxy'] == proxy['proxy']:
+                        _proxy.update(proxy)
+
                 self.PROXY = proxy
                 return True
         else:
