@@ -641,7 +641,7 @@ class FacebookGroups(object):
                             use_random_proxy=use_random_proxy,
                         )
 
-                proxy['weight'] = proxy['weight'] + 10
+                proxy['weight'] = proxy['weight'] + 5
                 logger.debug(f'start :: PROXY FOUND :: {proxy}')
                 self.PROXY = proxy
                 return True
