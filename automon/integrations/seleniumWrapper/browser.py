@@ -194,7 +194,7 @@ class SeleniumBrowser(object):
         logger.debug(f'refresh :: {self.current_url=}')
         refresh = self.webdriver.refresh()
         logger.info(f'refresh :: done')
-        return refresh
+        return refresh or True
 
     @property
     def url(self):
@@ -261,13 +261,13 @@ class SeleniumBrowser(object):
             raise Exception(f'action_click :: failed :: {error=} :: {element=}')
 
     def action_scroll_to_bottom(self):
-        return self.webdriver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        return self.webdriver.execute_script("window.scrollTo(0, document.body.scrollHeight);") or True
 
     def action_scroll_down(self):
-        return self.webdriver.execute_script("window.scrollBy(0,350)", "")
+        return self.webdriver.execute_script("window.scrollBy(0,350)", "") or True
 
     def action_scroll_up(self):
-        return self.webdriver.execute_script("window.scrollBy(0,-350)", "")
+        return self.webdriver.execute_script("window.scrollBy(0,-350)", "") or True
 
     def action_type(
             self,
@@ -433,7 +433,7 @@ class SeleniumBrowser(object):
         logger.debug(f'delete_all_cookies')
         delete_all_cookies = self.webdriver.delete_all_cookies()
         logger.info(f'delete_all_cookies :: done')
-        return delete_all_cookies
+        return delete_all_cookies or True
 
     def _url_filename(self, url: str):
         """turn url into a filename"""
@@ -957,7 +957,7 @@ class SeleniumBrowser(object):
             html = self.page_source
 
         dataframes = pandas.read_html(html)
-        logger.debug(f'get_page_source_pandas :: ')
+        logger.debug(f'get_page_source_pandas :: {dataframes}')
 
         return dataframes
 
@@ -1227,12 +1227,14 @@ class SeleniumBrowser(object):
         self.webdriver.switch_to.new_window('tab')
         logger.debug(f'switch_to_new_window_tab :: {self.webdriver.current_window_handle=}')
         logger.info(f'switch_to_new_window_tab :: done')
+        return True
 
     def switch_to_new_window_window(self):
         """Opens a new window and switches to new window"""
         self.webdriver.switch_to.new_window('window')
         logger.debug(f'switch_to_new_window_window :: {self.webdriver.current_window_handle=}')
         logger.info(f'switch_to_new_window_window :: done')
+        return True
 
     def wait_for_anything(
             self,
