@@ -16,9 +16,10 @@ setuptools.setup(
     tests_require=["pytest"],
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "License :: OSI Approved :: GNU GPLv3",
     ],
+    license_files="LICENSE",
     python_requires='>=3.10',
     install_requires=[]
 )
