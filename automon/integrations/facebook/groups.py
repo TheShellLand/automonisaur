@@ -627,11 +627,11 @@ class FacebookGroups(object):
                 self._browser.run()
                 self._browser.get(self.url)
 
-                for key in self.PROXIES_WEIGHT.keys():
-                    search = self._browser.find_page_source_with_regex(key)
+                for error in self.PROXIES_WEIGHT.keys():
+                    search = self._browser.find_page_source_with_regex(error)
                     if search:
-                        proxy['weight'] = proxy['weight'] + self.PROXIES_WEIGHT[key]
-                        logger.error(f'start :: PROXY FAILED :: {proxy} :: {key}')
+                        proxy['weight'] = proxy['weight'] + self.PROXIES_WEIGHT[error]
+                        logger.error(f'start :: PROXY FAILED :: {proxy} :: {error=}')
                         self.quit()
                         return self.start(
                             headless=headless,
