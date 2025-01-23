@@ -51,9 +51,9 @@ class FacebookGroups(object):
     ]
 
     PROXIES_WEIGHT = {
-        'Connect to Wi-Fi': 0.05,
+        'Connect to Wi-Fi': 0.95,
         "You’re Temporarily Blocked": 0.05,
-        "You must log in to continue": 0.05,
+        "You must log in to continue": 0.15,
         'ERR_TIMED_OUT': 0.5,
         'ERR_CERT_AUTHORITY_INVALID': 0.95,
         'ERR_CONNECTION_RESET': 0.95,
@@ -609,11 +609,11 @@ class FacebookGroups(object):
             while True:
 
                 if use_random_proxy:
-                    proxies_weight_gt_one = pandas.DataFrame(self.PROXIES)
-                    proxies_weight_gt_one = proxies_weight_gt_one[proxies_weight_gt_one.weight > 50].to_dict('records')
+                    proxies_weight_gt = pandas.DataFrame(self.PROXIES)
+                    proxies_weight_gt = proxies_weight_gt[proxies_weight_gt.weight > 50].to_dict('records')
 
-                    if proxies_weight_gt_one:
-                        proxy = random.choice(proxies_weight_gt_one)
+                    if proxies_weight_gt:
+                        proxy = random.choice(proxies_weight_gt)
                     else:
                         proxies_sorted_by_weight = pandas.DataFrame(self.PROXIES)
                         proxies_sorted_by_weight = proxies_sorted_by_weight.sort_values(by='weight', ascending=False)
