@@ -630,6 +630,7 @@ class FacebookGroups(object):
                 proxy['weight'] = weight
 
                 self._browser.config.webdriver_wrapper.enable_proxy(proxy['proxy'])
+                logger.debug(f'start :: PROXY TEST :: {proxy}')
 
                 self._browser.run()
                 self._browser.get(self.url)
