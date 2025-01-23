@@ -51,15 +51,15 @@ class FacebookGroups(object):
     ]
 
     PROXIES_WEIGHT = {
-        'Connect to Wi-Fi': -10,
-        "You’re Temporarily Blocked": -10,
-        "You must log in to continue": -10,
-        'ERR_TIMED_OUT': -50,
-        'ERR_CERT_AUTHORITY_INVALID': -100,
-        'ERR_CONNECTION_RESET': -100,
-        'ERR_TUNNEL_CONNECTION_FAILED': -100,
-        'ERR_EMPTY_RESPONSE': -100,
-        'ERR_PROXY_CONNECTION_FAILED': -100,
+        'Connect to Wi-Fi': 0.05,
+        "You’re Temporarily Blocked": 0.05,
+        "You must log in to continue": 0.05,
+        'ERR_TIMED_OUT': 0.5,
+        'ERR_CERT_AUTHORITY_INVALID': 0.95,
+        'ERR_CONNECTION_RESET': 0.95,
+        'ERR_TUNNEL_CONNECTION_FAILED': 0.95,
+        'ERR_EMPTY_RESPONSE': 0.95,
+        'ERR_PROXY_CONNECTION_FAILED': 0.95,
     }
 
     PROXY = None
@@ -610,7 +610,7 @@ class FacebookGroups(object):
 
                 if use_random_proxy:
                     proxies_weight_gt_one = pandas.DataFrame(self.PROXIES)
-                    proxies_weight_gt_one = proxies_weight_gt_one[proxies_weight_gt_one.weight > 0].to_dict('records')
+                    proxies_weight_gt_one = proxies_weight_gt_one[proxies_weight_gt_one.weight > 50].to_dict('records')
 
                     if proxies_weight_gt_one:
                         proxy = random.choice(proxies_weight_gt_one)
@@ -618,7 +618,9 @@ class FacebookGroups(object):
                         proxies_sorted_by_weight = pandas.DataFrame(self.PROXIES)
                         proxies_sorted_by_weight = proxies_sorted_by_weight.sort_values(by='weight', ascending=False)
                         # get the 90th percentile
-                        proxies_sorted_by_weight = proxies_sorted_by_weight[proxies_sorted_by_weight.weight >= proxies_sorted_by_weight.weight.quantile(0.9)]
+                        proxies_sorted_by_weight = proxies_sorted_by_weight[
+                            proxies_sorted_by_weight.weight >= proxies_sorted_by_weight.weight.quantile(0.9)
+                            ]
                         proxies_sorted_by_weight = proxies_sorted_by_weight.to_dict('records')
 
                         proxy = random.choice(proxies_sorted_by_weight)
@@ -626,8 +628,8 @@ class FacebookGroups(object):
                 else:
                     proxy = self.PROXIES[0]
 
-                weight = proxy['weight'] + 1
-                proxy['weight'] = weight
+                if proxy['weight'] == 0:
+                    proxy['weight'] = proxy['weight'] + 10
 
                 self._browser.config.webdriver_wrapper.enable_proxy(proxy['proxy'])
                 logger.debug(f'start :: PROXY TEST :: {proxy}')
@@ -638,7 +640,7 @@ class FacebookGroups(object):
                 for _proxy_error in self.PROXIES_WEIGHT.keys():
                     search = self._browser.find_page_source_with_regex(_proxy_error)
                     if search:
-                        proxy['weight'] = proxy['weight'] + self.PROXIES_WEIGHT[_proxy_error]
+                        proxy['weight'] = proxy['weight'] * self.PROXIES_WEIGHT[_proxy_error]
 
                         for _proxy in self.PROXIES:
                             if _proxy['proxy'] == proxy['proxy']:
@@ -654,7 +656,7 @@ class FacebookGroups(object):
                             use_random_proxy=use_random_proxy,
                         )
 
-                proxy['weight'] = proxy['weight'] + 5
+                proxy['weight'] = proxy['weight'] * 1.1
                 logger.debug(f'start :: PROXY FOUND :: {proxy}')
 
                 for _proxy in self.PROXIES:
