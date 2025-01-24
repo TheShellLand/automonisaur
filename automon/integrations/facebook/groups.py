@@ -611,19 +611,21 @@ class FacebookGroups(object):
                 if use_random_proxy:
                     proxies_weight_gt = pandas.DataFrame(self.PROXIES)
                     proxies_weight_gt = proxies_weight_gt[proxies_weight_gt.weight > 50].to_dict('records')
+                    logger.debug(f'start :: PROXY LIST :: {len(proxies_weight_gt)} proxies :: {proxies_weight_gt=}')
 
                     if proxies_weight_gt:
                         proxy = random.choice(proxies_weight_gt)
                     else:
-                        proxies_sorted_by_weight = pandas.DataFrame(self.PROXIES)
-                        proxies_sorted_by_weight = proxies_sorted_by_weight.sort_values(by='weight', ascending=False)
+                        proxies_top_quantile = pandas.DataFrame(self.PROXIES)
+                        proxies_top_quantile = proxies_top_quantile.sort_values(by='weight', ascending=False)
                         # get the 90th percentile
-                        proxies_sorted_by_weight = proxies_sorted_by_weight[
-                            proxies_sorted_by_weight.weight >= proxies_sorted_by_weight.weight.quantile(0.9)
+                        proxies_top_quantile = proxies_top_quantile[
+                            proxies_top_quantile.weight >= proxies_top_quantile.weight.quantile(0.9)
                             ]
-                        proxies_sorted_by_weight = proxies_sorted_by_weight.to_dict('records')
+                        proxies_top_quantile = proxies_top_quantile.to_dict('records')
+                        logger.debug(f'start :: PROXY LIST :: {len(proxies_top_quantile)} proxies :: {proxies_top_quantile=}')
 
-                        proxy = random.choice(proxies_sorted_by_weight)
+                        proxy = random.choice(proxies_top_quantile)
 
                 else:
                     proxy = self.PROXIES[0]
