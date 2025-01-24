@@ -41,7 +41,7 @@ class SeleniumBrowser(object):
         self._config = config or SeleniumConfig()
         self._selenium = selenium
 
-        self.autosaved = None
+        self.autosave_cookies = None
 
         self._logs = {}
         self.cache = {}
@@ -406,27 +406,30 @@ class SeleniumBrowser(object):
 
         raise Exception(f'add_cookie_from_base64 :: failed :: {len(base64_str) / 1024} KB')
 
-    def autosave_cookies(self) -> bool:
+    def autosaving_cookies(self) -> bool:
         """auto save cookies for current url"""
-        logger.debug(f'autosave_cookies :: {self.current_url=}')
+        logger.debug(f'autosaving_cookies :: {self.current_url=}')
+
+        autosave_cookies = self.autosave_cookies
 
         if self.current_url:
 
-            if not self.autosaved:
-                logger.debug(f'autosave_cookies :: {self.autosaved=}')
+            if not autosave_cookies:
+                logger.debug(f'autosaving_cookies :: {autosave_cookies=}')
                 try:
                     self.add_cookie_from_current_url()
                 except:
-                    logger.debug(f'autosave_cookies :: no cookies for {self.current_url=}')
+                    logger.debug(f'autosaving_cookies :: no cookies for {self.current_url=}')
                 self.refresh()
-                self.autosaved = True
-                logger.debug(f'autosave_cookies :: {self.autosaved=}')
+                autosave_cookies = True
+                self.autosave_cookies = autosave_cookies
+                logger.debug(f'autosaving_cookies :: {autosave_cookies=}')
 
             autosave_cookies = self.save_cookies_for_current_url()
-            logger.info(f'autosave_cookies :: done')
+            logger.info(f'autosaving_cookies :: done')
             return autosave_cookies
 
-        logger.debug(f'autosave_cookies :: failed :: no current url :: {self.current_url=}')
+        logger.debug(f'autosaving_cookies :: failed :: no current url :: {self.current_url=}')
 
     def delete_all_cookies(self) -> None:
         """delete all cookies"""
@@ -927,7 +930,7 @@ class SeleniumBrowser(object):
                 logger.info(f'browser :: get')
 
             if self.config.cookies_autosave:
-                self.autosave_cookies()
+                self.autosaving_cookies()
 
             logger.info(f'browser :: get :: done')
             return True

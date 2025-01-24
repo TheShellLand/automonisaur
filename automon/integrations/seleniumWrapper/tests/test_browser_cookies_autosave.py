@@ -13,7 +13,7 @@ class Test(unittest.TestCase):
 
             def test_autosave(self):
                 if browser.get('http://bing.com'):
-                    self.assertTrue(browser.autosave_cookies())
+                    self.assertTrue(browser.autosaving_cookies())
 
                     browser.quit()
 

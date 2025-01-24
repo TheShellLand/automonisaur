@@ -158,9 +158,9 @@ class SeleniumClientTest(unittest.TestCase):
             def test_add_cookie_from_base64(self):
                 NotImplemented
 
-            def test_autosave_cookies(self):
+            def test_autosaving_cookies(self):
                 if browser.get('https://1.1.1.1'):
-                    self.assertTrue(browser.autosave_cookies())
+                    self.assertTrue(browser.autosaving_cookies())
 
             def test_delete_all_cookies(self):
                 if browser.get('https://1.1.1.1'):
