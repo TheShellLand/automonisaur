@@ -51,15 +51,15 @@ class FacebookGroups(object):
     ]
 
     PROXIES_WEIGHT = {
-        'Connect to Wi-Fi': 0.25,
+        'Connect to Wi-Fi': -0.25,
         "You’re Temporarily Blocked": 0.90,
         "You must log in to continue": 0.90,
         'ERR_TIMED_OUT': 0.5,
-        'ERR_CERT_AUTHORITY_INVALID': 0.25,
-        'ERR_CONNECTION_RESET': 0.25,
-        'ERR_TUNNEL_CONNECTION_FAILED': 0.25,
-        'ERR_EMPTY_RESPONSE': 0.25,
-        'ERR_PROXY_CONNECTION_FAILED': 0.25,
+        'ERR_CERT_AUTHORITY_INVALID': -0.25,
+        'ERR_CONNECTION_RESET': -0.25,
+        'ERR_TUNNEL_CONNECTION_FAILED': -0.25,
+        'ERR_EMPTY_RESPONSE': -0.25,
+        'ERR_PROXY_CONNECTION_FAILED': -0.25,
     }
 
     PROXY = None
