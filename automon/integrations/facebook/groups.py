@@ -609,12 +609,12 @@ class FacebookGroups(object):
             while True:
 
                 if use_random_proxy:
-                    proxies_weight_gt = pandas.DataFrame(self.PROXIES)
-                    proxies_weight_gt = proxies_weight_gt[proxies_weight_gt.weight > 50].to_dict('records')
-                    logger.debug(f'start :: PROXY LIST :: {len(proxies_weight_gt)} proxies :: {proxies_weight_gt=}')
+                    proxies_weight_good = pandas.DataFrame(self.PROXIES)
+                    proxies_weight_good = proxies_weight_good[proxies_weight_good.weight > 50].to_dict('records')
+                    logger.debug(f'start :: PROXY LIST :: {len(proxies_weight_good)} proxies :: {proxies_weight_good=}')
 
-                    if proxies_weight_gt:
-                        proxy = random.choice(proxies_weight_gt)
+                    if proxies_weight_good:
+                        proxy = random.choice(proxies_weight_good)
                     else:
                         proxies_top_quantile = pandas.DataFrame(self.PROXIES)
                         proxies_top_quantile = proxies_top_quantile.sort_values(by='weight', ascending=False)
