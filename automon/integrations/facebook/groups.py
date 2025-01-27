@@ -611,7 +611,12 @@ class FacebookGroups(object):
 
                 if use_random_proxy:
                     proxies_weight_good = proxies[proxies.weight > 50].to_dict('records')
-                    logger.debug(f'start :: PROXY LIST :: {len(proxies_weight_good)} proxies :: {proxies_weight_good=}')
+                    logger.debug(
+                        f'start :: '
+                        f'PROXY LIST :: '
+                        f'{len(proxies_weight_good)} proxies > 50:: '
+                        f'{proxies_weight_good=}'
+                    )
 
                     if proxies_weight_good:
                         proxy = random.choice(proxies_weight_good)
@@ -622,7 +627,7 @@ class FacebookGroups(object):
                         logger.debug(
                             f'start :: '
                             f'PROXY LIST :: '
-                            f'{len(proxies_top_quantile)} proxies :: '
+                            f'{len(proxies_top_quantile)} proxies >= 0 :: '
                             f'{proxies_top_quantile=}')
 
                         if proxies_top_quantile:
@@ -632,13 +637,13 @@ class FacebookGroups(object):
                         else:
                             proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
                             proxies_top_quantile = proxies_top_quantile[
-                                proxies_top_quantile['weight'] > proxies_top_quantile['weight'].quantile()
+                                proxies_top_quantile['weight'] >= proxies_top_quantile['weight'].quantile(0.5)
                                 ]
                             proxies_top_quantile = proxies_top_quantile.to_dict('records')
                             logger.debug(
                                 f'start :: '
                                 f'PROXY LIST :: '
-                                f'{len(proxies_top_quantile)} proxies :: '
+                                f'{len(proxies_top_quantile)} proxies >= 0.5 percentile:: '
                                 f'{proxies_top_quantile=}')
 
                             proxy = random.choice(proxies_top_quantile)
