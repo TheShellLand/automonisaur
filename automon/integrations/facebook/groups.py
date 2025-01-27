@@ -604,25 +604,45 @@ class FacebookGroups(object):
             )
 
         if use_proxy:
+            proxies = pandas.DataFrame(self.PROXIES)
 
             # find a working proxy
             while True:
 
                 if use_random_proxy:
-                    proxies_weight_good = pandas.DataFrame(self.PROXIES)
-                    proxies_weight_good = proxies_weight_good[proxies_weight_good.weight > 50].to_dict('records')
+                    proxies_weight_good = proxies[proxies.weight > 50].to_dict('records')
                     logger.debug(f'start :: PROXY LIST :: {len(proxies_weight_good)} proxies :: {proxies_weight_good=}')
 
                     if proxies_weight_good:
                         proxy = random.choice(proxies_weight_good)
                     else:
-                        proxies_top_quantile = pandas.DataFrame(self.PROXIES)
-                        proxies_top_quantile = proxies_top_quantile.sort_values(by='weight', ascending=False)
+                        proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
                         proxies_top_quantile = proxies_top_quantile[proxies_top_quantile.weight >= 0]
                         proxies_top_quantile = proxies_top_quantile.to_dict('records')
-                        logger.debug(f'start :: PROXY LIST :: {len(proxies_top_quantile)} proxies :: {proxies_top_quantile=}')
+                        logger.debug(
+                            f'start :: '
+                            f'PROXY LIST :: '
+                            f'{len(proxies_top_quantile)} proxies :: '
+                            f'{proxies_top_quantile=}')
 
-                        proxy = random.choice(proxies_top_quantile)
+                        if proxies_top_quantile:
+
+                            proxy = random.choice(proxies_top_quantile)
+
+                        else:
+                            proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
+                            proxies_top_quantile = proxies_top_quantile[
+                                proxies_top_quantile['weight'] > proxies_top_quantile['weight'].quantile()
+                                ]
+                            proxies_top_quantile = proxies_top_quantile.to_dict('records')
+                            logger.debug(
+                                f'start :: '
+                                f'PROXY LIST :: '
+                                f'{len(proxies_top_quantile)} proxies :: '
+                                f'{proxies_top_quantile=}')
+
+                            proxy = random.choice(proxies_top_quantile)
+
 
                 else:
                     proxy = self.PROXIES[0]
