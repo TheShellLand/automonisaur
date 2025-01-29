@@ -619,7 +619,7 @@ class FacebookGroups(object):
                     )
 
                     if proxies_weight_good:
-                        proxy = random.choice(proxies_weight_good)
+                        proxies_list = proxies_weight_good
                     else:
                         proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
                         proxies_top_quantile = proxies_top_quantile[proxies_top_quantile.weight >= 0]
@@ -632,7 +632,7 @@ class FacebookGroups(object):
 
                         if proxies_top_quantile:
 
-                            proxy = random.choice(proxies_top_quantile)
+                            proxies_list = proxies_top_quantile
 
                         else:
                             proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
@@ -646,8 +646,12 @@ class FacebookGroups(object):
                                 f'{len(proxies_top_quantile)} proxies >= 0.5 percentile:: '
                                 f'{proxies_top_quantile=}')
 
-                            proxy = random.choice(proxies_top_quantile)
+                            proxies_list = proxies_top_quantile
 
+                    if len(proxies_list) < 2:
+                        proxy = random.choice(proxies.to_dict('records'))
+                    else:
+                        proxy = random.choice(proxies_list)
 
                 else:
                     proxy = self.PROXIES[0]
