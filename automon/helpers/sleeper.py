@@ -80,7 +80,8 @@ class Sleeper:
     def hour(hour: int = 1) -> time.sleep:
         """At some time within an hour, this will run"""
 
-        sleep = random.choice(range(1, hour * 60 * 60))
+        sleep = hour if not hour else random.choice(
+            range(1, hour * 60 * 60))
         logger.debug(f'Sleeper :: {hour} hours')
         return time.sleep(sleep)
 
