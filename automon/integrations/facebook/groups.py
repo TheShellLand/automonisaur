@@ -3,6 +3,7 @@ import pandas
 import random
 import datetime
 import statistics
+import selenium.common.exceptions
 
 import automon
 import automon.integrations.seleniumWrapper
@@ -40,6 +41,9 @@ class FacebookGroups(object):
     _xpath_privacy_details = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[2]'
     _xpath_visible = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div/div[1]'
 
+    BROWSER_HEADLESS = True
+
+    RATE_LIMITING = False
     RATE_PER_MINUTE = 1
     RATE_COUNTER = []
     LAST_REQUEST = None
@@ -349,6 +353,8 @@ class FacebookGroups(object):
     def get(self, url: str) -> bool:
         """get url"""
 
+        self.reset_cache()
+
         now = datetime.datetime.now().timestamp()
 
         if self.LAST_REQUEST:
@@ -358,25 +364,95 @@ class FacebookGroups(object):
         else:
             self.LAST_REQUEST = round(now, 1)
 
-        result = self._browser.get(url=url)
-        logger.info(f'{result=} :: {url} :: {round(len(self._browser.webdriver.page_source) / 1024)} KB')
+        if self.RATE_LIMITING:
+            result = self.get_with_rate_limiter(url=url)
+        else:
+            result = self._browser.get(url=url)
+
+        logger.info(f'get :: {result=} :: {self.PROXY=} :: {url} :: {round(len(self._browser.webdriver.page_source) / 1024)} KB')
         return result
 
-    def get_about(self, rate_limiting: bool = True):
+    def get_about(self):
         """get about page"""
 
-        if rate_limiting:
-            result = self.get_with_rate_limiter(url=self.url)
-            about = self._browser._urllib.parse.urljoin(self.current_url + '/', 'about')
-            result = self.get_with_rate_limiter(url=about)
-        else:
-            result = self.get(url=self.url)
-            about = self._browser._urllib.parse.urljoin(self.current_url + '/', 'about')
-            result = self.get(url=about)
+        result = self.get(url=self.url)
+        about = self._browser._urllib.parse.urljoin(self.current_url + '/', 'about')
+        result = self.get(url=about)
 
         logger.info(f'{about} :: {result=}')
 
         return result
+
+    def get_facebook_info(self, url: str = None) -> dict:
+        logger.info(f'get_facebook_info :: {url=}')
+
+        self.reset_cache()
+
+        self.set_url(url=url)
+
+        self.get_about()
+        self.check_close_login_popup()
+
+        if self.check_blocked_by_login():
+            return self.to_empty()
+
+        if self.check_content_unavailable():
+            return self.to_empty()
+
+        if self.check_something_went_wrong():
+            return self.to_empty()
+
+        try:
+
+            results = self.to_dict()
+            logger.debug(f'get_facebook_info :: {results=}')
+
+            # increase weight
+            self.PROXY['weight'] = self.PROXY['weight'] * 1.10
+            for _proxy in self.PROXIES:
+                if _proxy['proxy'] == self.PROXY['proxy']:
+                    _proxy.update(self.PROXY)
+                    logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY}')
+
+            return results
+
+        except selenium.common.exceptions.WebDriverException as error:
+            # quit old webdriver
+            self.quit()
+
+            # restart webdriver
+            self.start(
+                headless=self.BROWSER_HEADLESS,
+                set_user_agent='Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+                set_page_load_timeout=2
+            )
+            logger.error(f'get_facebook_info :: error :: restarting :: {error}')
+            return self.get_facebook_info(url=url)
+
+        except Exception as error:
+            import traceback
+            # traceback.print_exc()
+            # raise Exception(f'get_facebook_info :: error :: {error}')
+            logger.error(f'get_facebook_info :: error :: restarting :: {error}')
+
+            # decrease weight
+            self.PROXY['weight'] = self.PROXY['weight'] * 0.90
+            for _proxy in self.PROXIES:
+                if _proxy['proxy'] == self.PROXY['proxy']:
+                    _proxy.update(self.PROXY)
+                    logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY}')
+
+            # quit old webdriver
+            self.quit()
+
+            # restart webdriver
+            self.start(
+                headless=self.BROWSER_HEADLESS,
+                set_user_agent='Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+                set_page_load_timeout=2
+            )
+
+            return self.get_facebook_info(url=url)
 
     def get_with_rate_limiter(
             self,
@@ -387,6 +463,8 @@ class FacebookGroups(object):
             rate_per_minute: int = None,
     ) -> bool:
         """get with rate dynamic limit"""
+
+        self.reset_cache()
 
         if wait_between_retries:
             self.WAIT_BETWEEN_RETRIES = wait_between_retries
@@ -701,7 +779,7 @@ class FacebookGroups(object):
             logger.info(f'start :: {self._browser}')
             logger.info(f'start :: {self._browser}')
             browser = self._browser.run()
-            self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.6, height=1080)
+            self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.60, height=1080)
             return browser
 
     def stop(self):
