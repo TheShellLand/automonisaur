@@ -1,6 +1,9 @@
 # pypi requirements
 FROM python:3.11 as builder
-RUN python3 -m pip install --upgrade pip setuptools wheel twine
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade setuptools
+RUN python3 -m pip install --upgrade wheel
+RUN python3 -m pip install --upgrade twine
 RUN apt update && apt install -y vim
 COPY requirements.txt .
 RUN pip install -U -r requirements.txt

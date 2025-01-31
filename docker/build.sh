@@ -7,7 +7,7 @@ cd "$(dirname "$0")" && set -xe
 source config.sh
 
 # build image
-docker buildx build $@ \
+docker buildx build "$@" \
   --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
   -f $DOCKERFILE \
   --tag $DOCKERNAME:$DOCKERTAG ..
