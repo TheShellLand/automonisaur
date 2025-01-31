@@ -221,6 +221,7 @@ class FacebookGroups(object):
         method = 'by SEARCH'
 
         logger.debug(f':: {method} :: {element}')
+        self._check_something_went_wrong = element
         return element
 
     def check_temporarily_blocked(self):
@@ -364,11 +365,13 @@ class FacebookGroups(object):
     def get_about(self, rate_limiting: bool = True):
         """get about page"""
 
-        about = self._browser._urllib.parse.urljoin(self.url + '/', 'about')
-
         if rate_limiting:
+            result = self.get_with_rate_limiter(url=self.url)
+            about = self._browser._urllib.parse.urljoin(self.current_url + '/', 'about')
             result = self.get_with_rate_limiter(url=about)
         else:
+            result = self.get(url=self.url)
+            about = self._browser._urllib.parse.urljoin(self.current_url + '/', 'about')
             result = self.get(url=about)
 
         logger.info(f'{about} :: {result=}')
