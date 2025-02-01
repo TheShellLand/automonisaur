@@ -1,5 +1,5 @@
 # pypi requirements
-FROM python:3.11 as builder
+FROM python:3.11 AS builder
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --upgrade setuptools
 RUN python3 -m pip install --upgrade wheel
@@ -9,7 +9,7 @@ COPY requirements.txt .
 RUN pip install -U -r requirements.txt
 
 
-FROM builder as runner
+FROM builder AS runner
 LABEL maintainer="naisanza@gmail.com"
 LABEL description="automonisaur core library"
 
