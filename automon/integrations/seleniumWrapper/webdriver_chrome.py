@@ -3,6 +3,7 @@ import sys
 import warnings
 import selenium
 import selenium.webdriver
+import automon.helpers.subprocessWrapper
 
 from automon import log
 from automon.helpers.osWrapper.environ import environ_list
@@ -56,6 +57,11 @@ class ChromeWrapper(object):
         for path in self._chromedriver_path:
             if os.path.exists(path):
                 return path
+
+        check_bin = automon.helpers.subprocessWrapper.Run(command='which chromedriver').stdout.decode().strip()
+
+        if check_bin:
+            return check_bin
 
         raise Exception('missing SELENIUM_CHROMEDRIVER_PATH')
 
