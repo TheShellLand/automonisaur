@@ -56,11 +56,21 @@ class ChromeWrapper(object):
     def chromedriver_path(self):
         for path in self._chromedriver_path:
             if os.path.exists(path):
+                logger.debug(
+                    f'webdriver :: chrome :: '
+                    f'chromedriver_path :: '
+                    f'{path=}'
+                )
                 return path
 
         check_bin = automon.helpers.subprocessWrapper.Run(command='which chromedriver').stdout.decode().strip()
 
         if check_bin:
+            logger.debug(
+                f'webdriver :: chrome :: '
+                f'chromedriver_path :: '
+                f'{check_bin=}'
+            )
             return check_bin
 
         raise Exception('missing SELENIUM_CHROMEDRIVER_PATH')
