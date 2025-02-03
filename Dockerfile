@@ -1,12 +1,15 @@
 # pypi requirements
 FROM python:3.11 AS builder
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install --upgrade setuptools
-RUN python3 -m pip install --upgrade wheel
-RUN python3 -m pip install --upgrade twine
-RUN apt update && apt install -y vim
+RUN python3 -m pip install --upgrade --break-system-packages --no-cache-dir pip && \
+    python3 -m pip install --upgrade --break-system-packages --no-cache-dir setuptools && \
+    python3 -m pip install --upgrade --break-system-packages --no-cache-dir wheel && \
+    python3 -m pip install --upgrade --break-system-packages --no-cache-dir twine && \
+    apt update && apt install -y vim && \
+    apt clean && \
+    rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
+
 COPY requirements.txt .
-RUN pip install -U -r requirements.txt
+RUN pip install --upgrade --break-system-packages --no-cache-dir -r requirements.txt
 
 
 FROM builder AS runner
