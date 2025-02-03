@@ -6,9 +6,13 @@ cd "$(dirname "$0")" && set -xe
 
 source config.sh
 
+if [ "${DOCKER_PRUNE}" == 1 ]; then
+  docker image prune -f
+fi
+
 # build image
 docker buildx build "$@" \
-  --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
+  --platform linux/arm64/v8,linux/amd64 \
   -f $DOCKERFILE \
   --tag $DOCKERNAME:$DOCKERTAG ..
 
