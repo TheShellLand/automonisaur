@@ -9,6 +9,7 @@ import base64
 import pandas
 import datetime
 import tempfile
+import traceback
 
 import selenium
 import selenium.webdriver
@@ -610,8 +611,8 @@ class SeleniumBrowser(object):
             **kwargs,
         )
 
-        logger.debug(f'find_all_with_beautifulsoup :: {elements=}')
-        logger.info(f'find_all_with_beautifulsoup :: {len(elements)} results')
+        logger.debug(f'find_all_with_beautifulsoup :: {len(elements)} results')
+        logger.info(f'find_all_with_beautifulsoup :: done')
 
         return elements
 
@@ -757,6 +758,18 @@ class SeleniumBrowser(object):
             limit=limit,
             case_sensitive=case_sensitive)
 
+        logger.debug(
+            f'find_anything_with_beautifulsoup :: '
+            f'{match=} :: '
+            f'{name=} :: '
+            f'{attrs=} :: '
+            f'{recursive=} :: '
+            f'{string=} :: '
+            f'{limit=} :: '
+            f'{case_sensitive=} :: '
+            f'{kwargs=}'
+        )
+
         # search both element as string and attribute text
         for element in elements:
 
@@ -773,7 +786,7 @@ class SeleniumBrowser(object):
 
                 logger.debug(
                     f'find_anything_with_beautifulsoup :: '
-                    f'{_search=}'
+                    f'_search={_search[:100].encode()}'
                 )
 
                 _re_compile = re.compile(match)
@@ -935,8 +948,9 @@ class SeleniumBrowser(object):
             logger.info(f'browser :: get :: done')
             return True
 
-        except Exception as exception:
-            logger.error(f'browser :: get :: failed :: {exception=}')
+        except Exception as error:
+            traceback.print_exc()
+            raise Exception(f'browser :: get :: failed :: {error=}')
 
         logger.error(f'browser :: get :: failed :: {url}')
         return False
@@ -948,7 +962,7 @@ class SeleniumBrowser(object):
 
     def get_page_source(self) -> str:
         """get page source"""
-        logger.debug(f'get_page_source :: ')
+        logger.debug(f'get_page_source :: start ')
         get_page_source = self.page_source
         logger.debug(f'get_page_source :: {round(len(get_page_source) / 1024)} KB')
         logger.info(f'get_page_source :: done')
@@ -1099,9 +1113,9 @@ class SeleniumBrowser(object):
             run = self.config.run()
             logger.info(f'webdriver :: run :: done')
             return run
-        except Exception as exception:
-            logger.error(f'webdriver :: run :: failed :: {exception=}')
-            raise Exception(f'webdriver :: run :: failed :: {exception=}')
+        except Exception as error:
+            traceback.print_exc()
+            raise Exception(f'webdriver :: run :: failed :: {error=}')
 
     def save_cookies_for_current_url(self) -> bool:
         """save cookies for current url"""
