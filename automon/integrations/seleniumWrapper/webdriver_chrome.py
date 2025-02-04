@@ -388,36 +388,35 @@ class ChromeWrapper(object):
         return self
 
     def run(self) -> bool:
+        chromedriver_path = self.chromedriver_path
+
+        if chromedriver_path:
+            self.update_paths(chromedriver_path)
+
+            self._ChromeService = selenium.webdriver.ChromeService(
+                executable_path=chromedriver_path,
+                service_args=self.service_args
+            )
+        else:
+            self._ChromeService = None
+
+        logger.debug(f'webdriver :: chrome :: run :: {self.ChromeService=}')
+
         try:
-            self.update_paths(self.chromedriver_path)
+            self._webdriver = selenium.webdriver.Chrome(
+                service=self.ChromeService,
+                options=self.chrome_options
+            )
 
-            if self.chromedriver_path:
-                self._ChromeService = selenium.webdriver.ChromeService(
-                    executable_path=self.chromedriver_path,
-                    service_args=self.service_args
-                )
+            if self._enable_antibot_detection:
+                self.disable_javascript_webdriver_prop()
 
-                logger.debug(f'webdriver :: chrome :: run :: {self.ChromeService=}')
-
-                self._webdriver = selenium.webdriver.Chrome(
-                    service=self.ChromeService,
-                    options=self.chrome_options
-                )
-
-                if self._enable_antibot_detection:
-                    self.disable_javascript_webdriver_prop()
-
-                logger.debug(f'webdriver :: chrome :: run :: {self=}')
-
-                logger.info(f'webdriver :: chrome :: run :: done')
-                return True
-
-            self._webdriver = selenium.webdriver.Chrome(options=self.chrome_options)
-            logger.info(f'webdriver :: chrome :: run :: {self=}')
-
+            logger.debug(f'webdriver :: chrome :: run :: {self=}')
+            logger.info(f'webdriver :: chrome :: run :: done')
             return True
-        except Exception as exception:
-            raise Exception(f'webdriver :: chrome :: run :: failed :: {exception=}')
+
+        except Exception as error:
+            raise Exception(f'webdriver :: chrome :: run :: failed :: {error=}')
 
     @property
     def service_args(self):
