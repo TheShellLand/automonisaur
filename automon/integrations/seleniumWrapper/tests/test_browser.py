@@ -26,7 +26,7 @@ class SeleniumClientTest(unittest.TestCase):
                     self.assertTrue(browser.get_screenshot_as_png())
 
             def test_screenshot_base64(self):
-                if browser.get('http://yahoo.com'):
+                if browser.get('https://www.yahoo.com/'):
                     self.assertTrue(browser.get_screenshot_as_base64())
 
             def test_screenshot_file(self):
