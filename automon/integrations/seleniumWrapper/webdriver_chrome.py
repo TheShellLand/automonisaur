@@ -462,6 +462,14 @@ class ChromeWrapper(object):
         self.chrome_options.add_argument(f"user-agent={user_agent}")
         return self
 
+    def set_user_data_dir(self, user_data_dir: str = None):
+        if user_data_dir is None:
+            user_data_dir = automon.Tempfile.mkdtemp()
+
+        logger.debug(f'webdriver :: chrome :: add_argument :: f"user-data-dir={user_data_dir}"')
+        self.chrome_options.add_argument(f"user-data-dir={user_data_dir}")
+        return self
+
     def set_window_size(self, *args, **kwargs):
         """has to be set after setting webdriver"""
         logger.debug(f'webdriver :: chrome :: set_window_size :: {args=} :: {kwargs=}')
