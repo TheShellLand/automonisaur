@@ -954,9 +954,6 @@ class SeleniumBrowser(object):
             traceback.print_exc()
             raise Exception(f'browser :: get :: failed :: {error=}')
 
-        logger.error(f'browser :: get :: failed :: {url}')
-        return False
-
     def get_page(self, *args, **kwargs) -> bool:
         """alias to get"""
         logger.debug(f'get_page :: {args=} :: {kwargs=}')

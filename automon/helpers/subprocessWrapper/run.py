@@ -184,9 +184,6 @@ stderr:
             else:
                 command = self.sanitize_command_spaces(command=command)
 
-        logger.debug(str(dict(
-            command=command
-        )))
         return command
 
     def sanitize_command_pipe(self, command: str) -> [str]:

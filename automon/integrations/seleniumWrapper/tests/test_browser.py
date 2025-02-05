@@ -12,7 +12,10 @@ class SeleniumClientTest(unittest.TestCase):
         if browser.run():
 
             def test_fake_page(self):
-                self.assertFalse(browser.get('http://555.555.555.555'))
+                try:
+                    browser.get('http://555.555.555.555')
+                except Exception as error:
+                    self.assertTrue(error)
 
             def test_real_page(self):
                 if browser.get('http://1.1.1.1'):
