@@ -4,5 +4,7 @@
 
 cd "$(dirname "$0")" && set -xe
 
-DOCKERNAME=automon
+source config.sh
+
+DOCKERNAME=$DOCKERNAME
 /bin/bash build.sh && docker run --rm -it $DOCKERNAME "$@"

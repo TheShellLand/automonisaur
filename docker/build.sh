@@ -6,11 +6,11 @@ cd "$(dirname "$0")" && set -xe
 
 source config.sh
 
-if [ "${DOCKER_PRUNE}" == 1 ]; then
+if [ "${DOCKER_PRUNE_IMAGES}" == 1 ]; then
   docker image prune -f
 fi
 
-if [ "${DOCKER_DELETE}" == 1 ]; then
+if [ "${DOCKER_DELETE_IMAGES}" == 1 ]; then
    docker image rm -f $(docker image ls | grep $DOCKERNAME | awk '{print $3}') || echo "DOCKER DELETE DONE"
 fi
 
