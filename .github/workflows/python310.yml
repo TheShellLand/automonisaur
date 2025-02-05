@@ -37,7 +37,7 @@ jobs:
       - name: Install python packages
         run: pip3 install -r requirements.txt
       - name: install chrome and chromedriver
-        run: /bin/bash docker/install.sh
+        run: /bin/bash docker/install-chromedriver.sh
       - name: Run tests
         run: /bin/bash test.sh
         env:
