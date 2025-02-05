@@ -18,6 +18,8 @@ import selenium.webdriver.remote.webelement
 
 from selenium.webdriver.common.keys import Keys
 
+import automon
+
 from automon import log
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
@@ -1192,7 +1194,7 @@ class SeleniumBrowser(object):
             logger.debug(f'save_screenshot :: {filename=}')
 
         if not folder:
-            path = os.path.abspath(tempfile.gettempdir())
+            path = os.path.abspath(automon.Tempfile.gettempdir())
             logger.debug(f'save_screenshot :: {path=}')
         else:
             path = os.path.abspath(folder)
