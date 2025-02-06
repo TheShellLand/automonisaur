@@ -787,8 +787,9 @@ class SeleniumBrowser(object):
                     continue
 
                 logger.debug(
-                    f'find_anything_with_beautifulsoup :: '
-                    f'_search={_search[:100].encode()}'
+                    f'find_anything_with_beautifulsoup :: searching :: '
+                    f'{match=} :: '
+                    f'search={_search[:100].encode()}'
                 )
 
                 _re_compile = re.compile(match)
@@ -797,7 +798,7 @@ class SeleniumBrowser(object):
 
                 if _re_search:
                     logger.debug(
-                        f'find_anything_with_beautifulsoup :: found :: {match=} :: {_re_search.group()} :: {_re_search.string=} :: {element=}')
+                        f'find_anything_with_beautifulsoup :: found :: {match=} :: {_re_search.group()=} :: {_re_search.string=} :: {element=}')
                     if element not in MATCHES:
                         MATCHES.append(element)
 
