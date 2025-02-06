@@ -18,11 +18,11 @@ class SeleniumClientTest(unittest.TestCase):
                     self.assertTrue(error)
 
             def test_real_page(self):
-                if browser.get('http://1.1.1.1'):
+                if browser.get('https://1.1.1.1'):
                     self.assertTrue(True)
 
             def test_screenshot_png(self):
-                if browser.get('http://google.com'):
+                if browser.get('https://www.google.com/'):
                     self.assertTrue(browser.get_screenshot_as_png())
 
             def test_screenshot_base64(self):
@@ -30,7 +30,7 @@ class SeleniumClientTest(unittest.TestCase):
                     self.assertTrue(browser.get_screenshot_as_base64())
 
             def test_screenshot_file(self):
-                if browser.get('http://bing.com'):
+                if browser.get('https://www.bing.com'):
                     self.assertTrue(browser.save_screenshot())
                     self.assertTrue(browser.save_screenshot(folder='./'))
 
@@ -41,39 +41,39 @@ class SeleniumClientTest(unittest.TestCase):
                 self.assertTrue(browser.config)
 
             def test_logs(self):
-                if browser.get('http://1.1.1.1'):
+                if browser.get('https://1.1.1.1'):
                     self.assertTrue(browser.logs)
 
             def test_webdriver(self):
                 self.assertTrue(browser.webdriver)
 
             def test_get_logs(self):
-                if browser.get('http://1.1.1.1'):
+                if browser.get('https://1.1.1.1'):
                     self.assertTrue(browser.get_logs())
 
             def test_get_log_browser(self):
-                if browser.get('http://1.1.1.1'):
+                if browser.get('https://1.1.1.1'):
                     try:
                         self.assertTrue(browser.get_log_browser())
                     except:
                         pass
 
             def test_get_log_driver(self):
-                if browser.get('http://1.1.1.1'):
+                if browser.get('https://1.1.1.1'):
                     try:
                         self.assertTrue(browser.get_log_driver())
                     except:
                         pass
 
             def test_get_log_performance(self):
-                if browser.get('http://1.1.1.1'):
+                if browser.get('https://1.1.1.1'):
                     try:
                         self.assertTrue(browser.get_log_performance())
                     except:
                         pass
 
             def test_check_page_load_finished(self):
-                if browser.get('http://1.1.1.1'):
+                if browser.get('https://1.1.1.1'):
                     self.assertTrue(browser.check_page_load_finished())
 
             def test_keys(self):
@@ -335,4 +335,4 @@ class SeleniumClientTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    browser.quit()
+    # browser.quit()

@@ -25,31 +25,31 @@ class SeleniumConfig(object):
         """add proxy"""
 
         if not re.compile(r'\d+.\d+.\d+.\d+:\d+').match(proxy):
-            raise ValueError(f'SeleniumConfig :: ADD PROXY :: ERROR :: bad proxy format (e.g. IP:PORT) :: {proxy=}')
+            raise ValueError(f'SeleniumConfig :: add proxy :: ERROR :: bad proxy format (e.g. IP:PORT) :: {proxy=}')
 
         self.proxies.append(proxy)
 
-        logger.debug(f'SeleniumConfig :: ADD PROXY :: {proxy}')
-        logger.info(f'SeleniumConfig :: ADD PROXY :: DONE')
+        logger.debug(f'SeleniumConfig :: add proxy :: {proxy}')
+        logger.info(f'SeleniumConfig :: add proxy :: DONE')
         return self
 
     def delete_proxies(self):
         self.proxies = []
-        logger.info(f'SeleniumConfig :: DELETE PROXIES :: DONE')
+        logger.info(f'SeleniumConfig :: delete proxies :: DONE')
         return self
 
     def get_random_proxy(self) -> str:
         """get random proxy"""
         if self.proxies:
             proxy = random.choice(self.proxies)
-            logger.debug(f'SeleniumConfig :: GET RANDOM PROXY :: {proxy}')
+            logger.debug(f'SeleniumConfig :: get random proxy :: {proxy}')
             return proxy
 
     def get_proxy(self) -> dict:
         """get first proxy"""
         if self.proxies:
             proxy = self.proxies[0]
-            logger.debug(f'SeleniumConfig :: GET PROXY :: {proxy}')
+            logger.debug(f'SeleniumConfig :: get proxy :: {proxy}')
             return proxy
 
     @property
@@ -68,17 +68,17 @@ class SeleniumConfig(object):
     @property
     def cookies_base64(self):
         logger.debug(
-            f'SeleniumConfig :: COOKIES BASE64 :: {len(self._cookies_base64) / 1024 if self._cookies_base64 else None} KB')
+            f'SeleniumConfig :: cookies base64 :: {len(self._cookies_base64) / 1024 if self._cookies_base64 else None} KB')
         return self._cookies_base64
 
     @property
     def cookies_file(self):
-        logger.debug(f'SeleniumConfig :: COOKIES FILE :: {self._cookies_file}')
+        logger.debug(f'SeleniumConfig :: cookies file :: {self._cookies_file}')
         return self._cookies_file
 
     def run(self):
         """run webdriver"""
-        logger.debug(f'SeleniumConfig :: RUN :: ')
+        logger.debug(f'SeleniumConfig :: run')
 
         if self.proxies:
             if self.use_random_proxy:
@@ -86,13 +86,13 @@ class SeleniumConfig(object):
             else:
                 proxy = self.get_proxy()
 
-            logger.debug(f'SeleniumConfig :: RUN :: ADD PROXY :: {proxy}')
+            logger.debug(f'SeleniumConfig :: run :: add proxy :: {proxy}')
             self.webdriver_wrapper.enable_proxy(proxy=proxy)
 
         run = self.webdriver_wrapper.run()
         self._webdriver = self.webdriver_wrapper.webdriver
-        logger.debug(f'SeleniumConfig :: RUN :: {self.webdriver=}')
-        logger.info(f'SeleniumConfig :: RUN :: DONE')
+        logger.debug(f'SeleniumConfig :: run :: {self.webdriver=}')
+        logger.info(f'SeleniumConfig :: run :: DONE')
         return run
 
     def start(self):
