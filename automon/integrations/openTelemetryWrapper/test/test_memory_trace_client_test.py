@@ -1,5 +1,4 @@
 import unittest
-import asyncio
 
 from automon.integrations.openTelemetryWrapper import OpenTelemetryClient
 
@@ -8,11 +7,10 @@ class MyTestCase(unittest.TestCase):
     client = OpenTelemetryClient()
 
     def test_something(self):
-        self.assertTrue(asyncio.run(
-            self.client.test()))
+        self.assertTrue(self.client.test())
 
-        # spans = asyncio.run(
-        #     self.client.get_finished_spans())
+        # spans = 
+        #     self.client.get_finished_spans(
 
         pass
 
