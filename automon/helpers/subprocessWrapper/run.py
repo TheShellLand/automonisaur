@@ -1,6 +1,5 @@
+import pprint
 import subprocess
-
-from pprint import pprint
 
 from automon import log
 from automon.helpers.dates import Dates
@@ -38,24 +37,28 @@ class Run:
         return self.run(*args, **kwargs)
 
     def pretty(self):
-        template = f"""stdout:
-{self.stdout.decode()}
-stderr:
-{self.stderr.decode()}"""
-        pprint(template)
+        template = (
+            f'stdout: \n'
+            f'{self.stdout.decode()}\n'
+            f'stderr: \n'
+            f'{self.stderr.decode()}'
+        )
+        pprint.pprint(template)
 
     def print(self):
-        template = f"""stdout:
-{self.stdout.decode()}
-
-stderr:
-{self.stderr.decode()}"""
+        template = (
+            f'stdout: \n'
+            f'{self.stdout.decode()}\n'
+            f'stderr: \n'
+            f'{self.stderr.decode()}'
+        )
         print(template)
 
     def set_command(self, command: str) -> bool:
-        logger.debug(command)
+        logger.debug(f'Run :: set_command :: {command=}')
         if command:
             self.command = command
+            logger.info(f'Run :: set_command :: done')
             return True
         return False
 
@@ -87,20 +90,16 @@ stderr:
         :param program:
         :return:
         """
-        logger.debug(str(dict(
-            which=program,
-            args=args,
-            kwargs=kwargs,
-        )))
+        logger.debug(f'Run :: which :: {program=} :: {args=} :: {kwargs=}')
+        logger.info(f'Run :: which :: done')
         return self.run(command=f'which {program}', *args, **kwargs)
 
     def run_command(self, *args, **kwargs) -> bool:
         """alias to run"""
-        logger.debug(str(dict(
-            args=args,
-            kwargs=kwargs,
-        )))
-        return self.run(*args, **kwargs)
+        logger.debug(f'Run :: run_command :: {args=} :: {kwargs=}')
+        run = self.run(*args, **kwargs)
+        logger.info(f'Run :: run_command :: done')
+        return run
 
     def run(
             self,
@@ -119,22 +118,11 @@ stderr:
             command = self.sanitize_command(command)
 
         if not command:
-            logger.error(str(dict(
-                command=command,
-                text=text,
-                shell=shell,
-                sanitize_command=sanitize_command,
-                kwargs=kwargs,
-            )))
-            raise SyntaxError(f'command cannot be empty, {command}')
+            logger.error(
+                f'Run :: run :: ERROR :: {command=} :: {text=} :: {shell=} :: {sanitize_command=} :: {kwargs=}')
+            raise SyntaxError(f'command cannot be empty, {command=}')
 
-        logger.debug(str(dict(
-            command=command,
-            text=text,
-            shell=shell,
-            sanitize_command=sanitize_command,
-            kwargs=kwargs,
-        )))
+        logger.debug(f'Run :: run :: {command=} :: {text=} :: {shell=} :: {sanitize_command=} :: {kwargs=}')
 
         try:
 
@@ -157,21 +145,24 @@ stderr:
             self.returncode = self.call.returncode
 
             if self.returncode == 0:
-                logger.debug(str(dict(
-                    stdout_KB=round(len(self.stdout) / 1024, 2),
-                    stderr_KB=round(len(self.stderr) / 1024, 2),
-                )))
+                logger.debug(
+                    f'Run :: run :: '
+                    f'stdout {round(len(self.stdout) / 1024, 2)} KB :: '
+                    f'stderr {round(len(self.stderr) / 1024, 2)} KB'
+                )
+                logger.info(f'Run :: run :: done')
                 return True
 
         except Exception as error:
             self._stderr = f'{error}'.encode()
-            logger.error(f'{error}')
+            logger.error(f'Run :: run :: ERROR :: {error=}')
             raise RuntimeError(error)
 
-        logger.error(str(dict(
-            stdout_KB=round(len(self.stdout) / 1024, 2),
-            stderr_KB=round(len(self.stderr) / 1024, 2),
-        )))
+        logger.error(
+            f'Run :: run :: ERROR :: '
+            f'stdout {round(len(self.stdout) / 1024, 2)} KB :: '
+            f'stderr {round(len(self.stderr) / 1024, 2)} KB'
+        )
         return False
 
     def sanitize_command(self, command: str) -> [str]:
@@ -188,8 +179,8 @@ stderr:
 
     def sanitize_command_pipe(self, command: str) -> [str]:
         """support for shell command piping"""
-        error = f'Pipes are not supported! To use run(shell=True). {command}'
-        logger.error(error)
+        error = f'Pipes are not supported! To use run(shell=True). {command=}'
+        logger.error(f'Run :: sanitize_command_pipe :: ERROR :: {error=}')
         raise NotSupportedCommand(error)
 
         split_command = f'{command}'.split('|')
