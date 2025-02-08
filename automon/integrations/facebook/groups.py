@@ -49,10 +49,14 @@ class FacebookGroups(object):
     LAST_REQUEST = None
     WAIT_BETWEEN_RETRIES = random.choice(range(1, 60))
 
-    PROXIES = [
-        dict(proxy=x, weight=0) for x in
-        automon.integrations.seleniumWrapper.proxies_public.proxy_filter_https_ips_and_ports()
-    ]
+    USE_PROXY = None
+    USE_RANDOM_PROXY = None
+    PROXIES = []
+    if USE_PROXY:
+        PROXIES = [
+            dict(proxy=x, weight=0) for x in
+            automon.integrations.seleniumWrapper.proxies_public.proxy_filter_https_ips_and_ports()
+        ]
 
     PROXIES_WEIGHT = {
         'Connect to Wi-Fi': -0.25,
@@ -408,11 +412,12 @@ class FacebookGroups(object):
             logger.debug(f'get_facebook_info :: {results=}')
 
             # increase weight
-            self.PROXY['weight'] = self.PROXY['weight'] * 1.10
-            for _proxy in self.PROXIES:
-                if _proxy['proxy'] == self.PROXY['proxy']:
-                    _proxy.update(self.PROXY)
-                    logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY}')
+            if self.PROXY:
+                self.PROXY['weight'] = self.PROXY['weight'] * 1.10
+                for _proxy in self.PROXIES:
+                    if _proxy['proxy'] == self.PROXY['proxy']:
+                        _proxy.update(self.PROXY)
+                        logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY}')
 
             return results
 
@@ -422,7 +427,6 @@ class FacebookGroups(object):
 
             # restart webdriver
             self.start(
-                headless=self.BROWSER_HEADLESS,
                 set_user_agent='Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
                 set_page_load_timeout=2
             )
@@ -436,18 +440,18 @@ class FacebookGroups(object):
             logger.error(f'get_facebook_info :: error :: restarting :: {error}')
 
             # decrease weight
-            self.PROXY['weight'] = self.PROXY['weight'] * 0.90
-            for _proxy in self.PROXIES:
-                if _proxy['proxy'] == self.PROXY['proxy']:
-                    _proxy.update(self.PROXY)
-                    logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY}')
+            if self.PROXY:
+                self.PROXY['weight'] = self.PROXY['weight'] * 0.90
+                for _proxy in self.PROXIES:
+                    if _proxy['proxy'] == self.PROXY['proxy']:
+                        _proxy.update(self.PROXY)
+                        logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY}')
 
             # quit old webdriver
             self.quit()
 
             # restart webdriver
             self.start(
-                headless=self.BROWSER_HEADLESS,
                 set_user_agent='Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
                 set_page_load_timeout=2
             )
@@ -657,19 +661,18 @@ class FacebookGroups(object):
 
     def start(
             self,
-            headless: bool = True,
             random_user_agent: bool = False,
             set_user_agent: str = None,
-            use_proxy: bool = True,
-            use_random_proxy: bool = True,
             set_page_load_timeout: int = 2):
         """start new instance of selenium"""
 
         self._browser.config.webdriver_wrapper = ChromeWrapper()
 
+        # TOOD: missing this implementation
+        # I think I deleted it somewhere
         self._browser.config.webdriver_wrapper.set_page_load_timeout = set_page_load_timeout
 
-        if headless:
+        if self.BROWSER_HEADLESS:
             self._browser.config.webdriver_wrapper.enable_headless()
             self._browser.config.webdriver_wrapper.set_locale_experimental()
         else:
@@ -684,13 +687,13 @@ class FacebookGroups(object):
                 set_user_agent
             )
 
-        if use_proxy:
+        if self.USE_PROXY:
             proxies = pandas.DataFrame(self.PROXIES)
 
             # find a working proxy
             while True:
 
-                if use_random_proxy:
+                if self.USE_RANDOM_PROXY:
                     proxies_weight_good = proxies[proxies.weight > 50].to_dict('records')
                     logger.debug(
                         f'start :: '
@@ -758,11 +761,8 @@ class FacebookGroups(object):
                         logger.error(f'start :: PROXY FAILED :: {proxy} :: {_proxy_error=}')
                         self.quit()
                         return self.start(
-                            headless=headless,
                             random_user_agent=random_user_agent,
                             set_user_agent=set_user_agent,
-                            use_proxy=use_proxy,
-                            use_random_proxy=use_random_proxy,
                         )
 
                 proxy['weight'] = proxy['weight'] * 1.1
