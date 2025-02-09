@@ -49,14 +49,9 @@ class FacebookGroups(object):
     LAST_REQUEST = None
     WAIT_BETWEEN_RETRIES = random.choice(range(1, 60))
 
-    USE_PROXY = None
-    USE_RANDOM_PROXY = None
+    PROXY_ENABLED = None
+    PROXY_RANDOM = None
     PROXIES = []
-    if USE_PROXY:
-        PROXIES = [
-            dict(proxy=x, weight=0) for x in
-            automon.integrations.seleniumWrapper.proxies_public.proxy_filter_https_ips_and_ports()
-        ]
 
     PROXIES_WEIGHT = {
         'Connect to Wi-Fi': -0.25,
@@ -373,7 +368,17 @@ class FacebookGroups(object):
         else:
             result = self._browser.get(url=url)
 
-        logger.info(f'get :: {result=} :: {self.PROXY=} :: {url} :: {round(len(self._browser.webdriver.page_source) / 1024)} KB')
+        proxy = self.PROXY
+        if len(eslf.PROXY) > 0:
+            proxy = self.PROXY.to_dict('records')[0]
+
+        logger.info(
+            f'get :: '
+            f'{result=} :: '
+            f'{proxy=} :: '
+            f'{url} :: '
+            f'{round(len(self._browser.webdriver.page_source) / 1024)} KB'
+        )
         return result
 
     def get_about(self):
@@ -412,12 +417,9 @@ class FacebookGroups(object):
             logger.debug(f'get_facebook_info :: {results=}')
 
             # increase weight
-            if self.PROXY:
-                self.PROXY['weight'] = self.PROXY['weight'] * 1.10
-                for _proxy in self.PROXIES:
-                    if _proxy['proxy'] == self.PROXY['proxy']:
-                        _proxy.update(self.PROXY)
-                        logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY}')
+            if len(self.PROXY) > 0:
+                self._update_proxy(proxy=self.PROXY, weight_multiplier=1.10)
+                logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY.to_dict('records')[0]}')
 
             return results
 
@@ -440,12 +442,9 @@ class FacebookGroups(object):
             logger.error(f'get_facebook_info :: error :: restarting :: {error}')
 
             # decrease weight
-            if self.PROXY:
-                self.PROXY['weight'] = self.PROXY['weight'] * 0.90
-                for _proxy in self.PROXIES:
-                    if _proxy['proxy'] == self.PROXY['proxy']:
-                        _proxy.update(self.PROXY)
-                        logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY}')
+            if len(self.PROXY) > 0:
+                self._update_proxy(proxy=self.PROXY, weight_multiplier=0.90)
+                logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY.to_dict('records')[0]}')
 
             # quit old webdriver
             self.quit()
@@ -500,7 +499,7 @@ class FacebookGroups(object):
         """quit selenium"""
 
         if self._browser:
-            logger.info(f'quit :: {self._browser}')
+            logger.info(f'quit :: {self._browser=}')
             return self._browser.quit()
 
     @property
@@ -666,6 +665,9 @@ class FacebookGroups(object):
             set_page_load_timeout: int = 2):
         """start new instance of selenium"""
 
+        if self.PROXY is None and self.LAST_REQUEST is not None:
+            pass
+
         self._browser.config.webdriver_wrapper = ChromeWrapper()
 
         # TOOD: missing this implementation
@@ -687,93 +689,11 @@ class FacebookGroups(object):
                 set_user_agent
             )
 
-        if self.USE_PROXY:
-            proxies = pandas.DataFrame(self.PROXIES)
+        if self.PROXY_ENABLED:
 
-            # find a working proxy
-            while True:
-
-                if self.USE_RANDOM_PROXY:
-                    proxies_weight_good = proxies[proxies.weight > 50].to_dict('records')
-                    logger.debug(
-                        f'start :: '
-                        f'PROXY LIST :: '
-                        f'{len(proxies_weight_good)} proxies > 50:: '
-                        f'{proxies_weight_good=}'
-                    )
-
-                    if proxies_weight_good:
-                        proxies_list = proxies_weight_good
-                    else:
-                        proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
-                        proxies_top_quantile = proxies_top_quantile[proxies_top_quantile.weight >= 0]
-                        proxies_top_quantile = proxies_top_quantile.to_dict('records')
-                        logger.debug(
-                            f'start :: '
-                            f'PROXY LIST :: '
-                            f'{len(proxies_top_quantile)} proxies >= 0 :: '
-                            f'{proxies_top_quantile=}')
-
-                        if proxies_top_quantile:
-
-                            proxies_list = proxies_top_quantile
-
-                        else:
-                            proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
-                            proxies_top_quantile = proxies_top_quantile[
-                                proxies_top_quantile['weight'] >= proxies_top_quantile['weight'].quantile(0.5)
-                                ]
-                            proxies_top_quantile = proxies_top_quantile.to_dict('records')
-                            logger.debug(
-                                f'start :: '
-                                f'PROXY LIST :: '
-                                f'{len(proxies_top_quantile)} proxies >= 0.5 percentile:: '
-                                f'{proxies_top_quantile=}')
-
-                            proxies_list = proxies_top_quantile
-
-                    if len(proxies_list) < 2:
-                        proxy = random.choice(proxies.to_dict('records'))
-                    else:
-                        proxy = random.choice(proxies_list)
-
-                else:
-                    proxy = self.PROXIES[0]
-
-                if proxy['weight'] == 0:
-                    proxy['weight'] = proxy['weight'] + 10
-
-                self._browser.config.webdriver_wrapper.enable_proxy(proxy['proxy'])
-                logger.debug(f'start :: PROXY TEST :: {proxy}')
-
-                self._browser.run()
-                self._browser.get(self.url)
-
-                for _proxy_error in self.PROXIES_WEIGHT.keys():
-                    search = self._browser.find_page_source_with_regex(_proxy_error)
-                    if search:
-                        proxy['weight'] = proxy['weight'] * self.PROXIES_WEIGHT[_proxy_error]
-
-                        for _proxy in self.PROXIES:
-                            if _proxy['proxy'] == proxy['proxy']:
-                                _proxy.update(proxy)
-
-                        logger.error(f'start :: PROXY FAILED :: {proxy} :: {_proxy_error=}')
-                        self.quit()
-                        return self.start(
-                            random_user_agent=random_user_agent,
-                            set_user_agent=set_user_agent,
-                        )
-
-                proxy['weight'] = proxy['weight'] * 1.1
-                logger.debug(f'start :: PROXY FOUND :: {proxy}')
-
-                for _proxy in self.PROXIES:
-                    if _proxy['proxy'] == proxy['proxy']:
-                        _proxy.update(proxy)
-
-                self.PROXY = proxy
+            if self._find_proxy():
                 return True
+
         else:
 
             logger.info(f'start :: {self._browser}')
@@ -781,6 +701,87 @@ class FacebookGroups(object):
             browser = self._browser.run()
             self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.60, height=1080)
             return browser
+
+    def _find_proxy(self):
+
+        if len(self.PROXIES) == 0:
+            self.PROXIES = pandas.DataFrame(
+                [dict(proxy=x, weight=0) for x in
+                 automon.integrations.seleniumWrapper.proxies_public.proxy_filter_https_ips_and_ports()]
+            )
+            self.PROXIES = self.PROXIES.convert_dtypes()
+
+        proxies = self.PROXIES
+
+        # find a working proxy
+        while True:
+
+            if self.PROXY_RANDOM:
+                proxies_weight_good = proxies[proxies.weight > 50]
+                logger.debug(
+                    f'start :: '
+                    f'PROXY LIST :: '
+                    f'{len(proxies_weight_good)} proxies > 50'
+                )
+
+                if not proxies_weight_good.empty:
+                    proxies_list = proxies_weight_good
+                else:
+                    proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
+                    proxies_top_quantile = proxies_top_quantile[proxies_top_quantile.weight >= 0]
+                    logger.debug(
+                        f'start :: '
+                        f'PROXY LIST :: '
+                        f'{len(proxies_top_quantile)} proxies >= 0'
+                    )
+
+                    if not proxies_top_quantile.empty:
+
+                        proxies_list = proxies_top_quantile
+
+                    else:
+                        proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
+                        proxies_top_quantile = proxies_top_quantile[
+                            proxies_top_quantile['weight'] >= proxies_top_quantile['weight'].quantile(0.5)
+                            ]
+                        logger.debug(
+                            f'start :: '
+                            f'PROXY LIST :: '
+                            f'{len(proxies_top_quantile)} proxies >= 0.5 percentile:: '
+                            f'{proxies_top_quantile=}')
+
+                        proxies_list = proxies_top_quantile
+
+                if len(proxies_list) < 2:
+                    proxy = proxies.sample()
+                else:
+                    proxy = proxies_list.sample()
+
+            if not self.PROXY_RANDOM:
+                proxy = self.PROXIES.iloc[0]
+
+            self._update_proxy(proxy=proxy, weight_multiplier=1.10)
+
+            self._browser.config.webdriver_wrapper.enable_proxy(proxy['proxy'].item())
+            logger.debug(f'start :: PROXY TEST :: {proxy.to_dict('records')[0]}')
+
+            self._browser.run()
+            self._browser.get(self.url)
+
+            for _proxy_error in self.PROXIES_WEIGHT.keys():
+                search = self._browser.find_page_source_with_regex(_proxy_error)
+                if search:
+                    self._update_proxy(proxy=proxy, weight_multiplier=self.PROXIES_WEIGHT[_proxy_error])
+
+                    logger.error(f'start :: PROXY FAILED :: {proxy.to_dict('records')[0]} :: {_proxy_error=}')
+                    self.quit()
+                    return self.start()
+
+            self._update_proxy(proxy=proxy, weight_multiplier=1.10)
+            logger.debug(f'start :: PROXY FOUND :: {proxy.to_dict('records')[0]}')
+            return True
+
+        raise Exception(f'_find_proxy :: ERROR :: no proxies worked ({len(self.PROXIES)} proxies)')
 
     def stop(self):
         """alias to quit"""
@@ -1061,6 +1062,16 @@ class FacebookGroups(object):
             check_browser_not_supported=self.check_browser_not_supported(),
             check_content_unavailable=self.check_content_unavailable(),
         )
+
+    def _update_proxy(self, proxy: pandas.DataFrame, weight_multiplier: int):
+
+        if proxy['weight'].item() == 0:
+            proxy['weight'] = proxy['weight'] + 1
+
+        proxy['weight'] = proxy['weight'] * weight_multiplier
+        proxy['weight'] = proxy['weight'].astype('int')
+        self.PROXIES.update(proxy)
+        return self
 
     @property
     def url(self) -> str:

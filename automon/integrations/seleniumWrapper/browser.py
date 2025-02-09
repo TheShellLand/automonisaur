@@ -51,12 +51,11 @@ class SeleniumBrowser(object):
 
     def __repr__(self):
         try:
-            return str(dict(
-                webdriverWrapper=self.config.webdriver_wrapper,
-                webdriver=self.webdriver.name or None,
-                session_id=self.session_id,
-                window_size=self.window_size,
-            ))
+            return (
+                f'SeleniumBrowser :: '
+                f'{self.config.webdriver_wrapper} :: '
+                f'{self.webdriver=}'
+            )
         except Exception as error:
             pass
 
@@ -122,7 +121,12 @@ class SeleniumBrowser(object):
         you can only run this once
         afterwards the logs are cleared from the webdriver
         """
-        logger.debug(f'SeleniumBrowser :: get_logs :: {len(self.webdriver.log_types)} types found :: {self.webdriver.log_types}')
+        logger.debug(
+            f'SeleniumBrowser :: '
+            f'get_logs :: '
+            f'{len(self.webdriver.log_types)} types found :: '
+            f'{self.webdriver.log_types}'
+        )
 
         for log_type in self.webdriver.log_types:
             logs = self.webdriver.get_log(log_type)
@@ -179,7 +183,8 @@ class SeleniumBrowser(object):
         for log_dict in logs:
             # logger.debug(f'SeleniumBrowser :: check_page_load_finished :: checking :: {log_dict}')
             if 'frameStoppedLoading' in log_dict.get('message'):
-                logger.debug(f'SeleniumBrowser :: check_page_load_finished :: checking :: frameStoppedLoading :: found :: {log_dict}')
+                logger.debug(
+                    f'SeleniumBrowser :: check_page_load_finished :: checking :: frameStoppedLoading :: found :: {log_dict}')
                 check.append(log_dict)
 
         if check:
@@ -874,7 +879,8 @@ class SeleniumBrowser(object):
             limit=limit,
             case_sensitive=case_sensitive)
 
-        logger.debug(f'SeleniumBrowser :: find_elements_with_beautifulsoup :: {len(_bs_elements)} beautifulsoup elements')
+        logger.debug(
+            f'SeleniumBrowser :: find_elements_with_beautifulsoup :: {len(_bs_elements)} beautifulsoup elements')
 
         elements = []
 
@@ -949,7 +955,8 @@ class SeleniumBrowser(object):
 
         try:
             if self.webdriver.get(url, **kwargs) is None:
-                logger.debug(f'SeleniumBrowser :: get :: {self.session_id=} :: {url} :: {self.current_url=} :: {kwargs=}')
+                logger.debug(
+                    f'SeleniumBrowser :: get :: {self.session_id=} :: {url} :: {self.current_url=} :: {kwargs=}')
 
             if self.config.cookies_autosave:
                 self.autosaving_cookies()
@@ -993,7 +1000,8 @@ class SeleniumBrowser(object):
         if not markup:
             markup = self.get_page_source()
 
-        logger.debug(f'SeleniumBrowser :: get_page_source_beautifulsoup :: {features=} :: {round(len(markup) / 1024)} KB')
+        logger.debug(
+            f'SeleniumBrowser :: get_page_source_beautifulsoup :: {features=} :: {round(len(markup) / 1024)} KB')
 
         get_page_source_beautifulsoup = bs4.BeautifulSoup(
             markup=markup,
@@ -1143,7 +1151,8 @@ class SeleniumBrowser(object):
             )
 
         if os.path.exists(file):
-            logger.debug(f'SeleniumBrowser :: save_cookies_to_file :: {os.path.abspath(file)} :: {os.stat(file).st_size} B')
+            logger.debug(
+                f'SeleniumBrowser :: save_cookies_to_file :: {os.path.abspath(file)} :: {os.stat(file).st_size} B')
             logger.info(f'SeleniumBrowser :: save_cookies_to_file :: done')
             return True
 
@@ -1157,7 +1166,8 @@ class SeleniumBrowser(object):
             folder: str = None,
             **kwargs):
         """save page to file"""
-        logger.debug(f'SeleniumBrowser :: save_page_to_file :: {self.current_url} :: {filename=} :: {prefix=} :: {folder=} :: {kwargs=}')
+        logger.debug(
+            f'SeleniumBrowser :: save_page_to_file :: {self.current_url} :: {filename=} :: {prefix=} :: {folder=} :: {kwargs=}')
 
         if not filename:
             filename = self._screenshot_name(prefix)
@@ -1190,7 +1200,8 @@ class SeleniumBrowser(object):
             folder: str = None,
             **kwargs) -> bool:
         """save screenshot to file"""
-        logger.debug(f'SeleniumBrowser :: save_screenshot :: {self.current_url} :: {filename=} :: {prefix=} :: {folder=} :: {kwargs=}')
+        logger.debug(
+            f'SeleniumBrowser :: save_screenshot :: {self.current_url} :: {filename=} :: {prefix=} :: {folder=} :: {kwargs=}')
 
         if not filename:
             filename = self._screenshot_name(prefix)
