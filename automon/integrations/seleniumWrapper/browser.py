@@ -956,7 +956,13 @@ class SeleniumBrowser(object):
         try:
             if self.webdriver.get(url, **kwargs) is None:
                 logger.debug(
-                    f'SeleniumBrowser :: get :: {self.session_id=} :: {url} :: {self.current_url=} :: {kwargs=}')
+                    f'SeleniumBrowser :: '
+                    f'get :: '
+                    f'{self.session_id=} :: '
+                    f'{url} :: '
+                    f'{self.current_url=} :: '
+                    f'{kwargs=}'
+                )
 
             if self.config.cookies_autosave:
                 self.autosaving_cookies()

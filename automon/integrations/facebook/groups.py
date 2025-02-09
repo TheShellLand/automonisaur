@@ -53,6 +53,9 @@ class FacebookGroups(object):
     PROXY_RANDOM = None
     PROXIES = []
 
+    USER_AGENT_STRING: str = None
+    USER_AGENT_RANDOM: bool = False
+
     PROXIES_WEIGHT = {
         'Connect to Wi-Fi': -0.25,
         "You’re Temporarily Blocked": 0.90,
@@ -660,8 +663,6 @@ class FacebookGroups(object):
 
     def start(
             self,
-            random_user_agent: bool = False,
-            set_user_agent: str = None,
             set_page_load_timeout: int = 2):
         """start new instance of selenium"""
 
@@ -680,13 +681,13 @@ class FacebookGroups(object):
         else:
             self._browser.config.webdriver_wrapper.set_locale_experimental()
 
-        if random_user_agent:
+        if self.USER_AGENT_RANDOM:
             self._browser.config.webdriver_wrapper.set_user_agent(
                 self._browser.get_random_user_agent()
             )
-        elif set_user_agent:
+        elif self.USER_AGENT_STRING:
             self._browser.config.webdriver_wrapper.set_user_agent(
-                set_user_agent
+                self.USER_AGENT_STRING
             )
 
         if self.PROXY_ENABLED:
