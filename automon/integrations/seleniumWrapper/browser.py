@@ -971,7 +971,7 @@ class SeleniumBrowser(object):
             return True
 
         except Exception as error:
-            traceback.print_exc()
+            # traceback.print_exc()
             raise Exception(f'SeleniumBrowser :: get :: failed :: {error=}')
 
     def get_page(self, *args, **kwargs) -> bool:

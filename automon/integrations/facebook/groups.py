@@ -104,6 +104,7 @@ class FacebookGroups(object):
             avg_minutes = round(avg_seconds / 60, 1)
             avg_hours = round(avg_minutes / 60, 1)
             logger.info(
+                f'[FacebookGroups] :: '
                 f'total requests={len(self.RATE_COUNTER)} :: '
                 f'{avg_seconds=} :: '
                 f'{avg_minutes=} :: '
@@ -132,7 +133,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._blocked_by_login = element
         return element
 
@@ -159,7 +160,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._browser_not_supported = element
         return element
 
@@ -181,7 +182,7 @@ class FacebookGroups(object):
         if element:
             element.click()
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         return element
 
     def check_content_unavailable(self):
@@ -205,7 +206,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._content_unavailable = element
         return element
 
@@ -226,7 +227,7 @@ class FacebookGroups(object):
 
         method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._check_something_went_wrong = element
         return element
 
@@ -261,7 +262,7 @@ class FacebookGroups(object):
                         element = element[0]
                         break
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         return element
 
     def creation_date(self):
@@ -300,7 +301,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._creation_date = element
 
         if not element:
@@ -324,11 +325,11 @@ class FacebookGroups(object):
 
     def current_rate_too_fast(self):
         if self.average_rate() == 0:
-            logger.info(f'current_rate_too_fast :: False')
+            logger.info(f'[FacebookGroups] :: current_rate_too_fast :: False')
             return False
 
         if self.average_rate() < self.rate_per_minute:
-            logger.info(f'current_rate_too_fast :: True')
+            logger.info(f'[FacebookGroups] :: current_rate_too_fast :: True')
             return True
 
         return False
@@ -372,10 +373,11 @@ class FacebookGroups(object):
             result = self._browser.get(url=url)
 
         proxy = self.PROXY
-        if len(eslf.PROXY) > 0:
+        if len(self.PROXY) > 0:
             proxy = self.PROXY.to_dict('records')[0]
 
         logger.info(
+            f'[FacebookGroups] ::'
             f'get :: '
             f'{result=} :: '
             f'{proxy=} :: '
@@ -391,12 +393,12 @@ class FacebookGroups(object):
         about = self._browser._urllib.parse.urljoin(self.current_url + '/', 'about')
         result = self.get(url=about)
 
-        logger.info(f'{about} :: {result=}')
+        logger.info(f'[FacebookGroups] :: {about} :: {result=}')
 
         return result
 
     def get_facebook_info(self, url: str = None) -> dict:
-        logger.info(f'get_facebook_info :: {url=}')
+        logger.info(f'[FacebookGroups] :: get_facebook_info :: {url=}')
 
         self.reset_cache()
 
@@ -417,12 +419,12 @@ class FacebookGroups(object):
         try:
 
             results = self.to_dict()
-            logger.debug(f'get_facebook_info :: {results=}')
+            logger.debug(f'[FacebookGroups] :: get_facebook_info :: {results=}')
 
             # increase weight
             if len(self.PROXY) > 0:
                 self._update_proxy(proxy=self.PROXY, weight_multiplier=1.10)
-                logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY.to_dict('records')[0]}')
+                logger.debug(f'[FacebookGroups] :: get_facebook_info :: UPDATE PROXY :: {self.PROXY.to_dict('records')[0]}')
 
             return results
 
@@ -432,29 +434,27 @@ class FacebookGroups(object):
 
             # restart webdriver
             self.start(
-                set_user_agent='Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
                 set_page_load_timeout=2
             )
-            logger.error(f'get_facebook_info :: error :: restarting :: {error}')
+            logger.info(f'[FacebookGroups] :: get_facebook_info :: error :: restarting :: {error}')
             return self.get_facebook_info(url=url)
 
         except Exception as error:
             import traceback
             # traceback.print_exc()
             # raise Exception(f'get_facebook_info :: error :: {error}')
-            logger.error(f'get_facebook_info :: error :: restarting :: {error}')
+            logger.info(f'[FacebookGroups] :: get_facebook_info :: error :: restarting :: {error}')
 
             # decrease weight
             if len(self.PROXY) > 0:
                 self._update_proxy(proxy=self.PROXY, weight_multiplier=0.90)
-                logger.debug(f'get_facebook_info :: UPDATE PROXY :: {self.PROXY.to_dict('records')[0]}')
+                logger.debug(f'[FacebookGroups] :: get_facebook_info :: UPDATE PROXY :: {self.PROXY.to_dict('records')[0]}')
 
             # quit old webdriver
             self.quit()
 
             # restart webdriver
             self.start(
-                set_user_agent='Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
                 set_page_load_timeout=2
             )
 
@@ -484,17 +484,17 @@ class FacebookGroups(object):
             if self.rate_limited():
                 self.rate_limit_increase()
                 Sleeper.seconds(seconds=self.WAIT_BETWEEN_RETRIES)
-                logger.debug(f'get_with_rate_limiter :: retrying :: {url} :: {retry=} :: {retries=}')
+                logger.debug(f'[FacebookGroups] :: get_with_rate_limiter :: retrying :: {url} :: {retry=} :: {retries=}')
             else:
                 self.rate_limit_decrease()
 
             result = self.get(url=url)
-            logger.info(f'get_with_rate_limiter :: {result}')
+            logger.info(f'[FacebookGroups] :: get_with_rate_limiter :: {result}')
             return result
 
             retry = retry + 1
 
-        logger.error(f'get_with_rate_limiter :: error :: {url}')
+        logger.error(f'[FacebookGroups] :: get_with_rate_limiter :: error :: {url}')
         self.screenshot_error()
         return result
 
@@ -502,7 +502,7 @@ class FacebookGroups(object):
         """quit selenium"""
 
         if self._browser:
-            logger.info(f'quit :: {self._browser=}')
+            logger.info(f'[FacebookGroups] :: quit :: {self._browser=}')
             return self._browser.quit()
 
     @property
@@ -547,7 +547,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._history = element
 
         if not element:
@@ -564,7 +564,7 @@ class FacebookGroups(object):
         if self.WAIT_BETWEEN_RETRIES == 0:
             self.WAIT_BETWEEN_RETRIES = 1
 
-        logger.info(f'{before=} :: {after=} :: {multiplier=}')
+        logger.info(f'[FacebookGroups] :: {before=} :: {after=} :: {multiplier=}')
         return after
 
     def rate_limit_increase(self, multiplier: int = 2):
@@ -576,21 +576,21 @@ class FacebookGroups(object):
 
         self.WAIT_BETWEEN_RETRIES = after
 
-        logger.info(f'{before=} :: {after=} :: {multiplier=}')
+        logger.info(f'[FacebookGroups] :: {before=} :: {after=} :: {multiplier=}')
         return after
 
     def rate_limited(self):
         """rate limit checker"""
 
         if self.current_rate_too_fast():
-            logger.info(f'rate_limited :: True')
+            logger.info(f'[FacebookGroups] :: rate_limited :: True')
             return True
 
         if self.check_temporarily_blocked() or self.must_login():
-            logger.info(f'rate_limited :: True')
+            logger.info(f'[FacebookGroups] :: rate_limited :: True')
             return True
 
-        logger.info(f'rate_limited :: False')
+        logger.info(f'[FacebookGroups] :: rate_limited :: False')
 
         return False
 
@@ -614,7 +614,7 @@ class FacebookGroups(object):
 
     def reset_rate_counter(self):
         self.RATE_COUNTER = []
-        logger.info(f'reset_rate_counter :: {self.RATE_COUNTER}')
+        logger.info(f'[FacebookGroups] :: reset_rate_counter :: {self.RATE_COUNTER}')
         return self.RATE_COUNTER
 
     def restart(self):
@@ -622,19 +622,19 @@ class FacebookGroups(object):
 
         if self._browser:
             self.quit()
-        logger.info(f'restart :: {self._browser}')
+        logger.info(f'[FacebookGroups] :: restart :: {self._browser}')
         return self.start()
 
     def run(self):
         """run selenium browser"""
 
         if self._browser:
-            logger.info(f'run :: {self._browser}')
+            logger.info(f'[FacebookGroups] :: run :: {self._browser}')
             return self._browser.run()
 
     def screenshot(self, filename: str = 'screenshot.png'):
         if self._browser.save_screenshot(filename=filename, folder='.'):
-            logger.debug(f'screenshot :: done')
+            logger.debug(f'[FacebookGroups] :: screenshot :: done')
             return True
         return False
 
@@ -642,7 +642,7 @@ class FacebookGroups(object):
         """get error screenshot"""
 
         if self.screenshot(filename='screenshot-error.png'):
-            logger.debug(f'screenshot_error :: done')
+            logger.debug(f'[FacebookGroups] :: screenshot_error :: done')
             return True
         return False
 
@@ -650,7 +650,7 @@ class FacebookGroups(object):
         """get success screenshot"""
 
         if self.screenshot(filename='screenshot-success.png'):
-            logger.debug(f'screenshot_success :: done')
+            logger.debug(f'[FacebookGroups] :: screenshot_success :: done')
             return True
         return False
 
@@ -658,7 +658,7 @@ class FacebookGroups(object):
         """set new url"""
 
         self._url = url
-        logger.debug(f'set_url :: {self.url=}')
+        logger.debug(f'[FacebookGroups] :: set_url :: {self.url=}')
         return self.url
 
     def start(
@@ -697,8 +697,8 @@ class FacebookGroups(object):
 
         else:
 
-            logger.info(f'start :: {self._browser}')
-            logger.info(f'start :: {self._browser}')
+            logger.info(f'[FacebookGroups] :: start :: {self._browser}')
+            logger.info(f'[FacebookGroups] :: start :: {self._browser}')
             browser = self._browser.run()
             self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.60, height=1080)
             return browser
@@ -720,6 +720,7 @@ class FacebookGroups(object):
             if self.PROXY_RANDOM:
                 proxies_weight_good = proxies[proxies.weight > 50]
                 logger.debug(
+                    f'[FacebookGroups] :: '
                     f'start :: '
                     f'PROXY LIST :: '
                     f'{len(proxies_weight_good)} proxies > 50'
@@ -731,6 +732,7 @@ class FacebookGroups(object):
                     proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
                     proxies_top_quantile = proxies_top_quantile[proxies_top_quantile.weight >= 0]
                     logger.debug(
+                        f'[FacebookGroups] :: '
                         f'start :: '
                         f'PROXY LIST :: '
                         f'{len(proxies_top_quantile)} proxies >= 0'
@@ -746,6 +748,7 @@ class FacebookGroups(object):
                             proxies_top_quantile['weight'] >= proxies_top_quantile['weight'].quantile(0.5)
                             ]
                         logger.debug(
+                            f'[FacebookGroups] :: '
                             f'start :: '
                             f'PROXY LIST :: '
                             f'{len(proxies_top_quantile)} proxies >= 0.5 percentile:: '
@@ -764,7 +767,7 @@ class FacebookGroups(object):
             self._update_proxy(proxy=proxy, weight_multiplier=1.10)
 
             self._browser.config.webdriver_wrapper.enable_proxy(proxy['proxy'].item())
-            logger.debug(f'start :: PROXY TEST :: {proxy.to_dict('records')[0]}')
+            logger.debug(f'[FacebookGroups] :: start :: PROXY TEST :: {proxy.to_dict('records')[0]}')
 
             self._browser.run()
             self._browser.get(self.url)
@@ -774,15 +777,15 @@ class FacebookGroups(object):
                 if search:
                     self._update_proxy(proxy=proxy, weight_multiplier=self.PROXIES_WEIGHT[_proxy_error])
 
-                    logger.error(f'start :: PROXY FAILED :: {proxy.to_dict('records')[0]} :: {_proxy_error=}')
+                    logger.info(f'[FacebookGroups] :: start :: PROXY FAILED :: {proxy.to_dict('records')[0]} :: {_proxy_error=}')
                     self.quit()
                     return self.start()
 
             self._update_proxy(proxy=proxy, weight_multiplier=1.10)
-            logger.debug(f'start :: PROXY FOUND :: {proxy.to_dict('records')[0]}')
+            logger.debug(f'[FacebookGroups] :: start :: PROXY FOUND :: {proxy.to_dict('records')[0]}')
             return True
 
-        raise Exception(f'_find_proxy :: ERROR :: no proxies worked ({len(self.PROXIES)} proxies)')
+        raise Exception(f'[FacebookGroups] :: _find_proxy :: ERROR :: no proxies worked ({len(self.PROXIES)} proxies)')
 
     def stop(self):
         """alias to quit"""
@@ -813,7 +816,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._members = element
 
         if not element:
@@ -832,7 +835,10 @@ class FacebookGroups(object):
             if count:
                 self._members_count = int(''.join(count)) if count else 0
 
-                logger.debug(self._members_count)
+                logger.debug(
+                    f'[FacebookGroups] :: '
+                    f'{self._members_count=}'
+                )
                 return self._members_count
 
     def must_login(self):
@@ -840,7 +846,7 @@ class FacebookGroups(object):
         method = 'by XPATH'
         if element:
             element = element.text
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         return element
 
     def posts_monthly(self):
@@ -864,7 +870,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._posts_monthly = element
 
         if not element:
@@ -883,7 +889,10 @@ class FacebookGroups(object):
             if count:
                 self._posts_monthly_count = int(''.join(count)) if count else 0
 
-                logger.debug(self._posts_monthly_count)
+                logger.debug(
+                    f'[FacebookGroups] :: '
+                    f'{self._posts_monthly_count=}'
+                )
                 return self._posts_monthly_count
 
     def posts_today(self):
@@ -906,7 +915,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._posts_today = element
 
         if not element:
@@ -925,7 +934,10 @@ class FacebookGroups(object):
             if count:
                 self._posts_today_count = int(''.join(count)) if count else 0
 
-                logger.debug(self._posts_today_count)
+                logger.debug(
+                    f'[FacebookGroups] :: '
+                    f'{self._posts_today_count=}'
+                )
                 return self._posts_today_count
 
     def privacy(self):
@@ -957,7 +969,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._privacy = element
 
         if not element:
@@ -993,7 +1005,7 @@ class FacebookGroups(object):
             method = 'by SEARCH'
 
         self._privacy_details = element
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
 
         if not element:
             Exception(f'{element=}')
@@ -1019,7 +1031,10 @@ class FacebookGroups(object):
             self._title = self._title.split('|')
             self._title = self._title[0]
             self._title = self._title.strip()
-        logger.debug(self._title)
+        logger.debug(
+            f'[FacebookGroups] :: '
+            f'{self._title=}'
+        )
         return self._title
 
     def to_dict(self):
@@ -1117,7 +1132,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f':: {method} :: {element}')
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._visible = element
 
         if not element:
