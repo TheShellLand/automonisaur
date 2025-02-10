@@ -372,7 +372,7 @@ class FacebookGroups(object):
                 logger.debug(
                     f'[FacebookGroups] :: '
                     f'start :: '
-                    f'PROXY LIST :: '
+                    f'proxy list :: '
                     f'{len(proxies_weight_good)} proxies > 50'
                 )
 
@@ -384,7 +384,7 @@ class FacebookGroups(object):
                     logger.debug(
                         f'[FacebookGroups] :: '
                         f'start :: '
-                        f'PROXY LIST :: '
+                        f'proxy list :: '
                         f'{len(proxies_top_quantile)} proxies >= 0'
                     )
 
@@ -400,7 +400,7 @@ class FacebookGroups(object):
                         logger.debug(
                             f'[FacebookGroups] :: '
                             f'start :: '
-                            f'PROXY LIST :: '
+                            f'proxy list :: '
                             f'{len(proxies_top_quantile)} proxies >= 0.5 percentile:: '
                             f'{proxies_top_quantile=}')
 
@@ -443,6 +443,7 @@ class FacebookGroups(object):
 
             self._update_proxy(proxy=proxy, weight_multiplier=1.10)
             logger.debug(f'[FacebookGroups] :: start :: PROXY FOUND :: {proxy.to_dict('records')[0]}')
+            self.PROXY = proxy
             return True
 
         raise Exception(f'[FacebookGroups] :: _find_proxy :: ERROR :: no proxies worked ({len(self.PROXIES)} proxies)')
@@ -472,7 +473,7 @@ class FacebookGroups(object):
                 proxy = self.PROXY.to_dict('records')[0]
 
         logger.info(
-            f'[FacebookGroups] ::'
+            f'[FacebookGroups] :: '
             f'get :: '
             f'{result=} :: '
             f'{proxy=} :: '
