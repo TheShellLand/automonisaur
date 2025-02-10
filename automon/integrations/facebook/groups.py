@@ -373,8 +373,9 @@ class FacebookGroups(object):
             result = self._browser.get(url=url)
 
         proxy = self.PROXY
-        if len(self.PROXY) > 0:
-            proxy = self.PROXY.to_dict('records')[0]
+        if proxy is not None:
+            if len(proxy) > 0:
+                proxy = self.PROXY.to_dict('records')[0]
 
         logger.info(
             f'[FacebookGroups] ::'
@@ -424,7 +425,8 @@ class FacebookGroups(object):
             # increase weight
             if len(self.PROXY) > 0:
                 self._update_proxy(proxy=self.PROXY, weight_multiplier=1.10)
-                logger.debug(f'[FacebookGroups] :: get_facebook_info :: UPDATE PROXY :: {self.PROXY.to_dict('records')[0]}')
+                logger.debug(
+                    f'[FacebookGroups] :: get_facebook_info :: UPDATE PROXY :: {self.PROXY.to_dict('records')[0]}')
 
             return results
 
@@ -448,7 +450,8 @@ class FacebookGroups(object):
             # decrease weight
             if len(self.PROXY) > 0:
                 self._update_proxy(proxy=self.PROXY, weight_multiplier=0.90)
-                logger.debug(f'[FacebookGroups] :: get_facebook_info :: UPDATE PROXY :: {self.PROXY.to_dict('records')[0]}')
+                logger.debug(
+                    f'[FacebookGroups] :: get_facebook_info :: UPDATE PROXY :: {self.PROXY.to_dict('records')[0]}')
 
             # quit old webdriver
             self.quit()
@@ -484,7 +487,14 @@ class FacebookGroups(object):
             if self.rate_limited():
                 self.rate_limit_increase()
                 Sleeper.seconds(seconds=self.WAIT_BETWEEN_RETRIES)
-                logger.debug(f'[FacebookGroups] :: get_with_rate_limiter :: retrying :: {url} :: {retry=} :: {retries=}')
+                logger.debug(
+                    f'[FacebookGroups] :: '
+                    f'get_with_rate_limiter :: '
+                    f'retrying :: '
+                    f'{url} :: '
+                    f'{retry=} :: '
+                    f'{retries=}'
+                )
             else:
                 self.rate_limit_decrease()
 
@@ -770,14 +780,24 @@ class FacebookGroups(object):
             logger.debug(f'[FacebookGroups] :: start :: PROXY TEST :: {proxy.to_dict('records')[0]}')
 
             self._browser.run()
-            self._browser.get(self.url)
+            try:
+                self._browser.get(self.url)
+            except Exception as error:
+                logger.error(f'[FacebookGroups] :: start :: ERROR :: {self.url=} :: {error=}')
+                raise
 
             for _proxy_error in self.PROXIES_WEIGHT.keys():
                 search = self._browser.find_page_source_with_regex(_proxy_error)
                 if search:
                     self._update_proxy(proxy=proxy, weight_multiplier=self.PROXIES_WEIGHT[_proxy_error])
 
-                    logger.info(f'[FacebookGroups] :: start :: PROXY FAILED :: {proxy.to_dict('records')[0]} :: {_proxy_error=}')
+                    logger.info(
+                        f'[FacebookGroups] :: '
+                        f'start :: '
+                        f'PROXY FAILED :: '
+                        f'{proxy.to_dict('records')[0]} :: '
+                        f'{_proxy_error=}'
+                    )
                     self.quit()
                     return self.start()
 
