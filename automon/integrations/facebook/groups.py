@@ -62,6 +62,7 @@ class FacebookGroups(object):
         "You’re Temporarily Blocked": 0.90,
         "You must log in to continue": 0.90,
         'ERR_TIMED_OUT': -0.5,
+        'ERR_SSL_PROTOCOL_ERROR': -0.25,
         'ERR_CERT_AUTHORITY_INVALID': -0.25,
         'ERR_CONNECTION_RESET': -0.25,
         'ERR_TUNNEL_CONNECTION_FAILED': -0.25,
@@ -1140,6 +1141,8 @@ class FacebookGroups(object):
             proxy['weight'] = proxy['weight'] + 1
 
         proxy['weight'] = proxy['weight'] * weight_multiplier
+
+        logger.debug(f'[FacebookGroups] :: _update_proxy :: {weight_multiplier=} :: {proxy.to_dict('records')[0]}')
         self.PROXIES.update(proxy)
         return self
 
