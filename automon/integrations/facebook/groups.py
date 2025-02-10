@@ -360,7 +360,7 @@ class FacebookGroups(object):
                 [dict(proxy=x, weight=0) for x in
                  automon.integrations.seleniumWrapper.proxies_public.proxy_filter_https_ips_and_ports()]
             )
-            self.PROXIES = self.PROXIES.convert_dtypes()
+            self.PROXIES['weight'] = self.PROXIES['weight'].astype('float32')
 
         proxies = self.PROXIES
 
@@ -1116,7 +1116,6 @@ class FacebookGroups(object):
             proxy['weight'] = proxy['weight'] + 1
 
         proxy['weight'] = proxy['weight'] * weight_multiplier
-        proxy['weight'] = proxy['weight'].astype('int')
         self.PROXIES.update(proxy)
         return self
 
