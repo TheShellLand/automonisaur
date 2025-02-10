@@ -18,6 +18,7 @@ logger.setLevel(log.DEBUG)
 
 
 class FacebookGroups(object):
+    _xpath_close_cookies_popup = '//*[@id="facebook"]/body/div[2]/div[1]/div/div[2]/div/div/div/div/div[2]/div/div[1]/div[2]/div/div[1]/div/span/span'
     _xpath_close_login_popup = '/html/body/div[1]/div/div[1]/div/div[5]/div/div/div[1]/div/div[2]/div/div/div/div[1]/div'
     _xpath_content_unavailable = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[1]/div[2]/div[1]/h2/span'
     _xpath_title = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[1]/div[2]/div/div/div/div/div[1]/div/div/div/div/div/div[1]/h1/span/a'
@@ -163,6 +164,28 @@ class FacebookGroups(object):
         logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         self._browser_not_supported = element
         return element
+
+    def check_close_cookies_popup(self):
+        element = self._browser.wait_for_xpath(value=self._xpath_close_cookies_popup, timeout=0)
+        method = 'by XPATH'
+
+        if not element:
+            element = self._browser.find_anything(
+                match='Close',
+                value='[aria-label="Close"]',
+                by=self._browser.by.CSS_SELECTOR,
+            )
+            if element:
+                element = element[0]
+
+            method = 'by SEARCH'
+
+        if element:
+            element.click()
+
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        return element
+
 
     def check_close_login_popup(self):
         element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=0)
@@ -434,7 +457,7 @@ class FacebookGroups(object):
                     logger.info(
                         f'[FacebookGroups] :: '
                         f'start :: '
-                        f'PROXY FAILED :: '
+                        f'proxy failed :: '
                         f'{proxy.to_dict('records')[0]} :: '
                         f'{_proxy_error=}'
                     )
@@ -501,6 +524,7 @@ class FacebookGroups(object):
         self.set_url(url=url)
 
         self.get_about()
+        self.check_close_cookies_popup()
         self.check_close_login_popup()
 
         if self.check_blocked_by_login():
