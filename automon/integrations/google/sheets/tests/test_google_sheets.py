@@ -1,80 +1,84 @@
+import traceback
+
+import pandas
+import automon
 import profile
-import asyncio
+import logging
 import datetime
+import warnings
 import tracemalloc
 
-import pandas as pd
 import numpy as np
+import selenium.common.exceptions
+import pandas._libs.missing
 
-from automon import log
+from automon.log import logger
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.facebook import FacebookGroups
 from automon.integrations.google.sheets import GoogleSheetsClient
 
-log.logging.getLogger('google_auth_httplib2').setLevel(log.logging.ERROR)
-log.logging.getLogger('googleapiclient.discovery').setLevel(log.logging.ERROR)
-log.logging.getLogger('googleapiclient.discovery_cache').setLevel(log.logging.ERROR)
-log.logging.getLogger('urllib3.connectionpool').setLevel(log.logging.ERROR)
-log.logging.getLogger('selenium.webdriver.common.service').setLevel(log.logging.ERROR)
-log.logging.getLogger('selenium.webdriver.remote.remote_connection').setLevel(log.logging.ERROR)
-log.logging.getLogger('selenium.webdriver.common.selenium_manager').setLevel(log.logging.ERROR)
+logging.getLogger('urllib3.util.retry').setLevel(logging.ERROR)
+logging.getLogger('google_auth_httplib2').setLevel(logging.ERROR)
+logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
+logging.getLogger('googleapiclient.discovery').setLevel(logging.ERROR)
+logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
+logging.getLogger('selenium.webdriver.common.service').setLevel(logging.ERROR)
+logging.getLogger('selenium.webdriver.common.driver_finder').setLevel(logging.ERROR)
+logging.getLogger('selenium.webdriver.remote.remote_connection').setLevel(logging.ERROR)
+logging.getLogger('selenium.webdriver.common.selenium_manager').setLevel(logging.ERROR)
 
-log.logging.getLogger('automon.integrations.seleniumWrapper.browser').setLevel(log.logging.CRITICAL)
-log.logging.getLogger('automon.integrations.seleniumWrapper.webdriver_chrome').setLevel(log.logging.INFO)
-log.logging.getLogger('automon.integrations.google.sheets.client').setLevel(log.logging.INFO)
-log.logging.getLogger('automon.integrations.facebook.groups').setLevel(log.logging.DEBUG)
-log.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(log.logging.INFO)
-log.logging.getLogger('automon.helpers.sleeper').setLevel(log.logging.INFO)
+logging.getLogger('automon.integrations.seleniumWrapper.browser').setLevel(logging.CRITICAL)
+logging.getLogger('automon.integrations.seleniumWrapper.config').setLevel(logging.CRITICAL)
+logging.getLogger('automon.integrations.seleniumWrapper.webdriver_chrome').setLevel(logging.ERROR)
+logging.getLogger('automon.integrations.google.sheets.client').setLevel(logging.INFO)
+logging.getLogger('automon.integrations.facebook.groups').setLevel(logging.DEBUG)
+logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(logging.ERROR)
+logging.getLogger('automon.helpers.sleeper').setLevel(logging.INFO)
 
 tracemalloc.start()
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+log = automon.log.logger.logging.getLogger(__name__)
+log.setLevel(logger.DEBUG)
+
+DAYS_REQUIRED_BEFORE_UPDATING_AGAIN = 45
+
+BROWSER_HEADLESS = True
+BROWSER_USERAGENT_RANDOMIZER = True
+
+FACEBOOK_RATE_LIMITING = False
+FACEBOOK_PROXY_ENABLED = True
+FACEBOOK_PROXY_RANDOM = True
+FACEBOOK_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'
 
 SHEET_NAME = 'Automated Count DO NOT EDIT'
 SHEET_NAME_INGEST = 'URLS TO INGEST'
+# TODO: implement deleting urls
+SHEET_NAME_DELETE = 'URLS TO DELETE'
 
 sheets_client = GoogleSheetsClient(
     worksheet=SHEET_NAME,
 )
 
 facebook_group_client = FacebookGroups()
+facebook_group_client.RATE_LIMITING = FACEBOOK_RATE_LIMITING
+facebook_group_client.BROWSER_HEADLESS = BROWSER_HEADLESS
+facebook_group_client.PROXY_ENABLED = FACEBOOK_PROXY_ENABLED
+facebook_group_client.PROXY_RANDOM = FACEBOOK_PROXY_RANDOM
+facebook_group_client.USER_AGENT_STRING = FACEBOOK_USER_AGENT
 
 
-async def get_facebook_info(url: str):
-    dict = {}
-
-    if not url:
-        return dict
-
-    await facebook_group_client.start(
-        headless=True,
-        random_user_agent=True,
-    )
-
-    await facebook_group_client.set_url(url=url)
-
+def get_facebook_info(url: str, facebook_group_client: FacebookGroups) -> dict:
+    log.info(f'[get_facebook_info] :: {url=}')
     try:
-        result = await facebook_group_client.get_about(rate_limiting=False)
-        dict = await facebook_group_client.to_dict()
-        await facebook_group_client.quit()
-    except Exception as e:
-        logger.error(f'{e}')
-
-    return dict
+        return facebook_group_client.get_facebook_info(url=url)
+    except Exception as error:
+        traceback.print_exc()
+        raise Exception(f'[get_facebook_info] :: {error=}')
 
 
-async def url_cleaner(url: str):
-    if not url:
-        return
-    if url[-1] == '/':
-        url = url[:-1]
-    return url
-
-
-async def merge_urls():
-    await sheets_client.get(
-        ranges='AUG23 AUDIT!A:Z',
+def merge_urls():
+    sheets_client.get(
+        ranges='AUG23 AUDIT!A:BB',
         fields="sheets/data/rowData/values/hyperlink",
     )
 
@@ -87,57 +91,82 @@ async def merge_urls():
                 x['values'][0]['hyperlink']
             )
 
-    df_Shelley = pd.DataFrame(data=links, columns=['url'])
+    df_Shelley = pandas.DataFrame(data=links, columns=['url'])
 
-    await sheets_client.get()
-    await sheets_client.get_values(
-        range=f'{SHEET_NAME}!A:Z'
+    sheets_client.get()
+    sheets_client.get_values(
+        range=f'{SHEET_NAME}!A:BB'
     )
 
     sheet_values = sheets_client.values
     sheet_columns = sheet_values[0]
     sheet_data = sheet_values[1:]
 
-    df = pd.DataFrame(data=sheet_data, columns=sheet_columns)
+    df = pandas.DataFrame(data=sheet_data, columns=sheet_columns)
     df = df.dropna(subset=['url'])
 
     # merge both lists or urls
-    df = pd.merge(df, df_Shelley, how='outer', on='url')
+    df = pandas.merge(df, df_Shelley, how='outer', on='url')
     df = df.drop_duplicates(subset=['url'], keep='first')
     return df
 
 
-async def batch_processing(sheet_index: int, df: pd.DataFrame):
+def batch_processing(sheet_index: int, df: pandas.DataFrame) -> pandas.DataFrame:
     # df_results = df['url'].dropna().apply(
     #     lambda url: get_facebook_info(url=url)
     # )
 
     df_index = df['url'].dropna().index
     df_url = df['url'].dropna().iloc[0]
-    df_results = await get_facebook_info(url=df_url)
-    df_results = pd.DataFrame([df_results])
+
+    facebook_group_client.set_url(df_url)
+
+    if not facebook_group_client._browser.webdriver:
+        facebook_group_client.start(
+            set_page_load_timeout=2
+        )
+
+    try:
+        df_results = get_facebook_info(url=df_url, facebook_group_client=facebook_group_client)
+
+    except Exception as error:
+        # traceback.print_exc()
+        log.error(f'[batch_processing] :: error :: {error}')
+        raise error
+
+    if not df_results['members'][0]:
+        log.error(f"[batch_processing] :: {df_results['members']=}")
+
+        if df_results['check_blocked_by_login'][0] or df_results['check_browser_not_supported'][0]:
+            log.error(f"[batch_processing] :: {df_results['check_blocked_by_login']=}")
+            log.error(f"[batch_processing] :: {df_results['check_browser_not_supported']=}")
+            log.error(f'[batch_processing] :: failed to parse site. skipping.')
+            return pandas.DataFrame()
+
+        if not df_results['check_content_unavailable'][0]:
+            raise Exception(f'[batch_processing] :: likely failed to open site. skipping.')
+
+    df_results = pandas.DataFrame([df_results])
 
     df = df.reset_index()
 
     todays_date = datetime.datetime.now().date()
     monthly = f'{todays_date.year}-{todays_date.month}'
 
-    assert df['url'].iloc[0] == df_results['url'].iloc[0]
-
     # create columns
-    df[f'url'] = df_results['url']
-    df[f'{monthly}'] = df_results['members_count']
+    df[f'url'] = df_results['url'][0]
+    df[f'{monthly}'] = df_results['members_count'][0]
     df[f'last_updated'] = monthly
-    df[f'title'] = df_results['title']
-    df[f'content_unavailable'] = df_results['content_unavailable']
-    df[f'creation_date'] = df_results['creation_date']
-    df[f'creation_date_timestamp'] = df_results['creation_date_timestamp']
-    df[f'history'] = df_results['history']
-    df[f'members_count'] = df_results['members_count']
-    df[f'posts_monthly_count'] = df_results['posts_monthly_count']
-    df[f'posts_today_count'] = df_results['posts_today_count']
-    df[f'privacy'] = df_results['privacy']
-    df[f'visible'] = df_results['visible']
+    df[f'title'] = df_results['title'][0]
+    df[f'content_unavailable'] = df_results['check_content_unavailable'][0]
+    df[f'creation_date'] = df_results['creation_date'][0]
+    df[f'creation_date_timestamp'] = df_results['creation_date_timestamp'][0]
+    df[f'history'] = df_results['history'][0]
+    df[f'members_count'] = df_results['members_count'][0]
+    df[f'posts_monthly_count'] = df_results['posts_monthly_count'][0]
+    df[f'posts_today_count'] = df_results['posts_today_count'][0]
+    df[f'privacy'] = df_results['privacy'][0]
+    df[f'visible'] = df_results['visible'][0]
 
     # set dtype to Int32
     df[f'{monthly}'] = df[f'{monthly}'].astype('Int32')
@@ -162,6 +191,8 @@ async def batch_processing(sheet_index: int, df: pd.DataFrame):
         'members_count',
     ]
 
+    assert df['url'].iloc[0] == df_results['url'].iloc[0]
+
     sheet_index_df = df['index'].loc[0]
     assert sheet_index == sheet_index_df
     df = df.drop(columns='index')
@@ -179,28 +210,43 @@ async def batch_processing(sheet_index: int, df: pd.DataFrame):
         )
 
     df = df.loc[:, columns]
-    df = df.fillna(np.nan).replace([np.nan], [None])
 
-    update_columns = await sheets_client.update(
-        range=f'{SHEET_NAME}!A1:Z',
+    types_to_skip = [
+        pandas._libs.missing.NAType,
+    ]
+
+    if type(df[f'members_count'][0]) in types_to_skip:
+        pass
+    elif not df[f'members_count'][0]:
+        pass
+
+    # Google Sheets API expects empty values to be None
+    # TODO: DeprecationWarning: The truth value of an empty array is ambiguous. Returning False, but in future this will result in an error. Use `array.size > 0` to check that an array is not empty.
+    df = df.map(
+        lambda x: None if pandas.isna(x) else x).map(
+        lambda x: None if not x else x
+    )
+
+    update_columns = sheets_client.update(
+        range=f'{SHEET_NAME}!A1:BB',
         values=[columns],
     )
 
-    update = await sheets_client.update(
-        range=f'{SHEET_NAME}!A{sheet_index_df}:Z',
+    update = sheets_client.update(
+        range=f'{SHEET_NAME}!A{sheet_index_df}:BB',
         values=[x for x in df.values.tolist()]
     )
 
-    logger.info(f'{sheet_index_df}: {[x for x in df.values.tolist()]}')
+    log.info(f'[batch_processing] :: {sheet_index_df}: {[x for x in df.values.tolist()]}')
 
     return df
 
 
-async def memory_profiler():
+def memory_profiler():
     snapshot = tracemalloc.take_snapshot()
     top_stats = snapshot.statistics("lineno")
 
-    df_memory_profile = pd.DataFrame([
+    df_memory_profile = pandas.DataFrame([
         dict(size_B=stat.size, count=stat.count, file=stat.traceback._frames[0][0],
              file_line=stat.traceback._frames[0][1]) for stat in top_stats
     ])
@@ -215,7 +261,8 @@ async def memory_profiler():
     cols.sort()
     df_memory_profile = df_memory_profile.loc[:, cols]
 
-    logger.debug(
+    log.debug(
+        f"[memory_profiler] "
         f"total memory used: {df_memory_profile['size_MB'].sum()} MB; "
         f'most memory used: '
         f'{df_memory_profile.iloc[0].to_dict()}'
@@ -224,32 +271,33 @@ async def memory_profiler():
     return df_memory_profile
 
 
-async def expensive_state_keeping():
+def expensive_state_keeping():
     """fetch sheet data"""
-    if not await sheets_client.authenticate():
+    if not sheets_client.authenticate():
         return
 
     # merge urls from audit sheet
-    # df_audit = await merge_urls()
+    # df_audit = merge_urls()
     # df_audit = df_audit.fillna(np.nan).replace([np.nan], [None])
     # rows = []
     # rows.append(df_audit.columns.tolist())
     # rows.extend([x for x in df_audit.values.tolist()])
-    # update = await sheets_client.update(
-    #     range=f'{SHEET_NAME}!A:Z',
+    # update = sheets_client.update(
+    #     range=f'{SHEET_NAME}!A:BB',
     #     values=rows
     # )
 
     # start processing
-    await sheets_client.get_values(
-        range=f'{SHEET_NAME}!A:Z'
+    sheets_client.get_values(
+        range=f'{SHEET_NAME}!A:BB'
     )
 
     sheet_values = sheets_client.values
     try:
         sheet_columns = sheet_values[0]
     except:
-        return await expensive_state_keeping()
+        warnings.warn(f'this is a recursive infinite loop')
+        return expensive_state_keeping()
     sheet_data = sheet_values[1:]
 
     if sheet_columns and sheet_data:
@@ -263,7 +311,7 @@ async def expensive_state_keeping():
 
                 sheet_data[sheet_data.index(row)] = fix_length
 
-    df = pd.DataFrame(data=sheet_data, columns=sheet_columns)
+    df = pandas.DataFrame(data=sheet_data, columns=sheet_columns)
     df = df.dropna(subset=['url'])
     # set df index to match google sheet index numbering
     df.index = df.index + 2
@@ -278,21 +326,21 @@ async def expensive_state_keeping():
 
         # clear row in sheet
         data_range = f'{SHEET_NAME}!{duplicate_index}:{duplicate_index}'
-        result = await sheets_client.clear(range=data_range)
+        result = sheets_client.clear(range=data_range)
         # max 60/min
-        Sleeper.seconds(f'WriteRequestsPerMinutePerUser', seconds=1)
-        logger.info(result)
+        Sleeper.seconds(seconds=1)
+        log.info(f'[expensive_state_keeping] :: clear :: {result}')
         df = df.drop(duplicate_index)
 
     # ingest urls from SHEET_NAME_INGEST
-    await sheets_client.get_values(
-        range=f'{SHEET_NAME_INGEST}!A:Z'
+    sheets_client.get_values(
+        range=f'{SHEET_NAME_INGEST}!A:BB'
     )
     ingest_sheet_values = sheets_client.values
     if ingest_sheet_values:
         ingest_sheet_values = [x[0] if x else [] for x in ingest_sheet_values]
-        ingest_sheet_values = [await url_cleaner(x) for x in ingest_sheet_values]
-    df_ingest_sheet_values = pd.DataFrame(ingest_sheet_values)
+        ingest_sheet_values = [facebook_group_client.url_cleaner(x) for x in ingest_sheet_values]
+    df_ingest_sheet_values = pandas.DataFrame(ingest_sheet_values)
     df_ingest_sheet_values.index = df_ingest_sheet_values.index + 1
 
     for ingest_data in df_ingest_sheet_values.iterrows():
@@ -300,7 +348,7 @@ async def expensive_state_keeping():
         ingest_url = ingest_url[0]
 
         if ingest_url not in df['url'].values:
-            ingest_series = pd.Series({'url': ingest_url}).to_frame().T
+            ingest_series = pandas.Series({'url': ingest_url}).to_frame().T
             index_add_url = df.index[-1] + 1
             df.loc[index_add_url] = {'url': ingest_url}
 
@@ -308,49 +356,109 @@ async def expensive_state_keeping():
 
             values = [[x for x in df.loc[index_add_url].values.tolist()]]
 
-            update = await sheets_client.update(
-                range=f'{SHEET_NAME}!A{index_add_url}:Z',
+            update = sheets_client.update(
+                range=f'{SHEET_NAME}!A{index_add_url}:BB',
                 values=values
             )
 
-            logger.info(
-                f'{index_add_url}: {values}'
-            )
+            log.info(f'[expensive_state_keeping] :: update :: {index_add_url}: {values}')
 
         # clear url from ingest sheet
         data_range = f'{SHEET_NAME_INGEST}!{ingest_index}:{ingest_index}'
-        clear = await sheets_client.clear(range=data_range)
-        logger.info(f'{clear}')
+        clear = sheets_client.clear(range=data_range)
+        log.info(f'[expensive_state_keeping] :: clear :: {clear}')
 
     return df
 
 
-async def main():
-    df = await expensive_state_keeping()
+def skip_update(last_update: str, minimum_days_passed: int) -> bool:
+    DATE_TODAY = datetime.datetime.now()
+    DATE_LAST_UPDATED = last_update
+
+    if DATE_LAST_UPDATED:
+        DATE_LAST_UPDATED = datetime.datetime.strptime(DATE_LAST_UPDATED, '%Y-%m')
+        DAYS_LAST_UPDATED = (DATE_TODAY - DATE_LAST_UPDATED).days
+
+        if DAYS_LAST_UPDATED < minimum_days_passed:
+            return True
+
+    return False
+
+
+def progress_log(data_index: int, df: pandas.DataFrame, facebook_group_client: FacebookGroups) -> None:
+    progress = int(data_index) / len(df)
+    progress_remaining = round(len(df) - int(data_index))
+    progress_percentage = round(progress * 100)
+
+    remaining = len(df) - int(data_index)
+
+    secs_remaining = facebook_group_client.average_rate() * progress_remaining
+    mins_remaining = round(secs_remaining / 60)
+    hours_remaining = mins_remaining / 60
+    days_remaining = round(hours_remaining / 24)
+
+    if mins_remaining:
+        message_remaining = (
+            f'({remaining} urls left) '
+            f'({mins_remaining} mins remaining) '
+            f'({days_remaining} days remaining)'
+        )
+    else:
+        message_remaining = (
+            f'({remaining} urls left) '
+            f'(calculating ETA)'
+        )
+
+    log.info(
+        f'[main] :: progress :: '
+        f'complete {progress_percentage}% {data_index}/{len(df)} '
+        f'{message_remaining}'
+    )
+
+
+def main():
+    df = expensive_state_keeping()
+
+    if df is None:
+        return
+
+    ERROR_COUNTER = 0
 
     # start updating
     for data in df.iterrows():
-        data_index, data_row = data
+        data_index = data[0]
+        data_row = data[1]
 
         df_batch = df.loc[data_index:data_index]
 
-        # skip if last_updated is the current month
-        todays_date = datetime.datetime.now().date()
-        last_updated = f'{todays_date.year}-{todays_date.month}'
-        if df_batch['last_updated'].iloc[0] == last_updated:
-            # log.debug(f'skipping {data_index}, {data_row.to_dict()}')
-            # df = expensive_state_keeping()
+        DATE_LAST_UPDATED = df_batch['last_updated'].iloc[0]
+
+        if skip_update(last_update=DATE_LAST_UPDATED, minimum_days_passed=DAYS_REQUIRED_BEFORE_UPDATING_AGAIN):
             continue
 
+        progress_log(data_index=data_index, df=df, facebook_group_client=facebook_group_client)
+
         try:
-            logger.info(f'complete {round(data_index / len(df) * 100)}% {data_index}/{len(df)}')
-            batch_result = await batch_processing(sheet_index=data_index, df=df_batch)
+            batch_result = batch_processing(sheet_index=data_index, df=df_batch)
         except Exception as error:
-            logger.error(f'{error}')
-        df_memory = await memory_profiler()
+            import traceback
+            # traceback.print_exc()
+
+            ERROR_COUNTER = ERROR_COUNTER + 1
+            log.error(f'[main] :: error :: {ERROR_COUNTER=} :: {error=}')
+
+        df_memory = memory_profiler()
+
+    facebook_group_client.quit()
 
 
 if __name__ == '__main__':
-    # loop = asyncio.get_event_loop()
-    # loop.run_until_complete(main())
-    asyncio.run(main())
+    import cProfile
+
+    pr = cProfile.Profile()
+    pr.enable()
+
+    main()
+
+    pr.disable()
+    pr.print_stats(sort='cumulative')
