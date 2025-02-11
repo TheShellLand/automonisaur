@@ -441,7 +441,7 @@ class FacebookGroups(object):
             self._update_proxy(proxy=proxy, weight_multiplier=1.10)
 
             self._browser.config.webdriver_wrapper.enable_proxy(proxy['proxy'].item())
-            logger.debug(f'[FacebookGroups] :: start :: proxy test :: {proxy.to_dict('records')[0]}')
+            logger.debug(f'[FacebookGroups] :: start :: proxy test :: {proxy.to_dict("records")[0]}')
 
             self._browser.run()
             try:
@@ -459,14 +459,14 @@ class FacebookGroups(object):
                         f'[FacebookGroups] :: '
                         f'start :: '
                         f'proxy failed :: '
-                        f'{proxy.to_dict('records')[0]} :: '
+                        f'{proxy.to_dict("records")[0]} :: '
                         f'{_proxy_error=}'
                     )
                     self.quit()
                     return self.start()
 
             self._update_proxy(proxy=proxy, weight_multiplier=1.10)
-            logger.debug(f'[FacebookGroups] :: start :: PROXY FOUND :: {proxy.to_dict('records')[0]}')
+            logger.debug(f'[FacebookGroups] :: start :: PROXY FOUND :: {proxy.to_dict("records")[0]}')
             self.PROXY = proxy
             return True
 
@@ -494,7 +494,7 @@ class FacebookGroups(object):
         proxy = self.PROXY
         if proxy is not None:
             if len(proxy) > 0:
-                proxy = self.PROXY.to_dict('records')[0]
+                proxy = self.PROXY.to_dict("records")[0]
 
         logger.info(
             f'[FacebookGroups] :: '
@@ -550,7 +550,7 @@ class FacebookGroups(object):
                         f'[FacebookGroups] :: '
                         f'get_facebook_info :: '
                         f'UPDATE PROXY :: '
-                        f'{self.PROXY.to_dict('records')[0]}'
+                        f'{self.PROXY.to_dict("records")[0]}'
                     )
 
             return results
@@ -580,7 +580,7 @@ class FacebookGroups(object):
                         f'[FacebookGroups] :: '
                         f'get_facebook_info :: '
                         f'UPDATE PROXY :: '
-                        f'{self.PROXY.to_dict('records')[0]}'
+                        f'{self.PROXY.to_dict("records")[0]}'
                     )
 
             # quit old webdriver
@@ -1142,7 +1142,7 @@ class FacebookGroups(object):
 
         proxy['weight'] = proxy['weight'] * weight_multiplier
 
-        logger.debug(f'[FacebookGroups] :: _update_proxy :: {weight_multiplier=} :: {proxy.to_dict('records')[0]}')
+        logger.debug(f'[FacebookGroups] :: _update_proxy :: {weight_multiplier=} :: {proxy.to_dict("records")[0]}')
         self.PROXIES.update(proxy)
         return self
 
