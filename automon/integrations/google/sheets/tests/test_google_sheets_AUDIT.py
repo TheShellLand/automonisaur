@@ -10,15 +10,15 @@ from automon.integrations.facebook import FacebookGroups
 def get_facebook_info(url: str):
     group = FacebookGroups()
     # group.start(headless=False)
-    group.start(headless=True)
-    group.get(url=url)
-    if not group.privacy_details:
-        close = group._browser.wait_for_element(value=group._xpath_popup_close, by=group._browser.by.XPATH)
-        close.click()
-        about = group._browser.wait_for_element(value=group._xpath_about, by=group._browser.by.XPATH)
-        about.click()
+    if group.start():
+        group.get(url=url)
+        if not group.privacy_details:
+            close = group._browser.wait_for_element(value=group._xpath_popup_close, by=group._browser.by.XPATH)
+            close.click()
+            about = group._browser.wait_for_element(value=group._xpath_about, by=group._browser.by.XPATH)
+            about.click()
 
-    return group.to_dict()
+        return group.to_dict()
 
 
 class MyTestCase(unittest.TestCase):
@@ -30,7 +30,9 @@ class MyTestCase(unittest.TestCase):
             range='AUDIT list Shelley!A:B'
         )
 
-        if not test.authenticate():
+        try:
+            test.authenticate()
+        except Exception as error:
             return
 
         test.get_values(

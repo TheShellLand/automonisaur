@@ -13,7 +13,9 @@ class MyTestCase(unittest.TestCase):
             worksheet=SHEET_NAME,
         )
 
-        if not sheets_client.authenticate():
+        try:
+            sheets_client.authenticate()
+        except Exception as error:
             return
 
         sheets_client.get_values(
