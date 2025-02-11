@@ -392,43 +392,14 @@ class FacebookGroups(object):
         while True:
 
             if self.PROXY_RANDOM:
-                proxies_weight_good = proxies[proxies.weight > 50]
+                quantile = proxies['weight'].quantile(0.5).item()
+                proxies_list = proxies[proxies['weight'] >= quantile]
                 logger.debug(
                     f'[FacebookGroups] :: '
                     f'start :: '
                     f'proxy list :: '
-                    f'{len(proxies_weight_good)} proxies > 50'
+                    f'{len(proxies_list)} proxies > {quantile=}'
                 )
-
-                if not proxies_weight_good.empty:
-                    proxies_list = proxies_weight_good
-                else:
-                    proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
-                    proxies_top_quantile = proxies_top_quantile[proxies_top_quantile.weight >= 0]
-                    logger.debug(
-                        f'[FacebookGroups] :: '
-                        f'start :: '
-                        f'proxy list :: '
-                        f'{len(proxies_top_quantile)} proxies >= 0'
-                    )
-
-                    if not proxies_top_quantile.empty:
-
-                        proxies_list = proxies_top_quantile
-
-                    else:
-                        proxies_top_quantile = proxies.sort_values(by='weight', ascending=False)
-                        proxies_top_quantile = proxies_top_quantile[
-                            proxies_top_quantile['weight'] >= proxies_top_quantile['weight'].quantile(0.5)
-                            ]
-                        logger.debug(
-                            f'[FacebookGroups] :: '
-                            f'start :: '
-                            f'proxy list :: '
-                            f'{len(proxies_top_quantile)} proxies >= 0.5 percentile:: '
-                            f'{proxies_top_quantile=}')
-
-                        proxies_list = proxies_top_quantile
 
                 if len(proxies_list) < 2:
                     proxy = proxies.sample()
