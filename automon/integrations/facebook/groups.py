@@ -798,8 +798,8 @@ class FacebookGroups(object):
         """set new url"""
 
         self._url = url
-        logger.debug(f'[FacebookGroups] :: set_url :: {self.url=}')
-        return self.url
+        logger.debug(f'[FacebookGroups] :: set_url :: {url=}')
+        return url
 
     def start(
             self,
