@@ -1,11 +1,12 @@
-from automon import log
-from automon import log_secret
+from automon.helpers.loggingWrapper import LoggingClient
+
+from automon.helpers.loggingWrapper import log_secret
 from automon.helpers import Run
 
 from .config import WdutilConfig
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(level=log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(level=LoggingClient.DEBUG)
 
 
 class WdutilClient(object):
