@@ -784,6 +784,8 @@ class FacebookGroups(object):
             set_page_load_timeout: int = 2):
         """start new instance of selenium"""
 
+        logger.debug(f'[FacebookGroups] :: start >>')
+
         if self.PROXY is None and self.LAST_REQUEST is not None:
             pass
 
@@ -815,10 +817,10 @@ class FacebookGroups(object):
 
         else:
 
-            logger.info(f'[FacebookGroups] :: start :: {self._browser}')
-            logger.info(f'[FacebookGroups] :: start :: {self._browser}')
+            logger.debug(f'[FacebookGroups] :: start :: {self._browser}')
             browser = self._browser.run()
             self._browser.config.webdriver_wrapper.set_window_size(width=1920 * 0.60, height=1080)
+            logger.info(f'[FacebookGroups] :: start :: done')
             return browser
 
     def stop(self):
