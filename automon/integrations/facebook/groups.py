@@ -63,12 +63,16 @@ class FacebookGroups(object):
         "You must log in to continue": 0.90,
         'ERR_TIMED_OUT': -0.5,
         'ERR_SSL_PROTOCOL_ERROR': -0.25,
-        'ERR_CERT_AUTHORITY_INVALID': -0.25,
+        'ERR_CERT_AUTHORITY_INVALID': 1.25,
         'ERR_CONNECTION_RESET': -0.25,
         'ERR_TUNNEL_CONNECTION_FAILED': -0.25,
         'ERR_EMPTY_RESPONSE': -0.25,
         'ERR_PROXY_CONNECTION_FAILED': -0.25,
     }
+
+    PROXIES_WEIGHT_ALLOWED = [
+        'ERR_CERT_AUTHORITY_INVALID'
+    ]
 
     PROXY = None
 
@@ -186,7 +190,6 @@ class FacebookGroups(object):
 
         logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
         return element
-
 
     def check_close_login_popup(self):
         element = self._browser.wait_for_xpath(value=self._xpath_close_login_popup, timeout=0)
@@ -417,6 +420,7 @@ class FacebookGroups(object):
             self._browser.run()
             try:
                 self._browser.get(self.url)
+                self.get_about()
             except Exception as error:
                 logger.error(f'[FacebookGroups] :: start :: ERROR :: {self.url=} :: {error=}')
                 pass
@@ -425,6 +429,9 @@ class FacebookGroups(object):
                 search = self._browser.find_page_source_with_regex(_proxy_error)
                 if search:
                     self._update_proxy(proxy=proxy, weight_multiplier=self.PROXIES_WEIGHT[_proxy_error])
+
+                    if _proxy_error in self.PROXIES_WEIGHT_ALLOWED:
+                        break
 
                     logger.info(
                         f'[FacebookGroups] :: '
@@ -658,11 +665,11 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
-        self._history = element
-
         if not element:
             Exception(f'{element=}')
+
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        self._history = element
 
         return element
 
@@ -834,20 +841,23 @@ class FacebookGroups(object):
         method = 'by XPATH'
 
         if not element:
+            regex = '[0-9]?+[,]?[0-9]+ total member[s]?'
             element = self._browser.find_all_with_beautifulsoup(
-                string='[0-9]?+[,]?[0-9]+ total member[s]?',
+                string=regex,
                 case_sensitive=True
             )
             if element:
-                element = element[0].text
+                element = element[0].string
+                element = re.search(regex, element)
+                element = element.group()
 
             method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
-        self._members = element
-
         if not element:
             Exception(f'{element=}')
+
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        self._members = element
 
         return element
 
@@ -897,11 +907,11 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
-        self._posts_monthly = element
-
         if not element:
             Exception(f'{element=}')
+
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        self._posts_monthly = element
 
         return element
 
@@ -942,11 +952,11 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
-        self._posts_today = element
-
         if not element:
             Exception(f'{element=}')
+
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        self._posts_today = element
 
         return element
 
@@ -996,11 +1006,11 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
-        self._privacy = element
-
         if not element:
             Exception(f'{element=}')
+
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        self._privacy = element
 
         return element
 
@@ -1031,11 +1041,11 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        self._privacy_details = element
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
-
         if not element:
             Exception(f'{element=}')
+
+        self._privacy_details = element
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
 
         return element
 
@@ -1160,10 +1170,10 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
-        self._visible = element
-
         if not element:
             Exception(f'{element=}')
+
+        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        self._visible = element
 
         return element
