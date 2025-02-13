@@ -63,16 +63,12 @@ class FacebookGroups(object):
         "You must log in to continue": 0.90,
         'ERR_TIMED_OUT': -0.5,
         'ERR_SSL_PROTOCOL_ERROR': -0.25,
-        'ERR_CERT_AUTHORITY_INVALID': 1.25,
+        'ERR_CERT_AUTHORITY_INVALID': -0.25,
         'ERR_CONNECTION_RESET': -0.25,
         'ERR_TUNNEL_CONNECTION_FAILED': -0.25,
         'ERR_EMPTY_RESPONSE': -0.25,
         'ERR_PROXY_CONNECTION_FAILED': -0.25,
     }
-
-    PROXIES_WEIGHT_ALLOWED = [
-        'ERR_CERT_AUTHORITY_INVALID'
-    ]
 
     PROXY = None
 
@@ -429,9 +425,6 @@ class FacebookGroups(object):
                 search = self._browser.find_page_source_with_regex(_proxy_error)
                 if search:
                     self._update_proxy(proxy=proxy, weight_multiplier=self.PROXIES_WEIGHT[_proxy_error])
-
-                    if _proxy_error in self.PROXIES_WEIGHT_ALLOWED:
-                        break
 
                     logger.info(
                         f'[FacebookGroups] :: '
