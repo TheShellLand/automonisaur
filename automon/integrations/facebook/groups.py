@@ -1106,7 +1106,7 @@ class FacebookGroups(object):
 
         proxy['weight'] = proxy['weight'] * weight_multiplier
 
-        logger.debug(f'[FacebookGroups] :: _update_proxy :: {weight_multiplier=} :: {proxy.to_dict("records")[0]}')
+        logger.debug(f'[FacebookGroups] :: _update_proxy :: {proxy.to_dict("records")[0]} :: {weight_multiplier=}')
         self.PROXIES.update(proxy)
         return self
 
