@@ -323,6 +323,7 @@ class FacebookGroups(object):
             re_matches = [
                 r'Created \d+ year[s]? ago',
                 r'Created \d+ week[s]? ago',
+                'Created on \d+ year[s]? ago',
                 'Created a year ago',
                 'Created a week ago'
             ]
@@ -438,7 +439,7 @@ class FacebookGroups(object):
                 self._browser.get(self.url)
                 self.get_about()
             except Exception as error:
-                logger.error(f'[FacebookGroups] :: _find_proxy :: ERROR :: {self.url=} :: {error=}')
+                # logger.error(f'[FacebookGroups] :: _find_proxy :: ERROR :: {self.url=} :: {error=}')
                 pass
 
             for _proxy_error in self.PROXIES_WEIGHT.keys():
