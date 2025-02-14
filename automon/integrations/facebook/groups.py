@@ -114,10 +114,28 @@ class FacebookGroups(object):
             return avg_seconds
         return 0
 
+    def checks(self) -> bool:
+        self.check_close_cookies_popup()
+        self.check_close_login_popup()
+
+        if self.check_blocked_by_login():
+            return True
+
+        if self.check_content_unavailable():
+            return True
+
+        if self.check_something_went_wrong():
+            return True
+
+        return False
+
     def check_blocked_by_login(self):
 
         if self._check_blocked_by_login is not None:
             return self._check_blocked_by_login
+
+        if 'login' in self.current_url:
+            return f'{self.current_url}'
 
         element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=0)
         if element:
@@ -305,6 +323,7 @@ class FacebookGroups(object):
             re_matches = [
                 r'Created \d+ year[s]? ago',
                 r'Created \d+ week[s]? ago',
+                'Created on \d+ year[s]? ago',
                 'Created a year ago',
                 'Created a week ago'
             ]
@@ -377,6 +396,7 @@ class FacebookGroups(object):
         return message, session, 'disabled'
 
     def _find_proxy(self):
+        logger.debug(f'[FacebookGroups] :: _find_proxy :: >>>>')
 
         if len(self.PROXIES) == 0:
             self.PROXIES = pandas.DataFrame(
@@ -395,7 +415,7 @@ class FacebookGroups(object):
                 proxies_list = proxies[proxies['weight'] >= quantile]
                 logger.debug(
                     f'[FacebookGroups] :: '
-                    f'start :: '
+                    f'_find_proxy :: '
                     f'proxy list :: '
                     f'{len(proxies_list)} proxies > {quantile=}'
                 )
@@ -408,17 +428,18 @@ class FacebookGroups(object):
             if not self.PROXY_RANDOM:
                 proxy = self.PROXIES.iloc[0]
 
+            self.PROXY = proxy
             self._update_proxy(proxy=proxy, weight_multiplier=1.10)
 
             self._browser.config.webdriver_wrapper.enable_proxy(proxy['proxy'].item())
-            logger.debug(f'[FacebookGroups] :: start :: proxy test :: {proxy.to_dict("records")[0]}')
+            logger.debug(f'[FacebookGroups] :: _find_proxy :: proxy test :: {proxy.to_dict("records")[0]}')
 
             self._browser.run()
             try:
                 self._browser.get(self.url)
                 self.get_about()
             except Exception as error:
-                logger.error(f'[FacebookGroups] :: start :: ERROR :: {self.url=} :: {error=}')
+                # logger.error(f'[FacebookGroups] :: _find_proxy :: ERROR :: {self.url=} :: {error=}')
                 pass
 
             for _proxy_error in self.PROXIES_WEIGHT.keys():
@@ -428,7 +449,7 @@ class FacebookGroups(object):
 
                     logger.info(
                         f'[FacebookGroups] :: '
-                        f'start :: '
+                        f'_find_proxy :: '
                         f'proxy failed :: '
                         f'{proxy.to_dict("records")[0]} :: '
                         f'{_proxy_error=}'
@@ -437,14 +458,14 @@ class FacebookGroups(object):
                     return self.start()
 
             self._update_proxy(proxy=proxy, weight_multiplier=1.10)
-            logger.debug(f'[FacebookGroups] :: start :: PROXY FOUND :: {proxy.to_dict("records")[0]}')
-            self.PROXY = proxy
+            logger.debug(f'[FacebookGroups] :: _find_proxy :: PROXY FOUND :: {proxy.to_dict("records")[0]}')
             return True
 
         raise Exception(f'[FacebookGroups] :: _find_proxy :: ERROR :: no proxies worked ({len(self.PROXIES)} proxies)')
 
     def get(self, url: str) -> bool:
         """get url"""
+        logger.info(f'[FacebookGroups] :: get :: >>>>')
 
         self.reset_cache()
 
@@ -467,7 +488,7 @@ class FacebookGroups(object):
             if len(proxy) > 0:
                 proxy = self.PROXY.to_dict("records")[0]
 
-        logger.info(
+        logger.debug(
             f'[FacebookGroups] :: '
             f'get :: '
             f'{result=} :: '
@@ -475,94 +496,56 @@ class FacebookGroups(object):
             f'{url} :: '
             f'{round(len(self._browser.webdriver.page_source) / 1024)} KB'
         )
+        logger.info(f'[FacebookGroups] :: get :: done')
+
         return result
 
     def get_about(self):
         """get about page"""
+        logger.debug(f'[FacebookGroups] :: get_about :: >>>>')
 
         result = self.get(url=self.url)
         about = self._browser._urllib.parse.urljoin(self.current_url + '/', 'about')
         result = self.get(url=about)
 
-        logger.info(f'[FacebookGroups] :: {about} :: {result=}')
+        logger.debug(f'[FacebookGroups] :: get_about :: {about=} :: {result=}')
+        logger.info(f'[FacebookGroups] :: get_about :: done')
 
         return result
 
     def get_facebook_info(self, url: str = None) -> dict:
-        logger.info(f'[FacebookGroups] :: get_facebook_info :: {url=}')
-
-        self.reset_cache()
+        logger.info(f'[FacebookGroups] :: get_facebook_info :: {url=} :: >>>>')
 
         self.set_url(url=url)
+        self.get(url=url)
+
+        automon.Sleeper.seconds(3)
+
+        if self.checks():
+            return self.to_empty()
 
         self.get_about()
-        self.check_close_cookies_popup()
-        self.check_close_login_popup()
 
-        if self.check_blocked_by_login():
+        automon.Sleeper.seconds(3)
+
+        if self.checks():
             return self.to_empty()
 
-        if self.check_content_unavailable():
-            return self.to_empty()
+        results = self.to_dict()
+        logger.debug(f'[FacebookGroups] :: get_facebook_info :: {results=}')
 
-        if self.check_something_went_wrong():
-            return self.to_empty()
+        # increase weight
+        if self.PROXY is not None:
+            if len(self.PROXY) > 0:
+                self._update_proxy(proxy=self.PROXY, weight_multiplier=1.10)
+                logger.debug(
+                    f'[FacebookGroups] :: '
+                    f'get_facebook_info :: '
+                    f'UPDATE PROXY :: '
+                    f'{self.PROXY.to_dict("records")[0]}'
+                )
 
-        try:
-
-            results = self.to_dict()
-            logger.debug(f'[FacebookGroups] :: get_facebook_info :: {results=}')
-
-            # increase weight
-            if self.PROXY is not None:
-                if len(self.PROXY) > 0:
-                    self._update_proxy(proxy=self.PROXY, weight_multiplier=1.10)
-                    logger.debug(
-                        f'[FacebookGroups] :: '
-                        f'get_facebook_info :: '
-                        f'UPDATE PROXY :: '
-                        f'{self.PROXY.to_dict("records")[0]}'
-                    )
-
-            return results
-
-        except selenium.common.exceptions.WebDriverException as error:
-            # quit old webdriver
-            self.quit()
-
-            # restart webdriver
-            self.start(
-                set_page_load_timeout=2
-            )
-            logger.info(f'[FacebookGroups] :: get_facebook_info :: error :: restarting :: {error}')
-            return self.get_facebook_info(url=url)
-
-        except Exception as error:
-            import traceback
-            # traceback.print_exc()
-            # raise Exception(f'get_facebook_info :: error :: {error}')
-            logger.info(f'[FacebookGroups] :: get_facebook_info :: error :: restarting :: {error}')
-
-            # decrease weight
-            if self.PROXY is not None:
-                if len(self.PROXY) > 0:
-                    self._update_proxy(proxy=self.PROXY, weight_multiplier=0.90)
-                    logger.debug(
-                        f'[FacebookGroups] :: '
-                        f'get_facebook_info :: '
-                        f'UPDATE PROXY :: '
-                        f'{self.PROXY.to_dict("records")[0]}'
-                    )
-
-            # quit old webdriver
-            self.quit()
-
-            # restart webdriver
-            self.start(
-                set_page_load_timeout=2
-            )
-
-            return self.get_facebook_info(url=url)
+        return results
 
     def get_with_rate_limiter(
             self,
@@ -573,8 +556,6 @@ class FacebookGroups(object):
             rate_per_minute: int = None,
     ) -> bool:
         """get with rate dynamic limit"""
-
-        self.reset_cache()
 
         if wait_between_retries:
             self.WAIT_BETWEEN_RETRIES = wait_between_retries
@@ -722,6 +703,7 @@ class FacebookGroups(object):
         self._visible = None
         self._blocked_by_login = None
         self._browser_not_supported = None
+        logger.info(f'[FacebookGroups] :: reset_cache :: done')
 
     def reset_rate_counter(self):
         self.RATE_COUNTER = []
@@ -777,7 +759,7 @@ class FacebookGroups(object):
             set_page_load_timeout: int = 2):
         """start new instance of selenium"""
 
-        logger.debug(f'[FacebookGroups] :: start >>')
+        logger.debug(f'[FacebookGroups] :: start :: >>>>')
 
         if self.PROXY is None and self.LAST_REQUEST is not None:
             pass
@@ -806,6 +788,7 @@ class FacebookGroups(object):
         if self.PROXY_ENABLED:
 
             if self._find_proxy():
+                logger.info(f'[FacebookGroups] :: start :: done')
                 return True
 
         else:
@@ -1070,25 +1053,31 @@ class FacebookGroups(object):
         return self._title
 
     def to_dict(self):
-        return dict(
-            creation_date=self.creation_date(),
-            creation_date_timestamp=self.creation_date_timestamp(),
-            history=self.history(),
-            members=self.members(),
-            members_count=self.members_count(),
-            posts_monthly=self.posts_monthly(),
-            posts_monthly_count=self.posts_monthly_count(),
-            posts_today=self.posts_today(),
-            posts_today_count=self.posts_today_count(),
-            privacy=self.privacy(),
-            privacy_details=self.privacy_details(),
-            title=self.title(),
-            url=self.url,
-            visible=self.visible(),
-            check_blocked_by_login=self.check_blocked_by_login(),
-            check_browser_not_supported=self.check_browser_not_supported(),
-            check_content_unavailable=self.check_content_unavailable(),
-        )
+        logger.debug(f'[FacebookGroups] :: to_dict :: >>>>')
+
+        try:
+            return dict(
+                creation_date=self.creation_date(),
+                creation_date_timestamp=self.creation_date_timestamp(),
+                history=self.history(),
+                members=self.members(),
+                members_count=self.members_count(),
+                posts_monthly=self.posts_monthly(),
+                posts_monthly_count=self.posts_monthly_count(),
+                posts_today=self.posts_today(),
+                posts_today_count=self.posts_today_count(),
+                privacy=self.privacy(),
+                privacy_details=self.privacy_details(),
+                title=self.title(),
+                url=self.url,
+                visible=self.visible(),
+                check_blocked_by_login=self.check_blocked_by_login(),
+                check_browser_not_supported=self.check_browser_not_supported(),
+                check_content_unavailable=self.check_content_unavailable(),
+            )
+        except Exception as error:
+            logger.error(f'[FacebookGroups] :: to_dict :: ERROR :: {error=}')
+            raise Exception(f'[FacebookGroups] :: to_dict :: ERROR :: {error=}')
 
     def to_empty(self):
         return dict(
@@ -1118,7 +1107,7 @@ class FacebookGroups(object):
 
         proxy['weight'] = proxy['weight'] * weight_multiplier
 
-        logger.debug(f'[FacebookGroups] :: _update_proxy :: {weight_multiplier=} :: {proxy.to_dict("records")[0]}')
+        logger.debug(f'[FacebookGroups] :: _update_proxy :: {proxy.to_dict("records")[0]} :: {weight_multiplier=}')
         self.PROXIES.update(proxy)
         return self
 
