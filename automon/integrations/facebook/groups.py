@@ -135,7 +135,7 @@ class FacebookGroups(object):
             return self._check_blocked_by_login
 
         if 'login' in self.current_url:
-            return f'login in {self.current_url}'
+            return f'{self.current_url}'
 
         element = self._browser.wait_for_xpath(value=self._xpath_blocked_by_login, timeout=0)
         if element:
