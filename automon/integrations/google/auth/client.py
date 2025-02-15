@@ -77,7 +77,7 @@ class GoogleAuthClient(object):
                 logger.error(msg=f'[google] :: auth :: oauth :: error :: token refresh failed: {error}')
 
         else:
-            warnings.warn(f'TODO: add google flow() authentication')
+            logger.warning(f'[google] :: auth :: TODO: add google flow() authentication')
             logger.info(f'[google] :: auth :: oauth :: done')
             return True
 
