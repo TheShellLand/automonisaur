@@ -22,15 +22,15 @@ class SeleniumClientTest(unittest.TestCase):
                     self.assertTrue(True)
 
             def test_screenshot_png(self):
-                if browser.get('https://www.google.com/'):
+                if browser.get('https://1.1.1.1'):
                     self.assertTrue(browser.get_screenshot_as_png())
 
             def test_screenshot_base64(self):
-                if browser.get('https://www.yahoo.com/'):
+                if browser.get('https://1.1.1.1'):
                     self.assertTrue(browser.get_screenshot_as_base64())
 
             def test_screenshot_file(self):
-                if browser.get('https://www.bing.com'):
+                if browser.get('https://1.1.1.1'):
                     self.assertTrue(browser.save_screenshot())
                     self.assertTrue(browser.save_screenshot(folder='./'))
 
