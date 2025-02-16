@@ -1,6 +1,7 @@
 import re
 import pandas
 import random
+import hashlib
 import datetime
 import statistics
 import selenium.common.exceptions
@@ -68,6 +69,7 @@ class FacebookGroups(object):
         'ERR_TUNNEL_CONNECTION_FAILED': -0.25,
         'ERR_EMPTY_RESPONSE': -0.25,
         'ERR_PROXY_CONNECTION_FAILED': -0.25,
+        'a7fe83ec64bb23eb28090598db3d166ed98e52e39d1afbbfd74c579553f93e4e': -0.25,
     }
 
     PROXY = None
@@ -330,9 +332,8 @@ class FacebookGroups(object):
 
             for re_match in re_matches:
 
-                element = self._browser.find_elements_with_beautifulsoup(
+                element = self._browser.find_anything_with_beautifulsoup(
                     match=re_match,
-                    name='span',
                     case_sensitive=True,
                 )
 
@@ -343,11 +344,11 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: creation_date :: {method} :: {element=}')
         self._creation_date = element
 
         if not element:
-            raise Exception(f'{element=}')
+            raise Exception(f'[FacebookGroups] :: creation_date :: {element=}')
 
         return element
 
@@ -400,9 +401,10 @@ class FacebookGroups(object):
 
         if len(self.PROXIES) == 0:
             self.PROXIES = pandas.DataFrame(
-                [dict(proxy=x, weight=0) for x in
-                 automon.integrations.seleniumWrapper.proxies_public.proxy_filter_https_ips_and_ports()]
+                automon.integrations.seleniumWrapper.proxies_public.proxy_filter_ips_and_ports()
             )
+            self.PROXIES['weight'] = 0
+            self.PROXIES.columns = ['proxy', 'weight']
             self.PROXIES['weight'] = self.PROXIES['weight'].astype('float32')
 
         proxies = self.PROXIES
@@ -436,15 +438,18 @@ class FacebookGroups(object):
 
             self._browser.run()
             try:
-                self._browser.get(self.url)
-                self.get_about()
+                self._browser.get('https://ip.oxylabs.io/')
+                # self.get_about()
             except Exception as error:
                 # logger.error(f'[FacebookGroups] :: _find_proxy :: ERROR :: {self.url=} :: {error=}')
                 pass
 
-            for _proxy_error in self.PROXIES_WEIGHT.keys():
+            for _proxy_error in self.PROXIES_WEIGHT:
+
                 search = self._browser.find_page_source_with_regex(_proxy_error)
-                if search:
+                page_hash = hashlib.sha256(f'{self._browser.page_source}'.encode()).hexdigest()
+
+                if search or page_hash == _proxy_error:
                     self._update_proxy(proxy=proxy, weight_multiplier=self.PROXIES_WEIGHT[_proxy_error])
 
                     logger.info(
@@ -504,8 +509,9 @@ class FacebookGroups(object):
         """get about page"""
         logger.debug(f'[FacebookGroups] :: get_about :: >>>>')
 
-        result = self.get(url=self.url)
-        about = self._browser._urllib.parse.urljoin(self.current_url + '/', 'about')
+        # result = self.get(url=self.url)
+        # about = self._browser._urllib.parse.urljoin(self.current_url + '/', 'about')
+        about = self._browser._urllib.parse.urljoin(self.url + '/', 'about')
         result = self.get(url=about)
 
         logger.debug(f'[FacebookGroups] :: get_about :: {about=} :: {result=}')
@@ -517,19 +523,18 @@ class FacebookGroups(object):
         logger.info(f'[FacebookGroups] :: get_facebook_info :: {url=} :: >>>>')
 
         self.set_url(url=url)
-        self.get(url=url)
 
-        automon.Sleeper.seconds(3)
-
-        if self.checks():
-            return self.to_empty()
+        # self.get(url=url)
+        #
+        # if self.checks():
+        #     return self.to_empty()
 
         self.get_about()
 
-        automon.Sleeper.seconds(3)
-
         if self.checks():
             return self.to_empty()
+
+        self.screenshot()
 
         results = self.to_dict()
         logger.debug(f'[FacebookGroups] :: get_facebook_info :: {results=}')
@@ -587,7 +592,6 @@ class FacebookGroups(object):
             retry = retry + 1
 
         logger.error(f'[FacebookGroups] :: get_with_rate_limiter :: error :: {url}')
-        self.screenshot_error()
         return result
 
     def quit(self):
@@ -640,9 +644,9 @@ class FacebookGroups(object):
             method = 'by SEARCH'
 
         if not element:
-            Exception(f'{element=}')
+            raise Exception(f'[FacebookGroups] :: history :: {element=}')
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: history :: {method} :: {element=}')
         self._history = element
 
         return element
@@ -832,9 +836,9 @@ class FacebookGroups(object):
             method = 'by SEARCH'
 
         if not element:
-            Exception(f'{element=}')
+            raise Exception(f'[FacebookGroups] :: members :: {element=}')
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: members :: {method} :: {element=}')
         self._members = element
 
         return element
@@ -886,9 +890,9 @@ class FacebookGroups(object):
             method = 'by SEARCH'
 
         if not element:
-            Exception(f'{element=}')
+            raise Exception(f'[FacebookGroups] :: posts_monthly :: {element=}')
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: posts_monthly :: {method} :: {element=}')
         self._posts_monthly = element
 
         return element
@@ -931,9 +935,9 @@ class FacebookGroups(object):
             method = 'by SEARCH'
 
         if not element:
-            Exception(f'{element=}')
+            raise Exception(f'[FacebookGroups] :: posts_today :: {element=}')
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: posts_today :: {method} :: {element=}')
         self._posts_today = element
 
         return element
@@ -985,9 +989,9 @@ class FacebookGroups(object):
             method = 'by SEARCH'
 
         if not element:
-            Exception(f'{element=}')
+            raise Exception(f'[FacebookGroups] :: privacy :: {element=}')
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: privacy :: {method} :: {element=}')
         self._privacy = element
 
         return element
@@ -1020,10 +1024,10 @@ class FacebookGroups(object):
             method = 'by SEARCH'
 
         if not element:
-            Exception(f'{element=}')
+            raise Exception(f'[FacebookGroups] :: privacy_details :: {element=}')
 
         self._privacy_details = element
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: privacy_details :: {method} :: {element=}')
 
         return element
 
@@ -1055,29 +1059,28 @@ class FacebookGroups(object):
     def to_dict(self):
         logger.debug(f'[FacebookGroups] :: to_dict :: >>>>')
 
-        try:
-            return dict(
-                creation_date=self.creation_date(),
-                creation_date_timestamp=self.creation_date_timestamp(),
-                history=self.history(),
-                members=self.members(),
-                members_count=self.members_count(),
-                posts_monthly=self.posts_monthly(),
-                posts_monthly_count=self.posts_monthly_count(),
-                posts_today=self.posts_today(),
-                posts_today_count=self.posts_today_count(),
-                privacy=self.privacy(),
-                privacy_details=self.privacy_details(),
-                title=self.title(),
-                url=self.url,
-                visible=self.visible(),
-                check_blocked_by_login=self.check_blocked_by_login(),
-                check_browser_not_supported=self.check_browser_not_supported(),
-                check_content_unavailable=self.check_content_unavailable(),
-            )
-        except Exception as error:
-            logger.error(f'[FacebookGroups] :: to_dict :: ERROR :: {error=}')
-            raise Exception(f'[FacebookGroups] :: to_dict :: ERROR :: {error=}')
+        result = dict(
+            creation_date=self.creation_date(),
+            creation_date_timestamp=self.creation_date_timestamp(),
+            history=self.history(),
+            members=self.members(),
+            members_count=self.members_count(),
+            posts_monthly=self.posts_monthly(),
+            posts_monthly_count=self.posts_monthly_count(),
+            posts_today=self.posts_today(),
+            posts_today_count=self.posts_today_count(),
+            privacy=self.privacy(),
+            privacy_details=self.privacy_details(),
+            title=self.title(),
+            url=self.url,
+            visible=self.visible(),
+            check_blocked_by_login=self.check_blocked_by_login(),
+            check_browser_not_supported=self.check_browser_not_supported(),
+            check_content_unavailable=self.check_content_unavailable(),
+        )
+
+        logger.info(f'[FacebookGroups] :: to_dict :: done')
+        return result
 
     def to_empty(self):
         return dict(
@@ -1155,9 +1158,9 @@ class FacebookGroups(object):
             method = 'by SEARCH'
 
         if not element:
-            Exception(f'{element=}')
+            raise Exception(f'[FacebookGroups] :: visible :: {element=}')
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: visible :: {method} :: {element=}')
         self._visible = element
 
         return element

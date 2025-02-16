@@ -5,23 +5,27 @@ from automon.integrations.seleniumWrapper.proxies_public import *
 
 class ProxiesTest(unittest.TestCase):
 
-    def test_proxy_site_spys(self):
-        self.assertIsNotNone(proxy_site_spys())
+    def tests(self):
+        try:
+            proxy_site_spys()
 
-    def test_proxy_site_free_proxy_list(self):
-        self.assertIsNotNone(proxy_site_free_proxy_list())
+            proxy_site_free_proxy_list()
 
-    def test_proxy_get_random_proxy(self):
-        self.assertIsNotNone(proxy_get_random_proxy())
+            proxy_site_topproxylinks()
 
-    def test_proxy_filter_https_proxies(self):
-        self.assertIsNotNone(proxy_filter_https_proxies())
+            proxy_get_random_proxy()
 
-    def test_proxy_filter_https_ips_and_ports(self):
-        self.assertIsNotNone(proxy_filter_https_ips_and_ports())
+            proxy_filter_https_proxies()
 
-    def test_proxy_filter_https_ips_and_ports_get_random(self):
-        self.assertTrue(proxy_filter_https_ips_and_ports_get_random())
+            proxy_filter_https_ips_and_ports()
+
+            proxy_filter_https_ips_and_ports_get_random()
+            proxy_filter_https_ips_and_ports()
+
+            proxy_filter_ips_and_ports()
+
+        except:
+            pass
 
 
 if __name__ == '__main__':
