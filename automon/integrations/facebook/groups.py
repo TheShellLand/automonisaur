@@ -399,10 +399,12 @@ class FacebookGroups(object):
         logger.debug(f'[FacebookGroups] :: _find_proxy :: >>>>')
 
         if len(self.PROXIES) == 0:
+
             self.PROXIES = pandas.DataFrame(
-                [dict(proxy=x, weight=0) for x in
-                 automon.integrations.seleniumWrapper.proxies_public.proxy_filter_https_ips_and_ports()]
+                automon.integrations.seleniumWrapper.proxies_public.proxy_filter_ips_and_ports()
             )
+            self.PROXIES['weight'] = 0
+            self.PROXIES.columns = ['proxy', 'weight']
             self.PROXIES['weight'] = self.PROXIES['weight'].astype('float32')
 
         proxies = self.PROXIES
