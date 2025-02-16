@@ -22,6 +22,10 @@ class ProxiesTest(unittest.TestCase):
 
     def test_proxy_filter_https_ips_and_ports_get_random(self):
         self.assertTrue(proxy_filter_https_ips_and_ports_get_random())
+        self.assertIsNotNone(proxy_filter_https_ips_and_ports())
+
+    def test_proxy_filter_ips_and_ports(self):
+        self.assertTrue(proxy_filter_ips_and_ports())
 
 
 if __name__ == '__main__':
