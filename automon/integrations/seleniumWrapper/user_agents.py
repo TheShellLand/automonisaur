@@ -1,4 +1,8 @@
+import io
 import random
+import pandas
+
+import automon.integrations.requestsWrapper
 
 from automon import log
 
@@ -6,41 +10,66 @@ logger = log.logging.getLogger(__name__)
 logger.setLevel(log.DEBUG)
 
 
+def site_useragents():
+    url = 'https://www.useragents.me/'
+    proxies_table = automon.integrations.requestsWrapper.RequestsClient(url)
+    proxies_table.get()
+
+    proxies_tables = pandas.read_html(io.StringIO(proxies_table.text))
+
+    # Most Common Desktop Useragents
+    desktop_most_common_useragents = proxies_tables[0]
+
+    # Most Common Mobile Useragents
+    mobile_most_common_useragents = proxies_tables[1]
+
+    # Latest Windows Desktop Useragents
+    desktop_latest_windows_useragents = proxies_tables[2]
+
+    # Latest Mac OS X Desktop Useragents
+    desktop_latest_macosx_useragents = proxies_tables[3]
+
+    # Latest Linux Desktop Useragents
+    desktop_latest_linux_useragents = proxies_tables[4]
+
+    # Latest iPhone Useragents
+    mobile_latest_iphone_useragents = proxies_tables[5]
+
+    # Latest iPod Useragents
+    ipod_latest_useragents = proxies_tables[6]
+
+    # Latest iPad Useragents
+    ipad_latest_useragents = proxies_tables[7]
+
+    # Latest Android Mobile Useragents
+    mobile_latest_android_useragents = proxies_tables[8]
+
+    # Latest Tablet Useragents
+    tablet_latest_useragents = proxies_tables[9]
+
+    return dict(
+        desktop_most_common_useragents=desktop_most_common_useragents,
+        mobile_most_common_useragents=mobile_most_common_useragents,
+        desktop_latest_windows_useragents=desktop_latest_windows_useragents,
+        desktop_latest_macosx_useragents=desktop_latest_macosx_useragents,
+        desktop_latest_linux_useragents=desktop_latest_linux_useragents,
+        mobile_latest_iphone_useragents=mobile_latest_iphone_useragents,
+        ipod_latest_useragents=ipod_latest_useragents,
+        ipad_latest_useragents=ipad_latest_useragents,
+        mobile_latest_android_useragents=mobile_latest_android_useragents,
+        tablet_latest_useragents=tablet_latest_useragents,
+    )
+
+
 class SeleniumUserAgentBuilder:
     googlebot = [
         'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/W.X.Y.Z Safari/537.36',
     ]
 
-    top = [
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-    ]
+    agents = []
 
-    macox = [
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 13.3; rv:112.0) Gecko/20100101 Firefox/112.0',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Vivaldi/5.7.2921.68',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.48',
-    ]
-    windows = [
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.48',
-        'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:112.0) Gecko/20100101 Firefox/112.0',
-        'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Vivaldi/5.7.2921.68',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Vivaldi/5.7.2921.68',
-    ]
-
-    agents = [
-
-    ]
     agents.extend(googlebot)
-    agents.extend(top)
-    agents.extend(macox)
-    agents.extend(windows)
+    agents.extend(site_useragents()['desktop_most_common_useragents']['useragent'].tolist())
 
     def filter_agent(self, filter: list or str, case_sensitive: bool = False) -> list:
         if isinstance(filter, str):

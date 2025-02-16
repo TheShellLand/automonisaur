@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.seleniumWrapper.user_agents import SeleniumUserAgentBuilder
+from automon.integrations.seleniumWrapper.user_agents import *
 
 
 class MyTestCase(unittest.TestCase):
@@ -19,6 +19,9 @@ class MyTestCase(unittest.TestCase):
 
         self.assertFalse(test.get_random_agent('xxxxx'))
         self.assertFalse(test.get_random_agent('xxxxx', case_sensitive=True))
+
+    def test_most_common_user_agents(self):
+        self.assertIsNotNone(site_useragents())
 
 
 if __name__ == '__main__':
