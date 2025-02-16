@@ -54,7 +54,8 @@ class SeleniumBrowser(object):
             return (
                 f'[SeleniumBrowser] :: '
                 f'{self.config.webdriver_wrapper} :: '
-                f'{self.webdriver=}'
+                f'{self.webdriver=} :: '
+                f'{self.user_agent=}'
             )
         except Exception as error:
             pass
