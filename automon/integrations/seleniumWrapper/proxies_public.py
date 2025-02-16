@@ -165,7 +165,7 @@ def proxy_master_list() -> pandas.DataFrame:
             proxies_master_list,
             proxy_site_spys(),
             proxy_site_free_proxy_list(),
-            proxy_site_topproxylinks(),
+            proxy_site_topproxylinks()[proxy_site_topproxylinks()['Protocol'] == 'http'],
         ],
         ignore_index=True
     )
