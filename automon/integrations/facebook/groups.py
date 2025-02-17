@@ -28,6 +28,7 @@ class FacebookGroups(object):
     _xpath_must_login = '/html/body/div[1]/div[1]/div[1]/div/div[2]/div/div'
     _xpath_blocked_by_login = ''
     _xpath_browser_not_supported = ''
+    _xpath_join_group = '//*[@id="mount_0_0_fq"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div[2]/div/div/div[1]/div[2]/div/div/div/div/div[2]/div/div[1]/div/div/div/div/div[1]/div[2]/span/span'
 
     _xpath_creation_date = [
         '/html/body/div[1]/div/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[3]/div/div/div/div/div/div[2]/div/div[3]/div/div/div[2]/div/div/span',
@@ -102,6 +103,7 @@ class FacebookGroups(object):
         self._check_blocked_by_login = None
         self._check_temporarily_blocked = None
         self._check_something_went_wrong = None
+        self._check_page_loaded = None
 
     def average_rate(self):
         if self.RATE_COUNTER:
@@ -130,6 +132,9 @@ class FacebookGroups(object):
         if self.check_something_went_wrong():
             return True
 
+        if self.check_page_loaded():
+            return False
+
         return False
 
     def check_blocked_by_login(self):
@@ -156,7 +161,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: check_blocked_by_login :: {method} :: {element=}')
         self._blocked_by_login = element
         return element
 
@@ -183,7 +188,7 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: check_browser_not_supported :: {method} :: {element=}')
         self._browser_not_supported = element
         return element
 
@@ -205,7 +210,7 @@ class FacebookGroups(object):
         if element:
             element.click()
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: check_close_cookies_popup :: {method} :: {element=}')
         return element
 
     def check_close_login_popup(self):
@@ -226,7 +231,7 @@ class FacebookGroups(object):
         if element:
             element.click()
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: check_close_login_popup :: {method} :: {element=}')
         return element
 
     def check_content_unavailable(self):
@@ -250,8 +255,35 @@ class FacebookGroups(object):
 
             method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: check_content_unavailable :: {method} :: {element=}')
         self._content_unavailable = element
+        return element
+
+    def check_page_loaded(self):
+
+        if self._check_page_loaded is not None:
+            return self._check_page_loaded
+
+        element = self._browser.wait_for_xpath(
+            value=self._xpath_join_group,
+            timeout=0)
+        if element:
+            element = element.text
+
+        method = 'by XPATH'
+
+        if not element:
+            element = self._browser.find_anything_with_beautifulsoup(
+                match='Join group',
+                case_sensitive=True
+            )
+            if element:
+                element = element[0].text
+
+            method = 'by SEARCH'
+
+        logger.debug(f'[FacebookGroups] :: check_page_loaded :: {method} :: {element=}')
+        self._browser_not_supported = element
         return element
 
     def check_something_went_wrong(self):
@@ -271,7 +303,7 @@ class FacebookGroups(object):
 
         method = 'by SEARCH'
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: check_something_went_wrong :: {method} :: {element=}')
         self._check_something_went_wrong = element
         return element
 
@@ -306,7 +338,7 @@ class FacebookGroups(object):
                         element = element[0]
                         break
 
-        logger.debug(f'[FacebookGroups] :: {method} :: {element=}')
+        logger.debug(f'[FacebookGroups] :: check_temporarily_blocked :: {method} :: {element=}')
         return element
 
     def creation_date(self):
@@ -326,7 +358,7 @@ class FacebookGroups(object):
             re_matches = [
                 r'Created \d+ year[s]? ago',
                 r'Created \d+ week[s]? ago',
-                'Created on \d+ year[s]? ago',
+                r'Created on \d+ year[s]? ago',
                 'Created a year ago',
                 'Created a week ago'
             ]
