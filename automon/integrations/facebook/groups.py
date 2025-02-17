@@ -3,6 +3,7 @@ import pandas
 import random
 import hashlib
 import datetime
+import traceback
 import statistics
 import selenium.common.exceptions
 
@@ -770,6 +771,8 @@ class FacebookGroups(object):
 
         self._browser.config.webdriver_wrapper = ChromeWrapper()
 
+        self._browser.config.webdriver_wrapper.enable_antibot_detection()
+
         # TOOD: missing this implementation
         # I think I deleted it somewhere
         self._browser.config.webdriver_wrapper.set_page_load_timeout = set_page_load_timeout
@@ -1059,25 +1062,30 @@ class FacebookGroups(object):
     def to_dict(self):
         logger.debug(f'[FacebookGroups] :: to_dict :: >>>>')
 
-        result = dict(
-            creation_date=self.creation_date(),
-            creation_date_timestamp=self.creation_date_timestamp(),
-            history=self.history(),
-            members=self.members(),
-            members_count=self.members_count(),
-            posts_monthly=self.posts_monthly(),
-            posts_monthly_count=self.posts_monthly_count(),
-            posts_today=self.posts_today(),
-            posts_today_count=self.posts_today_count(),
-            privacy=self.privacy(),
-            privacy_details=self.privacy_details(),
-            title=self.title(),
-            url=self.url,
-            visible=self.visible(),
-            check_blocked_by_login=self.check_blocked_by_login(),
-            check_browser_not_supported=self.check_browser_not_supported(),
-            check_content_unavailable=self.check_content_unavailable(),
-        )
+        try:
+            result = dict(
+                creation_date=self.creation_date(),
+                creation_date_timestamp=self.creation_date_timestamp(),
+                history=self.history(),
+                members=self.members(),
+                members_count=self.members_count(),
+                posts_monthly=self.posts_monthly(),
+                posts_monthly_count=self.posts_monthly_count(),
+                posts_today=self.posts_today(),
+                posts_today_count=self.posts_today_count(),
+                privacy=self.privacy(),
+                privacy_details=self.privacy_details(),
+                title=self.title(),
+                url=self.url,
+                visible=self.visible(),
+                check_blocked_by_login=self.check_blocked_by_login(),
+                check_browser_not_supported=self.check_browser_not_supported(),
+                check_content_unavailable=self.check_content_unavailable(),
+            )
+
+        except Exception as error:
+            traceback.print_exc()
+            raise Exception(f'[FacebookGroups] :: to_dict :: ERROR :: {error=}')
 
         logger.info(f'[FacebookGroups] :: to_dict :: done')
         return result
