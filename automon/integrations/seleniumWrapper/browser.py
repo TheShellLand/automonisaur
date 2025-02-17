@@ -1040,11 +1040,9 @@ class SeleniumBrowser(object):
         """get a random user agent string"""
         logger.debug(f'[SeleniumBrowser] :: get_random_user_agent :: {filter=} :: {case_sensitive=}')
 
-        get_random_user_agent = SeleniumUserAgentBuilder().get_random_agent(
-            filter=filter,
-            case_sensitive=case_sensitive)
-        logger.debug(f'[SeleniumBrowser] :: get_random_user_agent :: {get_random_user_agent}')
+        get_random_user_agent = SeleniumUserAgentBuilder().pick_random_public()
 
+        logger.debug(f'[SeleniumBrowser] :: get_random_user_agent :: {get_random_user_agent}')
         logger.info(f'[SeleniumBrowser] :: get_random_user_agent :: done')
         return get_random_user_agent
 

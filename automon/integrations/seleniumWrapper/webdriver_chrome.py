@@ -194,7 +194,7 @@ class ChromeWrapper(object):
         self.disable_automation_switch()
         self.disable_userAutomationExtension()
 
-        useragent = SeleniumUserAgentBuilder().get_top()
+        useragent = SeleniumUserAgentBuilder().pick_random_public()
         self.set_user_agent(useragent)
 
         self._enable_antibot_detection = True

@@ -10,7 +10,7 @@ logger = log.logging.getLogger(__name__)
 logger.setLevel(log.DEBUG)
 
 
-def site_useragents():
+def public_site_useragents():
     url = 'https://www.useragents.me/'
     proxies_table = automon.integrations.requestsWrapper.RequestsClient(url)
     proxies_table.get()
@@ -69,7 +69,8 @@ class SeleniumUserAgentBuilder:
     agents = []
 
     agents.extend(googlebot)
-    agents.extend(site_useragents()['desktop_most_common_useragents']['useragent'].tolist())
+
+    public_agents = None
 
     def filter_agent(self, filter: list or str, case_sensitive: bool = False) -> list:
         if isinstance(filter, str):
@@ -97,13 +98,49 @@ class SeleniumUserAgentBuilder:
         return random.choice(self.agents)
 
     def pick_random(self, choices: list):
-        return random.choice(choices)
+        return random.choice(self.agents)
 
     def get_mac(self, **kwargs):
         return self.get_random_agent(filter='Macintosh', **kwargs)
 
-    def get_top(self, **kwargs):
-        return self.pick_random(self.top)
-
     def get_windows(self, **kwargs):
         return self.get_random_agent(filter='Windows', **kwargs)
+
+    def pick_random_public(self, useragent_type: str = 'desktop-common'):
+        """
+
+        """
+        if not self.public_agents:
+            self.public_agents = public_site_useragents()
+
+        if useragent_type == 'desktop-common':
+            return self.public_agents['desktop_most_common_useragents'].sample()['useragent'].item()
+
+        if useragent_type == 'mobile-common':
+            return self.public_agents['mobile_most_common_useragents'].sample()['useragent'].item()
+
+        if useragent_type == 'windows-latest':
+            return self.public_agents['desktop_latest_windows_useragents'].sample()['useragent'].item()
+
+        if useragent_type == 'macosx-latest':
+            return self.public_agents['desktop_latest_macosx_useragents'].sample()['useragent'].item()
+
+        if useragent_type == 'linux-latest':
+            return self.public_agents['desktop_latest_linux_useragents'].sample()['useragent'].item()
+
+        if useragent_type == 'iphone':
+            return self.public_agents['mobile_latest_iphone_useragents'].sample()['useragent'].item()
+
+        if useragent_type == 'ipod':
+            return self.public_agents['ipod_latest_useragents'].sample()['useragent'].item()
+
+        if useragent_type == 'ipad':
+            return self.public_agents['ipad_latest_useragents'].sample()['useragent'].item()
+
+        if useragent_type == 'android':
+            return self.public_agents['mobile_latest_android_useragents'].sample()['useragent'].item()
+
+        if useragent_type == 'tablet':
+            return self.public_agents['tablet_latest_useragents'].sample()['useragent'].item()
+
+        raise Exception(f'[SeleniumUserAgentBuilder] :: ERROR :: useragent_type not found :: {useragent_type=}')
