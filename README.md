@@ -48,6 +48,7 @@ Github issues and feature requests welcomed.
 | Devices         | snmp                                                        |
 | Google Cloud    | google auth api<br/>google people api<br/>google sheets api |
 | Helpers         | os<br/>subprocess<br/>threading<br/>socket<br/>datetime     |
+| LLMs            | ollama, deepseek                                            |
 | Logging         | sentryio                                                    |
 | MacOS           | airport<br/>macchanger<br/>wdutil                           |
 | Python          | logging<br/>requests                                        |
