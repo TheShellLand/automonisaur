@@ -358,7 +358,7 @@ class FacebookGroups(object):
             re_matches = [
                 r'Created \d+ year[s]? ago',
                 r'Created \d+ week[s]? ago',
-                'Created on \d+ year[s]? ago',
+                r'Created on \d+ year[s]? ago',
                 'Created a year ago',
                 'Created a week ago'
             ]
