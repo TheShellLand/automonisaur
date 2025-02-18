@@ -2,11 +2,13 @@ import logging
 import hashlib
 import traceback
 
-from automon.helpers.osWrapper import environ
 from automon.helpers.dates import Dates
+from automon.helpers.osWrapper import environ
 from automon.helpers.markdown import Chat, Format
 
-from .attributes import LogRecordAttribute
+from .stream import LoggingStream
+from .callback import LoggingCallback
+from .attributes import LoggingRecordAttribute
 
 TEST = 5
 DEBUG = logging.DEBUG
@@ -18,76 +20,6 @@ NOTSET = logging.NOTSET
 
 logger = logging.getLogger(__name__)
 logger.setLevel(CRITICAL)
-
-
-def log_secret(secret: str) -> str:
-    return len(hashlib.md5(str(secret).encode()).hexdigest()) * '*'
-
-
-class Callback(object):
-
-    def __init__(self, callbacks: list):
-        """Log to callbacks
-        """
-
-        self.callbacks = callbacks
-
-    def call(self, type: str, msg: str, *args, **kwargs) -> True:
-        for call in self.callbacks:
-            if type == 'info':
-                call.info(msg, *args, **kwargs)
-
-            elif type == 'debug':
-                call.debug(msg, *args, **kwargs)
-
-            elif type == 'error':
-                call.error(msg, *args, **kwargs)
-
-            elif type == 'warn' or type == 'warning':
-                call.warn(msg, *args, **kwargs)
-
-            elif type == 'critical':
-                call.critical(msg, *args, **kwargs)
-
-            else:
-                call.warn(f'{NotImplemented} {type} {msg}')
-
-        return True
-
-    def info(self, msg: str, *args, **kwargs):
-        return self.call(type='info', msg=msg, *args, **kwargs)
-
-    def debug(self, msg: str, *args, **kwargs):
-        return self.call(type='debug', msg=msg, *args, **kwargs)
-
-    def error(self, msg: str, *args, **kwargs):
-        return self.call(type='error', msg=msg, *args, **kwargs)
-
-    def warn(self, msg: str, *args, **kwargs):
-        return self.call(type='warn', msg=msg, *args, **kwargs)
-
-    def warning(self, msg: str, *args, **kwargs):
-        return self.call(type='warning', msg=msg, *args, **kwargs)
-
-    def critical(self, msg: str, *args, **kwargs):
-        return self.call(type='critical', msg=msg, *args, **kwargs)
-
-
-class LogStream(object):
-    """Allows logging to string
-    """
-
-    def __init__(self):
-        self.logs = ''
-
-    def write(self, string):
-        self.logs += string
-
-    def flush(self):
-        pass
-
-    def __repr__(self):
-        return self.logs
 
 
 class LoggingClient(object):
@@ -104,7 +36,7 @@ class LoggingClient(object):
 
     logging: logging = logging
 
-    log_format = f'{LogRecordAttribute(timestamp=True).levelname().name_and_lineno().funcName().message()}'
+    log_format = f'{LoggingRecordAttribute(timestamp=True).levelname().name_and_lineno().funcName().message()}'
     log_format_opentelemetry = environ('OTEL_PYTHON_LOG_FORMAT') or '\t'.join(
         [
             f'%(asctime)s',
@@ -133,7 +65,7 @@ class LoggingClient(object):
                  file: str = None,
                  encoding: str = 'utf-8',
                  filemode: str = 'a',
-                 log_stream: LogStream = False,
+                 log_stream: LoggingStream = False,
                  log_format: str = None,
                  callbacks: list = None,
                  timestamp: bool = True,
@@ -149,7 +81,7 @@ class LoggingClient(object):
         if log_format:
             self.log_format = log_format
         else:
-            self.log_format = f'{LogRecordAttribute(timestamp=timestamp).levelname().name().funcName().message()}'
+            self.log_format = f'{LoggingRecordAttribute(timestamp=timestamp).levelname().name().funcName().message()}'
 
         logging.basicConfig(level=level, format=self.log_format, **kwargs)
 
@@ -160,7 +92,7 @@ class LoggingClient(object):
         # TODO: need informative logging format
         # TODO: log streaming does not work
         if log_stream:
-            self.stream = LogStream() if log_stream else None
+            self.stream = LoggingStream() if log_stream else None
             logging.basicConfig(level=level, stream=self.stream)
 
     def error(self, msg: any = None,
@@ -174,33 +106,33 @@ class LoggingClient(object):
 
         if msg and not raise_exception:
             self.logging.error(msg, *args, **kwargs)
-            Callback(self.callbacks).error(msg, *args, **kwargs)
+            LoggingCallback(self.callbacks).error(msg, *args, **kwargs)
             return True
 
         if raise_exception:
             self.logging.error(msg, *args, **kwargs)
-            Callback(self.callbacks).error(msg, *args, **kwargs)
+            LoggingCallback(self.callbacks).error(msg, *args, **kwargs)
             raise Exception(msg, *args, **kwargs)
             return True
 
     def warning(self, msg: any, *args, **kwargs):
         self.logging.warning(msg, *args, **kwargs)
-        Callback(self.callbacks).warning(msg, *args, **kwargs)
+        LoggingCallback(self.callbacks).warning(msg, *args, **kwargs)
         return True
 
     def warn(self, msg: any, *args, **kwargs):
         self.warning(msg, *args, **kwargs)
-        Callback(self.callbacks).warn(msg, *args, **kwargs)
+        LoggingCallback(self.callbacks).warn(msg, *args, **kwargs)
         return True
 
     def info(self, msg: any, *args, **kwargs):
         self.logging.info(msg, *args, **kwargs)
-        Callback(self.callbacks).info(msg, *args, **kwargs)
+        LoggingCallback(self.callbacks).info(msg, *args, **kwargs)
         return True
 
     def debug(self, msg: any, *args, **kwargs):
         self.logging.debug(msg, *args, **kwargs)
-        Callback(self.callbacks).debug(msg, *args, **kwargs)
+        LoggingCallback(self.callbacks).debug(msg, *args, **kwargs)
         return True
 
     def critical(self, msg: any, *args, **kwargs):
@@ -209,10 +141,10 @@ class LoggingClient(object):
         tb = Chat.wrap(tb, Format.codeblock)
         if 'NoneType' not in tb:
             self.logging.critical(tb)
-            Callback(self.callbacks).critical(msg, *args, **kwargs)
+            LoggingCallback(self.callbacks).critical(msg, *args, **kwargs)
 
         self.logging.critical(msg, *args, **kwargs)
-        Callback(self.callbacks).critical(msg, *args, **kwargs)
+        LoggingCallback(self.callbacks).critical(msg, *args, **kwargs)
         return True
 
     @staticmethod

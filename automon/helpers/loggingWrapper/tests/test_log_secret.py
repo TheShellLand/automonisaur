@@ -1,6 +1,6 @@
 import unittest
 
-from automon.log import log_secret
+from automon.helpers.loggingWrapper import log_secret
 
 
 class MyTestCase(unittest.TestCase):

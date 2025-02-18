@@ -1,12 +1,13 @@
 from automon.helpers.osWrapper import environ
 
-from .attributes import LogRecordAttribute
-from .client import LoggingClient, LogStream, TEST, DEBUG, INFO, WARN, ERROR, CRITICAL, NOTSET
+from .attributes import LoggingRecordAttribute
+from .client import LoggingClient, TEST, DEBUG, INFO, WARN, ERROR, CRITICAL, NOTSET
 from .client import logging, LoggingClient
 from .client import LoggingClient as Logging
-from .client import log_secret
+from .stream import LoggingStream
+from .util import log_secret
 
-log_format = f'{LogRecordAttribute(timestamp=True).levelname().name_and_lineno().funcName().message()}'
+log_format = f'{LoggingRecordAttribute(timestamp=True).levelname().name_and_lineno().funcName().message()}'
 log_format_opentelemetry = environ('OTEL_PYTHON_LOG_FORMAT') or '\t'.join(
     [
         f'%(asctime)s',

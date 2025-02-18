@@ -1,4 +1,4 @@
-class LogRecordAttribute(object):
+class LoggingRecordAttribute(object):
 
     def __init__(self, timestamp: bool = False):
         self._log_pattern = []
