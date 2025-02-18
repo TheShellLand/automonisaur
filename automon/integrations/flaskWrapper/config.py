@@ -1,7 +1,7 @@
 import os
 import hashlib
 
-from automon import environ
+from automon.helpers.osWrapper import environ
 
 
 class FlaskConfig(object):

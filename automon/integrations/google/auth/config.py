@@ -10,7 +10,7 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 from automon import log
-from automon.helpers import environ
+from automon.helpers.osWrapper import environ
 
 logger = log.logging.getLogger(__name__)
 logger.setLevel(log.DEBUG)
