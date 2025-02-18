@@ -495,8 +495,8 @@ class FacebookGroups(object):
             #         self.quit()
             #         return self.start()
 
-            self._update_proxy(proxy=proxy, weight_multiplier=1.10)
-            logger.debug(f'[FacebookGroups] :: _find_proxy :: PROXY FOUND :: {proxy.to_dict("records")[0]}')
+            # self._update_proxy(proxy=proxy, weight_multiplier=1.10)
+            # logger.debug(f'[FacebookGroups] :: _find_proxy :: PROXY FOUND :: {proxy.to_dict("records")[0]}')
             return True
 
         raise Exception(f'[FacebookGroups] :: _find_proxy :: ERROR :: no proxies worked ({len(self.PROXIES)} proxies)')
