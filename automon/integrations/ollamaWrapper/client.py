@@ -50,8 +50,10 @@ class OllamaClient(object):
     def add_message(self, content: str, role: str = 'user'):
         logger.debug(f'[OllamaClient] :: add_message :: {role=} :: {len(content):,} tokens >>>>')
 
+        max_tokens = 128000
         if self.model == 'deepseek-r1:14b':
-            if len(content) > 128000:
+            max_tokens = 128000
+            if len(content) > max_tokens:
                 logger.warning(f'[OllamaClient] :: add_message :: too many tokens :: {len(content):,} > 128k')
 
         message = {
@@ -61,10 +63,13 @@ class OllamaClient(object):
 
         self.messages.append(message)
 
+        total_tokens = sum(len(s["content"]) for s in self.messages)
+
         logger.debug(
             f'[OllamaClient] :: '
             f'add_message :: '
-            f'{sum(len(s["content"]) for s in self.messages):,} total tokens'
+            f'{total_tokens:,}/{max_tokens:,} tokens used :: '
+            f'{max_tokens - total_tokens:,} tokens remaining'
         )
         logger.info(f'[OllamaClient] :: add_message :: done')
 
