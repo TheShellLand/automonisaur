@@ -5,7 +5,7 @@ import selenium.webdriver
 import automon.helpers.subprocessWrapper
 
 from automon import log
-from automon.helpers.osWrapper.environ import environ_list
+from automon.helpers.osWrapper import environ_list
 from automon.integrations.seleniumWrapper.user_agents import SeleniumUserAgentBuilder
 
 from .config_window_size import set_window_size

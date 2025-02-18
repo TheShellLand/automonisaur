@@ -4,7 +4,7 @@ import sys
 from bs4 import BeautifulSoup
 
 from automon.log import logger
-from automon.helpers import Run
+from automon.helpers.subprocessWrapper import Run
 from automon.helpers import Dates
 
 from .ssid import Ssid

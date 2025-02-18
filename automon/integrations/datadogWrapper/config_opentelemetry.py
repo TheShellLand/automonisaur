@@ -2,7 +2,7 @@ import os
 import opentelemetry
 from opentelemetry.trace import set_tracer_provider
 
-from automon import environ
+from automon.helpers.osWrapper import environ
 from automon import log
 
 logger = log.logging.getLogger(__name__)

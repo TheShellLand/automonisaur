@@ -1,7 +1,7 @@
 import os
 
 from automon import log
-from automon.helpers import Run
+from automon.helpers.subprocessWrapper import Run
 from automon.helpers.dates import Dates
 
 from .config import NmapConfig

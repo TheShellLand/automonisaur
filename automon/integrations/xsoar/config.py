@@ -1,4 +1,4 @@
-from automon import environ
+from automon.helpers.osWrapper import environ
 from automon.log import logging
 
 logger = logging.getLogger(__name__)

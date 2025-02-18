@@ -1,7 +1,7 @@
 import os
 
 from automon import log
-from automon import environ
+from automon.helpers.osWrapper import environ
 
 logger = log.logging.getLogger(__name__)
 logger.setLevel(log.DEBUG)

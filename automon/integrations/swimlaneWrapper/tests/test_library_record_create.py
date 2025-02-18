@@ -4,7 +4,7 @@
 # import swimlane
 #
 # from swimlane import Swimlane
-# from automon import environ
+# from automon.helpers.osWrapper import environ
 #
 # appId = environ('SWIMLANE_APP_ID')
 # host = environ('SWIMLANE_HOST')

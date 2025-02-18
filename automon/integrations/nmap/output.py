@@ -4,7 +4,7 @@ import pandas as pd
 
 from automon import log
 from pandas import DataFrame
-from automon.helpers import Run
+from automon.helpers.subprocessWrapper import Run
 from automon.integrations.datascience import Pandas
 
 logger = log.logging.getLogger(__name__)

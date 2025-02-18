@@ -40,6 +40,9 @@ minio>=7.1.0
 # neo4j
 neo4j>=4.4.9
 
+# ollama
+ollama
+
 # openstack swift
 python-keystoneclient>=4.2.0
 python-swiftclient>=3.12.0
