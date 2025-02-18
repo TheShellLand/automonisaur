@@ -1,7 +1,7 @@
 from automon.helpers.loggingWrapper import LoggingClient
 
 from automon.helpers.loggingWrapper import log_secret
-from automon.helpers import Run
+from automon.helpers.subprocessWrapper import Run
 
 from .config import WdutilConfig
 

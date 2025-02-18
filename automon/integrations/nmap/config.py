@@ -1,5 +1,5 @@
 from automon import log
-from automon.helpers import Run
+from automon.helpers.subprocessWrapper import Run
 
 logger = log.logging.getLogger(__name__)
 logger.setLevel(log.ERROR)

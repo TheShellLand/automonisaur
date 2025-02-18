@@ -1,6 +1,6 @@
-from automon import Run
+from automon.helpers.subprocessWrapper import Run
 from automon import log
-from automon import environ
+from automon.helpers.osWrapper import environ
 from automon.integrations.mac import os_is_mac
 
 from .exceptions import *
