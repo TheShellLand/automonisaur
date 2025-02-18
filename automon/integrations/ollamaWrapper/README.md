@@ -11,7 +11,7 @@ For official documentation: https://github.com/ollama/ollama-python
 
 ### How to use this library
 
-Refer to the [tests folder](automon/integrations/ollamaWrapper/tests/) for
+Refer to the [tests folder](tests/) for
 examples.
 
 ### Run test from shell
