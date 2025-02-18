@@ -45,22 +45,22 @@ class FacebookGroups(object):
     _xpath_privacy_details = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/div/div[2]'
     _xpath_visible = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[4]/div/div/div/div/div/div[1]/div/div/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div/div[1]'
 
-    BROWSER_HEADLESS = True
+    BROWSER_HEADLESS: bool = True
 
-    RATE_LIMITING = False
-    RATE_PER_MINUTE = 1
-    RATE_COUNTER = []
-    LAST_REQUEST = None
-    WAIT_BETWEEN_RETRIES = random.choice(range(1, 60))
+    RATE_LIMITING: bool = False
+    RATE_PER_MINUTE: int = 1
+    RATE_COUNTER: list = []
+    LAST_REQUEST: int = None
+    WAIT_BETWEEN_RETRIES: int = random.choice(range(1, 60))
 
-    PROXY_ENABLED = None
-    PROXY_RANDOM = None
-    PROXIES = []
+    PROXY_ENABLED: bool = None
+    PROXY_RANDOM: bool = None
+    PROXIES: list = []
 
     USER_AGENT_STRING: str = None
     USER_AGENT_RANDOM: bool = False
 
-    PROXIES_WEIGHT = {
+    PROXIES_WEIGHT: dict = {
         'Connect to Wi-Fi': -0.25,
         "You’re Temporarily Blocked": 0.90,
         "You must log in to continue": 0.90,
@@ -74,7 +74,7 @@ class FacebookGroups(object):
         'a7fe83ec64bb23eb28090598db3d166ed98e52e39d1afbbfd74c579553f93e4e': -0.25,
     }
 
-    PROXY = None
+    _PROXY: pandas.DataFrame = None
 
     def __init__(self, url: str = None):
         """Facebook Groups object
@@ -523,8 +523,7 @@ class FacebookGroups(object):
 
         proxy = self.PROXY
         if proxy is not None:
-            if len(proxy) > 0:
-                proxy = self.PROXY.to_dict("records")[0]
+            proxy = self.PROXY.to_dict("records")[0]
 
         logger.debug(
             f'[FacebookGroups] :: '
@@ -573,17 +572,26 @@ class FacebookGroups(object):
         logger.debug(f'[FacebookGroups] :: get_facebook_info :: {results=}')
 
         # increase weight
-        if self.PROXY is not None:
-            if len(self.PROXY) > 0:
-                self._update_proxy(proxy=self.PROXY, weight_multiplier=1.10)
-                logger.debug(
-                    f'[FacebookGroups] :: '
-                    f'get_facebook_info :: '
-                    f'UPDATE PROXY :: '
-                    f'{self.PROXY.to_dict("records")[0]}'
-                )
+        if self.PROXY:
+            self._update_proxy(proxy=self.PROXY, weight_multiplier=1.10)
+            logger.debug(
+                f'[FacebookGroups] :: '
+                f'get_facebook_info :: '
+                f'UPDATE PROXY :: '
+                f'{self.PROXY.to_dict("records")[0]}'
+            )
 
         return results
+
+    @property
+    def PROXY(self):
+        if self._PROXY is not None:
+            if len(self._PROXY) > 0:
+                return self._PROXY
+
+    @PROXY.setter
+    def PROXY(self, proxy: pandas.DataFrame):
+        self._PROXY = proxy
 
     def get_with_rate_limiter(
             self,
