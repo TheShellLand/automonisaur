@@ -6,7 +6,7 @@ from automon.integrations.google.auth import GoogleAuthConfig
 class MyTestCase(unittest.TestCase):
     def test_something(self):
         test = GoogleAuthConfig()
-        if test.Credentials():
+        if test.is_ready():
             self.assertTrue(test.Credentials())
 
 

@@ -8,7 +8,7 @@ class MyTestCase(unittest.TestCase):
         test = GoogleAuthClient()
         # scopes = ['https://www.googleapis.com/auth/contacts.readonly']
         # client = AuthClient(serviceName='people', scopes=scopes)
-        if test.authenticate():
+        if test.is_connected():
             self.assertTrue(test.authenticate())
 
 

@@ -91,7 +91,10 @@ class GoogleAuthClient(object):
 
     def is_connected(self) -> bool:
         """Check if authenticated to make requests"""
-        return self.authenticate()
+        try:
+            return self.authenticate()
+        except Exception as error:
+            logger.error(f'[google] :: is_connected :: ERROR :: {error=}')
 
     def service(
             self,

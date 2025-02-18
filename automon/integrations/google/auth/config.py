@@ -120,5 +120,10 @@ class GoogleAuthConfig(object):
 
     def is_ready(self):
         """return True if configured"""
-        if self.Credentials():
-            return True
+        try:
+            if self.Credentials():
+                return True
+        except Exception as error:
+            logger.error(f'is_ready :: ERROR :: {error=}')
+
+        return False
