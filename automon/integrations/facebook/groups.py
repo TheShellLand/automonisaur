@@ -132,8 +132,8 @@ class FacebookGroups(object):
         if self.check_something_went_wrong():
             return True
 
-        if self.check_page_loaded():
-            return False
+        if not self.check_page_loaded():
+            return True
 
         return False
 
@@ -469,31 +469,31 @@ class FacebookGroups(object):
             self._browser.config.webdriver_wrapper.enable_proxy(proxy['proxy'].item())
             logger.debug(f'[FacebookGroups] :: _find_proxy :: proxy test :: {proxy.to_dict("records")[0]}')
 
-            self._browser.run()
-            try:
-                self._browser.get('https://ip.oxylabs.io/')
-                # self.get_about()
-            except Exception as error:
-                # logger.error(f'[FacebookGroups] :: _find_proxy :: ERROR :: {self.url=} :: {error=}')
-                pass
-
-            for _proxy_error in self.PROXIES_WEIGHT:
-
-                search = self._browser.find_page_source_with_regex(_proxy_error)
-                page_hash = hashlib.sha256(f'{self._browser.page_source}'.encode()).hexdigest()
-
-                if search or page_hash == _proxy_error:
-                    self._update_proxy(proxy=proxy, weight_multiplier=self.PROXIES_WEIGHT[_proxy_error])
-
-                    logger.info(
-                        f'[FacebookGroups] :: '
-                        f'_find_proxy :: '
-                        f'proxy failed :: '
-                        f'{proxy.to_dict("records")[0]} :: '
-                        f'{_proxy_error=}'
-                    )
-                    self.quit()
-                    return self.start()
+            # self._browser.run()
+            # try:
+            #     self._browser.get('https://ip.oxylabs.io/')
+            #     # self.get_about()
+            # except Exception as error:
+            #     # logger.error(f'[FacebookGroups] :: _find_proxy :: ERROR :: {self.url=} :: {error=}')
+            #     pass
+            #
+            # for _proxy_error in self.PROXIES_WEIGHT:
+            #
+            #     search = self._browser.find_page_source_with_regex(_proxy_error)
+            #     page_hash = hashlib.sha256(f'{self._browser.page_source}'.encode()).hexdigest()
+            #
+            #     if search or page_hash == _proxy_error:
+            #         self._update_proxy(proxy=proxy, weight_multiplier=self.PROXIES_WEIGHT[_proxy_error])
+            #
+            #         logger.info(
+            #             f'[FacebookGroups] :: '
+            #             f'_find_proxy :: '
+            #             f'proxy failed :: '
+            #             f'{proxy.to_dict("records")[0]} :: '
+            #             f'{_proxy_error=}'
+            #         )
+            #         self.quit()
+            #         return self.start()
 
             self._update_proxy(proxy=proxy, weight_multiplier=1.10)
             logger.debug(f'[FacebookGroups] :: _find_proxy :: PROXY FOUND :: {proxy.to_dict("records")[0]}')
@@ -827,6 +827,7 @@ class FacebookGroups(object):
         if self.PROXY_ENABLED:
 
             if self._find_proxy():
+                browser = self._browser.run()
                 logger.info(f'[FacebookGroups] :: start :: done')
                 return True
 
@@ -1143,7 +1144,7 @@ class FacebookGroups(object):
             check_content_unavailable=self.check_content_unavailable(),
         )
 
-    def _update_proxy(self, proxy: pandas.DataFrame, weight_multiplier: int):
+    def _update_proxy(self, proxy: pandas.DataFrame, weight_multiplier: float):
 
         if proxy['weight'].item() == 0:
             proxy['weight'] = proxy['weight'] + 1
