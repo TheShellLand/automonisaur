@@ -47,6 +47,20 @@ class OllamaClient(object):
         self.response: OllamaResponse = None
         self._list = None
 
+    def add_chain(self, content: str, **kwargs):
+        logger.debug(f'[OllamaClient] :: add_chain >>>>')
+
+        new_question = f'{content}'
+
+        if self.response:
+            answer = self.response.to_string()
+            new_question = f'{content}\n\n{answer}'
+
+        self.add_message_followup(content=new_question, **kwargs)
+
+        logger.info(f'[OllamaClient] :: add_chain :: done')
+        return self
+
     def add_message(self, content: str, role: str = 'user'):
         logger.debug(f'[OllamaClient] :: add_message :: {role=} :: {len(content):,} tokens >>>>')
 
@@ -72,6 +86,14 @@ class OllamaClient(object):
             f'{max_tokens - total_tokens:,} tokens remaining'
         )
         logger.info(f'[OllamaClient] :: add_message :: done')
+
+        return self
+
+    def add_message_followup(self, **kwargs):
+        logger.debug(f'[OllamaClient] :: add_message_followup >>>>')
+        self.messages = []
+        self.add_message(**kwargs)
+        logger.info(f'[OllamaClient] :: add_message_followup :: done')
 
         return self
 
