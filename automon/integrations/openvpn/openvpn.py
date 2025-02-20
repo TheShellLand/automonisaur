@@ -2,11 +2,11 @@ import os
 import io
 
 from automon.integrations.minioWrapper import MinioClient, MinioConfig
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.helpers.sleeper import Sleeper
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.INFO)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(INFO)
 
 
 class ClientConfig:

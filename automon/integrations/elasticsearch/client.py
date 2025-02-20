@@ -5,12 +5,12 @@ from datetime import datetime
 from requests.auth import HTTPBasicAuth
 from elasticsearch import Elasticsearch
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from .config import ElasticsearchConfig
 from automon.helpers.sanitation import Sanitation
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class ElasticsearchClient(Elasticsearch):

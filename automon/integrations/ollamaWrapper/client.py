@@ -3,7 +3,7 @@ import ollama
 import cProfile
 import datetime
 
-from automon.helpers.loggingWrapper import LoggingClient, DEBUG, ERROR
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
 from .chat import OllamaChat
 

@@ -4,12 +4,12 @@ from queue import Queue
 import splunklib.results
 import splunklib.client
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.integrations.splunk.config import SplunkConfig
 from automon.integrations.splunk.helpers import Job, Application
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class SplunkRestClient:

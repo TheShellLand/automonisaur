@@ -1,9 +1,9 @@
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
 from .config import InstagramConfig
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.INFO)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(INFO)
 
 
 class InstagramClient(object):

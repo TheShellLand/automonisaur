@@ -4,14 +4,14 @@ import selenium
 import selenium.webdriver
 import automon.helpers.subprocessWrapper
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.helpers.osWrapper import environ_list
 from automon.integrations.seleniumWrapper.user_agents import SeleniumUserAgentBuilder
 
 from .config_window_size import set_window_size
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class ChromeWrapper(object):

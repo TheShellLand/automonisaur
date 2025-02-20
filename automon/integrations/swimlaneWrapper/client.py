@@ -1,13 +1,13 @@
 import json
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import SwimlaneConfig
 from .api.v2 import *
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class SwimlaneClient(object):

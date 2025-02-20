@@ -7,14 +7,14 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
 from .urls import GooglePeopleUrls
 from .config import GooglePeopleConfig
 from .results import ConnectionsResults
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class GooglePeopleClient:

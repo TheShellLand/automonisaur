@@ -8,11 +8,11 @@ from automon.integrations.nest_asyncioWrapper import AsyncStarter
 from automon.integrations.slackWrapper.client import SlackClient
 
 from automon.integrations.slackWrapper.slack_formatting import Emoji, Chat, Format
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.log import INFO, ERROR, WARN, CRITICAL, DEBUG, TEST
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class AsyncSlackLogging(SlackClient):

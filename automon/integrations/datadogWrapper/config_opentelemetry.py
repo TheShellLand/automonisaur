@@ -4,10 +4,10 @@ import opentelemetry
 from opentelemetry.trace import set_tracer_provider
 
 from automon.helpers.osWrapper import environ
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.logging.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class DatadogOpenTelemetryConfig(object):

@@ -1,6 +1,6 @@
 import functools
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.integrations.seleniumWrapper import SeleniumBrowser, ChromeWrapper
 
 from automon.helpers.sleeper import Sleeper
@@ -10,8 +10,8 @@ from .config import InstagramConfig
 from .urls import Urls
 from .xpaths import XPaths
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class InstagramBrowserClient:

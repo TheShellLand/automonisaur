@@ -3,9 +3,9 @@ import sys
 
 from bs4 import BeautifulSoup
 
-from automon.log import logger
-from automon.helpers.subprocessWrapper import Run
 from automon.helpers import Dates
+from automon.helpers.subprocessWrapper import Run
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 
 from .ssid import Ssid
 from .scan import ScanXml
@@ -21,8 +21,8 @@ flags = {
 
 }
 
-log = logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class Airport:
@@ -91,10 +91,10 @@ class Airport:
     def isReady(self):
         if sys.platform == 'darwin':
             if os.path.exists(self._airport):
-                log.debug(f'Airport found! {self._airport}')
+                logger.debug(f'Airport found! {self._airport}')
                 return True
             else:
-                log.error(f'Airport not found! {self._airport}')
+                logger.error(f'Airport not found! {self._airport}')
         return False
 
     def run(self, args: str = None):
@@ -108,12 +108,12 @@ class Airport:
         self.scan_date = Dates.iso()
 
         try:
-            log.info(command)
+            logger.info(command)
             if self._runner.Popen(command=command, text=True):
                 self._scan_output = self._runner.stdout
                 return True
         except Exception as e:
-            log.error(e)
+            logger.error(e)
             raise (Exception(e))
 
         return False
@@ -149,7 +149,7 @@ class Airport:
     def scan_summary(self, channel: int = None, args: str = None, output: bool = True):
         if self.scan(channel=channel, args=args):
             if output:
-                log.info(f'{self._scan_output}')
+                logger.info(f'{self._scan_output}')
             return True
         return False
 
@@ -182,6 +182,6 @@ class Airport:
                 return True
 
         except Exception as e:
-            log.error(f'Scan not parsed: {e}, {self.scan_cmd}')
+            logger.error(f'Scan not parsed: {e}, {self.scan_cmd}')
 
         return False

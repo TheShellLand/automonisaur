@@ -3,15 +3,15 @@ import slack
 import random
 import asyncio
 
-from automon import log
 from automon.integrations.nest_asyncioWrapper import AsyncStarter
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
 from .config import ConfigSlack
 from .bots import BotInfo
 from .error import SlackError
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.ERROR)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(ERROR)
 
 
 class SlackAsyncClient(ConfigSlack):

@@ -9,10 +9,10 @@ from .config import VdsConfig
 
 from queue import Queue
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.INFO)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(INFO)
 
 # disable insecure ssl warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

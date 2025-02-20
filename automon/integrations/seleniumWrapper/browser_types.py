@@ -10,7 +10,7 @@ from selenium.webdriver import Remote
 from selenium.webdriver import Safari
 from selenium.webdriver import WebKitGTK
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
 from .config import SeleniumConfig
 
@@ -23,8 +23,8 @@ except:
     from selenium.webdriver import Chrome as ChromiumEdge
     from selenium.webdriver import Chrome as WPEWebKit
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 class SeleniumBrowserType(object):
     config: SeleniumConfig

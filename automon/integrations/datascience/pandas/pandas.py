@@ -4,13 +4,13 @@ import pandas
 from io import StringIO
 from time import time as epoch_time
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
 from .series import Series
 from .dataframe import DataFrame
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class Pandas:

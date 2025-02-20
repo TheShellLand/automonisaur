@@ -6,16 +6,16 @@ import datetime
 
 from swiftclient.service import SwiftService
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, CRITICAL
 from automon.integrations.swift.error import SwiftError_
 # from automon.integrations.swift.config import SwiftConfig
 from automon.integrations.swift.iterables import SwiftList, SwiftItem
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.INFO)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(INFO)
 
-log.logging.getLogger('requests').setLevel(log.CRITICAL)
-log.logging.getLogger('swiftclient').setLevel(log.CRITICAL)
+LoggingClient.logging.getLogger('requests').setLevel(CRITICAL)
+LoggingClient.logging.getLogger('swiftclient').setLevel(CRITICAL)
 
 
 class SwiftClient:

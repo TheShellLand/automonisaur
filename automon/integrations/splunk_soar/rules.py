@@ -1,22 +1,14 @@
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
 from .phantom_unittest import import_playbook, container, results, artifact
 
-timestamp = '%(asctime)s'
-levelname = '%(levelname)s'
-modname = '%(name)s'
-message = '%(message)s'
-log_format = f'{timestamp}\t{levelname}\t({modname})\t{message}'
-
-log.logging.basicConfig(level=log.logging.DEBUG, format=log_format)
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.logging.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 def playbook(playbook_to_import: str, container: dict = container(),
              name: str = '', callback: object = None):
     """Mock function"""
-    logger = log.logging.getLogger(f'{__name__}.{playbook.__name__}')
 
     # logger.info(f'playbook_to_import: str, container: dict = {}, name: str, callback: object')
 
@@ -30,7 +22,6 @@ def playbook(playbook_to_import: str, container: dict = container(),
 
 def get_run_data(key: str, **kwargs):
     """Mock function"""
-    logger = log.logging.getLogger(f'{__name__}.{get_run_data.__name__}')
 
     # logger.info(f'key: {key}')
     logger.debug(f'key: {key}')
@@ -40,7 +31,6 @@ def get_run_data(key: str, **kwargs):
 
 def condition(container: dict = container(), conditions: list = [], name: str = ''):
     """Mock function"""
-    logger = log.logging.getLogger(f'{__name__}.{condition.__name__}')
 
     logger.debug(f'{help(condition)}')
 
@@ -54,7 +44,6 @@ def condition(container: dict = container(), conditions: list = [], name: str = 
 def format(container: dict = container(), template: str = '', parameters: list = [str],
            name: str = ''):
     """Mock function"""
-    logger = log.logging.getLogger(f'{__name__}.{format.__name__}')
 
     logger.debug('container: dict = {}, template: str = '', parameters: list = [], name: str = ''')
 
@@ -74,7 +63,6 @@ def format(container: dict = container(), template: str = '', parameters: list =
 
 def get_format_data(name: str, **kwargs):
     """Mock function"""
-    logger = log.logging.getLogger(f'{__name__}.{get_format_data.__name__}')
 
     logger.debug(f'name: {name}')
 
@@ -83,7 +71,6 @@ def get_format_data(name: str, **kwargs):
 
 def collect2(container: dict = container(), datapath: list = [], action_results: object = None):
     """Mock function"""
-    logger = log.logging.getLogger(f'{__name__}.{collect2.__name__}')
 
     logger.info('container: dict = {}, datapath: list = [], action_results: object = None')
 
@@ -96,7 +83,6 @@ def collect2(container: dict = container(), datapath: list = [], action_results:
 
 def act(action: str, parameters: str, assets: list, callback: object, name: str, parent_action: str = ''):
     """Mock function"""
-    logger = log.logging.getLogger(f'{__name__}.{act.__name__}')
 
     # logger.info(f'action: str, parameters: str, assets: list, callback: object, name: str')
 
@@ -112,7 +98,6 @@ def act(action: str, parameters: str, assets: list, callback: object, name: str,
 
 def save_run_data(key: str, value: str, auto: bool):
     """Mock function"""
-    logger = log.logging.getLogger(f'{__name__}.{save_run_data.__name__}')
 
     logger.debug(f'key: {key}')
     logger.debug(f'value: {value}')

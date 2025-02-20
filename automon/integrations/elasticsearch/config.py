@@ -1,13 +1,13 @@
 import os
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 from automon.helpers.sanitation import Sanitation as S
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
-log.logging.getLogger('elasticsearch').setLevel(log.logging.ERROR)
-log.logging.getLogger('urllib3.connectionpool').setLevel(log.logging.ERROR)
+LoggingClient.logging.getLogger('elasticsearch').setLevel(ERROR)
+LoggingClient.logging.getLogger('urllib3.connectionpool').setLevel(ERROR)
 
 
 class ElasticsearchConfig:

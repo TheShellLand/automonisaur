@@ -1,10 +1,10 @@
 import socket
 from urllib.parse import urlparse
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, INFO
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.INFO)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(INFO)
 
 
 class Networking:

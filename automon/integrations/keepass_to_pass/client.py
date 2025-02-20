@@ -1,11 +1,11 @@
 import os
 import csv
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.helpers.subprocessWrapper import Run
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(level=log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class KeepassEntry(object):

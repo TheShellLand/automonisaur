@@ -1,9 +1,9 @@
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, CRITICAL
 
 from .datatypes import AbstractDataType
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.CRITICAL)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(CRITICAL)
 
 
 class Artifact(AbstractDataType):

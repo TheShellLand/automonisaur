@@ -1,15 +1,15 @@
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.seleniumWrapper.config import SeleniumConfig
 from automon.integrations.seleniumWrapper.browser import SeleniumBrowser
 
 from automon.integrations.minioWrapper import MinioClient
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 def authenticate(username, password, minio_client=None, retries=None):

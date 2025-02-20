@@ -7,10 +7,10 @@ import xmltodict
 import subprocess
 
 from automon.integrations.slackWrapper.slack_formatting import Chat
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.INFO)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(INFO)
 
 
 class SmidumpFormat:

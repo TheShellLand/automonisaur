@@ -3,15 +3,15 @@ import neo4j
 from neo4j import GraphDatabase
 from queue import Queue
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 from automon.integrations.neo4jWrapper.cypher import Cypher
 
 from .config import Neo4jConfig
 from .results import Results
 
-log.logging.getLogger('neo4j').setLevel(log.logging.ERROR)
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+LoggingClient.logging.getLogger('neo4j').setLevel(ERROR)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class Neo4jClient:

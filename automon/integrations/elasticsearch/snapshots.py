@@ -1,12 +1,12 @@
 import json
 # import requests
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.integrations.elasticsearch.client import ElasticsearchClient
 from automon.integrations.elasticsearch.config import ElasticsearchConfig
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class Snapshot:

@@ -1,14 +1,14 @@
 import os
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.helpers.subprocessWrapper import Run
 from automon.helpers.dates import Dates
 
 from .config import NmapConfig
 from .output import NmapResult
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.INFO)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(INFO)
 
 
 class Nmap(object):

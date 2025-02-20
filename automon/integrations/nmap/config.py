@@ -1,8 +1,8 @@
-from automon import log
 from automon.helpers.subprocessWrapper import Run
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.ERROR)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(ERROR)
 
 
 class NmapConfig(object):

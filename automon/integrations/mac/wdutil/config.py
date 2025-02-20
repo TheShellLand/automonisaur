@@ -1,12 +1,12 @@
 from automon.helpers.subprocessWrapper import Run
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.helpers.osWrapper import environ
 from automon.integrations.mac import os_is_mac
 
 from .exceptions import *
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(level=log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(level=DEBUG)
 
 
 class WdutilConfig(object):

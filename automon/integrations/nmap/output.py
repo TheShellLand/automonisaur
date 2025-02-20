@@ -2,13 +2,13 @@ import mmap
 import xmltodict
 import pandas as pd
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from pandas import DataFrame
 from automon.helpers.subprocessWrapper import Run
 from automon.integrations.datascience import Pandas
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.INFO)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(INFO)
 
 
 class NmapResult(object):

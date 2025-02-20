@@ -1,14 +1,14 @@
 import os
 import slack
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
 from .config import SlackConfig
 from .bots import BotInfo
 from .error import SlackError
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.ERROR)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(ERROR)
 
 
 class SlackClient(SlackConfig):

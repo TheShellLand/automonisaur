@@ -12,9 +12,9 @@ import numpy as np
 import selenium.common.exceptions
 import pandas._libs.missing
 
-from automon.log import logger
 from automon.helpers.sleeper import Sleeper
 from automon.integrations.facebook import FacebookGroups
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.google.sheets import GoogleSheetsClient
 
 logging.getLogger('urllib3.util.retry').setLevel(logging.ERROR)
@@ -37,8 +37,8 @@ logging.getLogger('automon.helpers.sleeper').setLevel(logging.INFO)
 
 tracemalloc.start()
 
-log = automon.log.logger.logging.getLogger(__name__)
-log.setLevel(logger.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 DAYS_REQUIRED_BEFORE_UPDATING_AGAIN = 45
 
@@ -68,7 +68,7 @@ facebook_group_client.USER_AGENT_STRING = FACEBOOK_USER_AGENT
 
 
 def get_facebook_info(url: str, facebook_group_client: FacebookGroups) -> dict:
-    log.info(f'[get_facebook_info] :: {url=}')
+    logger.info(f'[get_facebook_info] :: {url=}')
     try:
         return facebook_group_client.get_facebook_info(url=url)
     except Exception as error:
@@ -131,16 +131,16 @@ def batch_processing(sheet_index: int, df: pandas.DataFrame) -> pandas.DataFrame
 
     except Exception as error:
         # traceback.print_exc()
-        log.error(f'[batch_processing] :: error :: {error}')
+        logger.error(f'[batch_processing] :: error :: {error}')
         raise error
 
     if not df_results['members'][0]:
-        log.error(f"[batch_processing] :: {df_results['members']=}")
+        logger.error(f"[batch_processing] :: {df_results['members']=}")
 
         if df_results['check_blocked_by_login'][0] or df_results['check_browser_not_supported'][0]:
-            log.error(f"[batch_processing] :: {df_results['check_blocked_by_login']=}")
-            log.error(f"[batch_processing] :: {df_results['check_browser_not_supported']=}")
-            log.error(f'[batch_processing] :: failed to parse site. skipping.')
+            logger.error(f"[batch_processing] :: {df_results['check_blocked_by_login']=}")
+            logger.error(f"[batch_processing] :: {df_results['check_browser_not_supported']=}")
+            logger.error(f'[batch_processing] :: failed to parse site. skipping.')
             return pandas.DataFrame()
 
         if not df_results['check_content_unavailable'][0]:
@@ -237,7 +237,7 @@ def batch_processing(sheet_index: int, df: pandas.DataFrame) -> pandas.DataFrame
         values=[x for x in df.values.tolist()]
     )
 
-    log.info(f'[batch_processing] :: {sheet_index_df}: {[x for x in df.values.tolist()]}')
+    logger.info(f'[batch_processing] :: {sheet_index_df}: {[x for x in df.values.tolist()]}')
 
     return df
 
@@ -261,7 +261,7 @@ def memory_profiler():
     cols.sort()
     df_memory_profile = df_memory_profile.loc[:, cols]
 
-    log.debug(
+    logger.debug(
         f"[memory_profiler] "
         f"total memory used: {df_memory_profile['size_MB'].sum()} MB; "
         f'most memory used: '
@@ -329,7 +329,7 @@ def expensive_state_keeping():
         result = sheets_client.clear(range=data_range)
         # max 60/min
         Sleeper.seconds(seconds=1)
-        log.info(f'[expensive_state_keeping] :: clear :: {result}')
+        logger.info(f'[expensive_state_keeping] :: clear :: {result}')
         df = df.drop(duplicate_index)
 
     # ingest urls from SHEET_NAME_INGEST
@@ -361,12 +361,12 @@ def expensive_state_keeping():
                 values=values
             )
 
-            log.info(f'[expensive_state_keeping] :: update :: {index_add_url}: {values}')
+            logger.info(f'[expensive_state_keeping] :: update :: {index_add_url}: {values}')
 
         # clear url from ingest sheet
         data_range = f'{SHEET_NAME_INGEST}!{ingest_index}:{ingest_index}'
         clear = sheets_client.clear(range=data_range)
-        log.info(f'[expensive_state_keeping] :: clear :: {clear}')
+        logger.info(f'[expensive_state_keeping] :: clear :: {clear}')
 
     return df
 
@@ -409,7 +409,7 @@ def progress_log(data_index: int, df: pandas.DataFrame, facebook_group_client: F
             f'(calculating ETA)'
         )
 
-    log.info(
+    logger.info(
         f'[main] :: progress :: '
         f'complete {progress_percentage}% {data_index}/{len(df)} '
         f'{message_remaining}'
@@ -445,7 +445,7 @@ def main():
             # traceback.print_exc()
 
             ERROR_COUNTER = ERROR_COUNTER + 1
-            log.error(f'[main] :: error :: {ERROR_COUNTER=} :: {error=}')
+            logger.error(f'[main] :: error :: {ERROR_COUNTER=} :: {error=}')
 
         df_memory = memory_profiler()
 

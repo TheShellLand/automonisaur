@@ -5,15 +5,15 @@ import functools
 
 from typing import Optional
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
 from .bucket import Bucket
 from .object import Object, DeleteObject
 from .config import MinioConfig
 from .assertions import MinioAssertions
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class MinioClient(object):

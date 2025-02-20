@@ -5,10 +5,12 @@ import googleapiclient.http
 import googleapiclient.discovery
 import google.auth.transport.requests
 
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG
+
 from .config import GoogleAuthConfig
 
-logger = automon.log.logging.getLogger(__name__)
-logger.setLevel(automon.log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class GoogleAuthClient(object):

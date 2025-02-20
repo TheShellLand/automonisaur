@@ -3,7 +3,7 @@ import unittest
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.helpers.osWrapper import environ
 
-from automon.helpers.loggingWrapper import LoggingClient, DEBUG, ERROR
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
 LoggingClient.logging.getLogger('httpx').setLevel(ERROR)
 LoggingClient.logging.getLogger('httpcore').setLevel(ERROR)

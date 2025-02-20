@@ -1,7 +1,7 @@
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.INFO)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(INFO)
 
 
 def set_window_size(width: int = 1920, height: int = 1080, device_type: str = None) -> (int, int):

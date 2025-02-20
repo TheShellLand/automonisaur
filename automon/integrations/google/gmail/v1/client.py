@@ -1,6 +1,9 @@
+from automon.helpers.loggingWrapper import LoggingClient
 from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import GoogleGmailConfig
+
+logger = LoggingClient.logging.getLogger(__name__)
 
 
 class GoogleGmailClient:

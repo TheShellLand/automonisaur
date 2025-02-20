@@ -20,7 +20,7 @@ from selenium.webdriver.common.keys import Keys
 
 import automon
 
-from automon import log
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
@@ -29,8 +29,8 @@ from .config import SeleniumConfig
 from .user_agents import SeleniumUserAgentBuilder
 from .exceptions import *
 
-logger = log.logging.getLogger(__name__)
-logger.setLevel(log.DEBUG)
+logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class SeleniumBrowser(object):
