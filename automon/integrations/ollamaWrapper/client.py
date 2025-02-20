@@ -136,6 +136,9 @@ class OllamaClient(object):
         logger.debug(f'[OllamaClient] :: is_ready :: >>>>')
 
         try:
+            if not self.start_local_server():
+                return False
+
             if self.has_downloaded_models():
                 logger.info(f'[OllamaClient] :: is_ready :: done')
                 return True
@@ -160,6 +163,23 @@ class OllamaClient(object):
         logger.debug(f'[OllamaClient] :: list :: {len(models)} model(s)')
         logger.info(f'[OllamaClient] :: list :: done')
         return self
+
+    @staticmethod
+    def start_local_server() -> bool:
+        logger.debug(f'[OllamaClient] :: start_local_server >>>>')
+
+        try:
+            ollama = automon.helpers.subprocessWrapper.Run('ollama list')
+
+            if ollama.returncode == 0:
+                logger.debug(f'[OllamaClient] :: start_local_server :: {ollama.stdout}')
+                return True
+
+        except Exception as error:
+            raise Exception(f'[OllamaClient] :: start_local_server :: ERROR :: {error=}')
+
+        logger.info(f'[OllamaClient] :: start_local_server :: failed')
+        return False
 
     def pull(self, model: str = 'deepseek-r1:14b'):
         logger.debug(f'[OllamaClient] :: pull :: {model=} :: >>>>')

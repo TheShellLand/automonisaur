@@ -20,18 +20,15 @@ class TestOllamaClient(unittest.TestCase):
         if not model.is_ready() or not environ('RUN'):
             return
 
-        RAG = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'RAG.txt'), 'r').read()
-        QUERY = input('Enter your question: ')
-
-        model.add_message(content=f'You are a USER and a ASSISTANT.')
-
-        model.add_message(content=f'As the ASSISTANT, you provided the following information to USER: {RAG}')
-        model.add_message(content=f"As the USER, do the following: {QUERY}")
-
-        model.add_message(content=f'As the USER, your replies are in informal tone.')
-
-        model.chat()
-        model.print_response()
+        model.add_chain(
+            "What are the key features of the XSOAR platform?"
+        ).chat().print_response().add_chain(
+            "Create a paragraph, in first person, as if you are writing a resume, "
+            "that has a few details on how you used XSOAR to solve large automation problems. "
+            "Give a response that is less than 10% chance of being written by ChatGPT. "
+            "And display the percentage of it written by ChatGPT. "
+            "Use the following information: "
+        ).chat().print_response()
 
 
 if __name__ == '__main__':
