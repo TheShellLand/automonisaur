@@ -1,5 +1,4 @@
 import logging
-import hashlib
 import traceback
 
 from automon.helpers.dates import Dates
@@ -7,6 +6,7 @@ from automon.helpers.osWrapper import environ
 from automon.helpers.markdown import Chat, Format
 
 from .stream import LoggingStream
+# from .extended import ExtendedLogger
 from .callback import LoggingCallback
 from .attributes import LoggingRecordAttribute
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(CRITICAL)
 
 
-class LoggingClient(object):
+class LoggingClient(logging.Logger):
     """Standard logging
     """
 
@@ -35,6 +35,8 @@ class LoggingClient(object):
     NOTSET: int = NOTSET
 
     logging: logging = logging
+
+    # logging.setLoggerClass(ExtendedLogger)
 
     log_format = f'{LoggingRecordAttribute(timestamp=True).levelname().name_and_lineno().funcName().message()}'
     log_format_opentelemetry = environ('OTEL_PYTHON_LOG_FORMAT') or '\t'.join(
@@ -54,11 +56,11 @@ class LoggingClient(object):
 
         # logging.basicConfig(level=DEBUG, format=log_format_opentelemetry)
         LoggingInstrumentor().instrument(
-            log_level=logging.DEBUG,
+            log_level=INFO,
             set_logging_format=True,
             logging_format=log_format_opentelemetry)
     except:
-        logging.basicConfig(level=DEBUG, format=log_format)
+        logging.basicConfig(level=INFO, format=log_format)
 
     def __init__(self, name: str = __name__,
                  level: int = INFO,
@@ -71,6 +73,8 @@ class LoggingClient(object):
                  timestamp: bool = True,
                  *args, **kwargs):
 
+        super().__init__(name=name, level=level)
+
         self.started = Dates.now()
 
         self.logging = logging.getLogger(name)
@@ -80,10 +84,7 @@ class LoggingClient(object):
 
         if log_format:
             self.log_format = log_format
-        else:
-            self.log_format = f'{LoggingRecordAttribute(timestamp=timestamp).levelname().name().funcName().message()}'
-
-        logging.basicConfig(level=level, format=self.log_format, **kwargs)
+            logging.basicConfig(level=level, format=self.log_format, **kwargs)
 
         if file:
             logging.basicConfig(filename=file, encoding=encoding, filemode=filemode, level=level,
@@ -94,6 +95,9 @@ class LoggingClient(object):
         if log_stream:
             self.stream = LoggingStream() if log_stream else None
             logging.basicConfig(level=level, stream=self.stream)
+
+    def __repr__(self):
+        return f'{self.logging.name}'
 
     def error(self, msg: any = None,
               enable_traceback: bool = True,
