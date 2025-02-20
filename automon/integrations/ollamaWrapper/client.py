@@ -82,7 +82,7 @@ class OllamaClient(object):
         logger.debug(
             f'[OllamaClient] :: '
             f'add_message :: '
-            f'{total_tokens:,}/{max_tokens:,} tokens used :: '
+            f'{total_tokens:,} / {max_tokens:,} tokens used :: '
             f'{max_tokens - total_tokens:,} tokens remaining'
         )
         logger.info(f'[OllamaClient] :: add_message :: done')
