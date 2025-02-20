@@ -3,15 +3,15 @@ import ollama
 import cProfile
 import datetime
 
-from automon.helpers.loggingWrapper import LoggingClient
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, ERROR
 
 from .chat import OllamaChat
 
-LoggingClient.logging.getLogger('httpcore.http11').setLevel(LoggingClient.ERROR)
-LoggingClient.logging.getLogger('httpcore.connection').setLevel(LoggingClient.ERROR)
+LoggingClient.logging.getLogger('httpcore.http11').setLevel(ERROR)
+LoggingClient.logging.getLogger('httpcore.connection').setLevel(ERROR)
 
 logger = LoggingClient.logging.getLogger(__name__)
-logger.setLevel(LoggingClient.DEBUG)
+logger.setLevel(DEBUG)
 
 
 class OllamaClient(object):

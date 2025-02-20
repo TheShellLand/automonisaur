@@ -3,13 +3,13 @@ import unittest
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.helpers.osWrapper import environ
 
-from automon.helpers.loggingWrapper import LoggingClient
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG, ERROR
 
-LoggingClient.logging.getLogger('httpx').setLevel(LoggingClient.ERROR)
-LoggingClient.logging.getLogger('httpcore').setLevel(LoggingClient.ERROR)
-LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.client').setLevel(LoggingClient.DEBUG)
-LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(LoggingClient.ERROR)
-LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(LoggingClient.ERROR)
+LoggingClient.logging.getLogger('httpx').setLevel(ERROR)
+LoggingClient.logging.getLogger('httpcore').setLevel(ERROR)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.client').setLevel(DEBUG)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(ERROR)
+LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)
 
 
 class TestOllamaClient(unittest.TestCase):
