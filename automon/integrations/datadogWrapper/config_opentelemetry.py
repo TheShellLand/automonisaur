@@ -1,4 +1,5 @@
 import os
+import warnings
 import opentelemetry
 from opentelemetry.trace import set_tracer_provider
 
@@ -25,6 +26,9 @@ class DatadogOpenTelemetryConfig(object):
         logger.error(f'run {DatadogOpenTelemetryConfig.__name__}.{self.instrumentation.__name__}')
 
     def instrumentation(self):
+
+        warnings.warn(f"This breaks pytest --log-cli-level DEBUG")
+
         # Must be set before ddtrace is imported!
         os.environ["DD_TRACE_OTEL_ENABLED"] = "true"
 

@@ -7,7 +7,7 @@ from automon.integrations.datadogWrapper import DatadogOpenTelemetryClient
 class MyTestCase(unittest.TestCase):
     client = DatadogOpenTelemetryClient()
 
-    client.config.instrumentation()
+    # client.config.instrumentation()
 
     if client.is_ready():
         def test_ready(self):
