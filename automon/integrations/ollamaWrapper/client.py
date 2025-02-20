@@ -1,39 +1,17 @@
 import automon
 import ollama
+import cProfile
+import datetime
 
 from automon.helpers.loggingWrapper import LoggingClient
+
+from .chat import OllamaChat
 
 LoggingClient.logging.getLogger('httpcore.http11').setLevel(LoggingClient.ERROR)
 LoggingClient.logging.getLogger('httpcore.connection').setLevel(LoggingClient.ERROR)
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(LoggingClient.DEBUG)
-
-
-class OllamaResponse(object):
-    """Generator object returned from ollama.chat"""
-
-    def __init__(self, model: str, response: ollama.chat):
-        self._response: ollama.chat = response
-        self.chunks = []
-
-        self._chunks()
-
-    def __repr__(self):
-        return f'[OllamaResponse]'
-
-    def _chunks(self):
-        for chunk in self._response:
-            self.chunks.append(chunk)
-
-    def content(self):
-        return [message['content'] for message in self.message()]
-
-    def message(self):
-        return [chunk['message'] for chunk in self.chunks]
-
-    def to_string(self):
-        return ''.join(self.content())
 
 
 class OllamaClient(object):
@@ -44,16 +22,16 @@ class OllamaClient(object):
         self.messages: list = messages
         self.STREAM: ollama.chat = stream
 
-        self.response: OllamaResponse = None
-        self._list = None
+        self._ollama_chat: OllamaChat = None
+        self._ollama_list = None
 
     def add_chain(self, content: str, **kwargs):
         logger.debug(f'[OllamaClient] :: add_chain >>>>')
 
         new_question = f'{content}'
 
-        if self.response:
-            answer = self.response.to_string()
+        if self._ollama_chat:
+            answer = self._ollama_chat.to_string()
             new_question = f'{content}\n\n{answer}'
 
         self.add_message_followup(content=new_question, **kwargs)
@@ -97,27 +75,34 @@ class OllamaClient(object):
 
         return self
 
-    def chat(self, show_profiler: bool = False, **kwargs):
+    def chat(self, show_profiler: bool = False, print_stream: bool = True, **kwargs):
         logger.debug(f'[OllamaClient] :: chat :: {sum(len(s["content"]) for s in self.messages):,} tokens >>>>')
 
-        import cProfile
-
-        pr = cProfile.Profile()
-        pr.enable()
-
-        response = ollama.chat(
+        chat = ollama.chat(
             model=self.model,
             messages=self.messages,
             stream=self.STREAM,
             **kwargs
         )
-        response = OllamaResponse(model=self.model, response=response)
-        self.response = response
+        chat = OllamaChat(model=self.model, chat=chat)
+        self._ollama_chat = chat
 
-        logger.debug(f'[OllamaClient] :: chat :: {response=}')
+        time_delta = None
+        if print_stream:
+            pr = cProfile.Profile()
+            time_start = datetime.datetime.now()
+            pr.enable()
+
+            chat.print_stream()
+
+            pr.disable()
+            time_stop = datetime.datetime.now()
+            time_delta = time_stop - time_start
+            time_delta = datetime.timedelta(seconds=time_delta.seconds)
+
+        if time_delta:
+            logger.debug(f'[OllamaClient] :: chat :: {chat=} :: {time_delta} runtime')
         logger.info(f'[OllamaClient] :: chat :: done')
-
-        pr.disable()
 
         if show_profiler:
             pr.print_stats(sort='cumulative')
@@ -127,7 +112,7 @@ class OllamaClient(object):
     def has_downloaded_models(self):
         self.list()
 
-        if self._list:
+        if self._ollama_list:
             return True
 
         return False
@@ -158,7 +143,7 @@ class OllamaClient(object):
             for model in models:
                 logger.debug(f'[OllamaClient] :: list :: {model=}')
 
-        self._list = list
+        self._ollama_list = list
 
         logger.debug(f'[OllamaClient] :: list :: {len(models)} model(s)')
         logger.info(f'[OllamaClient] :: list :: done')
@@ -193,10 +178,12 @@ class OllamaClient(object):
     def print_response(self):
         logger.debug(f'[OllamaClient] :: print_response :: >>>>')
 
-        for content in self.response.content():
+        if not self._ollama_chat.content():
+            return self
+
+        for content in self._ollama_chat.content():
             # logger.debug(f'[OllamaClient] :: print_response :: {content=}')
             print(content, end='', flush=True)
-        print()
 
         logger.info(f'[OllamaClient] :: print_response :: done')
         return self

@@ -1,4 +1,5 @@
 from .client import (
     OllamaClient,
-    OllamaResponse
 )
+
+from .chat import OllamaChat
