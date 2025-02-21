@@ -100,12 +100,12 @@ class OllamaClient(object):
             time_delta = time_stop - time_start
             time_delta = datetime.timedelta(seconds=time_delta.seconds)
 
+            if show_profiler:
+                pr.print_stats(sort='cumulative')
+
         if time_delta:
             logger.debug(f'[OllamaClient] :: chat :: {chat=} :: {time_delta} runtime')
         logger.info(f'[OllamaClient] :: chat :: done')
-
-        if show_profiler:
-            pr.print_stats(sort='cumulative')
 
         return self
 

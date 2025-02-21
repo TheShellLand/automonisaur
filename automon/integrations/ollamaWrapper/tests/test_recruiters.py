@@ -25,13 +25,18 @@ class TestOllamaClient(unittest.TestCase):
 
         model.add_chain(
             f"You are a user talking to a tech recruiter. "
-            f"The user provides a resume: {RESUME}. \n\n"
-            f"The recruiter provides a job: {RAG}, \n\n"
+            f"USER: The user provides a resume: {RESUME}. \n\n"
+            f"RECRUITER: The recruiter provides a job: {RAG}, \n\n"
             f"Respond in first person as the user. "
-            f"In one paragraph, give me the percentage of how relevant the user's resume is to the recruiter's job, and a short summary if you would apply for this job. "
-            f"Include a link to my AVAILABILITY found in the resume. "
-            f"Format the output in email format. "
-            f"Give me three versions. "
+            f"Answer the following questions: "
+            f"- What is the percentage of relevance your resume is to the recruiter's job? "
+            f"- Write about if you would apply for this job. "
+            f"Format the output in yaml format. "
+        ).chat().add_chain(
+            f"Write me an summary, it must answer all of the following:"
+            f"- write in email form"
+            f"- must include a percentage in the summary"
+            f"Use the following: "
         ).chat()
 
 

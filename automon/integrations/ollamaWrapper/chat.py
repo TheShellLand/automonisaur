@@ -39,9 +39,10 @@ class OllamaChat(object):
         return [chunk['message'] for chunk in self.chunks]
 
     def print_stream(self):
+        print('==========', flush=True)
         for chunk in self._get_chunks():
             print(f'{self._chunk_content(chunk=chunk)}', end='', flush=True)
-        print('\n\n', flush=True)
+        print('\n==========', flush=True)
         return self
 
     def to_string(self):
