@@ -27,16 +27,16 @@ class TestOllamaClient(unittest.TestCase):
             f"You are a user talking to a tech recruiter. "
             f"USER: The user provides a resume: {RESUME}. \n\n"
             f"RECRUITER: The recruiter provides a job: {RAG}, \n\n"
-            f"Respond in first person as the user. "
-            f"Answer the following questions: "
-            f"- What is the percentage of relevance your resume is to the recruiter's job? "
-            f"- Write about if you would apply for this job. "
-            f"Format the output in yaml format. "
+            f"Fully and thoroughly analyze the user's resume and imagine the efforts taken to learn and collect "
+            f"all of the user's experience and knowledge. Then, write a full report on the relevance the user's resume "
+            f"has with the job description, including the percent the resume is relevant."
         ).chat().add_chain(
-            f"Write me an summary, it must answer all of the following:"
-            f"- write in email form"
-            f"- must include a percentage in the summary"
-            f"Use the following: "
+            f"Write a summary in the first person, in yaml format that must answer all of the following questions: \n"
+            f"- What is the percent relevance? \n"
+            f"- What are the reasons the resume is relevant to the job? \n "
+            f"- Would you apply to this job? \n"
+            f"\n"
+            f"Use the following: \n"
         ).chat()
 
 
