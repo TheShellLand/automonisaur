@@ -6,6 +6,7 @@ import datetime
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
 from .chat import OllamaChat
+from .utils import chr_to_tokens
 
 LoggingClient.logging.getLogger('httpcore.http11').setLevel(ERROR)
 LoggingClient.logging.getLogger('httpcore.connection').setLevel(ERROR)
@@ -40,13 +41,13 @@ class OllamaClient(object):
         return self
 
     def add_message(self, content: str, role: str = 'user'):
-        logger.debug(f'[OllamaClient] :: add_message :: {role=} :: {len(content):,} tokens >>>>')
+        logger.debug(f'[OllamaClient] :: add_message :: {role=} :: {chr_to_tokens(content):,} tokens >>>>')
 
         max_tokens = 128000
         if self.model == 'deepseek-r1:14b':
             max_tokens = 128000
-            if len(content) > max_tokens:
-                logger.warning(f'[OllamaClient] :: add_message :: too many tokens :: {len(content):,} > 128k')
+            if chr_to_tokens(content) > max_tokens:
+                logger.warning(f'[OllamaClient] :: add_message :: too many tokens :: {chr_to_tokens(content):,} > 128k')
 
         message = {
             "role": role,
@@ -55,7 +56,7 @@ class OllamaClient(object):
 
         self.messages.append(message)
 
-        total_tokens = sum(len(s["content"]) for s in self.messages)
+        total_tokens = sum(chr_to_tokens(s["content"]) for s in self.messages)
 
         logger.debug(
             f'[OllamaClient] :: '
@@ -76,7 +77,8 @@ class OllamaClient(object):
         return self
 
     def chat(self, show_profiler: bool = False, print_stream: bool = True, **kwargs):
-        logger.debug(f'[OllamaClient] :: chat :: {sum(len(s["content"]) for s in self.messages):,} tokens >>>>')
+        logger.debug(
+            f'[OllamaClient] :: chat :: {sum(chr_to_tokens(s["content"]) for s in self.messages):,} tokens >>>>')
 
         chat = ollama.chat(
             model=self.model,

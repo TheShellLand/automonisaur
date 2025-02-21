@@ -2,6 +2,8 @@ import ollama
 
 from automon.helpers.loggingWrapper import LoggingClient
 
+from .utils import chr_to_tokens
+
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(LoggingClient.DEBUG)
 
@@ -20,7 +22,7 @@ class OllamaChat(object):
 
     def _chunk_content(self, chunk):
         content = self._chunk_message(chunk=chunk)['content']
-        logger.debug(f'[OllamaChat] :: _chunk_content :: {len(content)} tokens')
+        logger.debug(f'[OllamaChat] :: _chunk_content :: {chr_to_tokens(content)} tokens')
         return content
 
     def _chunk_message(self, chunk):
@@ -50,5 +52,5 @@ class OllamaChat(object):
             self._get_chunks()
 
         string = ''.join(self.content())
-        logger.debug(f'[OllamaChat] :: to_string :: {len(string)} tokens')
+        logger.debug(f'[OllamaChat] :: to_string :: {chr_to_tokens(string)} tokens')
         return string
