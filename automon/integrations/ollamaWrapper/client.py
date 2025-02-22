@@ -6,7 +6,7 @@ import datetime
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
 from .chat import OllamaChat
-from .utils import chr_to_tokens
+from .utils import chr_to_tokens, sum_tokens
 
 LoggingClient.logging.getLogger('httpcore.http11').setLevel(ERROR)
 LoggingClient.logging.getLogger('httpcore.connection').setLevel(ERROR)
@@ -26,14 +26,17 @@ class OllamaClient(object):
         self._ollama_chat: OllamaChat = None
         self._ollama_list = None
 
-    def add_chain(self, content: str, **kwargs):
+    def add_chain(self, content: str, delimiters: str = 'CHAT', **kwargs):
         logger.debug(f'[OllamaClient] :: add_chain >>>>')
 
         new_question = f'{content}'
 
         if self._ollama_chat:
-            answer = self._ollama_chat.to_string()
-            new_question = f'{content}\n\n{answer}'
+            chat = self._ollama_chat.to_string()
+            new_question = (
+                f'{content}\n'
+                f'<{delimiters}>{chat}</{delimiters}>'
+            )
 
         self.add_message_followup(content=new_question, **kwargs)
 
@@ -41,13 +44,22 @@ class OllamaClient(object):
         return self
 
     def add_message(self, content: str, role: str = 'user'):
-        logger.debug(f'[OllamaClient] :: add_message :: {role=} :: {chr_to_tokens(content):,} tokens >>>>')
+        logger.debug(
+            f'[OllamaClient] :: '
+            f'add_message :: '
+            f'{role=} :: '
+            f'{chr_to_tokens(content):,} tokens :: '
+            f'{len(content)} chars :: >>>>')
 
         max_tokens = 128000
         if self.model == 'deepseek-r1:14b':
             max_tokens = 128000
             if chr_to_tokens(content) > max_tokens:
-                logger.warning(f'[OllamaClient] :: add_message :: too many tokens :: {chr_to_tokens(content):,} > 128k')
+                logger.warning(
+                    f'[OllamaClient] :: '
+                    f'add_message :: '
+                    f'too many tokens :: '
+                    f'{chr_to_tokens(content):,} > 128k')
 
         message = {
             "role": role,
@@ -56,7 +68,7 @@ class OllamaClient(object):
 
         self.messages.append(message)
 
-        total_tokens = sum(chr_to_tokens(s["content"]) for s in self.messages)
+        total_tokens = sum_tokens(self.messages)
 
         logger.debug(
             f'[OllamaClient] :: '
@@ -77,8 +89,7 @@ class OllamaClient(object):
         return self
 
     def chat(self, show_profiler: bool = False, print_stream: bool = True, **kwargs):
-        logger.debug(
-            f'[OllamaClient] :: chat :: {sum(chr_to_tokens(s["content"]) for s in self.messages):,} tokens >>>>')
+        logger.debug(f'[OllamaClient] :: chat :: {sum_tokens(self.messages):,} tokens >>>>')
 
         chat = ollama.chat(
             model=self.model,
