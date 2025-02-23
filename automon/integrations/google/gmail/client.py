@@ -1,17 +1,22 @@
-from automon.helpers.loggingWrapper import LoggingClient
+from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import GoogleGmailConfig
 
 logger = LoggingClient.logging.getLogger(__name__)
+logger.setLevel(DEBUG)
 
 
 class GoogleGmailClient:
+    """Google Gmail client
+
+    https://developers.google.com/gmail/api/reference/rest
+    """
 
     def __init__(self, api_key: str = None, user: str = None, password: str = None, config: GoogleGmailConfig = None):
         self.config = config or GoogleGmailConfig(user=user, password=password, api_key=api_key)
-        self.endpoint = self.config.endpoint
-        self.userId = self.config.userId
+        self.endpoint = self.config.GOOGLE_GMAIL_ENDPOINT
+        self.userId = self.config.GOOGLE_GMAIL_USERID
 
         self.client = RequestsClient()
 

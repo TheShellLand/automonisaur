@@ -33,6 +33,9 @@ bcrypt>3.1.7
 google-api-python-client>=2.39.0
 google-auth-httplib2>=0.1.0
 google-auth-oauthlib>=0.5.0
+google-auth
+flask
+requests
 
 # minio
 minio>=7.1.0

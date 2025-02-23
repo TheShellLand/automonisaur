@@ -14,23 +14,33 @@ class GoogleGmailConfig(GoogleAuthConfig):
             GOOGLE_GMAIL_USERID: str = None,
             GOOGLE_GMAIL_PASSWORD: str = None,
             serviceName: str = 'gmail',
-            scopes: str = None,
-            version: str = None):
+            scopes: list = None,
+            version: str = None,
+            **kwargs
+    ):
         """Gmail config"""
-        super().__init__(serviceName=serviceName, scopes=scopes, version=version)
+        if not scopes:
+            scopes = [
+                "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
+                "https://www.googleapis.com/auth/gmail.addons.current.message.action",
+                "https://www.googleapis.com/auth/gmail.addons.current.message.metadata",
+                "https://www.googleapis.com/auth/gmail.addons.current.message.readonly",
+                "https://www.googleapis.com/auth/gmail.labels",
+                "https://www.googleapis.com/auth/gmail.send",
+                "https://www.googleapis.com/auth/gmail.readonly",
+                "https://www.googleapis.com/auth/gmail.compose",
+                "https://www.googleapis.com/auth/gmail.insert",
+                "https://www.googleapis.com/auth/gmail.modify",
+                "https://www.googleapis.com/auth/gmail.metadata",
+                "https://www.googleapis.com/auth/gmail.settings.basic",
+                "https://www.googleapis.com/auth/gmail.settings.sharing",
+                "https://mail.google.com/"
+            ]
+        super().__init__(serviceName=serviceName, scopes=scopes, version=version, **kwargs)
 
         self.GOOGLE_GMAIL_ENDPOINT = (GOOGLE_GMAIL_ENDPOINT or
                                       environ('GOOGLE_GMAIL_ENDPOINT',
                                               'https://gmail.googleapis.com'))
-
-        self.GOOGLE_GMAIL_API_KEY = (GOOGLE_GMAIL_API_KEY or
-                                     environ('GOOGLE_GMAIL_API_KEY'))
-
-        self.GOOGLE_GMAIL_USERID = (GOOGLE_GMAIL_USERID or
-                                    environ('GOOGLE_GMAIL_USERID'))
-
-        self.GOOGLE_GMAIL_PASSWORD = (GOOGLE_GMAIL_PASSWORD or
-                                      environ('GOOGLE_GMAIL_PASSWORD'))
 
     def __repr__(self):
         return f'{self.__dict__}'
