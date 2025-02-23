@@ -61,59 +61,59 @@ class GoogleAuthConfig(object):
         raise Exception(f'Missing GOOGLE_CREDENTIALS_FILE or GOOGLE_CREDENTIALS_BASE64')
 
     @property
-    def _GOOGLE_CREDENTIALS_FILE(self):
+    def GOOGLE_CREDENTIALS_FILE(self):
         """env var GOOGLE_CREDENTIALS_FILE"""
         return environ('GOOGLE_CREDENTIALS_FILE')
 
     @property
-    def _GOOGLE_CREDENTIALS_BASE64(self):
+    def GOOGLE_CREDENTIALS_BASE64(self):
         """env var GOOGLE_CREDENTIALS_BASE64"""
         return environ('GOOGLE_CREDENTIALS_BASE64')
 
     def CredentialsFile(self) -> google.oauth2.credentials.Credentials:
         """return Credentials object for web auth from file"""
-        if self._GOOGLE_CREDENTIALS_FILE:
-            if os.path.exists(self._GOOGLE_CREDENTIALS_FILE):
+        if self.GOOGLE_CREDENTIALS_FILE:
+            if os.path.exists(self.GOOGLE_CREDENTIALS_FILE):
                 return google.oauth2.credentials.Credentials.from_authorized_user_file(
-                    self._GOOGLE_CREDENTIALS_FILE
+                    self.GOOGLE_CREDENTIALS_FILE
                 )
 
     def CredentialsInfo(self) -> google.oauth2.credentials.Credentials:
         """return Credentials object for web auth from dict"""
-        if self._GOOGLE_CREDENTIALS_BASE64:
+        if self.GOOGLE_CREDENTIALS_BASE64:
             return google.oauth2.credentials.Credentials.from_authorized_user_info(
                 self.base64_to_dict()
             )
 
     def CredentialsServiceAccountFile(self) -> google.oauth2.service_account.Credentials:
         """return Credentials object for service account from file"""
-        if self._GOOGLE_CREDENTIALS_FILE:
-            if os.path.exists(self._GOOGLE_CREDENTIALS_FILE):
+        if self.GOOGLE_CREDENTIALS_FILE:
+            if os.path.exists(self.GOOGLE_CREDENTIALS_FILE):
                 return google.oauth2.service_account.Credentials.from_service_account_file(
-                    self._GOOGLE_CREDENTIALS_FILE
+                    self.GOOGLE_CREDENTIALS_FILE
                 )
 
     def CredentialsServiceAccountInfo(self) -> google.oauth2.service_account.Credentials:
         """return Credentials object for service account from dict"""
-        if self._GOOGLE_CREDENTIALS_BASE64:
+        if self.GOOGLE_CREDENTIALS_BASE64:
             return google.oauth2.service_account.Credentials.from_service_account_info(
                 self.base64_to_dict()
             )
 
     def base64_to_dict(self, base64_str: str = None) -> dict:
         """convert credential json to dict"""
-        if not base64_str and not self._GOOGLE_CREDENTIALS_BASE64:
+        if not base64_str and not self.GOOGLE_CREDENTIALS_BASE64:
             raise Exception(f'Missing GOOGLE_CREDENTIALS_BASE6')
 
-        base64_str = base64_str or self._GOOGLE_CREDENTIALS_BASE64
+        base64_str = base64_str or self.GOOGLE_CREDENTIALS_BASE64
         return json.loads(
             base64.b64decode(base64_str)
         )
 
     def file_to_base64(self, path: str = None):
         """convert file to base64"""
-        if not path and self._GOOGLE_CREDENTIALS_FILE:
-            path = self._GOOGLE_CREDENTIALS_FILE
+        if not path and self.GOOGLE_CREDENTIALS_FILE:
+            path = self.GOOGLE_CREDENTIALS_FILE
 
         with open(path, 'rb') as f:
             return base64.b64encode(f.read()).decode()
