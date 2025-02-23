@@ -1,2 +1,2 @@
-from .v1 import GoogleGmailClient
-from .v1 import GoogleGmailConfig
+from .v1 import *
+from .client import GoogleGmailClient, GoogleGmailConfig
