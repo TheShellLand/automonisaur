@@ -101,77 +101,9 @@ class SeleniumBrowser(object):
             return self.webdriver.current_window_handle
 
     @property
-    def logs(self):
-        return self.get_logs()
-
-    @property
     def webdriver(self):
         """get webdriver"""
         return self.config.webdriver
-
-    def get_log(self, log_type: str) -> list:
-        """Get logs for log type"""
-        logger.debug(f'[SeleniumBrowser] :: get_log :: {log_type=}')
-        get_log = self.webdriver.get_log(log_type)
-        logger.info(f'[SeleniumBrowser] :: [SeleniumBrowser] :: get_log :: done')
-        return get_log
-
-    def get_logs(self) -> dict:
-        """Get all logs
-
-        you can only run this once
-        afterwards the logs are cleared from the webdriver
-        """
-        logger.debug(
-            f'[SeleniumBrowser] :: '
-            f'get_logs :: '
-            f'{len(self.webdriver.log_types)} types found :: '
-            f'{self.webdriver.log_types}'
-        )
-
-        for log_type in self.webdriver.log_types:
-            logs = self.webdriver.get_log(log_type)
-
-            if log_type == 'performance':
-                for x in logs:
-                    x['message'] = json.loads(x['message'])
-
-            if log_type in self._logs.keys():
-                if logs:
-                    self._logs[log_type].append(logs)
-            else:
-                self._logs[log_type] = logs
-
-            logger.debug(f'[SeleniumBrowser] :: get_logs :: {log_type} :: {len(self._logs[log_type])} logs')
-            logger.info(f'[SeleniumBrowser] :: [SeleniumBrowser] :: get_logs :: {log_type} :: done')
-
-        logger.debug(f'[SeleniumBrowser] :: get_logs :: {len(self._logs)} total logs')
-        logger.info(f'[SeleniumBrowser] :: [SeleniumBrowser] :: get_logs :: done')
-        return self._logs
-
-    def get_log_browser(self) -> list:
-        """Get browser logs"""
-        logger.debug(f'[SeleniumBrowser] :: get_log_browser')
-        logs = self.get_log('browser')
-        logger.debug(f'[SeleniumBrowser] :: get_log_browser :: {len(logs)} logs')
-        logger.info(f'[SeleniumBrowser] :: get_log_browser :: done')
-        return logs
-
-    def get_log_driver(self) -> list:
-        """Get driver logs"""
-        logger.debug(f'[SeleniumBrowser] :: get_log_driver')
-        logs = self.get_log('driver')
-        logger.debug(f'[SeleniumBrowser] :: get_log_driver :: {len(logs)} logs')
-        logger.info(f'[SeleniumBrowser] :: get_log_driver :: done')
-        return logs
-
-    def get_log_performance(self) -> list:
-        """Get performance logs"""
-        logger.debug(f'[SeleniumBrowser] :: get_log_performance')
-        logs = self.get_log('performance')
-        logger.debug(f'[SeleniumBrowser] :: get_log_performance :: {len(logs)} logs')
-        logger.info(f'[SeleniumBrowser] :: get_log_performance :: done')
-        return logs
 
     def check_page_load_finished(self) -> bool:
         """Checks for `frameStoppedLoading` string in performance logs"""
@@ -194,75 +126,6 @@ class SeleniumBrowser(object):
 
         logger.error(f'[SeleniumBrowser] :: check_page_load_finished :: checking :: not finished loading')
         return False
-
-    @property
-    def keys(self):
-        """Set of special keys codes"""
-        return selenium.webdriver.common.keys.Keys
-
-    def refresh(self) -> None:
-        """refresh the page"""
-        logger.debug(f'[SeleniumBrowser] :: refresh :: {self.current_url=}')
-        refresh = self.webdriver.refresh()
-        logger.info(f'[SeleniumBrowser] :: refresh :: done')
-        return refresh or True
-
-    @property
-    def url(self):
-        """alias to current_url"""
-        return self.current_url
-
-    def upload_file(self, element: selenium.webdriver.remote.webelement.WebElement, file_path: str = None):
-        logger.debug(f'[SeleniumBrowser] :: upload_file :: {file_path=} :: {element=} :: >>>>')
-
-        # driver.find_element(By.CSS_SELECTOR, "input[type='file']")
-        upload = element.send_keys(file_path)
-        # driver.find_element(By.ID, "file-submit").click()
-        logger.debug(f'[SeleniumBrowser] :: upload_file :: {upload=}')
-        logger.info(f'[SeleniumBrowser] :: upload_file :: done')
-
-        return upload
-
-    def _screenshot_name(self, prefix=None):
-        """Generate a unique filename"""
-        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {prefix=}')
-
-        title = self.webdriver.title
-        url = self.current_url
-
-        hostname = self.urlparse(url).hostname
-
-        timestamp = Dates.filename_timestamp()
-        hostname_ = Sanitation.ascii_numeric_only(hostname)
-        title_ = Sanitation.ascii_numeric_only(title)
-
-        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {url=}')
-        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {timestamp=}')
-        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {title_=}')
-        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {hostname_=}')
-
-        if prefix:
-            prefix = Sanitation.safe_string(prefix)
-            _screenshot_name = f'{prefix}_{timestamp}_{hostname_}_{title_}.png'
-            logger.info(f'[SeleniumBrowser] :: _screenshot_name :: {_screenshot_name=}')
-            return _screenshot_name
-
-        _screenshot_name = f'{timestamp}_{hostname_}_{title_}.png'
-        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {_screenshot_name=}')
-
-        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: done')
-        return _screenshot_name
-
-    @property
-    def user_agent(self):
-        try:
-            return self.webdriver.execute_script("return navigator.userAgent")
-        except:
-            return None
-
-    @property
-    def window_size(self):
-        return self.config.webdriver_wrapper.window_size
 
     def action_click(
             self,
@@ -458,99 +321,18 @@ class SeleniumBrowser(object):
 
         logger.debug(f'[SeleniumBrowser] :: autosaving_cookies :: failed :: no current url :: {self.current_url=}')
 
+    def close(self):
+        """close browser"""
+        logger.debug(f'[SeleniumBrowser] :: close')
+        self.webdriver.close()
+        logger.info(f'[SeleniumBrowser] :: close :: done')
+
     def delete_all_cookies(self) -> None:
         """delete all cookies"""
         logger.debug(f'[SeleniumBrowser] :: delete_all_cookies')
         delete_all_cookies = self.webdriver.delete_all_cookies()
         logger.info(f'[SeleniumBrowser] :: delete_all_cookies :: done')
         return delete_all_cookies or True
-
-    def _url_filename(self, url: str):
-        """turn url into a filename"""
-        logger.debug(f'[SeleniumBrowser] :: _url_filename :: {url=}')
-
-        parsed = self.urlparse(url)
-        hostname = parsed.hostname
-        cookie_file = f'cookies-{hostname}.json'
-
-        logger.debug(f'[SeleniumBrowser] :: _url_filename :: {hostname=}')
-        logger.debug(f'[SeleniumBrowser] :: _url_filename :: {cookie_file=}')
-
-        logger.debug(f'[SeleniumBrowser] :: _url_filename :: done')
-        return cookie_file
-
-    def get_cookie(self, name: str) -> dict:
-        """get cookie by name"""
-        logger.debug(f'[SeleniumBrowser] :: get_cookie :: {name=}')
-        get_cookie = self.webdriver.get_cookie(name=name)
-        logger.debug(f'[SeleniumBrowser] :: get_cookie :: {get_cookie=}')
-        logger.info(f'[SeleniumBrowser] :: get_cookie :: done')
-        return get_cookie
-
-    def get_cookies(self) -> [dict]:
-        """get all cookies"""
-        logger.debug(f'[SeleniumBrowser] :: get_cookies :: ')
-        get_cookies = self.webdriver.get_cookies()
-        logger.debug(f'[SeleniumBrowser] :: get_cookies :: {len(get_cookies)} total cookies')
-        logger.info(f'[SeleniumBrowser] :: get_cookies :: done')
-        return get_cookies
-
-    def get_cookies_base64(self) -> str:
-        """get cookies as base64"""
-        logger.debug(f'[SeleniumBrowser] :: get_cookies_base64 ::')
-
-        get_cookies_base64 = self.get_cookies()
-        get_cookies_base64 = base64.b64encode(
-            json.dumps(get_cookies_base64).encode()
-        ).decode()
-        logger.debug(f'[SeleniumBrowser] :: get_cookies_base64 :: {len(get_cookies_base64) / 1024} KB')
-
-        logger.info(f'[SeleniumBrowser] :: get_cookies_base64 :: done')
-        return get_cookies_base64
-
-    def get_cookies_json(self) -> json.dumps:
-        """get cookies as json"""
-        logger.debug(f'[SeleniumBrowser] :: get_cookies_json ::')
-
-        get_cookies_json = self.get_cookies()
-        get_cookies_json = json.dumps(get_cookies_json)
-        logger.debug(f'[SeleniumBrowser] :: get_cookies_json :: {len(get_cookies_json) / 1024} KB')
-
-        logger.info(f'[SeleniumBrowser] :: get_cookies_json :: done')
-        return get_cookies_json
-
-    def get_cookies_summary(self) -> dict:
-        """get cookies summary"""
-        logger.debug(f'[SeleniumBrowser] :: get_cookies_summary ::')
-
-        result = self.get_cookies()
-        summary = {}
-        if result:
-            for cookie in result:
-                cookie = dict(cookie)
-                domain = cookie.get('domain')
-                name = cookie.get('name')
-                expiry = cookie.get('expiry')
-
-                logger.debug(f'[SeleniumBrowser] :: get_cookies_summary :: {cookie}')
-                logger.debug(f'[SeleniumBrowser] :: get_cookies_summary :: domain :: {domain}')
-                logger.debug(f'[SeleniumBrowser] :: get_cookies_summary :: name :: {name}')
-                logger.debug(f'[SeleniumBrowser] :: get_cookies_summary :: expiry :: {expiry}')
-
-                if domain in summary.keys():
-                    summary[domain].append(cookie)
-                else:
-                    summary[domain] = [cookie]
-
-        logger.debug(f'[SeleniumBrowser] :: get_cookies_summary :: summary :: {summary}')
-        logger.info(f'[SeleniumBrowser] :: get_cookies_summary ::')
-        return summary
-
-    def close(self):
-        """close browser"""
-        logger.debug(f'[SeleniumBrowser] :: close')
-        self.webdriver.close()
-        logger.info(f'[SeleniumBrowser] :: close :: done')
 
     @staticmethod
     def error_parsing(error) -> tuple:
@@ -995,6 +777,137 @@ class SeleniumBrowser(object):
             # traceback.print_exc()
             raise Exception(f'[SeleniumBrowser] :: get :: failed :: {error=}')
 
+    def get_cookie(self, name: str) -> dict:
+        """get cookie by name"""
+        logger.debug(f'[SeleniumBrowser] :: get_cookie :: {name=}')
+        get_cookie = self.webdriver.get_cookie(name=name)
+        logger.debug(f'[SeleniumBrowser] :: get_cookie :: {get_cookie=}')
+        logger.info(f'[SeleniumBrowser] :: get_cookie :: done')
+        return get_cookie
+
+    def get_cookies(self) -> [dict]:
+        """get all cookies"""
+        logger.debug(f'[SeleniumBrowser] :: get_cookies :: ')
+        get_cookies = self.webdriver.get_cookies()
+        logger.debug(f'[SeleniumBrowser] :: get_cookies :: {len(get_cookies)} total cookies')
+        logger.info(f'[SeleniumBrowser] :: get_cookies :: done')
+        return get_cookies
+
+    def get_cookies_base64(self) -> str:
+        """get cookies as base64"""
+        logger.debug(f'[SeleniumBrowser] :: get_cookies_base64 ::')
+
+        get_cookies_base64 = self.get_cookies()
+        get_cookies_base64 = base64.b64encode(
+            json.dumps(get_cookies_base64).encode()
+        ).decode()
+        logger.debug(f'[SeleniumBrowser] :: get_cookies_base64 :: {len(get_cookies_base64) / 1024} KB')
+
+        logger.info(f'[SeleniumBrowser] :: get_cookies_base64 :: done')
+        return get_cookies_base64
+
+    def get_cookies_json(self) -> json.dumps:
+        """get cookies as json"""
+        logger.debug(f'[SeleniumBrowser] :: get_cookies_json ::')
+
+        get_cookies_json = self.get_cookies()
+        get_cookies_json = json.dumps(get_cookies_json)
+        logger.debug(f'[SeleniumBrowser] :: get_cookies_json :: {len(get_cookies_json) / 1024} KB')
+
+        logger.info(f'[SeleniumBrowser] :: get_cookies_json :: done')
+        return get_cookies_json
+
+    def get_cookies_summary(self) -> dict:
+        """get cookies summary"""
+        logger.debug(f'[SeleniumBrowser] :: get_cookies_summary ::')
+
+        result = self.get_cookies()
+        summary = {}
+        if result:
+            for cookie in result:
+                cookie = dict(cookie)
+                domain = cookie.get('domain')
+                name = cookie.get('name')
+                expiry = cookie.get('expiry')
+
+                logger.debug(f'[SeleniumBrowser] :: get_cookies_summary :: {cookie}')
+                logger.debug(f'[SeleniumBrowser] :: get_cookies_summary :: domain :: {domain}')
+                logger.debug(f'[SeleniumBrowser] :: get_cookies_summary :: name :: {name}')
+                logger.debug(f'[SeleniumBrowser] :: get_cookies_summary :: expiry :: {expiry}')
+
+                if domain in summary.keys():
+                    summary[domain].append(cookie)
+                else:
+                    summary[domain] = [cookie]
+
+        logger.debug(f'[SeleniumBrowser] :: get_cookies_summary :: summary :: {summary}')
+        logger.info(f'[SeleniumBrowser] :: get_cookies_summary ::')
+        return summary
+
+    def get_log(self, log_type: str) -> list:
+        """Get logs for log type"""
+        logger.debug(f'[SeleniumBrowser] :: get_log :: {log_type=}')
+        get_log = self.webdriver.get_log(log_type)
+        logger.info(f'[SeleniumBrowser] :: [SeleniumBrowser] :: get_log :: done')
+        return get_log
+
+    def get_logs(self) -> dict:
+        """Get all logs
+
+        you can only run this once
+        afterwards the logs are cleared from the webdriver
+        """
+        logger.debug(
+            f'[SeleniumBrowser] :: '
+            f'get_logs :: '
+            f'{len(self.webdriver.log_types)} types found :: '
+            f'{self.webdriver.log_types}'
+        )
+
+        for log_type in self.webdriver.log_types:
+            logs = self.webdriver.get_log(log_type)
+
+            if log_type == 'performance':
+                for x in logs:
+                    x['message'] = json.loads(x['message'])
+
+            if log_type in self._logs.keys():
+                if logs:
+                    self._logs[log_type].append(logs)
+            else:
+                self._logs[log_type] = logs
+
+            logger.debug(f'[SeleniumBrowser] :: get_logs :: {log_type} :: {len(self._logs[log_type])} logs')
+            logger.info(f'[SeleniumBrowser] :: [SeleniumBrowser] :: get_logs :: {log_type} :: done')
+
+        logger.debug(f'[SeleniumBrowser] :: get_logs :: {len(self._logs)} total logs')
+        logger.info(f'[SeleniumBrowser] :: [SeleniumBrowser] :: get_logs :: done')
+        return self._logs
+
+    def get_log_browser(self) -> list:
+        """Get browser logs"""
+        logger.debug(f'[SeleniumBrowser] :: get_log_browser')
+        logs = self.get_log('browser')
+        logger.debug(f'[SeleniumBrowser] :: get_log_browser :: {len(logs)} logs')
+        logger.info(f'[SeleniumBrowser] :: get_log_browser :: done')
+        return logs
+
+    def get_log_driver(self) -> list:
+        """Get driver logs"""
+        logger.debug(f'[SeleniumBrowser] :: get_log_driver')
+        logs = self.get_log('driver')
+        logger.debug(f'[SeleniumBrowser] :: get_log_driver :: {len(logs)} logs')
+        logger.info(f'[SeleniumBrowser] :: get_log_driver :: done')
+        return logs
+
+    def get_log_performance(self) -> list:
+        """Get performance logs"""
+        logger.debug(f'[SeleniumBrowser] :: get_log_performance')
+        logs = self.get_log('performance')
+        logger.debug(f'[SeleniumBrowser] :: get_log_performance :: {len(logs)} logs')
+        logger.info(f'[SeleniumBrowser] :: get_log_performance :: done')
+        return logs
+
     def get_page(self, *args, **kwargs) -> bool:
         """alias to get"""
         logger.debug(f'[SeleniumBrowser] :: get_page :: {args=} :: {kwargs=}')
@@ -1111,6 +1024,15 @@ class SeleniumBrowser(object):
         logger.error(f'[SeleniumBrowser] :: is not running')
         return False
 
+    @property
+    def keys(self):
+        """Set of special keys codes"""
+        return selenium.webdriver.common.keys.Keys
+
+    @property
+    def logs(self):
+        return self.get_logs()
+
     def load_cookies_for_current_url(self) -> bool:
         """load cookies from file for current url"""
         logger.debug(f'load_cookies_for_current_url :: ')
@@ -1131,18 +1053,6 @@ class SeleniumBrowser(object):
     def page_source(self):
         return self.webdriver.page_source
 
-    @property
-    def _urllib(self):
-        return urllib
-
-    def urlparse(self, url: str):
-        """parse url"""
-        logger.debug(f'[SeleniumBrowser] :: urlparse :: {url=}')
-        parsed = urllib.parse.urlparse(url=url)
-        logger.debug(f'[SeleniumBrowser] :: urlparse :: {parsed=}')
-        logger.info(f'[SeleniumBrowser] :: urlparse :: done')
-        return parsed
-
     def quit(self) -> bool:
         """gracefully quit webdriver"""
         logger.debug(f'[SeleniumBrowser] :: quit')
@@ -1159,6 +1069,13 @@ class SeleniumBrowser(object):
 
         logger.info(f'[SeleniumBrowser] :: quit :: done')
         return True
+
+    def refresh(self) -> None:
+        """refresh the page"""
+        logger.debug(f'[SeleniumBrowser] :: refresh :: {self.current_url=}')
+        refresh = self.webdriver.refresh()
+        logger.info(f'[SeleniumBrowser] :: refresh :: done')
+        return refresh or True
 
     def run(self) -> bool:
         """run webdriver"""
@@ -1292,6 +1209,36 @@ class SeleniumBrowser(object):
         logger.error(f'[SeleniumBrowser] :: save_screenshot :: failed')
         return False
 
+    def _screenshot_name(self, prefix=None):
+        """Generate a unique filename"""
+        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {prefix=}')
+
+        title = self.webdriver.title
+        url = self.current_url
+
+        hostname = self.urlparse(url).hostname
+
+        timestamp = Dates.filename_timestamp()
+        hostname_ = Sanitation.ascii_numeric_only(hostname)
+        title_ = Sanitation.ascii_numeric_only(title)
+
+        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {url=}')
+        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {timestamp=}')
+        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {title_=}')
+        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {hostname_=}')
+
+        if prefix:
+            prefix = Sanitation.safe_string(prefix)
+            _screenshot_name = f'{prefix}_{timestamp}_{hostname_}_{title_}.png'
+            logger.info(f'[SeleniumBrowser] :: _screenshot_name :: {_screenshot_name=}')
+            return _screenshot_name
+
+        _screenshot_name = f'{timestamp}_{hostname_}_{title_}.png'
+        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: {_screenshot_name=}')
+
+        logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: done')
+        return _screenshot_name
+
     @property
     def session_id(self):
         if self.webdriver:
@@ -1338,6 +1285,55 @@ class SeleniumBrowser(object):
         logger.debug(f'[SeleniumBrowser] :: switch_to_new_window_window :: {self.webdriver.current_window_handle=}')
         logger.info(f'[SeleniumBrowser] :: switch_to_new_window_window :: done')
         return True
+
+    def upload_file(self, element: selenium.webdriver.remote.webelement.WebElement, file_path: str = None):
+        logger.debug(f'[SeleniumBrowser] :: upload_file :: {file_path=} :: {element=} :: >>>>')
+
+        # driver.find_element(By.CSS_SELECTOR, "input[type='file']")
+        upload = element.send_keys(file_path)
+        # driver.find_element(By.ID, "file-submit").click()
+        logger.debug(f'[SeleniumBrowser] :: upload_file :: {upload=}')
+        logger.info(f'[SeleniumBrowser] :: upload_file :: done')
+
+        return upload
+
+    @property
+    def url(self):
+        """alias to current_url"""
+        return self.current_url
+
+    def _url_filename(self, url: str):
+        """turn url into a filename"""
+        logger.debug(f'[SeleniumBrowser] :: _url_filename :: {url=}')
+
+        parsed = self.urlparse(url)
+        hostname = parsed.hostname
+        cookie_file = f'cookies-{hostname}.json'
+
+        logger.debug(f'[SeleniumBrowser] :: _url_filename :: {hostname=}')
+        logger.debug(f'[SeleniumBrowser] :: _url_filename :: {cookie_file=}')
+
+        logger.debug(f'[SeleniumBrowser] :: _url_filename :: done')
+        return cookie_file
+
+    @property
+    def _urllib(self):
+        return urllib
+
+    def urlparse(self, url: str):
+        """parse url"""
+        logger.debug(f'[SeleniumBrowser] :: urlparse :: {url=}')
+        parsed = urllib.parse.urlparse(url=url)
+        logger.debug(f'[SeleniumBrowser] :: urlparse :: {parsed=}')
+        logger.info(f'[SeleniumBrowser] :: urlparse :: done')
+        return parsed
+
+    @property
+    def user_agent(self):
+        try:
+            return self.webdriver.execute_script("return navigator.userAgent")
+        except:
+            return None
 
     def wait_for_anything(
             self,
@@ -1593,3 +1589,7 @@ class SeleniumBrowser(object):
 
         logger.info(f'[SeleniumBrowser] :: wait_for_xpath :: done')
         return wait_for_xpath
+
+    @property
+    def window_size(self):
+        return self.config.webdriver_wrapper.window_size
