@@ -40,7 +40,8 @@ class TestOllamaClient(unittest.TestCase):
             -   You are allowed to ask a follow up question if it will help clarify.
             -   For everything else, please explicitly mention these notes. 
             -   Answer in plain English and no sources are required.
-            -   Chat with the customer so far is under the CHAT section.
+            -   Chat with the customer so far is under the <CHAT> section.
+            -   Provide answer inside <ANSWER> tags. 
             </INSTRUCTIONS>
             
             
