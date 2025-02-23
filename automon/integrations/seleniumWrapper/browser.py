@@ -212,16 +212,16 @@ class SeleniumBrowser(object):
         """alias to current_url"""
         return self.current_url
 
-    @property
-    def user_agent(self):
-        try:
-            return self.webdriver.execute_script("return navigator.userAgent")
-        except:
-            return None
+    def upload_file(self, element: selenium.webdriver.remote.webelement.WebElement, file_path: str = None):
+        logger.debug(f'[SeleniumBrowser] :: upload_file :: {file_path=} :: {element=} :: >>>>')
 
-    @property
-    def window_size(self):
-        return self.config.webdriver_wrapper.window_size
+        # driver.find_element(By.CSS_SELECTOR, "input[type='file']")
+        upload = element.send_keys(file_path)
+        # driver.find_element(By.ID, "file-submit").click()
+        logger.debug(f'[SeleniumBrowser] :: upload_file :: {upload=}')
+        logger.info(f'[SeleniumBrowser] :: upload_file :: done')
+
+        return upload
 
     def _screenshot_name(self, prefix=None):
         """Generate a unique filename"""
@@ -252,6 +252,17 @@ class SeleniumBrowser(object):
 
         logger.debug(f'[SeleniumBrowser] :: _screenshot_name :: done')
         return _screenshot_name
+
+    @property
+    def user_agent(self):
+        try:
+            return self.webdriver.execute_script("return navigator.userAgent")
+        except:
+            return None
+
+    @property
+    def window_size(self):
+        return self.config.webdriver_wrapper.window_size
 
     def action_click(
             self,
