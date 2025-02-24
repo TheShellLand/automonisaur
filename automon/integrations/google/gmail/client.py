@@ -2,6 +2,7 @@ from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import GoogleGmailConfig
+from .v1 import *
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
@@ -13,12 +14,16 @@ class GoogleGmailClient:
     https://developers.google.com/gmail/api/reference/rest
     """
 
-    def __init__(self, api_key: str = None, user: str = None, password: str = None, config: GoogleGmailConfig = None):
-        self.config = config or GoogleGmailConfig(user=user, password=password, api_key=api_key)
+    def __init__(self, config: GoogleGmailConfig = None):
+        self.config = config or GoogleGmailConfig()
         self.endpoint = self.config.GOOGLE_GMAIL_ENDPOINT
-        self.userId = self.config.GOOGLE_GMAIL_USERID
+        self._userId = None
 
         self.client = RequestsClient()
+
+    @property
+    def userId(self):
+        pass
 
     def _base_url(self, url: str):
         return f'{self.endpoint}{url}'
@@ -68,7 +73,9 @@ class GoogleGmailClient:
 
     def labels_create(self, label: str):
         """Creates a new label."""
+        logger.debug(f"[GoogleGmailClient] :: labels_create :: {label=} :: >>>>")
         api = f'/gmail/v1/users/{self.userId}/labels'
+        api = UsersLabels(userId=self.userId)
         return self.client.post(self._base_url(api))
 
     def labels_delete(self, id: int):

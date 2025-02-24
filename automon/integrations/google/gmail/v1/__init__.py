@@ -85,7 +85,10 @@ class UsersHistory(Users):
     def list(self): """request.get"""; return self.url + f'/history'
 
 
-class UsersLabels:
+class UsersLabels(Users):
+
+    def __init__(self, userId: str):
+        super().__init__(userId=userId)
 
     @property
     def create(self): """requests.post"""; return self.url + f'/labels'

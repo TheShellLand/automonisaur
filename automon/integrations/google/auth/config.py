@@ -35,10 +35,12 @@ class GoogleAuthConfig(object):
         self.GOOGLE_CREDENTIALS_FILE = GOOGLE_CREDENTIALS_FILE or environ('GOOGLE_CREDENTIALS_FILE')
         self.GOOGLE_CREDENTIALS_BASE64 = GOOGLE_CREDENTIALS_BASE64 or environ('GOOGLE_CREDENTIALS_BASE64')
 
+        self.credentials: google.oauth2.credentials.Credentials = None
+
     def __repr__(self):
         return f'{self.__dict__}'
 
-    def Credentials(self, **kwargs):
+    def Credentials(self, **kwargs) -> google.oauth2.credentials.Credentials:
         """return Google Credentials object"""
 
         logger.debug(f"[GoogleAuthConfig] :: Credentials :: >>>>")
@@ -93,6 +95,7 @@ class GoogleAuthConfig(object):
 
         if credentials:
             logger.debug(f"[GoogleAuthConfig] :: Credentials :: {credentials=}")
+            self.credentials = credentials
             return credentials
 
         raise Exception(f"[GoogleAuthConfig] :: Credentials :: ERROR :: {credentials=}")
@@ -231,8 +234,9 @@ class GoogleAuthConfig(object):
     def is_ready(self):
         """return True if configured"""
         try:
-            if self.Credentials():
-                return True
+            if self.credentials:
+                if self.credentials.valid:
+                    return True
         except Exception as error:
             logger.error(f'is_ready :: ERROR :: {error=}')
 
