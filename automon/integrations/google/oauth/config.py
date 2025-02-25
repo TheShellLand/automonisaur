@@ -37,7 +37,8 @@ class GoogleAuthConfig(object):
 
         self.credentials: google.oauth2.credentials.Credentials = None
 
-        self._userinfo: str = None
+        self.user_info: dict = None
+        self.service = None
 
         if scopes is None:
             self.scopes = [
@@ -47,7 +48,7 @@ class GoogleAuthConfig(object):
             ]
 
     def add_scopes(self, scopes: list) -> list:
-        logger.debug(f"[GoogleAuthConfig] :: add_scopes :: {scopes=} :: >>")
+        logger.debug(f"[GoogleAuthConfig] :: add_scopes :: {scopes=} :: >>>>")
         self.scopes += scopes
 
         return self.scopes
@@ -55,10 +56,68 @@ class GoogleAuthConfig(object):
     def __repr__(self):
         return f'{self.__dict__}'
 
+    @property
+    def access_token(self):
+        if self.credentials:
+            return self.credentials.token
+
+    def base64_to_dict(self, base64_str: str) -> dict:
+        """convert credential json to dict"""
+        logger.debug(f"[GoogleAuthConfig] :: base64_to_dict :: >>>>")
+
+        return json.loads(
+            base64.b64decode(base64_str)
+        )
+
+    def build_service(
+            self,
+            serviceName: str = None,
+            version: str = None,
+            http=None,
+            discoveryServiceUrl=None,
+            developerKey=None,
+            model=None,
+            requestBuilder=None,
+            credentials: dict = None,
+            cache_discovery=True,
+            cache=None,
+            client_options=None,
+            adc_cert_path=None,
+            adc_key_path=None,
+            num_retries=1,
+            static_discovery=None,
+            always_use_jwt_access=False,
+            **kwargs) -> googleapiclient.discovery.build:
+        logger.debug(f'[GoogleAuthConfig] :: build_service :: {serviceName=} :: {version=} :: {credentials=} :: >>>>')
+        service = googleapiclient.discovery.build(
+            serviceName=serviceName or self.serviceName,
+            version=version or self.version,
+            http=http,
+            discoveryServiceUrl=discoveryServiceUrl,
+            developerKey=developerKey,
+            model=model,
+            requestBuilder=requestBuilder or googleapiclient.http.HttpRequest,
+            credentials=credentials or self.credentials,
+            cache_discovery=cache_discovery,
+            cache=cache,
+            client_options=client_options,
+            adc_cert_path=adc_cert_path,
+            adc_key_path=adc_key_path,
+            num_retries=num_retries,
+            static_discovery=static_discovery,
+            always_use_jwt_access=always_use_jwt_access,
+            **kwargs,
+        )
+
+        logger.debug(f'[GoogleAuthConfig] :: build_service :: {service=}')
+        logger.info(f'[GoogleAuthConfig] :: build_service :: done')
+        self.service = service
+        return service
+
     def Credentials(self) -> google.oauth2.credentials.Credentials:
         """return Google Credentials object"""
 
-        logger.debug(f"[GoogleAuthConfig] :: Credentials :: >>")
+        logger.debug(f"[GoogleAuthConfig] :: Credentials :: >>>>")
 
         if self.credentials:
             return self.credentials
@@ -128,11 +187,17 @@ class GoogleAuthConfig(object):
             self.credentials = credentials
             return credentials
 
+        if not self.GOOGLE_CREDENTIALS_FILE:
+            errors.append(f'Missing GOOGLE_CREDENTIALS_FILE')
+
+        if not self.GOOGLE_CREDENTIALS_BASE64:
+            errors.append(f'Missing GOOGLE_CREDENTIALS_BASE64')
+
         raise Exception(f"[GoogleAuthConfig] :: Credentials :: ERROR :: {errors=}")
 
     def CredentialsFile(self, filename: str, scopes: list) -> google.oauth2.credentials.Credentials:
         """return Credentials object for web auth from file"""
-        logger.debug(f"[GoogleAuthConfig] :: CredentialsFile :: {filename=} :: {len(scopes)} scopes >>")
+        logger.debug(f"[GoogleAuthConfig] :: CredentialsFile :: {filename=} :: {len(scopes)} scopes >>>>")
 
         credentials = google.oauth2.credentials.Credentials.from_authorized_user_file(
             filename=filename,
@@ -145,7 +210,7 @@ class GoogleAuthConfig(object):
 
     def CredentialsInfo(self, info: dict, scopes: list) -> google.oauth2.credentials.Credentials:
         """return Credentials object for web auth from dict"""
-        logger.debug(f"[GoogleAuthConfig] :: CredentialsInfo :: {len(scopes)} scopes :: >>")
+        logger.debug(f"[GoogleAuthConfig] :: CredentialsInfo :: {len(scopes)} scopes :: >>>>")
 
         credentials = google.oauth2.credentials.Credentials.from_authorized_user_info(
             info=info,
@@ -160,7 +225,7 @@ class GoogleAuthConfig(object):
             self, filename: str,
             scopes: list) -> google.oauth2.credentials.Credentials:
         """return Credentials object for web auth from file"""
-        logger.debug(f"[GoogleAuthConfig] :: CredentialsInstalledAppFlow :: {filename=} :: {len(scopes)} scopes >>")
+        logger.debug(f"[GoogleAuthConfig] :: CredentialsInstalledAppFlow :: {filename=} :: {len(scopes)} scopes >>>>")
 
         try:
             flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
@@ -179,7 +244,7 @@ class GoogleAuthConfig(object):
             client_config: dict,
             scopes: list) -> google.oauth2.credentials.Credentials:
         """return Credentials object for web auth from file"""
-        logger.debug(f"[GoogleAuthConfig] :: CredentialsInstalledAppFlowConfig :: {len(scopes)} scopes :: >>")
+        logger.debug(f"[GoogleAuthConfig] :: CredentialsInstalledAppFlowConfig :: {len(scopes)} scopes :: >>>>")
 
         try:
             flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_config(
@@ -195,7 +260,7 @@ class GoogleAuthConfig(object):
 
     def CredentialsServiceAccountFile(self, filename: str) -> google.oauth2.service_account.Credentials:
         """return Credentials object for service account from file"""
-        logger.debug(f"[GoogleAuthConfig] :: CredentialsServiceAccountFile :: {filename=} :: >>")
+        logger.debug(f"[GoogleAuthConfig] :: CredentialsServiceAccountFile :: {filename=} :: >>>>")
 
         credentials = google.oauth2.service_account.Credentials.from_service_account_file(
             filename=filename
@@ -207,7 +272,7 @@ class GoogleAuthConfig(object):
 
     def CredentialsServiceAccountInfo(self, info: dict) -> google.oauth2.service_account.Credentials:
         """return Credentials object for service account from dict"""
-        logger.debug(f"[GoogleAuthConfig] :: CredentialsServiceAccountInfo :: >>")
+        logger.debug(f"[GoogleAuthConfig] :: CredentialsServiceAccountInfo :: >>>>")
 
         credentials = google.oauth2.service_account.Credentials.from_service_account_info(
             info=info
@@ -217,17 +282,9 @@ class GoogleAuthConfig(object):
         logger.info(f"[GoogleAuthConfig] :: CredentialsServiceAccountInfo :: done")
         return credentials
 
-    def base64_to_dict(self, base64_str: str) -> dict:
-        """convert credential json to dict"""
-        logger.debug(f"[GoogleAuthConfig] :: base64_to_dict :: >>")
-
-        return json.loads(
-            base64.b64decode(base64_str)
-        )
-
     def dict_to_base64(self, input_dict: dict):
         """convert dict to base64"""
-        logger.debug(f"[GoogleAuthConfig] :: dict_to_base64 :: >>")
+        logger.debug(f"[GoogleAuthConfig] :: dict_to_base64 :: >>>>")
 
         dict_json = json.dumps(input_dict).encode()
         dict_base64 = base64.b64encode(dict_json).decode()
@@ -237,7 +294,7 @@ class GoogleAuthConfig(object):
 
     def file_to_base64(self, path: str = None):
         """convert file to base64"""
-        logger.debug(f"[GoogleAuthConfig] :: file_to_base64 :: >>")
+        logger.debug(f"[GoogleAuthConfig] :: file_to_base64 :: >>>>")
 
         if not path and self.GOOGLE_CREDENTIALS_FILE:
             path = self.GOOGLE_CREDENTIALS_FILE
@@ -250,7 +307,7 @@ class GoogleAuthConfig(object):
 
     def file_to_dict(self, path: str = None):
         """convert file to base64"""
-        logger.debug(f"[GoogleAuthConfig] :: file_to_dict :: >>")
+        logger.debug(f"[GoogleAuthConfig] :: file_to_dict :: >>>>")
 
         if not path and self.GOOGLE_CREDENTIALS_FILE:
             path = self.GOOGLE_CREDENTIALS_FILE
@@ -260,6 +317,12 @@ class GoogleAuthConfig(object):
             credentials_dict = json.loads(credentials)
             # logger.debug(f"[GoogleAuthConfig] :: file_to_base64 :: {credentials_dict=}")
             return credentials_dict
+
+    @property
+    def headers(self):
+        return {
+            "Authorization": f"Bearer {self.access_token}"
+        }
 
     def is_ready(self):
         """return True if configured"""
@@ -271,62 +334,8 @@ class GoogleAuthConfig(object):
 
         return False
 
-    def build_service(
-            self,
-            serviceName: str = None,
-            version: str = None,
-            http=None,
-            discoveryServiceUrl=None,
-            developerKey=None,
-            model=None,
-            requestBuilder=None,
-            credentials: dict = None,
-            cache_discovery=True,
-            cache=None,
-            client_options=None,
-            adc_cert_path=None,
-            adc_key_path=None,
-            num_retries=1,
-            static_discovery=None,
-            always_use_jwt_access=False,
-            **kwargs) -> googleapiclient.discovery.build:
-        logger.debug(f'[GoogleAuthConfig] :: build_service :: {serviceName=} :: {version=} :: {credentials=} :: >>')
-        service = googleapiclient.discovery.build(
-            serviceName=serviceName or self.serviceName,
-            version=version or self.version,
-            http=http,
-            discoveryServiceUrl=discoveryServiceUrl,
-            developerKey=developerKey,
-            model=model,
-            requestBuilder=requestBuilder or googleapiclient.http.HttpRequest,
-            credentials=credentials or self.credentials,
-            cache_discovery=cache_discovery,
-            cache=cache,
-            client_options=client_options,
-            adc_cert_path=adc_cert_path,
-            adc_key_path=adc_key_path,
-            num_retries=num_retries,
-            static_discovery=static_discovery,
-            always_use_jwt_access=always_use_jwt_access,
-            **kwargs,
-        )
-
-        logger.debug(f'[GoogleAuthConfig] :: build_service :: {service=}')
-        logger.info(f'[GoogleAuthConfig] :: build_service :: done')
-        return service
-
-    def userinfo(self):
-        logger.debug(f'[GoogleAuthConfig] :: userinfo :: >>')
-
-        service = self.build_service(serviceName='oauth2', version='v2', credentials=self.credentials)
-        userinfo = service.userinfo().get().execute()
-
-        user_info = service.userinfo().get().execute()
-        self._userinfo = userinfo
-        return user_info
-
     def refresh_token(self):
-        logger.debug(f'[GoogleAuthConfig] :: refresh :: >>')
+        logger.debug(f'[GoogleAuthConfig] :: refresh :: >>>>')
 
         creds = self.credentials
         Request = google.auth.transport.requests.Request()
@@ -339,3 +348,18 @@ class GoogleAuthConfig(object):
 
         logger.info(f'[GoogleAuthConfig] :: refresh :: done')
         return True
+
+    def userinfo(self):
+        logger.debug(f'[GoogleAuthConfig] :: userinfo :: >>>>')
+
+        service = self.build_service(serviceName='oauth2', version='v2', credentials=self.credentials)
+        userinfo = service.userinfo().get().execute()
+
+        user_info = service.userinfo().get().execute()
+        self.user_info = userinfo
+        return user_info
+
+    @property
+    def user_info_email(self):
+        if self.user_info:
+            return self.user_info['email']

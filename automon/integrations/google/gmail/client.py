@@ -20,9 +20,14 @@ class GoogleGmailClient:
         logger.debug(f"[GoogleGmailClient] :: init :: >>>>")
         self.config = config or GoogleGmailConfig()
         self.endpoint = self.config.GOOGLE_GMAIL_ENDPOINT
-        self._userId: str = self.config._userinfo
 
         self.requests = RequestsClient()
+
+    @property
+    def _userId(self):
+        if not self.config.user_info_email:
+            raise Exception(f"[GoogleGmailClient] :: _userId :: ERROR :: {self.config.user_info_email=}")
+        return self.config.user_info_email
 
     def draft_create(self):
         """Creates a new draft with the DRAFT label."""
