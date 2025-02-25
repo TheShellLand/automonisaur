@@ -1,3 +1,5 @@
+import base64
+
 from enum import StrEnum
 
 from automon.helpers.loggingWrapper import LoggingClient, INFO
@@ -148,7 +150,6 @@ class InternalDateSource(StrEnum):
     dateHeader = 'dateHeader'
 
 
-
 class UsersMessagesAttachments:
     pass
 
@@ -236,8 +237,57 @@ class Label:
         color: Color = None
 
 
-class Message:
-    pass
+class DictAbstract:
+
+    def update_(self, dict):
+        self.__dict__.update(dict)
+        return self
+
+
+class Message(DictAbstract):
+    """
+    {
+      "id": string,
+      "threadId": string,
+      "labelIds": [
+        string
+      ],
+      "snippet": string,
+      "historyId": string,
+      "internalDate": string,
+      "payload": {
+        object (MessagePart)
+      },
+      "sizeEstimate": integer,
+      "raw": string
+    }
+    """
+
+    def __init__(self):
+        pass
+
+    @property
+    def raw_decoded(self):
+        try:
+            raw = self.raw
+            return base64.urlsafe_b64decode(raw).decode()
+        except Exception as error:
+            pass
+
+    @property
+    def payload_decoded(self):
+        try:
+            data = self.payload['body']['data']
+            return base64.urlsafe_b64decode(data).decode()
+        except Exception as error:
+            pass
+
+    @property
+    def payload_sender(self):
+        try:
+            return [x for x in self.payload['headers'] if x['name'] == 'From'][0]
+        except Exception as error:
+            pass
 
 
 class Draft:

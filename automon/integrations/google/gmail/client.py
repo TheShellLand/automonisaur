@@ -106,7 +106,8 @@ class GoogleGmailClient:
         self.requests.get(api, headers=self.config.headers, params=params)
 
     def is_ready(self):
-        return True
+        if self.config.is_ready():
+            return True
 
     def labels_create(self, label: str):
         """Creates a new label."""
@@ -187,7 +188,7 @@ class GoogleGmailClient:
     def messages_get(self,
                      id: str,
                      format: Format = None,
-                     metadataHeaders: list = None):
+                     metadataHeaders: list = None) -> Message:
         """Gets the specified message."""
         api = UsersMessages(self._userId).get(id)
         params = dict(
@@ -195,7 +196,7 @@ class GoogleGmailClient:
             metadataHeaders=metadataHeaders
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        return self.requests.to_dict()
+        return Message().update_(self.requests.to_dict())
 
     def messages_import(self,
                         internalDateSource: InternalDateSource = None,
