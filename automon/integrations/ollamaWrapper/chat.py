@@ -5,7 +5,7 @@ from automon.helpers.loggingWrapper import LoggingClient
 from .utils import chr_to_tokens
 
 logger = LoggingClient.logging.getLogger(__name__)
-logger.setLevel(LoggingClient.DEBUG)
+logger.setLevel(LoggingClient.ERROR)
 
 
 class OllamaChat(object):

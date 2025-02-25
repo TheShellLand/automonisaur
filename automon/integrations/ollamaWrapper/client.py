@@ -229,3 +229,53 @@ class OllamaClient(object):
             """
 
         return self.add_chain(template)
+
+    def use_template_chatbot_with_multi_input(self, input: [dict], question: str):
+        """
+
+        inputs: {
+            "tag": "name of tag",
+            "text" "string of text"
+        }
+
+        """
+
+        INPUTS = []
+        for input_ in input:
+            tag = input_['tag']
+            text = input_['text']
+
+            INPUTS.append(
+                f"""<{tag}>
+                {text}
+                </{tag}>"""
+            )
+
+        INPUTS = '\n'.join(INPUTS)
+
+        template = f"""
+            You are a highly articulate and helpful chat bot. 
+            Your task is to answer questions using data provided in the <DATA> section.
+            Your task is to analyze and use all sections in the <DATA> section.
+            
+            <DATA>
+            
+            {INPUTS}
+            
+            </DATA>
+            
+            <INSTRUCTIONS>
+            -   Always give a truthful and honest answers.
+            -   You are allowed to ask a follow up question if it will help clarify the <INPUT> section.
+            -   For everything else, please explicitly mention these notes. 
+            -   Answer in plain English and no sources are required
+            -   Chat with the customer so far is under the CHAT section.
+            </INSTRUCTIONS>
+            
+            
+            QUESTION: {question}
+            ANSWER:
+            
+            """
+
+        return self.add_chain(template)
