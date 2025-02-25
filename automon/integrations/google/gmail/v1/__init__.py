@@ -63,8 +63,8 @@ class Users(Api):
 
 class UsersDrafts(Users):
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     @property
     def create(self): """requests.post"""; return self.url + f'/drafts'
