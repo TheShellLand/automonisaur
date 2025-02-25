@@ -1,5 +1,7 @@
+import os
 import json
 import base64
+import pickle
 
 import google.oauth2.credentials
 import google.oauth2.service_account
@@ -114,10 +116,47 @@ class GoogleAuthConfig(object):
         self.service = service
         return service
 
+    @property
+    def credentials_file(self):
+        if self.GOOGLE_CREDENTIALS_FILE:
+            return self.file_to_dict()
+
+        if self.GOOGLE_CREDENTIALS_BASE64:
+            return self.base64_to_dict(self.GOOGLE_CREDENTIALS_BASE64)
+
+    @property
+    def credentials_file_client_id(self):
+        try:
+            for item in self.credentials_file.items():
+                return item[1]['client_id']
+        except Exception as error:
+            pass
+
+    def credentials_pickle(self):
+        logger.debug(f"[GoogleAuthConfig] :: credentials_pickle :: >>>>")
+
+        credentials_pickle = self.credentials_file_client_id + '.pickle'
+
+        if os.path.exists(credentials_pickle):
+            with open(credentials_pickle, 'rb') as token:
+                self.credentials = pickle.load(token)
+            self.refresh_token()
+
+        if not os.path.exists(credentials_pickle):
+            if self.credentials:
+                with open(credentials_pickle, 'wb') as token:
+                    pickle.dump(self.credentials, token)
+
+        logger.debug(
+            f"[GoogleAuthConfig] :: credentials_pickle :: {credentials_pickle=} ({os.stat(credentials_pickle).st_size / 1024:.2f} KB)")
+        logger.info(f"[GoogleAuthConfig] :: credentials_pickle :: done")
+
     def Credentials(self) -> google.oauth2.credentials.Credentials:
         """return Google Credentials object"""
 
         logger.debug(f"[GoogleAuthConfig] :: Credentials :: >>>>")
+
+        self.credentials_pickle()
 
         if self.credentials:
             return self.credentials
@@ -185,6 +224,7 @@ class GoogleAuthConfig(object):
             logger.debug(f"[GoogleAuthConfig] :: Credentials :: {credentials=}")
             logger.info(f"[GoogleAuthConfig] :: Credentials :: done")
             self.credentials = credentials
+            self.credentials_pickle()
             return credentials
 
         if not self.GOOGLE_CREDENTIALS_FILE:
