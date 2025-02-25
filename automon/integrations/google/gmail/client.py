@@ -1,3 +1,5 @@
+import googleapiclient.discovery
+
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
 
@@ -15,18 +17,12 @@ class GoogleGmailClient:
     """
 
     def __init__(self, config: GoogleGmailConfig = None):
+        logger.debug(f"[GoogleGmailClient] :: init :: >>>>")
         self.config = config or GoogleGmailConfig()
         self.endpoint = self.config.GOOGLE_GMAIL_ENDPOINT
         self._userId = None
 
         self.client = RequestsClient()
-
-    @property
-    def userId(self):
-        pass
-
-    def _base_url(self, url: str):
-        return f'{self.endpoint}{url}'
 
     def draft_create(self):
         """Creates a new draft with the DRAFT label."""
