@@ -92,7 +92,7 @@ class GoogleAuthClient(object):
             return True
         return False
 
-    def is_connected(self) -> bool:
+    def is_ready(self) -> bool:
         """Check if authenticated to make requests"""
         try:
             return self.authenticate()

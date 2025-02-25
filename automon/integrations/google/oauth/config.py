@@ -37,7 +37,7 @@ class GoogleAuthConfig(object):
 
         self.credentials: google.oauth2.credentials.Credentials = None
 
-        self._userinfo = None
+        self._userinfo: str = None
 
         if scopes is None:
             self.scopes = [
