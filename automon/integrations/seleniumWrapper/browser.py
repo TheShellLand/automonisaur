@@ -24,6 +24,7 @@ from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.helpers.dates import Dates
 from automon.helpers.sleeper import Sleeper
 from automon.helpers.sanitation import Sanitation
+from automon.integrations.beautifulsoupWrapper import BeautifulSoupClient
 
 from .config import SeleniumConfig
 from .user_agents import SeleniumUserAgentBuilder
@@ -933,7 +934,7 @@ class SeleniumBrowser(object):
     def get_page_source_beautifulsoup(
             self,
             markup: str = None,
-            features: str = 'lxml') -> bs4.BeautifulSoup:
+            features: str = 'lxml') -> BeautifulSoupClient.BeautifulSoup:
         """read page source with beautifulsoup"""
 
         if not markup:
@@ -945,9 +946,9 @@ class SeleniumBrowser(object):
             f'{features=} :: {round(len(markup) / 1024)} KB'
         )
 
-        get_page_source_beautifulsoup = bs4.BeautifulSoup(
+        get_page_source_beautifulsoup = BeautifulSoupClient().read_markup(
             markup=markup,
-            features=features)
+            features=features).bs
         logger.debug(
             f'[SeleniumBrowser] :: '
             f'get_page_source_beautifulsoup :: '
