@@ -1,15 +1,15 @@
 import unittest
 
-from automon.integrations.google.gmail import GoogleGmailClient, GoogleGmailConfig
+from automon.integrations.google.gmail import GoogleGmailClient, GoogleGmailConfig, Format
 
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
         client = GoogleGmailClient()
-        # client.config.add_scopes(
-        #     ['https://www.googleapis.com/auth/gmail.labels']
-        # )
-        client.config.add_gmail_scopes()
+        # client.config.add_gmail_scopes()
+        client.config.add_scopes(
+            ["https://mail.google.com/"]
+        )
 
         if client.is_ready():
             client.config.Credentials()
@@ -19,6 +19,8 @@ class MyTestCase(unittest.TestCase):
             client.draft_list()
             client.users_getProfile()
             # client.history_list(startHistoryId='73211814')
+            client.messages_list()
+            client.messages_get('1953dbd795081667', format=Format.raw)
 
         pass
 

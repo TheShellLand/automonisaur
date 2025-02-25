@@ -1,3 +1,5 @@
+from enum import StrEnum
+
 from automon.helpers.loggingWrapper import LoggingClient, INFO
 
 logger = LoggingClient.logging.getLogger(__name__)
@@ -107,8 +109,44 @@ class UsersLabels(Users):
     def update(self, id: int): """requests.get"""; return self.url + f'/labels/{id}'
 
 
-class UsersMessages:
-    pass
+class UsersMessages(Users):
+
+    def __init__(self, *args):
+        super().__init__(*args)
+
+    @property
+    def batchDelete(self): """post"""; return self.url + f'/messages/batchDelete'
+
+    @property
+    def batchModify(self): """post"""; return self.url + f'/messages/batchModify'
+
+    def delete(self, id: int): """delete"""; return self.url + f'/messages/{id}'
+
+    def get(self, id: str): """get"""; return self.url + f'/messages/{id}'
+
+    @property
+    def import_(self): """post"""; return self.url + f'/messages/import'
+
+    @property
+    def insert(self): """post"""; return self.url + f'/messages'
+
+    @property
+    def list(self): """get"""; return self.url + f'/messages'
+
+    def modify(self, id: int): """post"""; return self.url + f'/messages/{id}/modify'
+
+    @property
+    def send(self): """post"""; return self.url + f'/messages/send'
+
+    def trash(self, id: int): """post"""; return self.url + f'/messages/{id}/trash'
+
+    def untrash(self, id: int): """post"""; return self.url + f'/messages/{id}/untrash'
+
+
+class InternalDateSource(StrEnum):
+    receivedTime = 'receivedTime'
+    dateHeader = 'dateHeader'
+
 
 
 class UsersMessagesAttachments:
@@ -272,3 +310,10 @@ class HistoryType:
         messagesDeleted: MessageDeleted = None
         labelsAdded: LabelAdded = None
         labelsRemoved: LabelRemoved = None
+
+
+class Format(StrEnum):
+    minimal = 'minimal'
+    full = 'full'
+    raw = 'raw'
+    metadata = 'metadata'
