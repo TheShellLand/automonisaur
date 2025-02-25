@@ -162,23 +162,6 @@ class OllamaClient(object):
         logger.info(f'[OllamaClient] :: list :: done')
         return self
 
-    @staticmethod
-    def start_local_server() -> bool:
-        logger.debug(f'[OllamaClient] :: start_local_server >>>>')
-
-        try:
-            ollama = automon.helpers.subprocessWrapper.Run('ollama list')
-
-            if ollama.returncode == 0:
-                logger.debug(f'[OllamaClient] :: start_local_server :: {ollama.stdout}')
-                return True
-
-        except Exception as error:
-            raise Exception(f'[OllamaClient] :: start_local_server :: ERROR :: {error=}')
-
-        logger.info(f'[OllamaClient] :: start_local_server :: failed')
-        return False
-
     def pull(self, model: str = 'deepseek-r1:14b'):
         logger.debug(f'[OllamaClient] :: pull :: {model=} :: >>>>')
 
@@ -200,3 +183,49 @@ class OllamaClient(object):
 
         logger.info(f'[OllamaClient] :: print_response :: done')
         return self
+
+    @staticmethod
+    def start_local_server() -> bool:
+        logger.debug(f'[OllamaClient] :: start_local_server >>>>')
+
+        try:
+            ollama = automon.helpers.subprocessWrapper.Run('ollama list')
+
+            if ollama.returncode == 0:
+                logger.debug(f'[OllamaClient] :: start_local_server :: {ollama.stdout}')
+                return True
+
+        except Exception as error:
+            raise Exception(f'[OllamaClient] :: start_local_server :: ERROR :: {error=}')
+
+        logger.info(f'[OllamaClient] :: start_local_server :: failed')
+        return False
+
+    def use_template_chatbot_with_input(self, input: str, question: str):
+
+        template = f"""
+            You are a highly articulate and helpful chat bot. 
+            Your task is to answer questions using data provided in the <DATA> section.
+                - Use the information in the <INPUT> section.
+            
+            <DATA>
+            <INPUT>
+            {input}
+            </INPUT>
+            </DATA>
+            
+            <INSTRUCTIONS>
+            -   Always give a truthful and honest answers.
+            -   You are allowed to ask a follow up question if it will help clarify the <INPUT> section.
+            -   For everything else, please explicitly mention these notes. 
+            -   Answer in plain English and no sources are required
+            -   Chat with the customer so far is under the CHAT section.
+            </INSTRUCTIONS>
+            
+            
+            QUESTION: {question}
+            ANSWER:
+            
+            """
+
+        return self.add_chain(template)
