@@ -113,8 +113,8 @@ class UsersLabels(Users):
 
 class UsersMessages(Users):
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     @property
     def batchDelete(self): """post"""; return self.url + f'/messages/batchDelete'
