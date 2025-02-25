@@ -2,6 +2,8 @@ from automon.helpers.osWrapper import environ
 from automon.integrations.google.oauth import GoogleAuthConfig
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
+from .v1 import *
+
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
@@ -10,15 +12,22 @@ class GoogleGmailConfig(GoogleAuthConfig):
     def __init__(
             self,
             GOOGLE_GMAIL_ENDPOINT: str = None,
-            GOOGLE_GMAIL_API_KEY: str = None,
-            GOOGLE_GMAIL_USERID: str = None,
-            GOOGLE_GMAIL_PASSWORD: str = None,
-            serviceName: str = 'gmail',
+            serviceName: str = Api._serviceName,
+            version: str = Api._version,
             scopes: list = None,
-            version: str = None,
             **kwargs
     ):
         """Gmail config"""
+        super().__init__(serviceName=serviceName, scopes=scopes, version=version, **kwargs)
+
+        self.GOOGLE_GMAIL_ENDPOINT = (GOOGLE_GMAIL_ENDPOINT or
+                                      environ('GOOGLE_GMAIL_ENDPOINT',
+                                              'https://gmail.googleapis.com'))
+
+    def __repr__(self):
+        return f'{self.__dict__}'
+
+    def add_gmail_scopes(self, scopes: list = None) -> list:
         if not scopes:
             scopes = [
                 "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
@@ -36,11 +45,5 @@ class GoogleGmailConfig(GoogleAuthConfig):
                 "https://www.googleapis.com/auth/gmail.settings.sharing",
                 "https://mail.google.com/"
             ]
-        super().__init__(serviceName=serviceName, scopes=scopes, version=version, **kwargs)
-
-        self.GOOGLE_GMAIL_ENDPOINT = (GOOGLE_GMAIL_ENDPOINT or
-                                      environ('GOOGLE_GMAIL_ENDPOINT',
-                                              'https://gmail.googleapis.com'))
-
-    def __repr__(self):
-        return f'{self.__dict__}'
+        logger.debug(f"[GoogleGmailConfig] :: add_gmail_scopes :: {len(scopes)} scopes :: >>")
+        return self.add_scopes(scopes=scopes)

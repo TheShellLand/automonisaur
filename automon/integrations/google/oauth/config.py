@@ -273,8 +273,8 @@ class GoogleAuthConfig(object):
 
     def build_service(
             self,
-            serviceName: str,
-            version: str,
+            serviceName: str = None,
+            version: str = None,
             http=None,
             discoveryServiceUrl=None,
             developerKey=None,

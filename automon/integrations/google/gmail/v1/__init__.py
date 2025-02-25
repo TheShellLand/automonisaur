@@ -5,7 +5,9 @@ logger.setLevel(INFO)
 
 
 class Api:
+    _serviceName = 'gmail'
     _version = 'v1'
+    _service_endpoint = 'https://gmail.googleapis.com'
 
     def __init__(self, service_endpoint: str = None, version: str = None):
         """https://gmail.googleapis.com/gmail/v1"""
@@ -24,11 +26,11 @@ class Api:
             self.version()
 
     def service_endpoint(self):
-        self.url += 'https://gmail.googleapis.com'
+        self.url += self._service_endpoint
         return self
 
     def gmail(self):
-        self.url += f'/gmail'
+        self.url += f'/{self._serviceName}'
         return self
 
     def version(self):
