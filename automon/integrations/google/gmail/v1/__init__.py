@@ -59,8 +59,8 @@ class Users(Api):
 
 class UsersDrafts(Users):
 
-    def __init__(self, userId: str):
-        super().__init__(userId=userId)
+    def __init__(self, *args):
+        super().__init__(*args)
 
     @property
     def create(self): """requests.post"""; return self.url + f'/drafts'
@@ -95,9 +95,16 @@ class UsersLabels(Users):
     @property
     def create(self): """requests.post"""; return self.url + f'/labels'
 
+    @property
+    def list(self): """requests.get"""; return self.url + f'/labels'
+
     def delete(self, id: int): """requests.delete"""; return self.url + f'/labels/{id}'
 
     def get(self, id: int): """requests.get"""; return self.url + f'/labels/{id}'
+
+    def patch(self, id: int): """requests.get"""; return self.url + f'/labels/{id}'
+
+    def update(self, id: int): """requests.get"""; return self.url + f'/labels/{id}'
 
 
 class UsersMessages:
@@ -142,3 +149,126 @@ class UsersSettingsSendAsSmimeInfo:
 
 class UsersThread:
     pass
+
+
+class MessageListVisibility:
+    pass
+
+
+class LabelListVisibility:
+    pass
+
+
+class Type:
+    pass
+
+
+class Color:
+    pass
+
+
+class Label:
+    """
+    {
+      "id": string,
+      "name": string,
+      "messageListVisibility": enum (MessageListVisibility),
+      "labelListVisibility": enum (LabelListVisibility),
+      "type": enum (Type),
+      "messagesTotal": integer,
+      "messagesUnread": integer,
+      "threadsTotal": integer,
+      "threadsUnread": integer,
+      "color": {
+        object (Color)
+      }
+    }
+    """
+
+    def __init__(self):
+        id: str = None
+        name: str = None
+        messageListVisibility: MessageListVisibility = None
+        labelListVisibility: LabelListVisibility = None
+        type: Type = None
+        messagesTotal: int = None
+        messagesUnread: int = None
+        threadsTotal: int = None
+        threadsUnread: int = None
+        color: Color = None
+
+
+class Message:
+    pass
+
+
+class Draft:
+    """
+    {
+      "id": string,
+      "message": {
+        object (Message)
+      }
+    }
+    """
+
+    def __init__(self):
+        id: str = None
+        message: Message = None
+
+
+class MessageAdded:
+    pass
+
+
+class MessageDeleted:
+    pass
+
+
+class LabelAdded:
+    pass
+
+
+class LabelRemoved:
+    pass
+
+
+class HistoryType:
+    """
+    {
+      "id": string,
+      "messages": [
+        {
+          object (Message)
+        }
+      ],
+      "messagesAdded": [
+        {
+          object (MessageAdded)
+        }
+      ],
+      "messagesDeleted": [
+        {
+          object (MessageDeleted)
+        }
+      ],
+      "labelsAdded": [
+        {
+          object (LabelAdded)
+        }
+      ],
+      "labelsRemoved": [
+        {
+          object (LabelRemoved)
+        }
+      ]
+    }
+    """
+
+    def __init__(self):
+        id: str = None
+        messages: Message = None
+        messagesAdded: MessageAdded = None
+        messagesDeleted: MessageDeleted = None
+        labelsAdded: LabelAdded = None
+        labelsRemoved: LabelRemoved = None

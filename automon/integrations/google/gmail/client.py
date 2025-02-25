@@ -31,91 +31,117 @@ class GoogleGmailClient:
 
     def draft_create(self):
         """Creates a new draft with the DRAFT label."""
-        api = [
-            f'/gmail/v1/users/{self.userId}/drafts',
-            f'/upload/gmail/v1/users/{self.userId}/drafts'
-        ]
-        return self.requests.post(self._base_url(api[0]))
+        api = UsersDrafts(self._userId)
+        return self.requests.post(api, headers=self.config.headers)
 
     def draft_delete(self, id: int):
         """Immediately and permanently deletes the specified draft."""
-        api = f'/gmail/v1/users/{self.userId}/drafts/{id}'
-        return self.requests.delete(self._base_url(api))
+        api = UsersDrafts(self._userId).delete(id)
+        return self.requests.delete(api, headers=self.config.headers)
 
     def draft_get(self, id: int):
         """Gets the specified draft."""
-        api = f'/gmail/v1/users/{self.userId}/drafts/{id}'
-        return self.requests.get(self._base_url(api))
+        api = f'/gmail/v1/users/{self._userId}/drafts/{id}'
+        return self.requests.get(api, headers=self.config.headers)
 
-    def draft_list(self):
+    def draft_list(self,
+                   maxResults: int = 100,
+                   pageToken: str = '',
+                   q: bool = '',
+                   includeSpamTrash: bool = None):
         """Lists the drafts in the user's mailbox."""
-        api = f'/gmail/v1/users/{self.userId}/drafts'
-        return self.requests.get(self._base_url(api))
+        if maxResults > 500:
+            raise
+
+        api = UsersDrafts(self._userId).list
+        params = dict(
+            maxResults=maxResults,
+            pageToken=pageToken,
+            q=q,
+            includeSpamTrash=includeSpamTrash,
+        )
+        return self.requests.get(api, headers=self.config.headers, params=params)
 
     def draft_send(self):
         """Sends the specified, existing draft to the recipients in the To, Cc, and Bcc headers."""
-        api = [
-            f'/gmail/v1/users/{self.userId}/drafts/send',
-            f'/upload/gmail/v1/users/{self.userId}/drafts/send'
-        ]
-        return self.requests.post(self._base_url(api[0]))
+        api = UsersDrafts(self._userId).send
+        data = Draft()
+        return self.requests.post(api, headers=self.config.headers, data=data.__dict__)
 
     def draft_update(self, id: int):
-        api = [
-            f'/gmail/v1/users/{self.userId}/drafts/{id}'
-            f'/upload/gmail/v1/users/{self.userId}/drafts/{id}'
-        ]
-        return self.requests.put(self._base_url(api[0]))
+        api = UsersDrafts(self._userId).update(id)
+        data = Draft()
+        return self.requests.put(api, headers=self.config.headers, data=data.__dict__)
 
-    def history_list(self):
+    def history_list(self,
+                     startHistoryId: str,
+                     maxResults: int = 100,
+                     pageToken: str = None,
+                     labelId: str = None,
+                     historyTypes: HistoryType = None):
         """Lists the history of all changes to the given mailbox."""
-        api = f'/gmail/v1/users/{self.userId}/history'
-        return self.requests.get(self._base_url(api))
+        if maxResults > 500:
+            raise
+
+        api = UsersHistory(self._userId).list
+        params = dict(
+            maxResults=maxResults,
+            pageToken=pageToken,
+            startHistoryId=startHistoryId,
+            labelId=labelId,
+            historyTypes=historyTypes
+        )
+        return self.requests.get(api, headers=self.config.headers, params=params)
+
+    def is_ready(self):
+        return True
 
     def labels_create(self, label: str):
         """Creates a new label."""
         logger.debug(f"[GoogleGmailClient] :: labels_create :: {label=} :: >>>>")
-        api = f'/gmail/v1/users/{self.userId}/labels'
-        api = UsersLabels(userId=self.userId)
-        return self.requests.post(self._base_url(api))
+        api = UsersLabels(userId=self._userId)
+        data = Label()
+        return self.requests.post(api, headers=self.config.headers, data=data.__dict__)
 
     def labels_delete(self, id: int):
         """Immediately and permanently deletes the specified label and
         removes it from any messages and threads that it is applied to."""
-        api = f'/gmail/v1/users/{self.userId}/labels/{id}'
-        return self.requests.delete(self._base_url(api))
+        api = UsersLabels(self._userId).delete(id)
+        return self.requests.delete(api, headers=self.config.headers)
 
     def labels_get(self, id: int):
         """Gets the specified label."""
-        api = f'/gmail/v1/users/{self.userId}/labels/{id}'
-        return self.requests.get(self._base_url(api))
+        api = UsersLabels(self._userId).get(id)
+        return self.requests.get(api, headers=self.config.headers)
 
     def labels_list(self):
         """Lists all labels in the user's mailbox."""
-        api = f'/gmail/v1/users/{self.userId}/labels'
-        return self.requests.get(self._base_url(api))
+        api = UsersLabels(self._userId).list
+        return self.requests.get(api, headers=self.config.headers)
 
     def labels_patch(self, id: int):
         """Patch the specified label."""
-        api = f'/gmail/v1/users/{self.userId}/labels/{id}'
-        return self.requests.patch(self._base_url(api))
+        api = UsersLabels(self._userId).patch(id)
+        data = Label()
+        return self.requests.patch(api, headers=self.config.headers, data=data.__dict__)
 
     def labels_update(self, id: int):
         """Updates the specified label."""
-        api = f'/gmail/v1/users/{self.userId}/labels/{id}'
-        return self.requests.put(self._base_url(api))
+        api = UsersLabels(self._userId).update(id)
+        data = Label()
+        return self.requests.put(api, headers=self.config.headers, data=data.__dict__)
 
     def users_watch(self):
         """Set up or update a push notification watch on the given user mailbox."""
-        api = f'/gmail/v1/users/{self.userId}/watch'
-        return self.requests.post(self._base_url(api))
+        api = f'/gmail/v1/users/{self._userId}/watch'
+        return self.requests.post(api, headers=self.config.headers)
 
     def users_getProfile(self):
         """Gets the current user's Gmail profile."""
-        api = f'/gmail/v1/users/{self.userId}/profile'
-        return self.requests.get(self._base_url(api))
+        api = Users(self._userId).getProfile
+        return self.requests.get(api, headers=self.config.headers)
 
     def users_stop(self):
         """Stop receiving push notifications for the given user mailbox."""
-        api = f'/gmail/v1/users/{self.userId}/stop'
-        return self.requests.post(self._base_url(api))
+        api = f'/gmail/v1/users/{self._userId}/stop'
+        return self.requests.post(api, headers=self.config.headers)

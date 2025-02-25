@@ -21,8 +21,8 @@ class GoogleGmailConfig(GoogleAuthConfig):
         super().__init__(serviceName=serviceName, scopes=scopes, version=version, **kwargs)
 
         self.GOOGLE_GMAIL_ENDPOINT = (GOOGLE_GMAIL_ENDPOINT or
-                                      environ('GOOGLE_GMAIL_ENDPOINT',
-                                              'https://gmail.googleapis.com'))
+                                      environ('GOOGLE_GMAIL_ENDPOINT') or
+                                      Api._service_endpoint)
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -45,5 +45,5 @@ class GoogleGmailConfig(GoogleAuthConfig):
                 "https://www.googleapis.com/auth/gmail.settings.sharing",
                 "https://mail.google.com/"
             ]
-        logger.debug(f"[GoogleGmailConfig] :: add_gmail_scopes :: {len(scopes)} scopes :: >>")
+        logger.debug(f"[GoogleGmailConfig] :: add_gmail_scopes :: {len(scopes)} scopes :: >>>>")
         return self.add_scopes(scopes=scopes)
