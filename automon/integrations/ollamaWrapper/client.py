@@ -2,6 +2,13 @@ import automon
 import ollama
 import cProfile
 import datetime
+import textwrap
+
+import os
+import pickle
+
+import automon.helpers.tempfileWrapper
+import automon.helpers.uuidWrapper
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
@@ -23,8 +30,13 @@ class OllamaClient(object):
         self.messages: list = messages
         self.STREAM: ollama.chat = stream
 
+        self.chats = ()
+
         self._ollama_chat: OllamaChat = None
         self._ollama_list = None
+
+        self._safe_word = None
+        self._chat_session = None
 
     def add_chain(self, content: str, delimiters: str = 'CHAT', **kwargs):
         logger.debug(f'[OllamaClient] :: add_chain >>>>')
@@ -88,6 +100,12 @@ class OllamaClient(object):
 
         return self
 
+    def clear_context(self):
+        self.messages = []
+        logger.info(f'[OllamaClient] :: clear_context :: done')
+        print(f":: SYSTEM :: context memory cleared. ::")
+        return self
+
     def chat(self, show_profiler: bool = False, print_stream: bool = True, **kwargs):
         logger.debug(f'[OllamaClient] :: chat :: {sum_tokens(self.messages):,} tokens >>>>')
 
@@ -97,7 +115,8 @@ class OllamaClient(object):
             stream=self.STREAM,
             **kwargs
         )
-        chat = OllamaChat(model=self.model, chat=chat)
+        chat = OllamaChat(model=self.model, chat=chat, messages=self.messages)
+        self.chats = self.chats + (chat,)
         self._ollama_chat = chat
 
         time_delta = None
@@ -121,6 +140,50 @@ class OllamaClient(object):
         logger.info(f'[OllamaClient] :: chat :: done')
 
         return self
+
+    def chat_forever(self, safe_word: str = None, system_content: str = None):
+        """Chat forever until you use your safe word. :) """
+        logger.debug(f'[OllamaClient] :: chat_forever :: >>>>')
+
+        self.pickle_load()
+
+        if not safe_word:
+            safe_word = '/pineapples'
+        self._safe_word = safe_word
+
+        if system_content:
+            self.add_message(content=system_content, role='system')
+            print(f":: SYSTEM :: new primary directive accepted. ::")
+        else:
+            system_prompt = input(f"SYSTEM> ")
+
+            if system_prompt:
+                self.add_message(content=system_prompt, role='system')
+                print(f":: SYSTEM :: new primary directive accepted. ::")
+
+        logger.debug(f'[OllamaClient] :: chat_forever :: {safe_word=}')
+        print(
+            f":: SYSTEM :: Remember to say your safe word and the chat experience will end. \n\n"
+            f"Your safe word is: {safe_word}\n\n")
+
+        while True:
+
+            message = None
+            while not message:
+                message = input(f"$> ")
+
+            if message == self._safe_word:
+                print(f":: SYSTEM :: Thank you for chatting. Shutting down. ::")
+                break
+
+            if message == '/clear':
+                self.clear_context()
+                continue
+
+            self.add_message(message).chat()
+            self.pickle_save()
+
+        logger.info(f'[OllamaClient] :: chat_forever :: done')
 
     def has_downloaded_models(self):
         self.list()
@@ -162,6 +225,45 @@ class OllamaClient(object):
         logger.info(f'[OllamaClient] :: list :: done')
         return self
 
+    def pickle_load(self, session_name: str = None):
+
+        chat_session = self._chat_session
+
+        if session_name:
+            temp = automon.helpers.tempfileWrapper.Tempfile.get_temp_dir()
+            session_search = os.path.join(temp, session_name) + '.pickle'
+            if os.path.exists(session_search):
+                chat_session = session_search
+
+        if not chat_session:
+            logger.debug(f'[OllamaClient] :: pickle_load :: no session found :: {chat_session=}')
+            return False
+
+        with open(chat_session, 'rb') as session:
+            self.messages = pickle.load(session)
+
+        logger.debug(
+            f'[OllamaClient] :: pickle_load :: {chat_session=} :: {os.stat(chat_session).st_size / 1024:.2f} KB')
+        logger.info(f'[OllamaClient] :: pickle_load :: done')
+
+    def pickle_save(self, session_name: str = None):
+
+        if not session_name:
+            session_name = automon.helpers.uuidWrapper.Uuid.hex()
+
+        chat_session = self._chat_session
+
+        if not chat_session:
+            temp = automon.helpers.tempfileWrapper.Tempfile.get_temp_dir()
+            chat_session = os.path.join(temp, session_name)
+
+        with open(chat_session, 'wb') as session:
+            pickle.dump(self.messages, session)
+
+        logger.debug(
+            f'[OllamaClient] :: pickle_save :: saved {chat_session=} :: {os.stat(chat_session).st_size / 1024:.2f} KB')
+        logger.info(f'[OllamaClient] :: pickle_save :: done')
+
     def pull(self, model: str = 'deepseek-r1:14b'):
         logger.debug(f'[OllamaClient] :: pull :: {model=} :: >>>>')
 
@@ -201,32 +303,44 @@ class OllamaClient(object):
         logger.info(f'[OllamaClient] :: start_local_server :: failed')
         return False
 
-    def use_template_chatbot_with_input(self, input: str, question: str):
+    def use_template_chatbot_with_thinking(self, content: str = ''):
 
         template = f"""
-            You are a highly articulate and helpful chat bot. 
-            Your task is to answer questions using data provided in the <DATA> section.
-                - Use the information in the <INPUT> section.
-            
-            <DATA>
-            <INPUT>
-            {input}
-            </INPUT>
-            </DATA>
-            
-            <INSTRUCTIONS>
-            -   Always give a truthful and honest answers.
-            -   You are allowed to ask a follow up question if it will help clarify the <INPUT> section.
-            -   For everything else, please explicitly mention these notes. 
-            -   Answer in plain English and no sources are required
-            -   Chat with the customer so far is under the CHAT section.
-            </INSTRUCTIONS>
-            
-            
-            QUESTION: {question}
-            ANSWER:
-            
-            """
+You are a curious chat bot talking to curious person. 
+Your task is to remember everything you have been told and everything you had said so far. 
+To aid in your memory of your previous thoughts, your thoughts are all in the <think> section.
+
+{content}
+"""
+        return template
+
+    def use_template_chatbot_with_input(self, input: str, question: str):
+
+        template = (f"""
+You are a highly articulate and helpful chat bot. 
+Your task is to answer questions using data provided in the <DATA> section.
+    - Use the information in the <INPUT> section.
+
+<INSTRUCTIONS>
+-   Always give a truthful and honest answers.
+-   You are allowed to ask a follow up question if it will help clarify the <INPUT> section.
+-   For everything else, please explicitly mention these notes. 
+-   Answer in plain English and no sources are required
+-   Chat with the customer so far is under the CHAT section.
+</INSTRUCTIONS>
+
+
+QUESTION: {question}
+ANSWER:
+
+
+<DATA>
+<INPUT>
+{input}
+</INPUT>
+</DATA>
+
+""")
 
         return self.add_chain(template)
 
@@ -245,37 +359,33 @@ class OllamaClient(object):
             tag = input_['tag']
             text = input_['text']
 
-            INPUTS.append(
-                f"""<{tag}>
-                {text}
-                </{tag}>"""
-            )
+            INPUTS.append(f"<{tag}>\n{text}\n</{tag}>")
 
-        INPUTS = '\n'.join(INPUTS)
+        INPUTS = '\n\n'.join(INPUTS)
 
-        template = f"""
-            You are a highly articulate and helpful chat bot. 
-            Your task is to answer questions using data provided in the <DATA> section.
-            Your task is to analyze and use all sections in the <DATA> section.
-            
-            <DATA>
-            
-            {INPUTS}
-            
-            </DATA>
-            
-            <INSTRUCTIONS>
-            -   Always give a truthful and honest answers.
-            -   You are allowed to ask a follow up question if it will help clarify the <INPUT> section.
-            -   For everything else, please explicitly mention these notes. 
-            -   Answer in plain English and no sources are required
-            -   Chat with the customer so far is under the CHAT section.
-            </INSTRUCTIONS>
-            
-            
-            QUESTION: {question}
-            ANSWER:
-            
-            """
+        template = textwrap.dedent(f"""
+You are a highly articulate and helpful chat bot. 
+Your task is to answer questions using data provided in the <DATA> section.
+    - Use the information in the <DATA> section.
 
+<INSTRUCTIONS>
+-   Always give a truthful and honest answers.
+-   You are allowed to ask a follow up question if it will help clarify the <INPUT> section.
+-   For everything else, please explicitly mention these notes. 
+-   Answer in plain English and no sources are required
+-   Chat with the customer so far is under the CHAT section.
+</INSTRUCTIONS>
+
+
+QUESTION: {question}
+ANSWER:
+
+
+<DATA>
+
+{INPUTS}
+
+</DATA>
+
+""")
         return self.add_chain(template)

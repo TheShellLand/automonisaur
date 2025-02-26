@@ -45,13 +45,13 @@ class TestOllamaClient(unittest.TestCase):
             </INSTRUCTIONS>
             
             
-            QUESTION: Parse out all the urls. 
+            QUESTION: Give me 10 pokemon nicknames that are related to the color grey. 
             ANSWER:
             
             """
         ).chat().add_chain(
             f"""
-            QUESTION: Give me the list in a python list format.
+            QUESTION: Give me a creative summary of the chat.
             """
         ).chat()
 
