@@ -6,6 +6,7 @@ import hashlib
 import cProfile
 import datetime
 import textwrap
+import readline
 
 import automon.helpers.tempfileWrapper
 import automon.helpers.uuidWrapper
@@ -145,24 +146,30 @@ class OllamaClient(object):
     def _download(self, url: str):
         logger.debug(f'[OllamaClient] :: _download :: >>>>')
 
-        hash = hashlib.md5(string=url).hexdigest()
-        tempfile = os.path.join(automon.helpers.tempfileWrapper.Tempfile.make_temp_dir(), hash)
+        hash = hashlib.md5(string=url.encode()).hexdigest()
+        tempfile = os.path.join(automon.helpers.tempfileWrapper.Tempfile.get_temp_dir(), hash)
 
         download = None
         if os.path.exists(tempfile):
+            filesize = os.stat(tempfile).st_size / 1024
+            print(f":: SYSTEM :: existing file found {hash} {filesize:.2f} KB ::")
             with open(tempfile, 'r') as existing_file:
                 download = existing_file.read()
 
         if not download:
-            print(f":: SYSTEM :: downloading {url}")
+            print(f":: SYSTEM :: downloading {url} ::")
             download = automon.integrations.requestsWrapper.RequestsClient()
             download.get(url=url)
             download = download.text
 
-            with open(tempfile, 'w') as new_file:
-                new_file.write(download)
+            if download:
+                with open(tempfile, 'w') as new_file:
+                    filesize = len(download) / 1024
+                    print(f":: SYSTEM :: file saved {hash} {filesize:.2f} KB ::")
+                    new_file.write(download)
+            else:
+                print(f":: SYSTEM :: nothing to download ::")
 
-        print(f":: SYSTEM :: file saved to {tempfile}")
         logger.info(f'[OllamaClient] :: _download :: done')
         return download
 
@@ -189,29 +196,43 @@ class OllamaClient(object):
         logger.debug(f'[OllamaClient] :: chat_forever :: {safe_word=}')
         print(
             f":: SYSTEM :: Remember to say your safe word and the chat experience will end. \n\n"
-            f"Your safe word is: {safe_word}\n\n")
+            f"Your safe word is: {safe_word}\n")
 
+        message = ''
         while True:
 
-            message = None
-            while not message:
-                message = input(f"$> ")
+            message += input(f"\n$> ")
+
+            if not message:
+                continue
 
             if message == self._safe_word:
                 print(f":: SYSTEM :: Thank you for chatting. Shutting down. ::")
                 break
 
-            if '/download' in message:
-                download = message.split('/download')[-1].strip()
-                print(f":: SYSTEM :: downloading {download} ::")
+            if '/download' in message[:len('/download')]:
+                download = message[len('/download'):].strip()
+                hash = hashlib.md5(string=download.encode()).hexdigest()
                 download = self._download(url=download)
+                if download:
+                    message = f"This is a downloaded file: <DOWNLOAD>{download}</DOWNLOAD>"
+                    continue
+                continue
 
             if message == '/clear':
                 self.clear_context()
+                message = ''
+                continue
+
+            if message == '/list':
+                for m in self.messages:
+                    print(f":: SYSTEM :: {m}"[:200])
+                    message = ''
                 continue
 
             self.add_message(message).chat()
             self.pickle_save()
+            message = ''
 
         logger.info(f'[OllamaClient] :: chat_forever :: done')
 
@@ -336,7 +357,8 @@ class OllamaClient(object):
     def use_template_chatbot_with_thinking(self, content: str = ''):
 
         template = f"""
-You are a curious chat bot talking to curious person. 
+You are a curious chat bot talking to curious person.
+You will always give short answers. 
 Your task is to remember everything you have been told and everything you had said so far. 
 To aid in your memory of your previous thoughts, your thoughts are all in the <think> section.
 
