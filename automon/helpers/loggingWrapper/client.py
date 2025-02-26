@@ -54,6 +54,8 @@ class LoggingClient(logging.Logger):
         import opentelemetry
         from opentelemetry.instrumentation.logging import LoggingInstrumentor
 
+        logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)
+
         # logging.basicConfig(level=DEBUG, format=log_format_opentelemetry)
         LoggingInstrumentor().instrument(
             log_level=INFO,
