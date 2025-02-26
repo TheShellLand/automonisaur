@@ -1,14 +1,15 @@
-import automon
+import os
 import ollama
+import pickle
+import automon
+import hashlib
 import cProfile
 import datetime
 import textwrap
 
-import os
-import pickle
-
 import automon.helpers.tempfileWrapper
 import automon.helpers.uuidWrapper
+import automon.integrations.requestsWrapper
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
@@ -141,6 +142,30 @@ class OllamaClient(object):
 
         return self
 
+    def _download(self, url: str):
+        logger.debug(f'[OllamaClient] :: _download :: >>>>')
+
+        hash = hashlib.md5(string=url).hexdigest()
+        tempfile = os.path.join(automon.helpers.tempfileWrapper.Tempfile.make_temp_dir(), hash)
+
+        download = None
+        if os.path.exists(tempfile):
+            with open(tempfile, 'r') as existing_file:
+                download = existing_file.read()
+
+        if not download:
+            print(f":: SYSTEM :: downloading {url}")
+            download = automon.integrations.requestsWrapper.RequestsClient()
+            download.get(url=url)
+            download = download.text
+
+            with open(tempfile, 'w') as new_file:
+                new_file.write(download)
+
+        print(f":: SYSTEM :: file saved to {tempfile}")
+        logger.info(f'[OllamaClient] :: _download :: done')
+        return download
+
     def chat_forever(self, safe_word: str = None, system_content: str = None):
         """Chat forever until you use your safe word. :) """
         logger.debug(f'[OllamaClient] :: chat_forever :: >>>>')
@@ -175,6 +200,11 @@ class OllamaClient(object):
             if message == self._safe_word:
                 print(f":: SYSTEM :: Thank you for chatting. Shutting down. ::")
                 break
+
+            if '/download' in message:
+                download = message.split('/download')[-1].strip()
+                print(f":: SYSTEM :: downloading {download} ::")
+                download = self._download(url=download)
 
             if message == '/clear':
                 self.clear_context()
