@@ -40,6 +40,8 @@ class OllamaClient(object):
         self._safe_word = None
         self._chat_session = None
 
+        self._full_chat_log = ''
+
     def add_chain(self, content: str, delimiters: str = 'CHAT', **kwargs):
         logger.debug(f'[OllamaClient] :: add_chain >>>>')
 
@@ -143,6 +145,76 @@ class OllamaClient(object):
 
         return self
 
+    def chat_forever(self, safe_word: str = None, system_content: str = None):
+        """Chat forever until you use your safe word. :) """
+        logger.debug(f'[OllamaClient] :: chat_forever :: >>>>')
+
+        self.pickle_load()
+
+        if not safe_word:
+            safe_word = '/pineapples'
+        self._safe_word = safe_word
+
+        if system_content:
+            self.add_message(content=system_content, role='system')
+            print(f":: SYSTEM :: new primary directive accepted. ::")
+        else:
+            system_prompt = input(f"SYSTEM> ")
+
+            if system_prompt:
+                self.add_message(content=system_prompt, role='system')
+                print(f":: SYSTEM :: new primary directive accepted. ::")
+
+        logger.debug(f'[OllamaClient] :: chat_forever :: {safe_word=}')
+        print(
+            f":: SYSTEM :: Remember to say your safe word and the chat experience will end. \n\n"
+            f"Your safe word is: {safe_word}\n")
+
+        while True:
+
+            message = ''
+            message += input(f"\n$> ")
+
+            if not message:
+                continue
+
+            if message == self._safe_word:
+                print(f":: SYSTEM :: Thank you for chatting. Shutting down. ::")
+                break
+
+            if '/download' in message[:len('/download')]:
+                download = message[len('/download'):].strip()
+                url = download
+                hash = hashlib.md5(string=url.encode()).hexdigest()
+                download = self._download(url=download)
+                if download:
+                    message = f"This is a file from {url}: <{hash}>{download}</{hash}>"
+                    if message not in self._full_chat_log:
+                        self._full_chat_log += message
+                        self.add_message(content=message)
+                    continue
+                continue
+
+            if message == '/clear':
+                self.clear_context()
+                continue
+
+            if message == '/list':
+                for m in self.messages:
+                    print(f":: SYSTEM :: {m}"[:200])
+                continue
+
+            if message == '/token':
+                print(f":: SYSTEM :: message has {chr_to_tokens(self._full_chat_log):,} total tokens")
+                continue
+
+            if message not in self._full_chat_log:
+                self._full_chat_log += message
+            self.add_message(self._full_chat_log).chat()
+            self.pickle_save()
+
+        logger.info(f'[OllamaClient] :: chat_forever :: done')
+
     def _download(self, url: str):
         logger.debug(f'[OllamaClient] :: _download :: >>>>')
 
@@ -172,69 +244,6 @@ class OllamaClient(object):
 
         logger.info(f'[OllamaClient] :: _download :: done')
         return download
-
-    def chat_forever(self, safe_word: str = None, system_content: str = None):
-        """Chat forever until you use your safe word. :) """
-        logger.debug(f'[OllamaClient] :: chat_forever :: >>>>')
-
-        self.pickle_load()
-
-        if not safe_word:
-            safe_word = '/pineapples'
-        self._safe_word = safe_word
-
-        if system_content:
-            self.add_message(content=system_content, role='system')
-            print(f":: SYSTEM :: new primary directive accepted. ::")
-        else:
-            system_prompt = input(f"SYSTEM> ")
-
-            if system_prompt:
-                self.add_message(content=system_prompt, role='system')
-                print(f":: SYSTEM :: new primary directive accepted. ::")
-
-        logger.debug(f'[OllamaClient] :: chat_forever :: {safe_word=}')
-        print(
-            f":: SYSTEM :: Remember to say your safe word and the chat experience will end. \n\n"
-            f"Your safe word is: {safe_word}\n")
-
-        message = ''
-        while True:
-
-            message += input(f"\n$> ")
-
-            if not message:
-                continue
-
-            if message == self._safe_word:
-                print(f":: SYSTEM :: Thank you for chatting. Shutting down. ::")
-                break
-
-            if '/download' in message[:len('/download')]:
-                download = message[len('/download'):].strip()
-                hash = hashlib.md5(string=download.encode()).hexdigest()
-                download = self._download(url=download)
-                if download:
-                    message = f"This is a downloaded file: <DOWNLOAD>{download}</DOWNLOAD>"
-                    continue
-                continue
-
-            if message == '/clear':
-                self.clear_context()
-                message = ''
-                continue
-
-            if message == '/list':
-                for m in self.messages:
-                    print(f":: SYSTEM :: {m}"[:200])
-                    message = ''
-                continue
-
-            self.add_message(message).chat()
-            self.pickle_save()
-            message = ''
-
-        logger.info(f'[OllamaClient] :: chat_forever :: done')
 
     def has_downloaded_models(self):
         self.list()
