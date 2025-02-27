@@ -41,6 +41,7 @@ class OllamaClient(object):
 
         self._safe_word = None
         self._chat_session = None
+        self._chat_downloads = []
 
         self._full_chat_log = ''
         self._temp_dir = automon.helpers.tempfileWrapper.Tempfile.get_temp_dir()
@@ -173,8 +174,6 @@ class OllamaClient(object):
         """Chat forever until you use your safe word. :) """
         logger.debug(f'[OllamaClient] :: chat_forever :: >>>>')
 
-        downloads = []
-
         self.pickle_load()
 
         if not safe_word:
@@ -182,14 +181,7 @@ class OllamaClient(object):
         self._safe_word = safe_word
 
         if system_content:
-            self.add_message(content=system_content, role='system')
-            print(f":: SYSTEM :: new primary directive accepted. ::")
-        else:
-            system_prompt = input(f"SYSTEM> ")
-
-            if system_prompt:
-                self.add_message(content=system_prompt, role='system')
-                print(f":: SYSTEM :: new primary directive accepted. ::")
+            self._agent_system_prompt(system_content=system_content)
 
         logger.debug(f'[OllamaClient] :: chat_forever :: {safe_word=}')
         print(
@@ -199,90 +191,87 @@ class OllamaClient(object):
         while True:
 
             message = ''
-            message += input(f"\n$> ")
-            message = message.strip()
+            try:
+                message += input(f"\n$> ")
+                message = message.strip()
+            except KeyboardInterrupt:
+                self._agent_exit()
+                break
 
             if not message:
                 continue
 
             if message == self._safe_word:
-                print(f":: SYSTEM :: Thank you for chatting. Shutting down. ::")
+                self._agent_exit()
                 break
 
-            if message == '/downloads':
-                if not downloads:
-                    print(f":: SYSTEM :: no downloads ::")
-                    continue
-
-                for d in downloads:
-                    url = d['url']
-                    filename = d['filename']
-                    size = d['size']
-                    print(f":: SYSTEM :: file {filename} {url} {size} ::")
-                continue
-
-            if '/download' in message[:len('/download')]:
-                download = message[len('/download'):].strip()
-                url = download
-                hash = hashlib.md5(string=url.encode()).hexdigest()
-                download, filename = self._download(url=download)
-                if download:
-                    file_size = os.stat(os.path.join(self._temp_dir, filename)).st_size
-                    size = round(file_size / 1024)
-                    downloads.append(dict(url=url, filename=filename, size=f"{size:,} KB"))
-                    message = f"This is the contents of a file: <{filename}>{download}</{filename}>"
-                    if message not in self._full_chat_log:
-                        self._full_chat_log += message
-                        self.add_message(content=message)
-                    continue
-                continue
-
             if message == '/clear':
-                self.messages = [self.messages[0]]
-                self._full_chat_log = ''
-                continue
-
-            if message == '/list':
-                if not self.messages:
-                    print(f":: SYSTEM :: no messages ::")
-                    continue
-                for m in self.messages:
-                    role = m['role']
-                    content = m['content'].strip().splitlines()[0][:200]
-                    print(f":: SYSTEM :: <{role}> {content}")
-                continue
-
-            if message == '/token':
-                print(f":: SYSTEM :: message has {chr_to_tokens(self._full_chat_log):,} total tokens")
+                self._agent_clear()
                 continue
 
             if '/context' in message[:len('/context')]:
+                self._agent_context(message=message)
+                continue
 
-                if 'set' in message:
-                    new_num_ctx = int(message.split(' ')[-1])
+            if message == '/downloads':
+                self._agent_downloads()
+                continue
 
-                    if new_num_ctx > 0:
-                        self._num_ctx = new_num_ctx
+            if '/download' in message[:len('/download')]:
+                self._agent_download(message=message)
+                continue
 
-                print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f} tokens")
+            if message == '/list':
+                self._agent_list()
+                continue
+
+            if message == '/memory':
+                self._agent_memory()
+                continue
+
+            if message == '/summary':
+                self._agent_summary()
+                continue
+
+            if message == '/token':
+                self._agent_token()
                 continue
 
             if message not in self._full_chat_log:
                 self._full_chat_log += message
+
             self.add_message(message).chat()
             self.pickle_save()
-            print(f":: SYSTEM :: max memory usage was {self._memory_usage_max}%")
-            print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f} tokens")
+
+            print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f} tokens ::")
 
         logger.info(f'[OllamaClient] :: chat_forever :: done')
 
-    def _download(self, url: str) -> tuple:
-        logger.debug(f'[OllamaClient] :: _download :: >>>>')
+    def _agent_clear(self):
+        self.messages = [self.messages[0]]
+        self._full_chat_log = ''
+
+    def _agent_context(self, message: str = None):
+        if message:
+            if 'set' in message:
+                new_num_ctx = int(message.split(' ')[-1])
+
+                if new_num_ctx > 0:
+                    self._num_ctx = new_num_ctx
+
+        print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f} tokens ::")
+
+    def _agent_download(self, message: str) -> tuple:
+        logger.debug(f'[OllamaClient] :: _agent_download :: >>>>')
+
+        download = message[len('/download'):].strip()
+        url = download
 
         hash = hashlib.sha1(string=url.encode()).hexdigest()[:7]
         pre = 'file-'
         ext = '.txt'
         filename = f"{pre}{hash}{ext}"
+
         tempfile = os.path.join(self._temp_dir, filename)
 
         download = None
@@ -298,16 +287,77 @@ class OllamaClient(object):
             download.get(url=url)
             download = download.text
 
-            if download:
-                with open(tempfile, 'w') as new_file:
-                    filesize = len(download) / 1024
-                    print(f":: SYSTEM :: file saved {filename} {filesize:.2f} KB ::")
-                    new_file.write(download)
-            else:
-                print(f":: SYSTEM :: nothing to download ::")
+        if download:
+            with open(tempfile, 'w') as new_file:
+                filesize = len(download) / 1024
+                print(f":: SYSTEM :: downloaded file saved {filename} {filesize:.2f} KB ::")
+                new_file.write(download)
+        else:
+            print(f":: SYSTEM :: nothing to download ::")
+
+        if download:
+            file_size = os.stat(os.path.join(self._temp_dir, filename)).st_size
+            size = round(file_size / 1024)
+            self._chat_downloads.append(dict(url=url, filename=filename, size=f"{size:,} KB"))
+            message = f"This is the contents of a file: <{filename}>{download}</{filename}>"
+            if message not in self._full_chat_log:
+                self._full_chat_log += message
+                self.add_message(content=message)
 
         logger.info(f'[OllamaClient] :: _download :: done')
         return download, filename
+
+    def _agent_downloads(self):
+        if not self._chat_downloads:
+            print(f":: SYSTEM :: no downloads ::")
+            return
+
+        for d in self._chat_downloads:
+            url = d['url']
+            filename = d['filename']
+            size = d['size']
+            print(f":: SYSTEM :: downloaded file {filename} {url} {size} ::")
+
+    def _agent_exit(self):
+        print(f":: SYSTEM :: Thank you for chatting. Shutting down. ::")
+
+    def _agent_list(self):
+        if not self.messages:
+            print(f":: SYSTEM :: no messages ::")
+            return
+
+        for m in self.messages:
+            role = m['role']
+            content = m['content'].strip().splitlines()[0][:200]
+            print(f":: SYSTEM :: <{role}> {content} ::")
+
+    def _agent_memory(self):
+        print(f":: SYSTEM :: max memory usage was {self._memory_usage_max}% ::")
+
+    def _agent_summary(self):
+        self._agent_list()
+        self._agent_downloads()
+        self._agent_context()
+        self._agent_token()
+        self._agent_memory()
+
+    def _agent_system_prompt(self, system_content: str):
+        if system_content:
+            self.add_message(content=system_content, role='system')
+            print(f":: SYSTEM :: new primary directive accepted. ::")
+            return
+        else:
+            system_prompt = input(f"SYSTEM> ")
+
+            if system_prompt:
+                self.add_message(content=system_prompt, role='system')
+                print(f":: SYSTEM :: new primary directive accepted. ::")
+                return
+
+        print(f":: SYSTEM :: proceeding with no primary directive. ::")
+
+    def _agent_token(self):
+        print(f":: SYSTEM :: message has {chr_to_tokens(self._full_chat_log):,} total tokens ::")
 
     def has_downloaded_models(self):
         self.list()
