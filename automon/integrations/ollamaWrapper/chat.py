@@ -48,6 +48,7 @@ class OllamaChat(object):
 
         except KeyboardInterrupt:
             print(f"\n:: SYSTEM :: ending transmission. ::")
+            return self
 
         print('\n', flush=True)
         return self

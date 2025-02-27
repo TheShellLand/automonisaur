@@ -243,8 +243,6 @@ class OllamaClient(object):
             self.add_message(message).chat()
             self.pickle_save()
 
-            print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f} tokens ::")
-
         logger.info(f'[OllamaClient] :: chat_forever :: done')
 
     def _agent_clear(self):
