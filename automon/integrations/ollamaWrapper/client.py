@@ -120,7 +120,6 @@ class OllamaClient(object):
     def clear_context(self):
         self.messages = []
         logger.info(f'[OllamaClient] :: clear_context :: done')
-        print(f":: SYSTEM :: context memory cleared. ::")
         return self
 
     def chat(self, show_profiler: bool = False, print_stream: bool = True, options: dict = None, **kwargs):
@@ -233,6 +232,11 @@ class OllamaClient(object):
                 self._agent_summary()
                 continue
 
+            if '/system' in message[:len('/system')]:
+                system_content = message[len('/system'):]
+                self._agent_system_prompt(system_content=system_content)
+                continue
+
             if message == '/token':
                 self._agent_token()
                 continue
@@ -248,6 +252,7 @@ class OllamaClient(object):
     def _agent_clear(self):
         self.messages = [self.messages[0]]
         self._full_chat_log = ''
+        print(f":: SYSTEM :: context memory cleared. ::")
 
     def _agent_context(self, message: str = None):
         if message:
@@ -341,6 +346,7 @@ class OllamaClient(object):
 
     def _agent_system_prompt(self, system_content: str):
         if system_content:
+            system_content = system_content.strip()
             self.add_message(content=system_content, role='system')
             print(f":: SYSTEM :: new primary directive accepted. ::")
             return
