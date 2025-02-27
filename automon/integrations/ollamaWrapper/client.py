@@ -241,6 +241,10 @@ class OllamaClient(object):
                 self._agent_token()
                 continue
 
+            if message == '/?':
+                self._agent_help()
+                continue
+
             if message not in self._full_chat_log:
                 self._full_chat_log += message
 
@@ -324,6 +328,19 @@ class OllamaClient(object):
     def _agent_exit(self):
         print(f":: SYSTEM :: Thank you for chatting. Shutting down. ::")
 
+    def _agent_help(self):
+        print(f":: {'COMMANDS':20} {'':<30} ::")
+        print(f':: {"":20} {"":<30} ::')
+        print(f":: {'/clear':20} {'clear context window.':<30} ::")
+        print(f":: {'/context':20} {'show context window.':<30} ::")
+        print(f":: {'/context set <int>':20} {'set context window size.':<30} ::")
+        print(f":: {'/download <url>':20} {'download url.':<30} ::")
+        print(f":: {'/list <url>':20} {'list context window.':<30} ::")
+        print(f":: {'/memory <url>':20} {'show memory usage.':<30} ::")
+        print(f":: {'/summary <url>':20} {'show summary.':<30} ::")
+        print(f":: {'/system <content>':20} {'set a new system directive.':<30} ::")
+        print(f":: {'/token':20} {'show total tokens.':<30} ::")
+
     def _agent_list(self):
         if not self.messages:
             print(f":: SYSTEM :: no messages ::")
@@ -339,10 +356,15 @@ class OllamaClient(object):
 
     def _agent_summary(self):
         self._agent_list()
+        print()
         self._agent_downloads()
+        print()
         self._agent_context()
+        print()
         self._agent_token()
+        print()
         self._agent_memory()
+        print()
 
     def _agent_system_prompt(self, system_content: str):
         if system_content:
@@ -505,7 +527,8 @@ class OllamaClient(object):
     def use_template_chatbot_with_thinking(self, content: str = ''):
 
         template = f"""
-You are a senior python software engineer chat bot talking to a person.
+You are a chat bot talking to a person.
+You will never make up an answer, if you don't have an answer just say you don't have an answer.
 You will always give short and direct answers. 
 """
         return template
