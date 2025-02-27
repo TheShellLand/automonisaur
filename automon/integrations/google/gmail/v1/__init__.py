@@ -1,7 +1,5 @@
 import base64
 
-from enum import StrEnum
-
 from automon.helpers.loggingWrapper import LoggingClient, INFO
 
 logger = LoggingClient.logging.getLogger(__name__)
@@ -145,7 +143,7 @@ class UsersMessages(Users):
     def untrash(self, id: int): """post"""; return self.url + f'/messages/{id}/untrash'
 
 
-class InternalDateSource(StrEnum):
+class InternalDateSource:
     receivedTime = 'receivedTime'
     dateHeader = 'dateHeader'
 
@@ -362,7 +360,7 @@ class HistoryType:
         labelsRemoved: LabelRemoved = None
 
 
-class Format(StrEnum):
+class Format:
     minimal = 'minimal'
     full = 'full'
     raw = 'raw'
