@@ -5,15 +5,16 @@ from automon.helpers.loggingWrapper import LoggingClient
 from .utils import chr_to_tokens
 
 logger = LoggingClient.logging.getLogger(__name__)
-logger.setLevel(LoggingClient.DEBUG)
+logger.setLevel(LoggingClient.ERROR)
 
 
 class OllamaChat(object):
     """Generator object returned from ollama.chat"""
 
-    def __init__(self, model: str, chat: ollama.chat):
+    def __init__(self, model: str, chat: ollama.chat, messages: list):
         self.model = model
         self.chat: ollama.chat = chat
+        self.messages = messages
 
         self.chunks = []
 
@@ -41,10 +42,10 @@ class OllamaChat(object):
         return [chunk['message'] for chunk in self.chunks]
 
     def print_stream(self):
-        print('==========', flush=True)
+        # print('==========', flush=True)
         for chunk in self._get_chunks():
             print(f'{self._chunk_content(chunk=chunk)}', end='', flush=True)
-        print('\n==========', flush=True)
+        print('\n', flush=True)
         return self
 
     def to_string(self):

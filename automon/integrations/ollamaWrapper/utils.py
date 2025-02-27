@@ -3,7 +3,7 @@ import ollama
 from automon.helpers.loggingWrapper import LoggingClient
 
 logger = LoggingClient.logging.getLogger(__name__)
-logger.setLevel(LoggingClient.DEBUG)
+logger.setLevel(LoggingClient.ERROR)
 
 
 def chr_to_tokens(string: str, ratio: int = 4) -> int:

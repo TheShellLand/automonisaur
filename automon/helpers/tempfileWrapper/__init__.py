@@ -4,7 +4,7 @@ import tempfile
 class Tempfile(object):
 
     @classmethod
-    def get_temp_dir(cls):
+    def get_temp_dir(cls) -> str:
         return cls.gettempdir()
 
     @staticmethod

@@ -1,5 +1,5 @@
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
-from automon.integrations.google.auth import GoogleAuthClient
+from automon.integrations.google.oauth import GoogleAuthClient
 
 from .config import GoogleSheetsConfig
 

@@ -27,7 +27,7 @@ class TestOllamaClient(unittest.TestCase):
 
         model.add_chain(
             f"""
-            You are a security automation engineer looking for a new job. 
+            You are a highly articulate chat bot. 
             
             Your task is to answer questions using data provided in the <DATA> section.
             
@@ -58,7 +58,7 @@ class TestOllamaClient(unittest.TestCase):
             </INSTRUCTIONS>
             
             
-            QUESTION: What is the percentage of relevance your resume is with the job?
+            QUESTION: In a summary, how relevant is your resume is with the job? (include a percentage in the summary)
             ANSWER:
             
             """

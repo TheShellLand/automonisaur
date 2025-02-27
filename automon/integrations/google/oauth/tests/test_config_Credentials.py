@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.google.auth import GoogleAuthConfig
+from automon.integrations.google.oauth import GoogleAuthConfig
 
 
 class MyTestCase(unittest.TestCase):

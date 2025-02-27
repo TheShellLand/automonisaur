@@ -68,10 +68,11 @@ class GoogleAuthClient(object):
         """authenticate web token"""
 
         creds = self.config.Credentials()
+        Request = google.auth.transport.requests.Request()
 
         if hasattr(creds, 'refresh_token'):
             try:
-                creds.refresh(google.auth.transport.requests.Request())
+                creds.refresh(Request)
                 logger.info(f'[google] :: auth :: oauth :: token refresh :: {getattr(creds, "refresh_token")}')
                 logger.info(f'[google] :: auth :: oauth :: token refresh :: done')
                 return True
@@ -91,7 +92,7 @@ class GoogleAuthClient(object):
             return True
         return False
 
-    def is_connected(self) -> bool:
+    def is_ready(self) -> bool:
         """Check if authenticated to make requests"""
         try:
             return self.authenticate()
