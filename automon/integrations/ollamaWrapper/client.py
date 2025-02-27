@@ -184,6 +184,7 @@ class OllamaClient(object):
 
             message = ''
             message += input(f"\n$> ")
+            message = message.strip()
 
             if not message:
                 continue
