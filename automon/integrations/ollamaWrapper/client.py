@@ -41,6 +41,7 @@ class OllamaClient(object):
         self._chat_session = None
 
         self._full_chat_log = ''
+        self._temp_dir = automon.helpers.tempfileWrapper.Tempfile.get_temp_dir()
 
     def add_chain(self, content: str, delimiters: str = 'CHAT', **kwargs):
         logger.debug(f'[OllamaClient] :: add_chain >>>>')
@@ -110,13 +111,20 @@ class OllamaClient(object):
         print(f":: SYSTEM :: context memory cleared. ::")
         return self
 
-    def chat(self, show_profiler: bool = False, print_stream: bool = True, **kwargs):
+    def chat(self, show_profiler: bool = False, print_stream: bool = True, options: dict = {'num_ctx': 9000}, **kwargs):
+        """
+
+        If you need an even larger context window, you can increase this to 131072 which is the 128k context limit that llama3.1 has.
+
+
+        """
         logger.debug(f'[OllamaClient] :: chat :: {sum_tokens(self.messages):,} tokens >>>>')
 
         chat = ollama.chat(
             model=self.model,
             messages=self.messages,
             stream=self.STREAM,
+            options=options,
             **kwargs
         )
         chat = OllamaChat(model=self.model, chat=chat, messages=self.messages)
@@ -148,6 +156,8 @@ class OllamaClient(object):
     def chat_forever(self, safe_word: str = None, system_content: str = None):
         """Chat forever until you use your safe word. :) """
         logger.debug(f'[OllamaClient] :: chat_forever :: >>>>')
+
+        downloads = []
 
         self.pickle_load()
 
@@ -182,13 +192,27 @@ class OllamaClient(object):
                 print(f":: SYSTEM :: Thank you for chatting. Shutting down. ::")
                 break
 
+            if message == '/downloads':
+                if not downloads:
+                    print(f":: SYSTEM :: no downloads ::")
+                    continue
+
+                for d in downloads:
+                    url = d['url']
+                    hash = d['hash']
+                    size = d['size']
+                    print(f":: SYSTEM :: file {hash} {url} {size} ::")
+                continue
+
             if '/download' in message[:len('/download')]:
                 download = message[len('/download'):].strip()
                 url = download
                 hash = hashlib.md5(string=url.encode()).hexdigest()
                 download = self._download(url=download)
                 if download:
-                    message = f"This is a file from {url}: <{hash}>{download}</{hash}>"
+                    size = round(os.stat(os.path.join(self._temp_dir, hash)).st_size / 1024)
+                    downloads.append(dict(url=url, hash=hash, size=f"{size:,} KB"))
+                    message = f"Store this file: <{hash}>{download}</{hash}>"
                     if message not in self._full_chat_log:
                         self._full_chat_log += message
                         self.add_message(content=message)
@@ -196,12 +220,18 @@ class OllamaClient(object):
                 continue
 
             if message == '/clear':
-                self.clear_context()
+                self.messages = [self.messages[0]]
+                self._full_chat_log = ''
                 continue
 
             if message == '/list':
+                if not self.messages:
+                    print(f":: SYSTEM :: no messages ::")
+                    continue
                 for m in self.messages:
-                    print(f":: SYSTEM :: {m}"[:200])
+                    role = m['role']
+                    content = m['content'].strip().splitlines()[0][:200]
+                    print(f":: SYSTEM :: <{role}> {content}")
                 continue
 
             if message == '/token':
@@ -210,7 +240,7 @@ class OllamaClient(object):
 
             if message not in self._full_chat_log:
                 self._full_chat_log += message
-            self.add_message(self._full_chat_log).chat()
+            self.add_message(message).chat()
             self.pickle_save()
 
         logger.info(f'[OllamaClient] :: chat_forever :: done')
@@ -219,7 +249,7 @@ class OllamaClient(object):
         logger.debug(f'[OllamaClient] :: _download :: >>>>')
 
         hash = hashlib.md5(string=url.encode()).hexdigest()
-        tempfile = os.path.join(automon.helpers.tempfileWrapper.Tempfile.get_temp_dir(), hash)
+        tempfile = os.path.join(self._temp_dir, hash)
 
         download = None
         if os.path.exists(tempfile):
@@ -366,12 +396,8 @@ class OllamaClient(object):
     def use_template_chatbot_with_thinking(self, content: str = ''):
 
         template = f"""
-You are a curious chat bot talking to curious person.
-You will always give short answers. 
-Your task is to remember everything you have been told and everything you had said so far. 
-To aid in your memory of your previous thoughts, your thoughts are all in the <think> section.
-
-{content}
+You are a senior python software engineer chat bot talking to a person.
+You will always give short and direct answers. 
 """
         return template
 
