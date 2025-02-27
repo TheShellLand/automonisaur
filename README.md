@@ -58,7 +58,7 @@ Github issues and feature requests welcomed.
 
 #### Requires
 
-- python >= 3.10
+- python >= 3.11
 
 _Note: install requirements.txt to use all integrations_
 
