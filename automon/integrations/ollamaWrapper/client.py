@@ -46,6 +46,13 @@ class OllamaClient(object):
         self._temp_dir = automon.helpers.tempfileWrapper.Tempfile.get_temp_dir()
 
         self._memory_usage_max = 0
+        self._num_ctx = 9000
+
+    @property
+    def _ollama_options(self):
+        return dict(
+            num_ctx=self._num_ctx
+        )
 
     def add_chain(self, content: str, delimiters: str = 'CHAT', **kwargs):
         logger.debug(f'[OllamaClient] :: add_chain >>>>')
@@ -115,14 +122,17 @@ class OllamaClient(object):
         print(f":: SYSTEM :: context memory cleared. ::")
         return self
 
-    def chat(self, show_profiler: bool = False, print_stream: bool = True, options: dict = {'num_ctx': 9000}, **kwargs):
+    def chat(self, show_profiler: bool = False, print_stream: bool = True, options: dict = None, **kwargs):
         """
 
         If you need an even larger context window, you can increase this to 131072 which is the 128k context limit that llama3.1 has.
 
 
         """
-        logger.debug(f'[OllamaClient] :: chat :: {sum_tokens(self.messages):,} tokens >>>>')
+        if not options:
+            options = self._ollama_options
+
+        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.messages):,} tokens >>>>')
 
         chat = ollama.chat(
             model=self.model,
@@ -141,7 +151,9 @@ class OllamaClient(object):
             time_start = datetime.datetime.now()
             pr.enable()
 
+            self._memory_alert_90()
             chat.print_stream()
+            self._memory_alert_90()
 
             pr.disable()
             time_stop = datetime.datetime.now()
@@ -204,20 +216,21 @@ class OllamaClient(object):
 
                 for d in downloads:
                     url = d['url']
-                    hash = d['hash']
+                    filename = d['filename']
                     size = d['size']
-                    print(f":: SYSTEM :: file {hash} {url} {size} ::")
+                    print(f":: SYSTEM :: file {filename} {url} {size} ::")
                 continue
 
             if '/download' in message[:len('/download')]:
                 download = message[len('/download'):].strip()
                 url = download
                 hash = hashlib.md5(string=url.encode()).hexdigest()
-                download = self._download(url=download)
+                download, filename = self._download(url=download)
                 if download:
-                    size = round(os.stat(os.path.join(self._temp_dir, hash)).st_size / 1024)
-                    downloads.append(dict(url=url, hash=hash, size=f"{size:,} KB"))
-                    message = f"Store this file: <{hash}>{download}</{hash}>"
+                    file_size = os.stat(os.path.join(self._temp_dir, filename)).st_size
+                    size = round(file_size / 1024)
+                    downloads.append(dict(url=url, filename=filename, size=f"{size:,} KB"))
+                    message = f"This is the contents of a file: <{filename}>{download}</{filename}>"
                     if message not in self._full_chat_log:
                         self._full_chat_log += message
                         self.add_message(content=message)
@@ -243,23 +256,39 @@ class OllamaClient(object):
                 print(f":: SYSTEM :: message has {chr_to_tokens(self._full_chat_log):,} total tokens")
                 continue
 
+            if '/context' in message[:len('/context')]:
+
+                if 'set' in message:
+                    new_num_ctx = int(message.split(' ')[-1])
+
+                    if new_num_ctx > 0:
+                        self._num_ctx = new_num_ctx
+
+                print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f}")
+                continue
+
             if message not in self._full_chat_log:
                 self._full_chat_log += message
             self.add_message(message).chat()
             self.pickle_save()
+            print(f":: SYSTEM :: max memory usage was {self._memory_usage_max}%")
+            print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f}")
 
         logger.info(f'[OllamaClient] :: chat_forever :: done')
 
-    def _download(self, url: str):
+    def _download(self, url: str) -> tuple:
         logger.debug(f'[OllamaClient] :: _download :: >>>>')
 
-        hash = hashlib.md5(string=url.encode()).hexdigest()
-        tempfile = os.path.join(self._temp_dir, hash)
+        hash = hashlib.sha1(string=url.encode()).hexdigest()[:7]
+        pre = 'file-'
+        ext = '.txt'
+        filename = f"{pre}{hash}{ext}"
+        tempfile = os.path.join(self._temp_dir, filename)
 
         download = None
         if os.path.exists(tempfile):
             filesize = os.stat(tempfile).st_size / 1024
-            print(f":: SYSTEM :: existing file found {hash} {filesize:.2f} KB ::")
+            print(f":: SYSTEM :: existing file found {filename} {filesize:.2f} KB ::")
             with open(tempfile, 'r') as existing_file:
                 download = existing_file.read()
 
@@ -272,13 +301,13 @@ class OllamaClient(object):
             if download:
                 with open(tempfile, 'w') as new_file:
                     filesize = len(download) / 1024
-                    print(f":: SYSTEM :: file saved {hash} {filesize:.2f} KB ::")
+                    print(f":: SYSTEM :: file saved {filename} {filesize:.2f} KB ::")
                     new_file.write(download)
             else:
                 print(f":: SYSTEM :: nothing to download ::")
 
         logger.info(f'[OllamaClient] :: _download :: done')
-        return download
+        return download, filename
 
     def has_downloaded_models(self):
         self.list()
@@ -323,9 +352,14 @@ class OllamaClient(object):
     def _memory_alert_90(self):
         """Alert when memory usage over 90%"""
         percent = self._memory_watchdog().percent
+
+        if percent > self._memory_usage_max:
+            self._memory_usage_max = percent
+            self._num_ctx *= 0.90
+        else:
+            self._num_ctx *= 1.10
+
         if percent > 90:
-            if percent > self._memory_usage_max:
-                self._memory_usage_max = percent
             return True
 
     def _memory_watchdog(self):
