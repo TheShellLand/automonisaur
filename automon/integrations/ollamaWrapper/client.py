@@ -151,7 +151,6 @@ class OllamaClient(object):
             time_start = datetime.datetime.now()
             pr.enable()
 
-            self._memory_alert_90()
             chat.print_stream()
             self._memory_alert_90()
 
