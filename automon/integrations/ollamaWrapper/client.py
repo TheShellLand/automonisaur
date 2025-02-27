@@ -264,7 +264,7 @@ class OllamaClient(object):
                     if new_num_ctx > 0:
                         self._num_ctx = new_num_ctx
 
-                print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f}")
+                print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f} tokens")
                 continue
 
             if message not in self._full_chat_log:
@@ -272,7 +272,7 @@ class OllamaClient(object):
             self.add_message(message).chat()
             self.pickle_save()
             print(f":: SYSTEM :: max memory usage was {self._memory_usage_max}%")
-            print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f}")
+            print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f} tokens")
 
         logger.info(f'[OllamaClient] :: chat_forever :: done')
 
