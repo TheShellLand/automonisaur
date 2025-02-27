@@ -1,12 +1,14 @@
 import os
 import ollama
+import psutil
 import pickle
-import automon
 import hashlib
 import cProfile
 import datetime
 import textwrap
 import readline
+
+import automon
 
 import automon.helpers.tempfileWrapper
 import automon.helpers.uuidWrapper
@@ -42,6 +44,8 @@ class OllamaClient(object):
 
         self._full_chat_log = ''
         self._temp_dir = automon.helpers.tempfileWrapper.Tempfile.get_temp_dir()
+
+        self._memory_usage_max = 0
 
     def add_chain(self, content: str, delimiters: str = 'CHAT', **kwargs):
         logger.debug(f'[OllamaClient] :: add_chain >>>>')
@@ -315,6 +319,22 @@ class OllamaClient(object):
         logger.debug(f'[OllamaClient] :: list :: {len(models)} model(s)')
         logger.info(f'[OllamaClient] :: list :: done')
         return self
+
+    def _memory_alert_90(self):
+        """Alert when memory usage over 90%"""
+        percent = self._memory_watchdog().percent
+        if percent > 90:
+            if percent > self._memory_usage_max:
+                self._memory_usage_max = percent
+            return True
+
+    def _memory_watchdog(self):
+        """System memory stats"""
+        # Get system memory information
+        memory = psutil.virtual_memory()
+        percent_used = memory.percent
+        logger.debug(f'[OllamaClient] :: _memory_watchdog :: {percent_used=}')
+        return memory
 
     def pickle_load(self, session_name: str = None):
 
