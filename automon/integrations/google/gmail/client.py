@@ -60,7 +60,7 @@ class GoogleGmailClient:
                    includeSpamTrash: bool = None):
         """Lists the drafts in the user's mailbox."""
         if maxResults > 500:
-            raise
+            raise Exception(f"[GoogleGmailClient] :: draft_list :: ERROR :: {maxResults=} > 500")
 
         api = UsersDrafts(self._userId).list
         params = dict(
@@ -93,7 +93,7 @@ class GoogleGmailClient:
                      historyTypes: HistoryType = None):
         """Lists the history of all changes to the given mailbox."""
         if maxResults > 500:
-            raise
+            raise Exception(f"[GoogleGmailClient] :: history_list :: ERROR :: {maxResults=} > 500")
 
         api = UsersHistory(self._userId).list
         params = dict(
@@ -107,7 +107,10 @@ class GoogleGmailClient:
 
     def is_ready(self):
         if self.config.is_ready():
-            return True
+            if self.config.Credentials():
+                if self.config.refresh_token():
+                    return True
+        return False
 
     def labels_create(self, label: str):
         """Creates a new label."""
@@ -150,10 +153,17 @@ class GoogleGmailClient:
         self.requests.put(api, headers=self.config.headers, data=data.__dict__)
         return self.requests.to_dict()
 
+    def _get_complete_message(self, message: Message):
+
+        if hasattr(message, 'labelIds'):
+            message.__dict__['labelIds_automon'] = [self.labels_get(x) for x in message.labelIds]
+
+        return message
+
     def messages_batchDelete(self, ids: list):
         """Deletes many messages by message ID. Provides no guarantees that messages were not already deleted or even existed at all."""
         if type(ids) is not list:
-            raise
+            raise Exception(f"[GoogleGmailClient] :: messages_batchDelete :: ERROR :: {type(ids)=} is not list")
 
         api = UsersMessages(self._userId).batchDelete
         data = {
@@ -168,7 +178,7 @@ class GoogleGmailClient:
                              removeLabelIds: list = None):
         """Modifies the labels on the specified messages."""
         if type(ids) is not list:
-            raise
+            raise Exception(f"[GoogleGmailClient] :: messages_batchModify :: ERROR :: {type(ids)=} is not list")
 
         api = UsersMessages(self._userId).batchModify
         data = {
@@ -187,7 +197,7 @@ class GoogleGmailClient:
 
     def messages_get(self,
                      id: str,
-                     format: Format = None,
+                     format: Format = Format.full,
                      metadataHeaders: list = None) -> Message:
         """Gets the specified message."""
         api = UsersMessages(self._userId).get(id)
@@ -231,11 +241,13 @@ class GoogleGmailClient:
                       pageToken: str = None,
                       q: str = None,
                       labelIds: str = None,
-                      includeSpamTrash: bool = False
-                      ):
+                      includeSpamTrash: bool = False):
         """Lists the messages in the user's mailbox."""
+        logger.debug(
+            f"[GoogleGmailClient] :: message_list :: {maxResults=} :: {pageToken=} :: {q=} :: {labelIds=} :: {includeSpamTrash=}")
+
         if maxResults > 500:
-            raise
+            raise Exception(f"[GoogleGmailClient] :: message_list :: ERROR :: {maxResults=} > 500")
 
         api = UsersMessages(self._userId).list
         params = dict(
@@ -246,6 +258,8 @@ class GoogleGmailClient:
             includeSpamTrash=includeSpamTrash
         )
         self.requests.get(api, headers=self.config.headers, params=params)
+
+        logger.info(f"[GoogleGmailClient] :: message_list :: done")
         return self.requests.to_dict()
 
     def messages_modify(self,
@@ -254,7 +268,8 @@ class GoogleGmailClient:
                         removeLabelIds: list = None):
         """Modifies the labels on the specified message."""
         if len(addLabelIds) or len(removeLabelIds) > 100:
-            raise
+            raise Exception(
+                f"[GoogleGmailClient] :: messages_modify :: ERROR :: {len(addLabelIds)=} {len(addLabelIds)=} > 100")
 
         api = UsersMessages(self._userId).modify(id)
         data = {

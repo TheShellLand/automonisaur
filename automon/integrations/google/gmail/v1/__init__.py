@@ -259,6 +259,59 @@ class Message(DictAbstract):
       "sizeEstimate": integer,
       "raw": string
     }
+
+
+    Fields
+    id
+    string
+
+    The immutable ID of the message.
+
+    threadId
+    string
+
+    The ID of the thread the message belongs to. To add a message or draft to a thread, the following criteria must be met:
+
+    The requested threadId must be specified on the Message or Draft.Message you supply with your request.
+    The References and In-Reply-To headers must be set in compliance with the RFC 2822 standard.
+    The Subject headers must match.
+
+    labelIds[]
+    string
+
+    List of IDs of labels applied to this message.
+
+    snippet
+    string
+
+    A short part of the message text.
+
+    historyId
+    string
+
+    The ID of the last history record that modified this message.
+
+    internalDate
+    string (int64 format)
+
+    The internal message creation timestamp (epoch ms), which determines ordering in the inbox. For normal SMTP-received email, this represents the time the message was originally accepted by Google, which is more reliable than the Date header. However, for API-migrated mail, it can be configured by client to be based on the Date header.
+
+    payload
+    object (MessagePart)
+
+    The parsed email structure in the message parts.
+
+    sizeEstimate
+    integer
+
+    Estimated size in bytes of the message.
+
+    raw
+    string (bytes format)
+
+    The entire email message in an RFC 2822 formatted and base64url encoded string. Returned in messages.get and drafts.get responses when the format=RAW parameter is supplied.
+
+    A base64-encoded string.
     """
 
     def __init__(self):
@@ -273,11 +326,62 @@ class Message(DictAbstract):
             pass
 
     @property
-    def payload_decoded(self):
+    def payload_attachments(self):
         try:
-            data = self.payload['body']['data']
-            return base64.urlsafe_b64decode(data).decode()
+            parts = self.payload['parts']
+
+            message = []
+            for part in parts:
+                data = part['body']['data']
+                message.append(
+                    base64.urlsafe_b64decode(data)
+                )
+            return ''.join(message)
         except Exception as error:
+            pass
+
+    @property
+    def payload_body(self):
+        try:
+            return self.payload['body']
+        except Exception as error:
+            pass
+
+    @property
+    def payload_body_decoded(self):
+        try:
+            data = self.payload_body['data']
+            data = base64.urlsafe_b64decode(data).decode()
+            self.payload_body['data_decoded'] = data
+            return data
+        except Exception as error:
+            pass
+
+    @property
+    def payload_headers(self):
+        try:
+            return self.payload['headers']
+        except:
+            pass
+
+    @property
+    def payload_mimeType(self):
+        try:
+            return self.payload['mimeType']
+        except:
+            pass
+
+    @property
+    def payload_parts(self):
+        try:
+            for part in self.payload['parts']:
+                body = part['body']
+                if 'data' in body:
+                    data = body['data']
+                    body['data_decoded'] = base64.urlsafe_b64decode(data).decode()
+
+            return self.payload['parts']
+        except:
             pass
 
     @property
