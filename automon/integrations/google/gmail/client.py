@@ -29,12 +29,13 @@ class GoogleGmailClient:
             raise Exception(f"[GoogleGmailClient] :: _userId :: ERROR :: {self.config.user_info_email=}")
         return self.config.user_info_email
 
-    def draft_create(self):
+    def draft_create(self, raw: str, threadId: str = None, **kwargs) -> Draft:
         """Creates a new draft with the DRAFT label."""
-        api = UsersDrafts(self._userId)
-        data = Draft()
-        self.requests.post(api, headers=self.config.headers, data=data.__dict__)
-        return self.requests.to_dict()
+        api = UsersDrafts(self._userId).create
+        message = Message(raw=raw, threadId=threadId, **kwargs)
+        data = Draft(message=message)
+        self.requests.post(api, headers=self.config.headers, json=data.__dict__)
+        return Draft().update_dict(self.requests.to_dict())
 
     def draft_delete(self, id: int):
         """Immediately and permanently deletes the specified draft."""
@@ -44,21 +45,43 @@ class GoogleGmailClient:
 
     def draft_get(self,
                   id: int,
-                  format: Format = Format.full):
+                  format: Format = Format.full) -> Draft:
         """Gets the specified draft."""
         api = f'/gmail/v1/users/{self._userId}/drafts/{id}'
         params = dict(
             format=format,
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        return self.requests.to_dict()
+        return Draft().update_dict(self.requests.to_dict())
 
     def draft_list(self,
                    maxResults: int = 100,
                    pageToken: str = '',
                    q: bool = '',
                    includeSpamTrash: bool = None):
-        """Lists the drafts in the user's mailbox."""
+        """Lists the drafts in the user's mailbox.
+
+        Parameters
+        maxResults
+        integer (uint32 format)
+
+        Maximum number of drafts to return. This field defaults to 100. The maximum allowed value for this field is 500.
+
+        pageToken
+        string
+
+        Page token to retrieve a specific page of results in the list.
+
+        q
+        string
+
+        Only return draft messages matching the specified query. Supports the same query format as the Gmail search box. For example, "from:someuser@example.com rfc822msgid:<somemsgid@example.com> is:unread".
+
+        includeSpamTrash
+        boolean
+
+        Include drafts from SPAM and TRASH in the results.
+        """
         if maxResults > 500:
             raise Exception(f"[GoogleGmailClient] :: draft_list :: ERROR :: {maxResults=} > 500")
 
@@ -76,13 +99,13 @@ class GoogleGmailClient:
         """Sends the specified, existing draft to the recipients in the To, Cc, and Bcc headers."""
         api = UsersDrafts(self._userId).send
         data = Draft()
-        self.requests.post(api, headers=self.config.headers, data=data.__dict__)
+        self.requests.post(api, headers=self.config.headers, json=data.__dict__)
         return self.requests.to_dict()
 
     def draft_update(self, id: int):
         api = UsersDrafts(self._userId).update(id)
         data = Draft()
-        self.requests.put(api, headers=self.config.headers, data=data.__dict__)
+        self.requests.put(api, headers=self.config.headers, json=data.__dict__)
         return self.requests.to_dict()
 
     def history_list(self,
@@ -155,25 +178,25 @@ class GoogleGmailClient:
         """Patch the specified label."""
         api = UsersLabels(self._userId).patch(id)
         data = Label()
-        self.requests.patch(api, headers=self.config.headers, data=data.__dict__)
+        self.requests.patch(api, headers=self.config.headers, json=data.__dict__)
         return self.requests.to_dict()
 
     def labels_update(self, id: str):
         """Updates the specified label."""
         api = UsersLabels(self._userId).update(id)
         data = Label()
-        self.requests.put(api, headers=self.config.headers, data=data.__dict__)
+        self.requests.put(api, headers=self.config.headers, json=data.__dict__)
         return self.requests.to_dict()
 
     def _improved_messages_get(self, message: Message):
         """Better labels."""
 
         if hasattr(message, 'labelIds'):
-            message.__dict__['labelIds_automon'] = [self.labels_get(x) for x in message.labelIds]
+            message.__dict__['automon_labelIds'] = [self.labels_get(x) for x in message.labelIds]
 
         return message
 
-    def _improved_messages_list(self, messages: MessageList):
+    def _improved_messages_list(self, messages: MessageList) -> MessageList:
         """Better messages."""
 
         messages_automon = []
@@ -184,7 +207,7 @@ class GoogleGmailClient:
             messages_automon.append(
                 self.messages_get_automon(id=id)
             )
-        messages.__dict__['messages_automon'] = messages_automon
+        messages.automon_messages = messages_automon
 
         return messages
 
@@ -197,7 +220,7 @@ class GoogleGmailClient:
         data = {
             "ids": ids
         }
-        self.requests.post(api, headers=self.config.headers, data=data)
+        self.requests.post(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
     def messages_batchModify(self,
@@ -214,7 +237,7 @@ class GoogleGmailClient:
             "addLabelIds": addLabelIds,
             "removeLabelIds": removeLabelIds
         }
-        self.requests.post(api, headers=self.config.headers, data=data)
+        self.requests.post(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
     def messages_delete(self, id: int):
@@ -275,7 +298,7 @@ class GoogleGmailClient:
                       pageToken: str = None,
                       q: str = None,
                       labelIds: str = None,
-                      includeSpamTrash: bool = False):
+                      includeSpamTrash: bool = False) -> MessageList:
         """Lists the messages in the user's mailbox."""
         logger.debug(
             f"[GoogleGmailClient] :: message_list :: {maxResults=} :: {pageToken=} :: {q=} :: {labelIds=} :: {includeSpamTrash=}")
@@ -299,7 +322,8 @@ class GoogleGmailClient:
     def messages_list_automon(self, *args, **kwargs):
         """Enhanced `message_list`"""
         messages = self.messages_list(*args, **kwargs)
-        messages = self._improved_messages_list(messages=messages)
+        if messages:
+            messages = self._improved_messages_list(messages=messages)
         return messages
 
     def messages_modify(self,
@@ -316,14 +340,14 @@ class GoogleGmailClient:
             "addLabelIds": addLabelIds,
             "removeLabelIds": removeLabelIds
         }
-        self.requests.post(api, headers=self.config.headers, data=data)
+        self.requests.post(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
     def messages_send(self):
         """Sends the specified message to the recipients in the To, Cc, and Bcc headers. For example usage, see Sending email."""
         api = UsersMessages(self._userId).send
         data = Message()
-        self.requests.post(api, headers=self.config.headers, data=data.__dict__)
+        self.requests.post(api, headers=self.config.headers, json=data.__dict__)
         return self.requests.to_dict()
 
     def messages_trash(self, id: int):

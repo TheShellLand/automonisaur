@@ -218,21 +218,6 @@ class Color:
     pass
 
 
-class Draft:
-    """
-    {
-      "id": string,
-      "message": {
-        object (Message)
-      }
-    }
-    """
-
-    def __init__(self):
-        id: str = None
-        message: Message = None
-
-
 class DictUpdate:
 
     def update_dict(self, dict_: dict):
@@ -322,14 +307,34 @@ class Message(DictUpdate):
     A base64-encoded string.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, id: str = None, threadId: str = None, raw: str = None):
+        self.id = id
+        self.threadId = threadId
+        self.raw = raw
 
     def __repr__(self):
-        return f"[Message] :: {self.id=} :: {self.payload_sender['value']} :: {int(self.sizeEstimate) / 1024:,.0f} KB ::"
+        return f"[Message] :: {self.id} :: {self.automon_payload_sender['value']} :: {int(self.sizeEstimate) / 1024:,.0f} KB ::"
 
     @property
-    def raw_decoded(self):
+    def automon_any_message(self):
+        try:
+            if self.automon_raw_decoded:
+                return [self.automon_raw_decoded]
+        except Exception as error:
+            pass
+
+        try:
+            parts = []
+            for part in self.automon_payload_parts:
+                automon_data_decoded = part['body']['automon_data_decoded']
+                parts.append(automon_data_decoded)
+            if parts:
+                return parts
+        except Exception as error:
+            pass
+
+    @property
+    def automon_raw_decoded(self):
         try:
             raw = self.raw
             return base64.urlsafe_b64decode(raw).decode()
@@ -337,7 +342,7 @@ class Message(DictUpdate):
             pass
 
     @property
-    def payload_attachments(self):
+    def automon_payload_attachments(self):
         try:
             parts = self.payload['parts']
 
@@ -352,55 +357,135 @@ class Message(DictUpdate):
             pass
 
     @property
-    def payload_body(self):
+    def automon_payload_body(self):
         try:
             return self.payload['body']
         except Exception as error:
             pass
 
     @property
-    def payload_body_decoded(self):
+    def automon_payload_body_decoded(self):
         try:
             data = self.payload_body['data']
             data = base64.urlsafe_b64decode(data).decode()
-            self.payload_body['data_decoded'] = data
+            self.payload_body['automon_data_decoded'] = data
             return data
         except Exception as error:
             pass
 
     @property
-    def payload_headers(self):
+    def automon_payload_headers(self):
         try:
             return self.payload['headers']
         except:
             pass
 
     @property
-    def payload_mimeType(self):
+    def automon_payload_mimeType(self):
         try:
             return self.payload['mimeType']
         except:
             pass
 
     @property
-    def payload_parts(self):
+    def automon_payload_parts(self):
         try:
             for part in self.payload['parts']:
                 body = part['body']
                 if 'data' in body:
                     data = body['data']
-                    body['data_decoded'] = base64.urlsafe_b64decode(data).decode()
+                    body['automon_data_decoded'] = base64.urlsafe_b64decode(data).decode()
 
             return self.payload['parts']
         except:
             pass
 
     @property
-    def payload_sender(self):
+    def automon_payload_sender(self):
         try:
             return [x for x in self.payload['headers'] if x['name'] == 'From'][0]
         except Exception as error:
             pass
+
+
+class Draft(DictUpdate):
+    id: str
+    message: Message
+    """
+    A draft email in the user's mailbox.
+    
+    {
+      "message": {
+        "raw": "string"
+      }
+    }
+    
+
+    JSON representation
+    
+    {
+      "id": string,
+      "message": {
+        object (Message)
+      }
+    }
+    Fields
+    id	
+    string
+    
+    The immutable ID of the draft.
+    
+    message	
+    object (Message)
+    
+    The message content of the draft.
+    """
+
+    def __init__(self, id: str = None, message: Message = None):
+        self.id = id
+        self.message = message
+
+
+class DraftList(DictUpdate):
+    drafts: list
+    nextPageToken: str
+    resultSizeEstimate: int
+
+    """
+    If successful, the response body contains data with the following structure:
+
+    JSON representation
+    
+    {
+      "drafts": [
+        {
+          object (Draft)
+        }
+      ],
+      "nextPageToken": string,
+      "resultSizeEstimate": integer
+    }
+    Fields
+    drafts[]	
+    object (Draft)
+    
+    List of drafts. Note that the Message property in each Draft resource only contains an id and a threadId. The messages.get method can fetch additional message details.
+    
+    nextPageToken	
+    string
+    
+    Token to retrieve the next page of results in the list.
+    
+    resultSizeEstimate	
+    integer (uint32 format)
+    
+    Estimated total number of results.
+    """
+
+    def __init__(self):
+        self.drafts = None
+        self.nextPageToken = None
+        self.resultSizeEstimate = None
 
 
 class MessageList(DictUpdate):
@@ -421,7 +506,16 @@ class MessageList(DictUpdate):
     """
 
     def __init__(self):
-        pass
+        self.messages = []
+        self.automon_messages: Message = []
+
+    def __bool__(self):
+        if self.messages:
+            return True
+        return False
+
+    def __repr__(self):
+        return f"[MessageList] :: {len(self.messages)} messages ::"
 
 
 class MessageAdded:
