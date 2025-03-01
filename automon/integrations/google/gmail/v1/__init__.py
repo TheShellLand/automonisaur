@@ -312,9 +312,6 @@ class Message(DictUpdate):
         self.threadId = threadId
         self.raw = raw
 
-    def __repr__(self):
-        return f"[Message] :: {self.id} :: {self.automon_payload_sender['value']} :: {int(self.sizeEstimate) / 1024:,.0f} KB ::"
-
     @property
     def automon_any_message(self):
         try:
