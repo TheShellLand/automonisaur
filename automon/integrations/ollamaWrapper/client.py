@@ -34,7 +34,7 @@ class OllamaClient(object):
         self.messages: list = messages
         self.STREAM: ollama.chat = stream
 
-        self.chats = ()
+        self.chats: (OllamaChat) = ()
 
         self._ollama_chat: OllamaChat = None
         self._ollama_list = None
@@ -132,7 +132,7 @@ class OllamaClient(object):
         if not options:
             options = self._ollama_options
 
-        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.messages):,} tokens >>>>')
+        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.messages):,} total tokens >>>>')
 
         chat = ollama.chat(
             model=self.model,
@@ -384,6 +384,12 @@ class OllamaClient(object):
     def _agent_token(self):
         print(f":: SYSTEM :: message has {chr_to_tokens(self._full_chat_log):,} total tokens ::")
 
+    def get_context_window(self):
+        return self._num_ctx
+
+    def get_total_tokens(self):
+        return sum_tokens(self.messages)
+
     def has_downloaded_models(self):
         self.list()
 
@@ -504,6 +510,12 @@ class OllamaClient(object):
             print(content, end='', flush=True)
 
         logger.info(f'[OllamaClient] :: print_response :: done')
+        return self
+
+    def set_context_window(self, tokens: int):
+        tokens = round(tokens)
+        logger.debug(f'[OllamaClient] :: set_context_window :: {tokens=} :: >>>>')
+        self._num_ctx = tokens
         return self
 
     @staticmethod
