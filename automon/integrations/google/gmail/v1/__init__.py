@@ -224,6 +224,9 @@ class DictUpdate:
         self.__dict__.update(dict_)
         return self
 
+    def to_dict(self):
+        return self.__dict__
+
 
 class Message(DictUpdate):
     id: str

@@ -32,7 +32,7 @@ class GoogleGmailClient:
     def draft_create(self, raw: str, threadId: str = None, **kwargs) -> Draft:
         """Creates a new draft with the DRAFT label."""
         api = UsersDrafts(self._userId).create
-        message = Message(raw=raw, threadId=threadId, **kwargs)
+        message = Message(raw=raw, threadId=threadId, **kwargs).to_dict()
         data = Draft(message=message)
         self.requests.post(api, headers=self.config.headers, json=data.__dict__)
         return Draft().update_dict(self.requests.to_dict())
