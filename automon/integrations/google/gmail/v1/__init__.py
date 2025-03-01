@@ -310,7 +310,7 @@ class Message(DictUpdate):
     A base64-encoded string.
     """
 
-    def __init__(self, id: str = None, threadId: str = None, raw: str = None):
+    def __init__(self, id: base64.urlsafe_b64encode = None, threadId: str = None, raw: str = None):
         self.id = id
         self.threadId = threadId
         self.raw = raw
@@ -366,9 +366,9 @@ class Message(DictUpdate):
     @property
     def automon_payload_body_decoded(self):
         try:
-            data = self.payload_body['data']
+            data = self.automon_payload_body['data']
             data = base64.urlsafe_b64decode(data).decode()
-            self.payload_body['automon_data_decoded'] = data
+            self.automon_payload_body['automon_data_decoded'] = data
             return data
         except Exception as error:
             pass
@@ -487,6 +487,8 @@ class DraftList(DictUpdate):
         self.nextPageToken = None
         self.resultSizeEstimate = None
 
+        self.automon_drafts = []
+
 
 class MessageList(DictUpdate):
     messages: list
@@ -507,6 +509,7 @@ class MessageList(DictUpdate):
 
     def __init__(self):
         self.messages = []
+
         self.automon_messages: Message = []
 
     def __bool__(self):

@@ -1,3 +1,6 @@
+import email
+import email.mime.text
+import email.mime.multipart
 import googleapiclient.discovery
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
@@ -29,8 +32,46 @@ class GoogleGmailClient:
             raise Exception(f"[GoogleGmailClient] :: _userId :: ERROR :: {self.config.user_info_email=}")
         return self.config.user_info_email
 
-    def draft_create(self, raw: str, threadId: str = None, **kwargs) -> Draft:
+    def draft_create(self,
+                     threadId: str = None,
+                     raw: str = None,
+                     email_subject: str = None,
+                     email_from: str = None,
+                     email_to: list = [],
+                     email_cc: list = [],
+                     email_bb: list = [],
+                     email_body: str = None,
+                     email_attachments: list = [],
+                     **kwargs) -> Draft:
         """Creates a new draft with the DRAFT label."""
+        if raw:
+            raw = base64.urlsafe_b64encode(raw.encode()).decode()
+        else:
+            if type(email_to) is str:
+                email_to = [email_to]
+
+            if type(email_cc) is str:
+                email_cc = [email_cc]
+
+            if type(email_bb) is str:
+                email_bb = [email_bb]
+
+            email_build = email.mime.multipart.MIMEMultipart()
+            email_build['Subject'] = email_subject
+            email_build['From'] = email_from
+            email_build['To'] = ', '.join(email_to)
+            email_build['Cc'] = ', '.join(email_cc)
+            email_build['Bc'] = ', '.join(email_bb)
+
+            email_body = email.mime.text.MIMEText(email_body)
+            email_build.attach(email_body)
+
+            attachments = []
+            for attachment in email_attachments:
+                raise NotImplemented
+
+            raw = base64.urlsafe_b64encode(email_build.as_string().encode()).decode()
+
         api = UsersDrafts(self._userId).create
         message = Message(raw=raw, threadId=threadId, **kwargs).to_dict()
         data = Draft(message=message)
@@ -47,7 +88,7 @@ class GoogleGmailClient:
                   id: int,
                   format: Format = Format.full) -> Draft:
         """Gets the specified draft."""
-        api = f'/gmail/v1/users/{self._userId}/drafts/{id}'
+        api = UsersDrafts(self._userId).get(id)
         params = dict(
             format=format,
         )
@@ -58,7 +99,7 @@ class GoogleGmailClient:
                    maxResults: int = 100,
                    pageToken: str = '',
                    q: bool = '',
-                   includeSpamTrash: bool = None):
+                   includeSpamTrash: bool = None) -> DraftList:
         """Lists the drafts in the user's mailbox.
 
         Parameters
@@ -93,7 +134,13 @@ class GoogleGmailClient:
             includeSpamTrash=includeSpamTrash,
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        return self.requests.to_dict()
+        return DraftList().update_dict(self.requests.to_dict())
+
+    def draft_list_automon(self, *args, **kwargs):
+        """Enhanced `message_get`"""
+        drafts = self.draft_list(*args, **kwargs)
+        drafts = self._improved_draft_list(drafts=drafts)
+        return drafts
 
     def draft_send(self):
         """Sends the specified, existing draft to the recipients in the To, Cc, and Bcc headers."""
@@ -160,13 +207,13 @@ class GoogleGmailClient:
         self.requests.get(api, headers=self.config.headers)
         return self.requests.to_dict()
 
-    def labels_get_by_name(self, name: str):
+    def labels_get_by_name(self, name: str) -> Label:
         """Gets label by name"""
         self.labels_list()
         labels = self.requests.to_dict()['labels']
         for label in labels:
             if label['name'] == name:
-                return label
+                return Label().update_dict(label)
 
     def labels_list(self):
         """Lists all labels in the user's mailbox."""
@@ -188,6 +235,24 @@ class GoogleGmailClient:
         self.requests.put(api, headers=self.config.headers, json=data.__dict__)
         return self.requests.to_dict()
 
+    def _improved_draft_list(self, drafts: DraftList) -> DraftList:
+        """Better drafts."""
+
+        automon_drafts = []
+        drafts_ = drafts.drafts
+        for draft in drafts_:
+            id = draft['id']
+            message = draft['message']
+            draft['automon_id'] = self.messages_get_automon(message['id'])
+            draft['automon_threadId'] = self.messages_get_automon(message['threadId'])
+
+            automon_drafts.append(
+                draft
+            )
+        drafts.automon_drafts = automon_drafts
+
+        return drafts
+
     def _improved_messages_get(self, message: Message):
         """Better labels."""
 
@@ -199,15 +264,15 @@ class GoogleGmailClient:
     def _improved_messages_list(self, messages: MessageList) -> MessageList:
         """Better messages."""
 
-        messages_automon = []
+        automon_messages = []
         messages_ = messages.messages
         for msg in messages_:
             id = msg['id']
             threadId = msg['threadId']
-            messages_automon.append(
+            automon_messages.append(
                 self.messages_get_automon(id=id)
             )
-        messages.automon_messages = messages_automon
+        messages.automon_messages = automon_messages
 
         return messages
 
