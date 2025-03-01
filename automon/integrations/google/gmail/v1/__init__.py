@@ -189,60 +189,68 @@ class UsersThread:
 
 
 class MessageListVisibility:
-    pass
+    show = 'show'
+    hide = 'hide'
 
 
 class LabelListVisibility:
-    pass
+    labelShow = 'labelShow'
+    labelHide = 'labelHide'
+    labelShowIfUnread = 'labelShowIfUnread'
 
 
 class Type:
-    pass
+    system = 'system'
+    user = 'user'
 
 
 class Color:
+    backgroundColor: str
+    textColor: str
+
+    """
+    {
+        'backgroundColor': '#ff7537', 
+        'textColor': '#ffffff'
+    }
+    
+    """
     pass
 
 
-class Label:
+class Draft:
     """
     {
       "id": string,
-      "name": string,
-      "messageListVisibility": enum (MessageListVisibility),
-      "labelListVisibility": enum (LabelListVisibility),
-      "type": enum (Type),
-      "messagesTotal": integer,
-      "messagesUnread": integer,
-      "threadsTotal": integer,
-      "threadsUnread": integer,
-      "color": {
-        object (Color)
+      "message": {
+        object (Message)
       }
     }
     """
 
     def __init__(self):
         id: str = None
-        name: str = None
-        messageListVisibility: MessageListVisibility = None
-        labelListVisibility: LabelListVisibility = None
-        type: Type = None
-        messagesTotal: int = None
-        messagesUnread: int = None
-        threadsTotal: int = None
-        threadsUnread: int = None
-        color: Color = None
+        message: Message = None
 
 
-class DictAbstract:
+class DictUpdate:
 
-    def update_(self, dict):
-        self.__dict__.update(dict)
+    def update_dict(self, dict_: dict):
+        self.__dict__.update(dict_)
         return self
 
 
-class Message(DictAbstract):
+class Message(DictUpdate):
+    id: str
+    threadId: str
+    labelIds: list
+    snippet: str
+    historyId: str
+    internalDate: str
+    payload: dict
+    sizeEstimate: str
+    raw: str
+
     """
     {
       "id": string,
@@ -316,6 +324,9 @@ class Message(DictAbstract):
 
     def __init__(self):
         pass
+
+    def __repr__(self):
+        return f"[Message] :: {self.id=} :: {self.payload_sender['value']} :: {int(self.sizeEstimate) / 1024:,.0f} KB ::"
 
     @property
     def raw_decoded(self):
@@ -392,19 +403,25 @@ class Message(DictAbstract):
             pass
 
 
-class Draft:
+class MessageList(DictUpdate):
+    messages: list
+    resultSizeEstimate: int
+    nextPageToken: str
+
     """
     {
-      "id": string,
-      "message": {
-        object (Message)
-      }
+      "messages": [
+        {
+          object (Message)
+        }
+      ],
+      "nextPageToken": string,
+      "resultSizeEstimate": integer
     }
     """
 
     def __init__(self):
-        id: str = None
-        message: Message = None
+        pass
 
 
 class MessageAdded:
@@ -415,6 +432,103 @@ class MessageDeleted:
     pass
 
 
+class MessagePartBody:
+    """
+    {
+      "attachmentId": string,
+      "size": integer,
+      "data": string
+    }
+    """
+    pass
+
+
+class Label(DictUpdate):
+    id: str
+    name: str
+    messageListVisibility: MessageListVisibility
+    labelListVisibility: LabelListVisibility
+    type: Type
+    messagesTotal: int
+    messagesUnread: int
+    threadsTotal: int
+    threadsUnread: int
+    color: Color
+
+    """
+    {
+      "id": string,
+      "name": string,
+      "messageListVisibility": enum (MessageListVisibility),
+      "labelListVisibility": enum (LabelListVisibility),
+      "type": enum (Type),
+      "messagesTotal": integer,
+      "messagesUnread": integer,
+      "threadsTotal": integer,
+      "threadsUnread": integer,
+      "color": {
+        object (Color)
+      }
+    }
+    
+    Fields
+    id	
+    string
+    
+    The immutable ID of the label.
+    
+    name	
+    string
+    
+    The display name of the label.
+    
+    messageListVisibility	
+    enum (MessageListVisibility)
+    
+    The visibility of messages with this label in the message list in the Gmail web interface.
+    
+    labelListVisibility	
+    enum (LabelListVisibility)
+    
+    The visibility of the label in the label list in the Gmail web interface.
+    
+    type	
+    enum (Type)
+    
+    The owner type for the label. User labels are created by the user and can be modified and deleted by the user and can be applied to any message or thread. System labels are internally created and cannot be added, modified, or deleted. System labels may be able to be applied to or removed from messages and threads under some circumstances but this is not guaranteed. For example, users can apply and remove the INBOX and UNREAD labels from messages and threads, but cannot apply or remove the DRAFTS or SENT labels from messages or threads.
+    
+    messagesTotal	
+    integer
+    
+    The total number of messages with the label.
+    
+    messagesUnread	
+    integer
+    
+    The number of unread messages with the label.
+    
+    threadsTotal	
+    integer
+    
+    The total number of threads with the label.
+    
+    threadsUnread	
+    integer
+    
+    The number of unread threads with the label.
+    
+    color	
+    object (Color)
+    
+    The color to assign to the label. Color is only available for labels that have their type set to user.
+    """
+
+    def __init__(self, name: str = None):
+        self.name = name
+        self.messageListVisibility = MessageListVisibility.show
+        self.labelListVisibility = LabelListVisibility.labelShow
+
+
 class LabelAdded:
     pass
 
@@ -423,7 +537,14 @@ class LabelRemoved:
     pass
 
 
-class HistoryType:
+class HistoryType(DictUpdate):
+    id: str
+    messages: Message
+    messagesAdded: MessageAdded
+    messagesDeleted: MessageDeleted
+    labelsAdded: LabelAdded
+    labelsRemoved: LabelRemoved
+
     """
     {
       "id": string,
@@ -456,12 +577,7 @@ class HistoryType:
     """
 
     def __init__(self):
-        id: str = None
-        messages: Message = None
-        messagesAdded: MessageAdded = None
-        messagesDeleted: MessageDeleted = None
-        labelsAdded: LabelAdded = None
-        labelsRemoved: LabelRemoved = None
+        pass
 
 
 class Format:

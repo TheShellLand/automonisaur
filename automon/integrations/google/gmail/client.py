@@ -44,7 +44,7 @@ class GoogleGmailClient:
 
     def draft_get(self,
                   id: int,
-                  format: Format = None):
+                  format: Format = Format.full):
         """Gets the specified draft."""
         api = f'/gmail/v1/users/{self._userId}/drafts/{id}'
         params = dict(
@@ -112,26 +112,38 @@ class GoogleGmailClient:
                     return True
         return False
 
-    def labels_create(self, label: str):
-        """Creates a new label."""
-        logger.debug(f"[GoogleGmailClient] :: labels_create :: {label=} :: >>>>")
-        api = UsersLabels(userId=self._userId)
-        data = Label()
-        self.requests.post(api, headers=self.config.headers, data=data.__dict__)
-        return self.requests.to_dict()
+    def labels_create(self, name: str):
+        """Creates a new label.
 
-    def labels_delete(self, id: int):
-        """Immediately and permanently deletes the specified label and
-        removes it from any messages and threads that it is applied to."""
+        Max labels 10,000
+        """
+        logger.debug(f"[GoogleGmailClient] :: labels_create :: {name=} :: >>>>")
+        api = UsersLabels(userId=self._userId).create
+        data = Label(name=name)
+        self.requests.post(api, headers=self.config.headers, json=data.__dict__)
+        return Label().update_dict(self.requests.to_dict())
+
+    def labels_delete(self, id: str):
+        """Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to."""
         api = UsersLabels(self._userId).delete(id)
         self.requests.delete(api, headers=self.config.headers)
-        return self.requests.to_dict()
+        if self.requests.status_code == 204:
+            return True
+        return False
 
-    def labels_get(self, id: int):
+    def labels_get(self, id: str):
         """Gets the specified label."""
         api = UsersLabels(self._userId).get(id)
         self.requests.get(api, headers=self.config.headers)
         return self.requests.to_dict()
+
+    def labels_get_by_name(self, name: str):
+        """Gets label by name"""
+        self.labels_list()
+        labels = self.requests.to_dict()['labels']
+        for label in labels:
+            if label['name'] == name:
+                return label
 
     def labels_list(self):
         """Lists all labels in the user's mailbox."""
@@ -139,26 +151,42 @@ class GoogleGmailClient:
         self.requests.get(api, headers=self.config.headers)
         return self.requests.to_dict()
 
-    def labels_patch(self, id: int):
+    def labels_patch(self, id: str):
         """Patch the specified label."""
         api = UsersLabels(self._userId).patch(id)
         data = Label()
         self.requests.patch(api, headers=self.config.headers, data=data.__dict__)
         return self.requests.to_dict()
 
-    def labels_update(self, id: int):
+    def labels_update(self, id: str):
         """Updates the specified label."""
         api = UsersLabels(self._userId).update(id)
         data = Label()
         self.requests.put(api, headers=self.config.headers, data=data.__dict__)
         return self.requests.to_dict()
 
-    def _get_complete_message(self, message: Message):
+    def _improved_messages_get(self, message: Message):
+        """Better labels."""
 
         if hasattr(message, 'labelIds'):
             message.__dict__['labelIds_automon'] = [self.labels_get(x) for x in message.labelIds]
 
         return message
+
+    def _improved_messages_list(self, messages: MessageList):
+        """Better messages."""
+
+        messages_automon = []
+        messages_ = messages.messages
+        for msg in messages_:
+            id = msg['id']
+            threadId = msg['threadId']
+            messages_automon.append(
+                self.messages_get_automon(id=id)
+            )
+        messages.__dict__['messages_automon'] = messages_automon
+
+        return messages
 
     def messages_batchDelete(self, ids: list):
         """Deletes many messages by message ID. Provides no guarantees that messages were not already deleted or even existed at all."""
@@ -206,7 +234,13 @@ class GoogleGmailClient:
             metadataHeaders=metadataHeaders
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        return Message().update_(self.requests.to_dict())
+        return Message().update_dict(self.requests.to_dict())
+
+    def messages_get_automon(self, *args, **kwargs):
+        """Enhanced `message_get`"""
+        message = self.messages_get(*args, **kwargs)
+        message = self._improved_messages_get(message=message)
+        return message
 
     def messages_import(self,
                         internalDateSource: InternalDateSource = None,
@@ -260,7 +294,13 @@ class GoogleGmailClient:
         self.requests.get(api, headers=self.config.headers, params=params)
 
         logger.info(f"[GoogleGmailClient] :: message_list :: done")
-        return self.requests.to_dict()
+        return MessageList().update_dict(self.requests.to_dict())
+
+    def messages_list_automon(self, *args, **kwargs):
+        """Enhanced `message_list`"""
+        messages = self.messages_list(*args, **kwargs)
+        messages = self._improved_messages_list(messages=messages)
+        return messages
 
     def messages_modify(self,
                         id: int,
