@@ -35,39 +35,39 @@ class GoogleGmailClient:
     def draft_create(self,
                      threadId: str = None,
                      raw: str = None,
-                     email_subject: str = None,
-                     email_from: str = None,
-                     email_to: list = [],
-                     email_cc: list = [],
-                     email_bb: list = [],
-                     email_body: str = None,
-                     email_attachments: list = [],
+                     draft_subject: str = None,
+                     draft_from: str = None,
+                     draft_to: list = [],
+                     draft_cc: list = [],
+                     draft_bc: list = [],
+                     draft_body: str = None,
+                     draft_attachments: list = [],
                      **kwargs) -> Draft:
         """Creates a new draft with the DRAFT label."""
         if raw:
             raw = base64.urlsafe_b64encode(raw.encode()).decode()
         else:
-            if type(email_to) is str:
-                email_to = [email_to]
+            if type(draft_to) is str:
+                draft_to = [draft_to]
 
-            if type(email_cc) is str:
-                email_cc = [email_cc]
+            if type(draft_cc) is str:
+                draft_cc = [draft_cc]
 
-            if type(email_bb) is str:
-                email_bb = [email_bb]
+            if type(draft_bc) is str:
+                draft_bc = [draft_bc]
 
             email_build = email.mime.multipart.MIMEMultipart()
-            email_build['Subject'] = email_subject
-            email_build['From'] = email_from
-            email_build['To'] = ', '.join(email_to)
-            email_build['Cc'] = ', '.join(email_cc)
-            email_build['Bc'] = ', '.join(email_bb)
+            email_build['Subject'] = draft_subject
+            email_build['From'] = draft_from
+            email_build['To'] = ', '.join(draft_to)
+            email_build['Cc'] = ', '.join(draft_cc)
+            email_build['Bc'] = ', '.join(draft_bc)
 
-            email_body = email.mime.text.MIMEText(email_body)
-            email_build.attach(email_body)
+            draft_body = email.mime.text.MIMEText(draft_body)
+            email_build.attach(draft_body)
 
             attachments = []
-            for attachment in email_attachments:
+            for attachment in draft_attachments:
                 raise NotImplemented
 
             raw = base64.urlsafe_b64encode(email_build.as_string().encode()).decode()
@@ -393,10 +393,10 @@ class GoogleGmailClient:
 
     def messages_modify(self,
                         id: int,
-                        addLabelIds: list = None,
-                        removeLabelIds: list = None):
+                        addLabelIds: list = [],
+                        removeLabelIds: list = []):
         """Modifies the labels on the specified message."""
-        if len(addLabelIds) or len(removeLabelIds) > 100:
+        if len(addLabelIds) > 100 or len(removeLabelIds) > 100:
             raise Exception(
                 f"[GoogleGmailClient] :: messages_modify :: ERROR :: {len(addLabelIds)=} {len(addLabelIds)=} > 100")
 
@@ -406,7 +406,7 @@ class GoogleGmailClient:
             "removeLabelIds": removeLabelIds
         }
         self.requests.post(api, headers=self.config.headers, json=data)
-        return self.requests.to_dict()
+        return Message().update_dict(self.requests.to_dict())
 
     def messages_send(self):
         """Sends the specified message to the recipients in the To, Cc, and Bcc headers. For example usage, see Sending email."""
