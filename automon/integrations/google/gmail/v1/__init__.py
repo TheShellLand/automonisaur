@@ -310,7 +310,7 @@ class Message(DictUpdate):
     A base64-encoded string.
     """
 
-    def __init__(self, id: base64.urlsafe_b64encode = None, threadId: str = None, raw: str = None):
+    def __init__(self, id: str = None, threadId: str = None, raw: str = None):
         self.id = id
         self.threadId = threadId
         self.raw = raw
@@ -404,6 +404,13 @@ class Message(DictUpdate):
     def automon_payload_sender(self):
         try:
             return [x for x in self.payload['headers'] if x['name'] == 'From'][0]
+        except Exception as error:
+            pass
+
+    @property
+    def automon_payload_subject(self):
+        try:
+            return [x for x in self.payload['headers'] if x['name'] == 'Subject'][0]
         except Exception as error:
             pass
 
