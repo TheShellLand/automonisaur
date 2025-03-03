@@ -415,6 +415,14 @@ class Message(DictUpdate):
             pass
 
 
+    @property
+    def automon_payload_to(self):
+        try:
+            return [x for x in self.payload['headers'] if x['name'] == 'To'][0]
+        except Exception as error:
+            pass
+
+
 class Draft(DictUpdate):
     id: str
     message: Message
