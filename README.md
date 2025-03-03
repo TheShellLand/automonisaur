@@ -38,27 +38,27 @@ Github issues and feature requests welcomed.
 
 ### Integrations
 
-| Category        | Library                                                     |
-|-----------------|-------------------------------------------------------------|
-| API             | flask                                                       |
-| Chat            | slack                                                       |
-| Data Scraping   | beautifulsoup<br/>facebook groups<br/>instagram<br/>scrapy  |
-| Databases       | elasticsearch<br/>neo4j<br/>splunk<br/>pass                 |
-| Data Store      | minio<br/>swift                                             |
-| Devices         | snmp                                                        |
-| Google Cloud    | google auth api<br/>google people api<br/>google sheets api |
-| Helpers         | os<br/>subprocess<br/>threading<br/>socket<br/>datetime     |
-| LLMs            | ollama<br/>deepseek<br/>gemini                              |
-| Logging         | sentryio                                                    |
-| MacOS           | airport<br/>macchanger<br/>wdutil                           |
-| Python          | logging<br/>requests                                        |
-| SOAR            | swimlane<br/>splunk soar<br/>xsoar                          |
-| Recon           | nmap                                                        |
-| Test Automation | selenium                                                    |
+| Category        | Library                                                                      |
+|-----------------|------------------------------------------------------------------------------|
+| API             | flask                                                                        |
+| Chat            | slack                                                                        |
+| Data Scraping   | beautifulsoup<br/>facebook groups<br/>instagram<br/>scrapy                   |
+| Databases       | elasticsearch<br/>neo4j<br/>splunk<br/>pass                                  |
+| Data Store      | minio<br/>swift                                                              |
+| Devices         | snmp                                                                         |
+| Google Cloud    | google auth api<br/>google people api<br/>google sheets api<br/>google gmail |
+| Helpers         | os<br/>subprocess<br/>threading<br/>socket<br/>datetime                      |
+| LLMs            | ollama<br/>deepseek<br/>gemini                                               |
+| Logging         | sentryio<br/>opentelemetry                                                   |
+| MacOS           | airport<br/>macchanger<br/>wdutil                                            |
+| Python          | logging<br/>requests                                                         |
+| SOAR            | swimlane<br/>splunk soar<br/>xsoar                                           |
+| Recon           | nmap                                                                         |
+| Test Automation | selenium                                                                     |
 
 #### Requires
 
-- python >= 3.10
+- python >= 3.11
 
 _Note: install requirements.txt to use all integrations_
 

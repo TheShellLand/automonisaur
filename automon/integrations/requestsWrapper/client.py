@@ -105,7 +105,7 @@ class RequestsClient(object):
             return False
         except Exception as error:
             self.errors = error
-            logger.error(f'RequestsClient :: DELETE :: ERROR :: {error=}')
+            raise Exception(f'RequestsClient :: DELETE :: ERROR :: {error=}')
         return False
 
     def _set_proxy(self):
@@ -144,7 +144,7 @@ class RequestsClient(object):
             return False
         except Exception as error:
             self.errors = error
-            logger.error(f'RequestsClient :: GET :: ERROR :: {error=}')
+            raise Exception(f'RequestsClient :: GET :: ERROR :: {error=}')
         return False
 
     def patch(
@@ -174,7 +174,7 @@ class RequestsClient(object):
             return False
         except Exception as error:
             self.errors = error
-            logger.error(f'RequestsClient :: PATCH :: ERROR :: {error=}')
+            raise Exception(f'RequestsClient :: PATCH :: ERROR :: {error=}')
         return False
 
     def post(
@@ -204,7 +204,7 @@ class RequestsClient(object):
             return False
         except Exception as error:
             self.errors = error
-            logger.error(f'RequestsClient :: POST :: ERROR :: {error=}')
+            raise Exception(f'RequestsClient :: POST :: ERROR :: {error=}')
         return False
 
     def put(
@@ -234,7 +234,7 @@ class RequestsClient(object):
             return False
         except Exception as error:
             self.errors = error
-            logger.error(f'RequestsClient :: PUT :: ERROR :: {error=}')
+            raise Exception(f'RequestsClient :: PUT :: ERROR :: {error=}')
         return False
 
     @property
