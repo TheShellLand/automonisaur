@@ -252,6 +252,13 @@ class OllamaClient(object):
 
         logger.info(f'[OllamaClient] :: chat_forever :: done')
 
+    @property
+    def chat_response(self):
+        try:
+            return self.chats[-1].to_string()
+        except:
+            pass
+
     def _agent_clear(self):
         self.messages = [self.messages[0]]
         self._full_chat_log = ''
