@@ -36,10 +36,10 @@ class RequestsClient(object):
             msg = [
                 'RequestsClient',
                 self.response.request.method,
-                f'{self.response.url=}',
+                f'{self.status_code}',
+                f'{self.response.url}',
                 f'{self.proxies=}',
                 f'{round(len(self.content) / 1024, 2)} KB',
-                f'{self.status_code=}',
             ]
             msg = ' :: '.join([str(x) for x in msg])
             return logger.debug(msg)
@@ -47,10 +47,10 @@ class RequestsClient(object):
         msg = [
             'RequestsClient',
             self.response.request.method,
-            f'{self.response.url=}',
+            f'{self.status_code}',
+            f'{self.response.url}',
             f'{self.proxies=}',
             f'{round(len(self.content) / 1024, 2)} KB',
-            f'{self.status_code}',
             f'{self.content=}'
         ]
 
