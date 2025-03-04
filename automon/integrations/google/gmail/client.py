@@ -1,19 +1,29 @@
+import os
 import email
 import email.mime.text
 import email.mime.multipart
+import email.mime.image
+import email.mime.audio
+import email.mime.base
+import mimetypes
 import googleapiclient.discovery
+
+import automon
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import GoogleGmailConfig
 from .v1 import *
+from ..gmail import v1
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
 
 class GoogleGmailClient:
+    v1 = v1
+
     """Google Gmail client
 
     https://developers.google.com/gmail/api/reference/rest
@@ -67,8 +77,32 @@ class GoogleGmailClient:
             email_build.attach(draft_body)
 
             attachments = []
+
             for attachment in draft_attachments:
-                raise NotImplemented
+                content_type, encoding = mimetypes.guess_type(attachment)
+                if content_type is None or encoding is not None:
+                    content_type = 'application/octet-stream'
+                main_type, sub_type = content_type.split('/', 1)
+                if main_type == 'text':
+                    fp = open(attachment, 'rb')
+                    msg = email.mime.text.MIMEText(fp.read().decode("utf-8"), _subtype=sub_type)
+                    fp.close()
+                elif main_type == 'image':
+                    fp = open(attachment, 'rb')
+                    msg = email.mime.image.MIMEImage(fp.read(), _subtype=sub_type)
+                    fp.close()
+                elif main_type == 'audio':
+                    fp = open(attachment, 'rb')
+                    msg = email.mime.audio.MIMEAudio(fp.read(), _subtype=sub_type)
+                    fp.close()
+                else:
+                    fp = open(attachment, 'rb')
+                    msg = email.mime.base.MIMEBase(main_type, sub_type)
+                    msg.set_payload(fp.read())
+                    fp.close()
+                filename = os.path.basename(attachment)
+                msg.add_header('Content-Disposition', 'attachment', filename=filename)
+                email_build.attach(msg)
 
             raw = base64.urlsafe_b64encode(email_build.as_string().encode()).decode()
 
@@ -182,15 +216,23 @@ class GoogleGmailClient:
                     return True
         return False
 
-    def labels_create(self, name: str):
+    def labels_create(self,
+                      name: str,
+                      color: Color = None,
+                      backgroundColor: str = None,
+                      textColor: str = None):
         """Creates a new label.
 
         Max labels 10,000
         """
         logger.debug(f"[GoogleGmailClient] :: labels_create :: {name=} :: >>>>")
+        if color:
+            color = color
+        else:
+            color = Color(backgroundColor=backgroundColor, textColor=textColor)
         api = UsersLabels(userId=self._userId).create
-        data = Label(name=name)
-        self.requests.post(api, headers=self.config.headers, json=data.__dict__)
+        data = Label(name=name, color=color).to_dict()
+        self.requests.post(api, headers=self.config.headers, json=data)
         return Label().update_dict(self.requests.to_dict())
 
     def labels_delete(self, id: str):
@@ -205,7 +247,7 @@ class GoogleGmailClient:
         """Gets the specified label."""
         api = UsersLabels(self._userId).get(id)
         self.requests.get(api, headers=self.config.headers)
-        return self.requests.to_dict()
+        return Label().update_dict(self.requests.to_dict())
 
     def labels_get_by_name(self, name: str) -> Label:
         """Gets label by name"""
@@ -228,11 +270,20 @@ class GoogleGmailClient:
         self.requests.patch(api, headers=self.config.headers, json=data.__dict__)
         return self.requests.to_dict()
 
-    def labels_update(self, id: str):
+    def labels_update(self,
+                      id: str,
+                      color: Color = None,
+                      backgroundColor: str = None,
+                      textColor: str = None):
         """Updates the specified label."""
+        if color:
+            color = color
+        else:
+            color = Color(backgroundColor=backgroundColor, textColor=textColor)
+
         api = UsersLabels(self._userId).update(id)
-        data = Label()
-        self.requests.put(api, headers=self.config.headers, json=data.__dict__)
+        data = Label(id=id, color=color).to_dict()
+        self.requests.put(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
     def _improved_draft_list(self, drafts: DraftList) -> DraftList:
@@ -257,7 +308,7 @@ class GoogleGmailClient:
         """Better labels."""
 
         if hasattr(message, 'labelIds'):
-            message.__dict__['automon_labelIds'] = [self.labels_get(x) for x in message.labelIds]
+            message.automon_labelIds = [self.labels_get(x) for x in message.labelIds]
 
         return message
 
@@ -265,16 +316,44 @@ class GoogleGmailClient:
         """Better messages."""
 
         automon_messages = []
-        messages_ = messages.messages
+        messages_ = messages.automon_messages
         for msg in messages_:
-            id = msg['id']
-            threadId = msg['threadId']
-            automon_messages.append(
-                self.messages_get_automon(id=id)
-            )
+            id = msg.id
+            threadId = msg.threadId
+            automon_messages.append(self.messages_get_automon(id=id))
         messages.automon_messages = automon_messages
 
         return messages
+
+    def messages_attachments_get(self, messageId: str, attachmentId: str):
+        """
+        Gets the specified message attachment.
+
+        The URL uses gRPC Transcoding syntax.
+
+        Path parameters
+        Parameters
+        userId
+        string
+
+        The user's email address. The special value me can be used to indicate the authenticated user.
+
+        messageId
+        string
+
+        The ID of the message containing the attachment.
+
+        id
+        string
+
+        The ID of the attachment.
+        """
+        if attachmentId is None:
+            return
+
+        api = UsersMessagesAttachments(self._userId).get(messageId=messageId, id=attachmentId)
+        self.requests.get(api, headers=self.config.headers)
+        return MessagePartBody().update_dict(self.requests.to_dict())
 
     def messages_batchDelete(self, ids: list):
         """Deletes many messages by message ID. Provides no guarantees that messages were not already deleted or even existed at all."""
