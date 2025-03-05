@@ -146,11 +146,12 @@ class UsersMessages(Users):
 
 class DictUpdate:
 
+    def __iter__(self):
+        return self
+
     def update_dict(self, dict_: dict):
-        try:
-            self.__dict__.update(dict_)
-        except:
-            pass
+        for key, value in dict_.items():
+            setattr(self, key, value)
         return self
 
     def to_dict(self):
@@ -279,21 +280,22 @@ class MessagePartBody(DictUpdate):
     }
     """
 
-    def __init__(self):
-        self.attachmentId = None
+    # def __init__(self):
+    #     self.attachmentId = None
+    #     self.data = None
 
     def __repr__(self):
-        if self.attachmentId:
+        if hasattr(self, 'attachmentId'):
             return f"{self.attachmentId}"
 
     @property
     def automon_data_BytesIO(self):
-        if self.automon_data_decoded is not None:
+        if hasattr(self, 'automon_data_decoded'):
             return io.BytesIO(self.automon_data_decoded)
 
     @property
     def automon_data_decoded(self):
-        if self.data is not None:
+        if hasattr(self, 'data'):
             return base64.urlsafe_b64decode(self.data)
 
 
@@ -361,20 +363,40 @@ class MessagePart(DictUpdate):
     The child MIME message parts of this part. This only applies to container MIME message parts, for example multipart/*. For non- container MIME message part types, such as text/plain, this field is empty. For more information, see RFC 1521.
     """
 
+    def __init__(self):
+        self._automon_parts = None
+        self._automon_body = None
+
     @property
     def automon_body(self):
+        if self._automon_body:
+            return self._automon_body
+
         if self.body:
             return MessagePartBody().update_dict(self.body)
 
+    @automon_body.setter
+    def automon_body(self, update: MessagePartBody):
+        self._automon_body = update
+
     @property
     def automon_headers(self):
+        if self._automon_parts is not None:
+            return self._automon_parts
+
         if self.headers:
             return [Headers().update_dict(x) for x in self.headers]
+        return []
 
     @property
     def automon_parts(self):
         if hasattr(self, 'parts'):
             return [MessagePart().update_dict(x) for x in self.parts]
+        return []
+
+    @automon_parts.setter
+    def automon_parts(self, parts: list):
+        self._automon_parts = parts
 
     def __repr__(self):
         return f"{self.mimeType}"
