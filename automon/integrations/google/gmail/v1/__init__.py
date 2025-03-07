@@ -144,14 +144,29 @@ class UsersMessages(Users):
     def untrash(self, id: int): """post"""; return self.url + f'/messages/{id}/untrash'
 
 
-class DictUpdate:
+class DictUpdate(dict):
+
+    def __init__(self):
+        super().__init__()
+
+    def enhance(self):
+        return self
 
     def __iter__(self):
         return self
 
-    def update_dict(self, dict_: dict):
-        for key, value in dict_.items():
+    def update_dict(self, update: dict):
+        if type(update) is not dict:
+
+            if getattr(update, 'to_dict'):
+                update = update.to_dict()
+            else:
+                raise Exception(f"I don't now what this is. {update=}")
+
+        for key, value in update.items():
             setattr(self, key, value)
+
+        self.enhance()
         return self
 
     def to_dict(self):
@@ -254,13 +269,22 @@ class Color(DictUpdate):
     """
 
     def __init__(self, backgroundColor: str = None, textColor: str = None):
+        super().__init__()
         self.backgroundColor = backgroundColor
         self.textColor = textColor
+
+    def __bool__(self):
+        if self.backgroundColor and self.textColor:
+            return True
 
 
 class Headers(DictUpdate):
     name: str
     value: str
+
+    def __init__(self):
+        super().__init__()
+        self.enhance()
 
     def __repr__(self):
         if self.name:
@@ -280,23 +304,22 @@ class MessagePartBody(DictUpdate):
     }
     """
 
-    # def __init__(self):
-    #     self.attachmentId = None
-    #     self.data = None
+    def __init__(self):
+        super().__init__()
+
+    def enhance(self):
+        from automon.helpers import cryptography
+
+        if hasattr(self, 'data'):
+            setattr(self, 'automon_data_decoded', base64.urlsafe_b64decode(self.data))
+            setattr(self, 'automon_data_BytesIO', io.BytesIO(self.automon_data_decoded))
+            setattr(self, 'automon_attachment', dict(decoded=self.automon_data_decoded,
+                                                     BytesIO=self.automon_data_BytesIO,
+                                                     hash=cryptography.hash_key(self.automon_data_decoded)))
 
     def __repr__(self):
         if hasattr(self, 'attachmentId'):
             return f"{self.attachmentId}"
-
-    @property
-    def automon_data_BytesIO(self):
-        if hasattr(self, 'automon_data_decoded'):
-            return io.BytesIO(self.automon_data_decoded)
-
-    @property
-    def automon_data_decoded(self):
-        if hasattr(self, 'data'):
-            return base64.urlsafe_b64decode(self.data)
 
 
 class MessagePart(DictUpdate):
@@ -364,48 +387,37 @@ class MessagePart(DictUpdate):
     """
 
     def __init__(self):
-        self._automon_parts = None
-        self._automon_body = None
+        super().__init__()
 
-    @property
-    def automon_body(self):
-        if self._automon_body:
-            return self._automon_body
+    def enhance(self):
 
-        if self.body:
-            return MessagePartBody().update_dict(self.body)
+        if hasattr(self, 'body'):
+            setattr(self, 'body', MessagePartBody().update_dict(self.body))
 
-    @automon_body.setter
-    def automon_body(self, update: MessagePartBody):
-        self._automon_body = update
+            if hasattr(self.body, 'automon_attachment'):
+                setattr(self, 'automon_attachment', self.body.automon_attachment)
 
-    @property
-    def automon_headers(self):
-        if self._automon_parts is not None:
-            return self._automon_parts
+        if hasattr(self, 'headers'):
+            setattr(self, 'headers', [Headers().update_dict(x) for x in self.headers])
 
-        if self.headers:
-            return [Headers().update_dict(x) for x in self.headers]
-        return []
-
-    @property
-    def automon_parts(self):
         if hasattr(self, 'parts'):
-            return [MessagePart().update_dict(x) for x in self.parts]
-        return []
+            setattr(self, 'parts', [MessagePart().update_dict(x) for x in self.parts])
 
-    @automon_parts.setter
-    def automon_parts(self, parts: list):
-        self._automon_parts = parts
+            setattr(self, 'automon_attachments', self.parts)
+
+        return self
 
     def __repr__(self):
-        return f"{self.mimeType}"
+        if getattr(self, 'filename') and getattr(self, 'mimeType'):
+            return f"{self.filename} :: {self.mimeType}"
+        elif getattr(self, 'mimeType'):
+            return f"{self.mimeType}"
 
 
 class Message(DictUpdate):
     id: str
     threadId: str
-    labelIds: list
+    labelIds: [str]
     snippet: str
     historyId: str
     internalDate: str
@@ -485,63 +497,37 @@ class Message(DictUpdate):
     """
 
     def __init__(self, id: str = None, threadId: str = None, raw: str = None):
+        super().__init__()
+
         self.id = id
         self.threadId = threadId
         self.raw = raw
 
-    @property
-    def automon_any_message(self):
-        try:
-            if self.automon_raw_decoded:
-                return [self.automon_raw_decoded]
-        except Exception as error:
-            pass
+    def enhance(self):
 
-        try:
-            parts = []
-            for part in self.automon_payload.automon_parts:
-                automon_data_decoded = part.body['automon_data_decoded']
-                parts.append(automon_data_decoded)
-            if parts:
-                return parts
-        except Exception as error:
-            pass
+        if self.raw is not None:
+            setattr(self, 'automon_raw_decoded', base64.urlsafe_b64decode(self.raw).decode())
 
-    @property
-    def automon_raw_decoded(self):
-        try:
-            raw = self.raw
-            return base64.urlsafe_b64decode(raw).decode()
-        except Exception as error:
-            pass
+        if hasattr(self, 'automon_raw_decoded'):
+            setattr(self, 'automon_any_message', [self.automon_raw_decoded])
 
-    @property
-    def automon_payload(self):
-        try:
-            return MessagePart().update_dict(self.payload)
-        except:
-            pass
+        if hasattr(self, 'payload'):
+            setattr(self, 'payload', MessagePart().update_dict(self.payload))
 
-    @property
-    def automon_payload_headers_sender(self):
-        try:
-            return [x for x in self.automon_payload.automon_headers if x.name == 'From'][0]
-        except Exception as error:
-            pass
+            if hasattr(self.payload, 'headers'):
 
-    @property
-    def automon_payload_headers_subject(self):
-        try:
-            return [x for x in self.automon_payload.automon_headers if x.name == 'Subject'][0]
-        except Exception as error:
-            pass
+                for header in self.payload.headers:
+                    if header.name == 'From':
+                        setattr(self, 'automon_sender', header)
+                    if header.name == 'Subject':
+                        setattr(self, 'automon_subject', header)
+                    if header.name == 'To':
+                        setattr(self, 'automon_to', header)
 
-    @property
-    def automon_payload_headers_to(self):
-        try:
-            return [x for x in self.automon_payload.automon_headers if x.name == 'To'][0]
-        except Exception as error:
-            pass
+            if hasattr(self.payload, 'automon_attachments'):
+                setattr(self, 'automon_attachments', self.payload.automon_attachments)
+
+        return self
 
     def __repr__(self):
         if self.id == self.threadId:
@@ -550,7 +536,7 @@ class Message(DictUpdate):
 
 
 class MessageList(DictUpdate):
-    messages: Message
+    messages: [Message]
     resultSizeEstimate: int
     nextPageToken: str
 
@@ -566,31 +552,19 @@ class MessageList(DictUpdate):
     }
     """
 
-    def __init__(self):
-        self.messages = []
-
-        self._automon_messages: Message = []
-
-    @property
-    def automon_messages(self):
-        try:
-            if self._automon_messages:
-                return self._automon_messages
-            return [Message().update_dict(message) for message in self.messages]
-        except:
-            pass
-
-    @automon_messages.setter
-    def automon_messages(self, messages: list):
-        self._automon_messages = messages
-
     def __bool__(self):
         if self.messages:
             return True
         return False
 
+    def enhance(self):
+        if hasattr(self, 'messages'):
+            setattr(self, 'messages', [Message().update_dict(message) for message in self.messages])
+
+        return self
+
     def __repr__(self):
-        return f"{len(self.messages)} messages"
+        return self.to_dict()
 
 
 class MessageAdded:
@@ -635,8 +609,16 @@ class Draft(DictUpdate):
     """
 
     def __init__(self, id: str = None, message: Message = None):
+        super().__init__()
+
         self.id = id
         self.message = message
+
+    def to_dict(self):
+        return dict(
+            id=self.id,
+            message=self.message.to_dict()
+        )
 
 
 class DraftList(DictUpdate):
@@ -676,11 +658,7 @@ class DraftList(DictUpdate):
     """
 
     def __init__(self):
-        self.drafts = None
-        self.nextPageToken = None
-        self.resultSizeEstimate = None
-
-        self.automon_drafts = []
+        super().__init__()
 
 
 class Label(DictUpdate):
@@ -763,15 +741,16 @@ class Label(DictUpdate):
     The color to assign to the label. Color is only available for labels that have their type set to user.
     """
 
-    def __init__(self, id: str = None, name: str = None, color: Color = None):
+    def __init__(self, id: str = None, name: str = None, color: Color = None,
+                 messageListVisibility: MessageListVisibility = MessageListVisibility.show,
+                 labelListVisibility: LabelListVisibility = LabelListVisibility.labelShow):
+        super().__init__()
         self.id = id
         self.name = name
         if color:
             self.color = color.to_dict()
-        self.messageListVisibility = MessageListVisibility.show
-        self.labelListVisibility = LabelListVisibility.labelShow
-
-        self.automon_labelIds = None
+        self.messageListVisibility = messageListVisibility
+        self.labelListVisibility = labelListVisibility
 
     def __repr__(self):
         if self.name:
@@ -826,7 +805,7 @@ class HistoryType(DictUpdate):
     """
 
     def __init__(self):
-        pass
+        super().__init__()
 
 
 class Format:
@@ -834,3 +813,17 @@ class Format:
     full = 'full'
     raw = 'raw'
     metadata = 'metadata'
+
+
+class EmailAttachment(DictUpdate):
+    filename: str
+    bytes_: bytes
+
+    def __init__(self, bytes_: bytes, filename: str = ''):
+        super().__init__()
+
+        if type(bytes_) is not bytes:
+            raise Exception(f"Not bytes")
+
+        self.bytes_ = bytes_
+        self.filename = filename

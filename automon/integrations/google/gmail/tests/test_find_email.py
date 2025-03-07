@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.google.gmail import GoogleGmailClient, GoogleGmailConfig, Format
+from automon.integrations.google.gmail import GoogleGmailClient
 from automon import LoggingClient, ERROR, DEBUG
 
 LoggingClient.logging.getLogger('httpx').setLevel(ERROR)
@@ -29,7 +29,7 @@ class MyTestCase(unittest.TestCase):
             gmail.users_getProfile()
             # client.history_list(startHistoryId='73211814')
             gmail.messages_list()
-            msg = gmail.messages_get('1953dbd795081667', format=Format.full)
+            msg = gmail.messages_get('1953dbd795081667', format=gmail.v1.Format.full)
 
         pass
 

@@ -1,3 +1,4 @@
+import io
 import os
 import email
 import email.mime.text
@@ -9,6 +10,7 @@ import mimetypes
 import googleapiclient.discovery
 
 import automon
+import automon.helpers.tempfileWrapper
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
@@ -51,7 +53,7 @@ class GoogleGmailClient:
                      draft_cc: list = [],
                      draft_bc: list = [],
                      draft_body: str = None,
-                     draft_attachments: list = [],
+                     draft_attachments: [EmailAttachment] = None,
                      **kwargs) -> Draft:
         """Creates a new draft with the DRAFT label."""
         if raw:
@@ -79,37 +81,43 @@ class GoogleGmailClient:
             attachments = []
 
             for attachment in draft_attachments:
-                content_type, encoding = mimetypes.guess_type(attachment)
+
+                filename = attachment.filename
+                bytes_ = attachment.bytes_
+
+                _temp_file = automon.helpers.tempfileWrapper.Tempfile.make_temp_file()[1]
+                with open(_temp_file, 'wb') as _temp_write:
+                    _temp_write.write(bytes_)
+
+                content_type, encoding = mimetypes.guess_type(_temp_file)
+                os.remove(_temp_file)
+
                 if content_type is None or encoding is not None:
                     content_type = 'application/octet-stream'
                 main_type, sub_type = content_type.split('/', 1)
+
                 if main_type == 'text':
-                    fp = open(attachment, 'rb')
-                    msg = email.mime.text.MIMEText(fp.read().decode("utf-8"), _subtype=sub_type)
-                    fp.close()
+                    msg = email.mime.text.MIMEText(bytes_.decode("utf-8"), _subtype=sub_type)
+
                 elif main_type == 'image':
-                    fp = open(attachment, 'rb')
-                    msg = email.mime.image.MIMEImage(fp.read(), _subtype=sub_type)
-                    fp.close()
+                    msg = email.mime.image.MIMEImage(bytes_, _subtype=sub_type)
+
                 elif main_type == 'audio':
-                    fp = open(attachment, 'rb')
-                    msg = email.mime.audio.MIMEAudio(fp.read(), _subtype=sub_type)
-                    fp.close()
+                    msg = email.mime.audio.MIMEAudio(bytes_, _subtype=sub_type)
+
                 else:
-                    fp = open(attachment, 'rb')
                     msg = email.mime.base.MIMEBase(main_type, sub_type)
-                    msg.set_payload(fp.read())
-                    fp.close()
-                filename = os.path.basename(attachment)
+                    msg.set_payload(bytes_)
+
                 msg.add_header('Content-Disposition', 'attachment', filename=filename)
                 email_build.attach(msg)
 
             raw = base64.urlsafe_b64encode(email_build.as_string().encode()).decode()
 
         api = UsersDrafts(self._userId).create
-        message = Message(raw=raw, threadId=threadId, **kwargs).to_dict()
-        data = Draft(message=message)
-        self.requests.post(api, headers=self.config.headers, json=data.__dict__)
+        message = Message(raw=raw, threadId=threadId, **kwargs)
+        data = Draft(message=message).to_dict()
+        self.requests.post(api, headers=self.config.headers, json=data)
         return Draft().update_dict(self.requests.to_dict())
 
     def draft_delete(self, id: int):
@@ -179,14 +187,14 @@ class GoogleGmailClient:
     def draft_send(self):
         """Sends the specified, existing draft to the recipients in the To, Cc, and Bcc headers."""
         api = UsersDrafts(self._userId).send
-        data = Draft()
-        self.requests.post(api, headers=self.config.headers, json=data.__dict__)
+        data = Draft().to_dict()
+        self.requests.post(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
     def draft_update(self, id: int):
         api = UsersDrafts(self._userId).update(id)
-        data = Draft()
-        self.requests.put(api, headers=self.config.headers, json=data.__dict__)
+        data = Draft().to_dict()
+        self.requests.put(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
     def history_list(self,
@@ -213,6 +221,7 @@ class GoogleGmailClient:
         if self.config.is_ready():
             if self.config.Credentials():
                 if self.config.refresh_token():
+                    self.config.credentials_pickle_save()
                     return True
         return False
 
@@ -266,8 +275,8 @@ class GoogleGmailClient:
     def labels_patch(self, id: str):
         """Patch the specified label."""
         api = UsersLabels(self._userId).patch(id)
-        data = Label()
-        self.requests.patch(api, headers=self.config.headers, json=data.__dict__)
+        data = Label().to_dict()
+        self.requests.patch(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
     def labels_update(self,
@@ -308,24 +317,40 @@ class GoogleGmailClient:
         """Better labels."""
 
         if hasattr(message, 'labelIds'):
-            message.automon_labelIds = [self.labels_get(x) for x in message.labelIds]
+            setattr(message, 'automon_labels', [self.labels_get(x) for x in message.labelIds])
 
         return message
 
     def _improved_messages_list(self, messages: MessageList) -> MessageList:
         """Better messages."""
 
-        automon_messages = []
-        messages_ = messages.automon_messages
-        for msg in messages_:
-            id = msg.id
-            threadId = msg.threadId
-            automon_messages.append(self.messages_get_automon(id=id))
-        messages.automon_messages = automon_messages
+        for _message in messages.messages:
+
+            # update messages
+            _message.update_dict(
+                self.messages_get_automon(id=_message.id)
+            )
+
+            # update attachments
+            if hasattr(_message, 'payload'):
+
+                if hasattr(_message.payload, 'parts'):
+
+                    for _payload_part in _message.payload.parts:
+                        if hasattr(_payload_part.body, 'attachmentId'):
+                            _attachmentId = _payload_part.body.attachmentId
+                            _payload_part.body.update_dict(
+                                self.messages_attachments_get(messageId=_message.id,
+                                                              attachmentId=_attachmentId))
+
+                            if hasattr(_payload_part.body, 'automon_attachment'):
+                                setattr(_payload_part, 'automon_attachment', _payload_part.body.automon_attachment)
 
         return messages
 
-    def messages_attachments_get(self, messageId: str, attachmentId: str):
+    def messages_attachments_get(self,
+                                 messageId: str,
+                                 attachmentId: str) -> MessagePartBody:
         """
         Gets the specified message attachment.
 
@@ -403,11 +428,10 @@ class GoogleGmailClient:
         self.requests.get(api, headers=self.config.headers, params=params)
         return Message().update_dict(self.requests.to_dict())
 
-    def messages_get_automon(self, *args, **kwargs):
+    def messages_get_automon(self, *args, **kwargs, ):
         """Enhanced `message_get`"""
         message = self.messages_get(*args, **kwargs)
-        message = self._improved_messages_get(message=message)
-        return message
+        return self._improved_messages_get(message=message)
 
     def messages_import(self,
                         internalDateSource: InternalDateSource = None,
@@ -490,8 +514,8 @@ class GoogleGmailClient:
     def messages_send(self):
         """Sends the specified message to the recipients in the To, Cc, and Bcc headers. For example usage, see Sending email."""
         api = UsersMessages(self._userId).send
-        data = Message()
-        self.requests.post(api, headers=self.config.headers, json=data.__dict__)
+        data = Message().to_dict()
+        self.requests.post(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
     def messages_trash(self, id: int):
