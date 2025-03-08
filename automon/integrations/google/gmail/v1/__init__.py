@@ -313,9 +313,17 @@ class MessagePartBody(DictUpdate):
         if hasattr(self, 'data'):
             setattr(self, 'automon_data_decoded', base64.urlsafe_b64decode(self.data))
             setattr(self, 'automon_data_BytesIO', io.BytesIO(self.automon_data_decoded))
-            setattr(self, 'automon_attachment', dict(decoded=self.automon_data_decoded,
-                                                     BytesIO=self.automon_data_BytesIO,
-                                                     hash=cryptography.hash_key(self.automon_data_decoded)))
+
+            try:
+                setattr(self, 'automon_attachment', dict(decoded=self.automon_data_decoded,
+                                                         BytesIO=self.automon_data_BytesIO,
+                                                         hash_md5=cryptography.hash_key(
+                                                             self.automon_data_decoded.decode())))
+            except:
+                setattr(self, 'automon_attachment', dict(decoded=self.automon_data_decoded,
+                                                         BytesIO=self.automon_data_BytesIO,
+                                                         hash_md5=cryptography.hash_key(self.automon_data_decoded),
+                                                         error=f"Can't be decoded"))
 
     def __repr__(self):
         if hasattr(self, 'attachmentId'):
@@ -403,7 +411,7 @@ class MessagePart(DictUpdate):
         if hasattr(self, 'parts'):
             setattr(self, 'parts', [MessagePart().update_dict(x) for x in self.parts])
 
-            setattr(self, 'automon_attachments', self.parts)
+            setattr(self, 'automon_attachments', AutomonAttachments(attachments=self.parts))
 
         return self
 
@@ -412,6 +420,20 @@ class MessagePart(DictUpdate):
             return f"{self.filename} :: {self.mimeType}"
         elif getattr(self, 'mimeType'):
             return f"{self.mimeType}"
+
+
+class AutomonAttachments(DictUpdate):
+    attachments: [MessagePart]
+
+    def __init__(self, attachments: MessagePart):
+        super().__init__()
+
+        self.attachments = attachments
+
+    def from_hash(self, hash_md5: str):
+        for attachment in self.attachments:
+            if hash_md5 == attachment.automon_attachment['hash_md5']:
+                return attachment
 
 
 class Message(DictUpdate):
@@ -553,7 +575,7 @@ class MessageList(DictUpdate):
     """
 
     def __bool__(self):
-        if self.messages:
+        if hasattr(self, 'messages'):
             return True
         return False
 
@@ -818,8 +840,16 @@ class Format:
 class EmailAttachment(DictUpdate):
     filename: str
     bytes_: bytes
+    mimeType: str
+    content_type: str
+    encoding: str
 
-    def __init__(self, bytes_: bytes, filename: str = ''):
+    def __init__(self,
+                 bytes_: bytes,
+                 filename: str = '',
+                 mimeType: str = None,
+                 content_type: str = None,
+                 encoding: str = None):
         super().__init__()
 
         if type(bytes_) is not bytes:
@@ -827,3 +857,10 @@ class EmailAttachment(DictUpdate):
 
         self.bytes_ = bytes_
         self.filename = filename
+        self.mimeType = mimeType
+
+        if mimeType:
+            self.content_type, self.encoding = mimeType.split('/', 1)
+        elif content_type and encoding:
+            self.content_type = content_type
+            self.encoding = encoding

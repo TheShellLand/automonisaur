@@ -25,6 +25,7 @@ logger.setLevel(DEBUG)
 
 class GoogleGmailClient:
     v1 = v1
+    _temp = automon.helpers.tempfileWrapper.Tempfile
 
     """Google Gmail client
 
@@ -84,33 +85,46 @@ class GoogleGmailClient:
 
                 filename = attachment.filename
                 bytes_ = attachment.bytes_
+                mimeType = attachment.mimeType
+                content_type = attachment.content_type
+                encoding = attachment.encoding
 
-                _temp_file = automon.helpers.tempfileWrapper.Tempfile.make_temp_file()[1]
+                _temp_file = self._temp.make_temp_file()[1]
                 with open(_temp_file, 'wb') as _temp_write:
                     _temp_write.write(bytes_)
 
-                content_type, encoding = mimetypes.guess_type(_temp_file)
-                os.remove(_temp_file)
+                if mimeType is None or not content_type is None and encoding is None:
+                    _temp_file = self._temp.make_temp_file()[1]
+                    with open(_temp_file, 'wb') as _temp_write:
+                        _temp_write.write(bytes_)
 
-                if content_type is None or encoding is not None:
-                    content_type = 'application/octet-stream'
-                main_type, sub_type = content_type.split('/', 1)
+                    content_type, encoding = mimetypes.guess_type(_temp_file)
+                    os.remove(_temp_file)
 
-                if main_type == 'text':
-                    msg = email.mime.text.MIMEText(bytes_.decode("utf-8"), _subtype=sub_type)
+                if content_type is None or encoding is None:
+                    content_type = 'application'
+                    encoding = 'octet-stream'
 
-                elif main_type == 'image':
-                    msg = email.mime.image.MIMEImage(bytes_, _subtype=sub_type)
+                if content_type == 'text':
+                    msg = email.mime.text.MIMEText(bytes_.decode("utf-8"), _subtype=encoding)
 
-                elif main_type == 'audio':
-                    msg = email.mime.audio.MIMEAudio(bytes_, _subtype=sub_type)
+                elif content_type == 'image':
+                    msg = email.mime.image.MIMEImage(bytes_, _subtype=encoding)
+
+                elif content_type == 'audio':
+                    msg = email.mime.audio.MIMEAudio(bytes_, _subtype=encoding)
 
                 else:
-                    msg = email.mime.base.MIMEBase(main_type, sub_type)
+
+                    content_type = 'application'
+                    encoding = 'octet-stream'
+
+                    msg = email.mime.base.MIMEBase(content_type, encoding)
                     msg.set_payload(bytes_)
 
                 msg.add_header('Content-Disposition', 'attachment', filename=filename)
                 email_build.attach(msg)
+                attachments.append(msg)
 
             raw = base64.urlsafe_b64encode(email_build.as_string().encode()).decode()
 
