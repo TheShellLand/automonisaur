@@ -1,6 +1,7 @@
 import io
 import base64
 
+from automon.helpers import cryptography
 from automon.helpers.loggingWrapper import LoggingClient, INFO
 
 logger = LoggingClient.logging.getLogger(__name__)
@@ -308,7 +309,6 @@ class MessagePartBody(DictUpdate):
         super().__init__()
 
     def enhance(self):
-        from automon.helpers import cryptography
 
         if hasattr(self, 'data'):
             setattr(self, 'automon_data_decoded', base64.urlsafe_b64decode(self.data))
@@ -322,7 +322,7 @@ class MessagePartBody(DictUpdate):
             except:
                 setattr(self, 'automon_attachment', dict(decoded=self.automon_data_decoded,
                                                          BytesIO=self.automon_data_BytesIO,
-                                                         hash_md5=cryptography.hash_key(self.automon_data_decoded),
+                                                         hash_md5=cryptography.Hashlib.md5(self.automon_data_decoded),
                                                          error=f"Can't be decoded"))
 
     def __repr__(self):
@@ -434,6 +434,7 @@ class AutomonAttachments(DictUpdate):
         for attachment in self.attachments:
             if hash_md5 == attachment.automon_attachment['hash_md5']:
                 return attachment
+        raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
 
 
 class Message(DictUpdate):

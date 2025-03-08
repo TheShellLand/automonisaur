@@ -1,6 +1,8 @@
 import os
 import hashlib
 
+import automon.helpers.cryptography
+
 from automon.helpers.osWrapper import environ
 
 
@@ -40,7 +42,7 @@ class FlaskConfig(object):
     @staticmethod
     def hash_key(blob):
         """Make a hash key"""
-        return hashlib.md5(str(blob).encode()).digest().hex()
+        return automon.helpers.cryptography.Hashlib.md5(blob)
 
     @staticmethod
     def new_secret_key():
