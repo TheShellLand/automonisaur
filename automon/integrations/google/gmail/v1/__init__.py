@@ -315,15 +315,13 @@ class MessagePartBody(DictUpdate):
             setattr(self, 'automon_data_BytesIO', io.BytesIO(self.automon_data_decoded))
 
             try:
-                setattr(self, 'automon_attachment', dict(decoded=self.automon_data_decoded,
-                                                         BytesIO=self.automon_data_BytesIO,
-                                                         hash_md5=cryptography.hash_key(
-                                                             self.automon_data_decoded.decode())))
-            except:
-                setattr(self, 'automon_attachment', dict(decoded=self.automon_data_decoded,
-                                                         BytesIO=self.automon_data_BytesIO,
-                                                         hash_md5=cryptography.Hashlib.md5(self.automon_data_decoded),
-                                                         error=f"Can't be decoded"))
+                hash = self.automon_data_decoded.decode()
+            except Exception as error:
+                hash = self.automon_data_decoded
+
+            setattr(self, 'automon_attachment', dict(decoded=self.automon_data_decoded,
+                                                     BytesIO=self.automon_data_BytesIO,
+                                                     hash_md5=cryptography.Hashlib.md5(hash)))
 
     def __repr__(self):
         if hasattr(self, 'attachmentId'):

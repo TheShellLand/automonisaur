@@ -10,6 +10,7 @@ import mimetypes
 import googleapiclient.discovery
 
 import automon
+import automon.helpers
 import automon.helpers.tempfileWrapper
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
@@ -26,6 +27,7 @@ logger.setLevel(DEBUG)
 class GoogleGmailClient:
     v1 = v1
     _temp = automon.helpers.tempfileWrapper.Tempfile
+    _sleep = automon.helpers.Sleeper
 
     """Google Gmail client
 
