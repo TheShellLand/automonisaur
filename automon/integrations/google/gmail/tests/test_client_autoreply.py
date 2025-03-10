@@ -71,7 +71,7 @@ class MyTestCase(unittest.TestCase):
                                                                             label_drafted.id,
                                                                             label_read.id,
                                                                             label_reviewed.id,
-                                                                            'UNREAD'])
+                                                                            ])
 
                 email = email_selected
                 threadId = email_selected.threadId
@@ -89,6 +89,8 @@ class MyTestCase(unittest.TestCase):
                 gmail.messages_modify(id=email_selected.id, addLabelIds=[label_read.id])
 
                 ollama = OllamaClient()
+                ollama.set_model('deepseek-r1:8b')
+
                 ollama.add_message(
                     ollama.use_template_chatbot_with_thinking()
                 ).add_message(
@@ -98,9 +100,12 @@ class MyTestCase(unittest.TestCase):
                 ).add_message(
                     f"Tell me how relevant the <RESUME> is with the job description in the <EMAIL>"
                 ).add_message(
-                    f"Then write me an email reply."
+                    f"Then write me an email reply. Always respond in first person. "
                 ).add_message(
-                    f"Only give me the body of the email response."
+                    f"For the body of the email reply, only provide two paragraphs. "
+                ).add_message(
+                    f"Write in a tone that is very matter-of-factly, very sincere, but also an informal tone. "
+                    f"Write as if you are a tech nerd in sweatpants, and very relaxed with technology. "
                 )
                 ollama.set_context_window(ollama.get_total_tokens() * 1.10)
                 ollama_response = ollama.chat().chat_response
