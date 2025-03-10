@@ -1,3 +1,5 @@
+import automon.helpers.cryptography
+
 from automon.integrations.neo4jWrapper.cypher import Cypher
 
 
@@ -7,7 +9,7 @@ from automon.integrations.neo4jWrapper.cypher import Cypher
 def http_header(headers):
     # [print(x) for x in auth.request_headers(request)]
 
-    # token = cryptography.hash_key(sorted([x for x in headers]))
+    # token = automon.helpers.cryptography.Hashlib.md5(sorted([x for x in headers]))
 
     args = dict(
         blob=sorted(headers),

@@ -132,33 +132,50 @@ class GoogleAuthConfig(object):
         except Exception as error:
             pass
 
-    def credentials_pickle(self):
-        logger.debug(f"[GoogleAuthConfig] :: credentials_pickle :: >>>>")
+    def credentials_pickle_save(self):
+        logger.debug(f"[GoogleAuthConfig] :: credentials_pickle_save :: >>>>")
 
-        credentials_pickle = self.credentials_file_client_id + '.pickle'
+        credentials_pickle_save = self.credentials_file_client_id + '.pickle'
 
-        if os.path.exists(credentials_pickle):
-            with open(credentials_pickle, 'rb') as token:
-                self.credentials = pickle.load(token)
-            self.refresh_token()
-
-        if not os.path.exists(credentials_pickle):
-            if self.credentials:
-                with open(credentials_pickle, 'wb') as token:
-                    pickle.dump(self.credentials, token)
+        if self.credentials:
+            with open(credentials_pickle_save, 'wb') as token:
+                pickle.dump(self.credentials, token)
+        else:
+            return False
 
         logger.debug(
-            f"[GoogleAuthConfig] :: credentials_pickle :: {credentials_pickle=} ({os.stat(credentials_pickle).st_size / 1024:.2f} KB)")
-        logger.info(f"[GoogleAuthConfig] :: credentials_pickle :: done")
+            f"[GoogleAuthConfig] :: credentials_pickle_save :: {credentials_pickle_save=} ({os.stat(credentials_pickle_save).st_size / 1024:.2f} KB)")
+        logger.info(f"[GoogleAuthConfig] :: credentials_pickle_save :: done")
+        return True
+
+    def credentials_pickle_load(self):
+        logger.debug(f"[GoogleAuthConfig] :: credentials_pickle_load :: >>>>")
+
+        credentials_pickle_load = self.credentials_file_client_id + '.pickle'
+
+        if os.path.exists(credentials_pickle_load):
+            with open(credentials_pickle_load, 'rb') as token:
+                try:
+                    self.credentials = pickle.load(token)
+                except Exception as error:
+                    logger.error(f"[GoogleAuthConfig] :: credentials_pickle_load :: ERROR :: {error=}")
+                    return False
+
+        logger.debug(
+            f"[GoogleAuthConfig] :: credentials_pickle_load :: {credentials_pickle_load=} ({os.stat(credentials_pickle_load).st_size / 1024:.2f} KB)")
+        logger.info(f"[GoogleAuthConfig] :: credentials_pickle_load :: done")
+        return True
 
     def Credentials(self) -> google.oauth2.credentials.Credentials:
         """return Google Credentials object"""
 
         logger.debug(f"[GoogleAuthConfig] :: Credentials :: >>>>")
 
-        self.credentials_pickle()
+        self.credentials_pickle_load()
 
-        if self.credentials:
+        self.refresh_token()
+
+        if self.credentials and not self.credentials.expired:
             return self.credentials
 
         scopes = self.scopes
@@ -224,7 +241,7 @@ class GoogleAuthConfig(object):
             logger.debug(f"[GoogleAuthConfig] :: Credentials :: {credentials=}")
             logger.info(f"[GoogleAuthConfig] :: Credentials :: done")
             self.credentials = credentials
-            self.credentials_pickle()
+            self.credentials_pickle_save()
             return credentials
 
         if not self.GOOGLE_CREDENTIALS_FILE:
