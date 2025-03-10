@@ -69,5 +69,6 @@ class GoogleGeminiClient(object):
 
     def is_ready(self):
         if self.config.is_ready():
-            logger.info(f'[GoogleGeminiClient] :: is_ready :: done')
             return True
+        logger.error(f'[GoogleGeminiClient] :: is_ready :: ERROR')
+        return False
