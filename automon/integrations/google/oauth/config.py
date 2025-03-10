@@ -157,12 +157,13 @@ class GoogleAuthConfig(object):
             with open(credentials_pickle_load, 'rb') as token:
                 try:
                     self.credentials = pickle.load(token)
+                    logger.debug(
+                        f"[GoogleAuthConfig] :: credentials_pickle_load :: {credentials_pickle_load=} ({os.stat(credentials_pickle_load).st_size / 1024:.2f} KB)")
+
                 except Exception as error:
                     logger.error(f"[GoogleAuthConfig] :: credentials_pickle_load :: ERROR :: {error=}")
                     return False
 
-        logger.debug(
-            f"[GoogleAuthConfig] :: credentials_pickle_load :: {credentials_pickle_load=} ({os.stat(credentials_pickle_load).st_size / 1024:.2f} KB)")
         logger.info(f"[GoogleAuthConfig] :: credentials_pickle_load :: done")
         return True
 

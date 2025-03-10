@@ -130,20 +130,6 @@ class GoogleGmailClient:
                 email_build.attach(msg)
                 attachments.append(msg)
 
-            # add previous message
-            _previous_message = self.messages_get_automon(id=threadId)
-            _wrote = f"{_previous_message.automon_sender.value} wrote:\n"
-            _previous_message = _previous_message.automon_attachments.attachments[0].body.automon_data_bs4.html.text
-            _previous_message = _previous_message.split('\n')
-            _previous_message = [f">{x}" for x in _previous_message]
-            _previous_message = '\n'.join(_previous_message)
-
-            _previous_message = (f"\n{_wrote}"
-                                 f"\n{_previous_message}")
-
-            msg = email.mime.text.MIMEText(_previous_message)
-            email_build.attach(msg)
-
             raw = base64.urlsafe_b64encode(email_build.as_string().encode()).decode()
 
         api = UsersDrafts(self._userId).create
@@ -248,6 +234,8 @@ class GoogleGmailClient:
             historyTypes=historyTypes
         )
         self.requests.get(api, headers=self.config.headers, params=params)
+
+        return self.requests.to_dict()
 
     def is_ready(self):
         if self.config.is_ready():
