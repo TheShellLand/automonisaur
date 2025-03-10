@@ -105,6 +105,8 @@ class MyTestCase(unittest.TestCase):
                 ollama.set_context_window(ollama.get_total_tokens() * 1.10)
                 ollama_response = ollama.chat().chat_response
 
+                gmail.config.refresh_token()
+
                 import re
                 think_re = re.compile(r"(<think>.*</think>)", flags=re.DOTALL)
                 think_ = think_re.search(ollama_response).groups()
