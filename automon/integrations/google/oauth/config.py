@@ -390,6 +390,7 @@ class GoogleAuthConfig(object):
         except Exception as error:
             logger.error(f'[GoogleAuthConfig] :: is_ready :: ERROR :: {error=}')
 
+        logger.error(f'[GoogleAuthConfig] :: is_ready :: ERROR :: {self.GOOGLE_CREDENTIALS_FILE=} :: {self.GOOGLE_CREDENTIALS_BASE64=}')
         return False
 
     def refresh_token(self):

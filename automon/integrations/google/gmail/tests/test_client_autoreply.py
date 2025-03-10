@@ -71,7 +71,7 @@ class MyTestCase(unittest.TestCase):
                                                                             label_drafted.id,
                                                                             label_read.id,
                                                                             label_reviewed.id,
-                                                                            'UNREAD'])
+                                                                            ])
 
                 email = email_selected
                 threadId = email_selected.threadId
@@ -89,6 +89,11 @@ class MyTestCase(unittest.TestCase):
                 gmail.messages_modify(id=email_selected.id, addLabelIds=[label_read.id])
 
                 ollama = OllamaClient()
+                if not ollama.is_ready():
+                    raise Exception
+
+                ollama.set_model('deepseek-r1:8b')
+
                 ollama.add_message(
                     ollama.use_template_chatbot_with_thinking()
                 ).add_message(
@@ -98,12 +103,17 @@ class MyTestCase(unittest.TestCase):
                 ).add_message(
                     f"Tell me how relevant the <RESUME> is with the job description in the <EMAIL>"
                 ).add_message(
-                    f"Then write me an email reply."
+                    f"Then write an email reply applying to the job. "
                 ).add_message(
-                    f"Only give me the body of the email response."
+                    f"For the body of the email reply, only provide two paragraphs. "
+                ).add_message(
+                    f"Write in a tone that is very matter-of-factly, very sincere, but also an informal tone. "
+                    f"Write as if you are a nerd in tech since you were twelve years old, and very relaxed with all technologies. "
                 )
                 ollama.set_context_window(ollama.get_total_tokens() * 1.10)
                 ollama_response = ollama.chat().chat_response
+
+                gmail.config.refresh_token()
 
                 import re
                 think_re = re.compile(r"(<think>.*</think>)", flags=re.DOTALL)

@@ -525,6 +525,12 @@ class OllamaClient(object):
         self._num_ctx = tokens
         return self
 
+    def set_model(self, model: str):
+        logger.debug(f'[OllamaClient] :: set_model :: {model=} >>>>')
+        self.model = model
+        logger.info(f'[OllamaClient] :: set_model :: done')
+        return self
+
     @staticmethod
     def start_local_server() -> bool:
         logger.debug(f'[OllamaClient] :: start_local_server >>>>')

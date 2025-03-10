@@ -244,6 +244,7 @@ class GoogleGmailClient:
                     self.config.credentials_pickle_save()
                     if self.config.userinfo():
                         return True
+        logger.error(f"[GoogleGmailClient] :: is_ready :: ERROR :: not ready")
         return False
 
     def labels_create(self,
