@@ -160,7 +160,7 @@ class DictUpdate(dict):
     def update_dict(self, update: dict):
         if type(update) is not dict:
 
-            if getattr(update, 'to_dict'):
+            if hasattr(update, 'to_dict'):
                 update = update.to_dict()
             else:
                 raise Exception(f"I don't now what this is. {update=}")
@@ -323,11 +323,11 @@ class MessagePartBody(DictUpdate):
 
             hash = self.automon_data_decoded
 
-            setattr(self, 'automon_attachment', dict(decoded=self.automon_data_decoded,
-                                                     base64decoded=self.automon_data_base64decoded,
-                                                     BytesIO=self.automon_data_BytesIO,
-                                                     bs4=self.automon_data_bs4,
-                                                     hash_md5=cryptography.Hashlib.md5(hash)))
+            setattr(self, 'automon_attachment', AutomonAttachment(dict(decoded=self.automon_data_decoded,
+                                                                       base64decoded=self.automon_data_base64decoded,
+                                                                       BytesIO=self.automon_data_BytesIO,
+                                                                       bs4=self.automon_data_bs4,
+                                                                       hash_md5=cryptography.Hashlib.md5(hash))))
 
     def __repr__(self):
         if hasattr(self, 'attachmentId'):
@@ -426,17 +426,32 @@ class MessagePart(DictUpdate):
             return f"{self.mimeType}"
 
 
+class AutomonAttachment(DictUpdate):
+    decoded: str
+    base64decoded: bytes
+    BytesIO: io.BytesIO
+    bs4: bs4.BeautifulSoup
+    hash_md5: str
+
+    def __init__(self, attachment: dict):
+        super().__init__()
+        self.update_dict(attachment)
+
+
 class AutomonAttachments(DictUpdate):
     attachments: [MessagePart]
 
-    def __init__(self, attachments: MessagePart):
+    def __init__(self, attachments: [MessagePart]):
         super().__init__()
 
         self.attachments = attachments
 
+    def __repr__(self):
+        return f"{len(self.attachments)} attachments"
+
     def from_hash(self, hash_md5: str):
         for attachment in self.attachments:
-            if hash_md5 == attachment.automon_attachment['hash_md5']:
+            if hash_md5 == attachment.automon_attachment.hash_md5:
                 return attachment
         raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
 
@@ -553,6 +568,9 @@ class Message(DictUpdate):
 
             if hasattr(self.payload, 'automon_attachments'):
                 setattr(self, 'automon_attachments', self.payload.automon_attachments)
+
+            if hasattr(self.payload, 'automon_attachment'):
+                setattr(self, 'automon_attachment', self.payload.automon_attachment)
 
         return self
 
