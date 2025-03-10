@@ -1,4 +1,5 @@
 import io
+import bs4
 import base64
 
 from automon.helpers import cryptography
@@ -311,16 +312,21 @@ class MessagePartBody(DictUpdate):
     def enhance(self):
 
         if hasattr(self, 'data'):
-            setattr(self, 'automon_data_decoded', base64.urlsafe_b64decode(self.data))
-            setattr(self, 'automon_data_BytesIO', io.BytesIO(self.automon_data_decoded))
+            setattr(self, 'automon_data_base64decoded', base64.urlsafe_b64decode(self.data))
+            setattr(self, 'automon_data_BytesIO', io.BytesIO(self.automon_data_base64decoded))
+            setattr(self, 'automon_data_bs4', bs4.BeautifulSoup(self.automon_data_base64decoded))
 
             try:
-                hash = self.automon_data_decoded.decode()
+                setattr(self, 'automon_data_decoded', self.automon_data_base64decoded.decode())
             except Exception as error:
-                hash = self.automon_data_decoded
+                setattr(self, 'automon_data_decoded', None)
+
+            hash = self.automon_data_decoded
 
             setattr(self, 'automon_attachment', dict(decoded=self.automon_data_decoded,
+                                                     base64decoded=self.automon_data_base64decoded,
                                                      BytesIO=self.automon_data_BytesIO,
+                                                     bs4=self.automon_data_bs4,
                                                      hash_md5=cryptography.Hashlib.md5(hash)))
 
     def __repr__(self):
@@ -551,9 +557,7 @@ class Message(DictUpdate):
         return self
 
     def __repr__(self):
-        if self.id == self.threadId:
-            return f"{self.id}"
-        return f"{self.id} :: {self.threadId}"
+        return f"{self.automon_labels} :: {self.automon_subject.value}"
 
 
 class MessageList(DictUpdate):
@@ -635,11 +639,18 @@ class Draft(DictUpdate):
         self.id = id
         self.message = message
 
+    def enhance(self):
+        if hasattr(self, 'message'):
+            setattr(self, 'message', Message().update_dict(self.message))
+
     def to_dict(self):
         return dict(
             id=self.id,
             message=self.message.to_dict()
         )
+
+    def __repr__(self):
+        return f'{self.id} :: {self.message.automon_subject.value}'
 
 
 class DraftList(DictUpdate):
@@ -680,6 +691,10 @@ class DraftList(DictUpdate):
 
     def __init__(self):
         super().__init__()
+
+    def __repr__(self):
+        if hasattr(self, 'drafts'):
+            return f"{len(self.drafts)} drafts"
 
 
 class Label(DictUpdate):

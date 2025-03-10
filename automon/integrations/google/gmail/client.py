@@ -1,5 +1,6 @@
 import io
 import os
+import bs4
 import email
 import email.mime.text
 import email.mime.multipart
@@ -28,6 +29,7 @@ class GoogleGmailClient:
     v1 = v1
     _temp = automon.helpers.tempfileWrapper.Tempfile
     _sleep = automon.helpers.Sleeper
+    _bs4 = bs4
 
     """Google Gmail client
 
@@ -85,6 +87,9 @@ class GoogleGmailClient:
 
             for attachment in draft_attachments:
 
+                if not attachment:
+                    continue
+
                 filename = attachment.filename
                 bytes_ = attachment.bytes_
                 mimeType = attachment.mimeType
@@ -127,6 +132,20 @@ class GoogleGmailClient:
                 msg.add_header('Content-Disposition', 'attachment', filename=filename)
                 email_build.attach(msg)
                 attachments.append(msg)
+
+                # add previous message
+                _previous_message = self.messages_get_automon(id=threadId)
+                _wrote = f"{_previous_message.automon_sender.value} wrote:\n"
+                _previous_message = _previous_message.automon_attachments.attachments[0].body.automon_data_bs4.html.text
+                _previous_message = _previous_message.split('\n')
+                _previous_message = [f">{x}" for x in _previous_message]
+                _previous_message = '\n'.join(_previous_message)
+
+                _previous_message = (f"\n{_wrote}"
+                                     f"\n{_previous_message}")
+
+                msg = email.mime.text.MIMEText(_previous_message)
+                email_build.attach(msg)
 
             raw = base64.urlsafe_b64encode(email_build.as_string().encode()).decode()
 
@@ -238,7 +257,8 @@ class GoogleGmailClient:
             if self.config.Credentials():
                 if self.config.refresh_token():
                     self.config.credentials_pickle_save()
-                    return True
+                    if self.config.userinfo():
+                        return True
         return False
 
     def labels_create(self,
@@ -314,18 +334,19 @@ class GoogleGmailClient:
     def _improved_draft_list(self, drafts: DraftList) -> DraftList:
         """Better drafts."""
 
-        automon_drafts = []
-        drafts_ = drafts.drafts
-        for draft in drafts_:
-            id = draft['id']
-            message = draft['message']
-            draft['automon_id'] = self.messages_get_automon(message['id'])
-            draft['automon_threadId'] = self.messages_get_automon(message['threadId'])
+        if hasattr(drafts, 'drafts'):
 
-            automon_drafts.append(
-                draft
-            )
-        drafts.automon_drafts = automon_drafts
+            _automon_drafts = []
+
+            _drafts = drafts.drafts
+            for _draft in _drafts:
+                _draft = Draft().update_dict(_draft)
+                _draft.message = Message().update_dict(_draft.message)
+                _draft.message = self.messages_get_automon(_draft.message.id)
+
+                _automon_drafts.append(_draft)
+
+            setattr(drafts, 'drafts', _automon_drafts)
 
         return drafts
 
