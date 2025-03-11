@@ -3,9 +3,8 @@ import json
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
 
-from .api import GoogleGeminiApi
+from .api import *
 from .config import GoogleGeminiConfig
-from .candidate import GoogleGeminiCandidate
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
@@ -54,13 +53,12 @@ class GoogleGeminiClient(object):
         """
 
         url = GoogleGeminiApi().base.v1beta.models.gemini.generateContent.key(key=self.config.api_key).url
-        data = json.dumps(self._prompt)
-        chat = self._requests.post(url=url, data=data, headers=self.config.headers())
+        chat = self._requests.post(url=url, json=self._prompt, headers=self.config.headers())
 
         if not chat:
             raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self._requests.content}')
 
-        self._candidate = GoogleGeminiCandidate(self._requests.content)
+        self._candidate = GoogleGeminiCandidate().update_json(self._requests.content)
 
         if print_stream:
             self._candidate.print_stream()

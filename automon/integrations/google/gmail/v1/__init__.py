@@ -1,5 +1,6 @@
 import io
 import bs4
+import json
 import base64
 
 from automon.helpers import cryptography
@@ -157,6 +158,9 @@ class DictUpdate(dict):
     def __iter__(self):
         return self
 
+    def __repr__(self):
+        return f"{self.__dict__}"
+
     def update_dict(self, update: dict):
         if type(update) is not dict:
 
@@ -169,6 +173,10 @@ class DictUpdate(dict):
             setattr(self, key, value)
 
         self.enhance()
+        return self
+
+    def update_json(self, json_: str):
+        self.update_dict(json.loads(json_))
         return self
 
     def to_dict(self):
