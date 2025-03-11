@@ -179,8 +179,23 @@ class DictUpdate(dict):
         self.update_dict(json.loads(json_))
         return self
 
-    def to_dict(self):
-        return self.__dict__
+    def to_dict(self, obj=None):
+        if obj is None:
+            obj = self
+
+        if not hasattr(obj, "__dict__"):
+            return obj
+
+        result = {}
+        for key, value in obj.__dict__.items():
+            if key.startswith("_"):
+                continue
+
+            if type(value) is list:
+                value = [self.to_dict(x) for x in value]
+            result[key] = self.to_dict(value)
+
+        return result
 
 
 class InternalDateSource:
