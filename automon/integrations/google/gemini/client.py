@@ -11,35 +11,33 @@ logger.setLevel(DEBUG)
 
 
 class GoogleGeminiClient(object):
+    models = GeminiModels()
 
-    def __init__(self, config: GoogleGeminiConfig = None):
+    def __init__(self, config: GoogleGeminiConfig = None, model: GeminiModels = None):
         self.config = config or GoogleGeminiConfig()
+        self.model = model or self.models.gemini_2_0_flash
 
         self._requests = RequestsClient()
 
-        self._prompt = {
-            "contents": []
-        }
-
-        self._candidate = None
+        self._prompt = GeminiPrompt()
+        self._chat: GeminiResponse = None
 
     def __repr__(self):
         return f"[GoogleGeminiClient] :: {self.config=}"
 
-    def add_content(self, content: str):
-        parts = {
-            "parts": [{"text": content}]
-        }
-        self.chat_contents.append(parts)
+    def add_content(self, prompt: str):
+        content = Content()
+        content.parts.append(Part(prompt))
+        self._prompt.contents.append(content)
+
         return self
 
     @property
     def chat_contents(self):
-        return self._prompt['contents']
+        return self._prompt.contents
 
     def chat(self, print_stream: bool = True, **kwargs):
         """
-
         curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=GEMINI_API_KEY" \
         -H 'Content-Type: application/json' \
         -X POST \
@@ -48,20 +46,19 @@ class GoogleGeminiClient(object):
             "parts":[{"text": "Explain how AI works"}]
             }]
            }'
-
-
         """
 
-        url = GoogleGeminiApi().base.v1beta.models.gemini.generateContent.key(key=self.config.api_key).url
-        chat = self._requests.post(url=url, json=self._prompt, headers=self.config.headers())
+        url = GoogleGeminiApi().base.v1beta.models(self.model).generateContent.key(key=self.config.api_key).url
+        json = self._prompt.to_dict()
+        chat = self._requests.post(url=url, json=json, headers=self.config.headers())
 
         if not chat:
             raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self._requests.content}')
 
-        self._candidate = GoogleGeminiCandidate().update_json(self._requests.content)
+        self._chat = GeminiResponse().update_json(self._requests.content)
 
         if print_stream:
-            self._candidate.print_stream()
+            self._chat.print_stream()
 
         return self
 
@@ -70,3 +67,7 @@ class GoogleGeminiClient(object):
             return True
         logger.error(f'[GoogleGeminiClient] :: is_ready :: ERROR')
         return False
+
+    def set_model(self, model: GeminiModels):
+        self.model = model
+        return self

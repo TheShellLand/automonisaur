@@ -16,14 +16,8 @@ class GoogleGeminiApi(object):
         self.url += f'/v1beta'
         return self
 
-    @property
-    def models(self):
-        self.url += f'/models'
-        return self
-
-    @property
-    def gemini(self):
-        self.url += f'/gemini-1.5-flash'
+    def models(self, model: str):
+        self.url += f'/models/{model}'
         return self
 
     @property
@@ -36,11 +30,76 @@ class GoogleGeminiApi(object):
         return self
 
 
+class GeminiModels:
+
+    @property
+    def gemini_2_0_flash(self):
+        """
+        Next generation features, speed, and multimodal generation for a diverse variety of tasks
+
+        input: Audio, images, videos, and text
+        output: Text, images (coming soon), and audio (coming soon)
+        """
+        return f'gemini-2.0-flash'
+
+    @property
+    def gemini_2_0_flash_lite(self):
+        """
+        A Gemini 2.0 Flash model optimized for cost efficiency and low latency
+
+        input: Audio, images, videos, and text
+        output: Text
+        """
+        return f'gemini-2.0-flash-lite'
+
+    @property
+    def gemini_1_5_flash(self):
+        """
+        Fast and versatile performance across a diverse variety of tasks
+
+        input: Audio, images, videos, and text
+        output: Text
+        """
+        return f'gemini-1.5-flash'
+
+    @property
+    def gemini_1_5_flash_8b(self):
+        """
+        High volume and lower intelligence tasks
+
+        input: Audio, images, videos, and text
+        output: Text
+        """
+        return f'gemini-1.5-flash-8b'
+
+    @property
+    def gemini_1_5_pro(self):
+        """
+        Complex reasoning tasks requiring more intelligence
+
+        input: Audio, images, videos, and text
+        output: Text
+        """
+        return f'gemini-1.5-pro'
+
+    @property
+    def text_embedding_004(self):
+        """
+        Measuring the relatedness of text strings
+
+        input: Text
+        output: Text embeddings
+        """
+        return f'text-embedding-004'
+
+
 class Part(DictUpdate):
     text: str
 
-    def __init__(self):
+    def __init__(self, text: str = None):
         super().__init__()
+
+        self.text = text
 
 
 class Content(DictUpdate):
@@ -49,6 +108,8 @@ class Content(DictUpdate):
 
     def __init__(self):
         super().__init__()
+
+        self.parts = []
 
     def enhance(self):
         if hasattr(self, 'parts'):
@@ -68,14 +129,41 @@ class Chunk(DictUpdate):
             self.content = Content().update_dict(self.content)
 
 
-class GoogleGeminiCandidate(DictUpdate):
-    candidates: list
+class Candidate(DictUpdate):
+    content: Content
+    finishReason: str
+    avgLogprobs: float
+
+    def __init__(self):
+        super().__init__()
+
+    def enhance(self):
+        if hasattr(self, 'content'):
+            self.content = Content().update_dict(self.content)
+
+
+class GeminiPrompt(DictUpdate):
+    contents: [Content]
+
+    def __init__(self):
+        super().__init__()
+
+        self.contents = []
+
+
+class GeminiResponse(DictUpdate):
+    candidates: [Candidate]
     usageMetadata: str
     modelVersion: str
     modelVersion: str
 
     def __init__(self):
         super().__init__()
+
+    def enhance(self):
+
+        if hasattr(self, 'candidates'):
+            self.candidates = [Candidate().update_dict(x) for x in self.candidates]
 
     def _get_chunks(self):
         for chunk in self.candidates:
@@ -88,3 +176,6 @@ class GoogleGeminiCandidate(DictUpdate):
             print(f'{chunk}', end='', flush=True)
         print('\n', flush=True)
         return self
+
+    def to_string(self):
+        return ''.join([x for x in self._get_chunks()])
