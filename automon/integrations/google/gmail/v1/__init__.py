@@ -179,9 +179,10 @@ class DictUpdate(dict):
         self.update_dict(json.loads(json_))
         return self
 
-    def to_dict(self, obj=None):
-        if obj is None:
-            obj = self
+    def to_dict(self):
+        return self._to_dict(self)
+
+    def _to_dict(self, obj):
 
         if not hasattr(obj, "__dict__"):
             return obj
@@ -192,8 +193,11 @@ class DictUpdate(dict):
                 continue
 
             if type(value) is list:
-                value = [self.to_dict(x) for x in value]
-            result[key] = self.to_dict(value)
+                value = [self._to_dict(x) for x in value]
+            else:
+                value = self._to_dict(value)
+
+            result[key] = value
 
         return result
 
@@ -337,7 +341,6 @@ class MessagePartBody(DictUpdate):
         if hasattr(self, 'data'):
             setattr(self, 'automon_data_base64decoded', base64.urlsafe_b64decode(self.data))
             setattr(self, 'automon_data_BytesIO', io.BytesIO(self.automon_data_base64decoded))
-            setattr(self, 'automon_data_bs4', bs4.BeautifulSoup(self.automon_data_base64decoded))
 
             try:
                 setattr(self, 'automon_data_decoded', self.automon_data_base64decoded.decode())
@@ -349,12 +352,15 @@ class MessagePartBody(DictUpdate):
             setattr(self, 'automon_attachment', AutomonAttachment(dict(decoded=self.automon_data_decoded,
                                                                        base64decoded=self.automon_data_base64decoded,
                                                                        BytesIO=self.automon_data_BytesIO,
-                                                                       bs4=self.automon_data_bs4,
                                                                        hash_md5=cryptography.Hashlib.md5(hash))))
 
     def __repr__(self):
         if hasattr(self, 'attachmentId'):
             return f"{self.attachmentId}"
+
+    def automon_data_bs4(self):
+        if hasattr(self, 'automon_data_base64decoded'):
+            return bs4.BeautifulSoup(self.automon_data_base64decoded)
 
 
 class MessagePart(DictUpdate):
