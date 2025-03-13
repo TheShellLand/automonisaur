@@ -148,7 +148,26 @@ def run_gemini(email, resume_str):
     gemini = GoogleGeminiClient()
     gemini.set_model(gemini.models.gemini_2_0_flash)
 
+    ollama = OllamaClient()
+
     if gemini.is_ready():
+        gemini.add_content(
+            ollama.use_template_chatbot_with_thinking()
+        ).add_content(
+            f"Read this email: <EMAIL>{email}</EMAIL>"
+        ).add_content(
+            f"Read this resume: <RESUME>{resume_str}</RESUME>"
+        ).add_content(
+            f"Tell me how relevant the <RESUME> is with the job description in the <EMAIL>"
+        ).add_content(
+            f"Then write an email reply applying to the job. "
+        ).add_content(
+            f"For the body of the email reply, only provide two paragraphs. "
+        ).add_content(
+            f"Write in a tone that is very matter-of-factly, very sincere, but also an informal tone. "
+            f"Write as if you are a nerd in tech since you were twelve years old, and very relaxed with all technologies. "
+        )
+        gemini_response = gemini.chat().chat_response()
         pass
 
 

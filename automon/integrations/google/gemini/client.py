@@ -25,10 +25,10 @@ class GoogleGeminiClient(object):
     def __repr__(self):
         return f"[GoogleGeminiClient] :: {self.config=}"
 
-    def add_content(self, prompt: str):
-        content = Content()
-        content.parts.append(Part(prompt))
-        self._prompt.contents.append(content)
+    def add_content(self, prompt: str, role: str = 'user'):
+        part = Part(text=prompt)
+        content = Content(role=role).add_part(part=part)
+        self._prompt.add_content(content=content)
 
         return self
 
@@ -61,6 +61,9 @@ class GoogleGeminiClient(object):
             self._chat.print_stream()
 
         return self
+
+    def chat_response(self):
+        pass
 
     def is_ready(self):
         if self.config.is_ready():

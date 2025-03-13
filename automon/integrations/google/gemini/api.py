@@ -33,6 +33,43 @@ class GoogleGeminiApi(object):
 class GeminiModels:
 
     @property
+    def gemini_embedding_exp_03_07(self):
+        """
+        Gemini
+        Our first Gemini based embedding model
+        March 7, 2025
+        """
+        return f'gemini-embedding-exp-03-07'
+
+    @property
+    def gemini_2_0_pro_exp_02_05(self):
+        """
+        Gemini 2.0 Pro
+        Improved quality, especially for world knowledge, code, and long context
+        February 5, 2025
+        """
+        return f'gemini-2.0-pro-exp-02-05'
+
+    @property
+    def gemini_2_0_flash_thinking_exp_01_21(self):
+        """
+        Gemini 2.0 Flash Thinking
+        Reasoning for complex problems, features new thinking capabilities
+        January 21, 2025
+        """
+        return f'gemini-2.0-flash-thinking-exp-01-21'
+
+    @property
+    def learnlm_1_5_pro_experimental(self):
+        """
+        LearnLM 1.5 Pro Experimental
+
+        Inputs: Audio, images, videos, and text
+        Output: Text	November 19, 2024
+        """
+        return f'learnlm-1.5-pro-experimental'
+
+    @property
     def gemini_2_0_flash(self):
         """
         Next generation features, speed, and multimodal generation for a diverse variety of tasks
@@ -106,33 +143,25 @@ class Content(DictUpdate):
     parts: [Part]
     role: str
 
-    def __init__(self):
+    def __init__(self, role: str = 'user'):
         super().__init__()
 
+        self.role = role
         self.parts = []
+
+    def add_part(self, part: Part):
+        self.parts.append(part)
+        return self
 
     def enhance(self):
         if hasattr(self, 'parts'):
             self.parts = [Part().update_dict(x) for x in self.parts]
 
 
-class Chunk(DictUpdate):
-    content: Content
-    avgLogprobs: float
-    finishReason: str
-
-    def __init__(self):
-        super().__init__()
-
-    def enhance(self):
-        if hasattr(self, 'content'):
-            self.content = Content().update_dict(self.content)
-
-
 class Candidate(DictUpdate):
     content: Content
-    finishReason: str
     avgLogprobs: float
+    finishReason: str
 
     def __init__(self):
         super().__init__()
@@ -149,6 +178,10 @@ class GeminiPrompt(DictUpdate):
         super().__init__()
 
         self.contents = []
+
+    def add_content(self, content: Content):
+        self.contents.append(content)
+        return self
 
 
 class GeminiResponse(DictUpdate):
@@ -167,7 +200,7 @@ class GeminiResponse(DictUpdate):
 
     def _get_chunks(self):
         for chunk in self.candidates:
-            chunk = Chunk().update_dict(chunk)
+            chunk = Candidate().update_dict(chunk)
             for part in chunk.content.parts:
                 yield part.text
 
