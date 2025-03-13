@@ -45,9 +45,8 @@ class GoogleGmailClient:
 
     @property
     def _userId(self):
-        if not self.config.user_info_email:
-            raise Exception(f"[GoogleGmailClient] :: _userId :: ERROR :: {self.config.user_info_email=}")
-        return self.config.user_info_email
+        if self.config.user_info_email:
+            return self.config.user_info_email
 
     def draft_create(self,
                      threadId: str = None,

@@ -63,7 +63,7 @@ class GoogleGeminiClient(object):
         return self
 
     def chat_response(self):
-        pass
+        return self._chat.to_string()
 
     def is_ready(self):
         if self.config.is_ready():

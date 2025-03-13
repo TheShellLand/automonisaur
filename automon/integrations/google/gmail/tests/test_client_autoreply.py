@@ -14,6 +14,9 @@ LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').se
 
 gmail = GoogleGmailClient()
 
+ollama = OllamaClient()
+gemini = GoogleGeminiClient()
+
 # gmail.config.add_gmail_scopes()
 gmail.config.add_scopes(
     ["https://mail.google.com/"]
@@ -96,30 +99,30 @@ class MyTestCase(unittest.TestCase):
 
             response = None
 
+            prompts = [
+                ollama.use_template_chatbot_with_thinking(),
+                f"Read this email: <EMAIL>{email}</EMAIL>",
+                f"Read this resume: <RESUME>{resume_str}</RESUME>",
+                f"Tell me how relevant the <RESUME> is with the job description in the <EMAIL>",
+                f"Then write an email reply applying to the job. ",
+                f"Write in a tone that is very matter-of-factly, sincere, curious, fun, and informal. ",
+                f"Don't respond cocky. "
+                f"Write as if you are a nerd in tech, and very relaxed with using all technologies in all scenarios. ",
+                f"Write only one paragraph, with two short sentences. ",
+            ]
+
             if USE_OLLAMA:
-                response = run_ollama(email, resume_str)
+                response = run_ollama(prompts=prompts)
 
             if USE_GEMINI:
-                response = run_gemini(email, resume_str)
+                response = run_gemini(prompts=prompts)
 
             if response is None:
                 raise Exception
 
             gmail.config.refresh_token()
 
-            import re
-            try:
-                think_re = re.compile(r"(<think>.*</think>)", flags=re.DOTALL)
-                think_ = think_re.search(response).groups()
-                think_ = str(think_).strip()
-
-                response_re = re.compile(r"<think>.*</think>(.*)", flags=re.DOTALL)
-                response_ = response_re.search(response).groups()
-                response_ = str(response_[0]).strip()
-            except:
-                continue
-
-            raw = response_
+            raw = response
 
             gmail.messages_modify(id=threadId, addLabelIds=[label_processed.id])
 
@@ -144,58 +147,44 @@ class MyTestCase(unittest.TestCase):
         pass
 
 
-def run_gemini(email, resume_str):
+def run_gemini(prompts: list):
     gemini = GoogleGeminiClient()
     gemini.set_model(gemini.models.gemini_2_0_flash)
 
-    ollama = OllamaClient()
-
     if gemini.is_ready():
-        gemini.add_content(
-            ollama.use_template_chatbot_with_thinking()
-        ).add_content(
-            f"Read this email: <EMAIL>{email}</EMAIL>"
-        ).add_content(
-            f"Read this resume: <RESUME>{resume_str}</RESUME>"
-        ).add_content(
-            f"Tell me how relevant the <RESUME> is with the job description in the <EMAIL>"
-        ).add_content(
-            f"Then write an email reply applying to the job. "
-        ).add_content(
-            f"For the body of the email reply, only provide two paragraphs. "
-        ).add_content(
-            f"Write in a tone that is very matter-of-factly, very sincere, but also an informal tone. "
-            f"Write as if you are a nerd in tech since you were twelve years old, and very relaxed with all technologies. "
-        )
+
+        for prompt in prompts:
+            gemini.add_content(prompt)
+
         gemini_response = gemini.chat().chat_response()
-        pass
+        return gemini_response
 
 
-def run_ollama(email, resume_str):
+def run_ollama(prompts: list):
     ollama = OllamaClient()
-    if ollama.is_ready():
-        ollama.set_model('deepseek-r1:8b')
+    ollama.set_model('deepseek-r1:8b')
 
-        ollama.add_message(
-            ollama.use_template_chatbot_with_thinking()
-        ).add_message(
-            f"Read this email: <EMAIL>{email}</EMAIL>"
-        ).add_message(
-            f"Read this resume: <RESUME>{resume_str}</RESUME>"
-        ).add_message(
-            f"Tell me how relevant the <RESUME> is with the job description in the <EMAIL>"
-        ).add_message(
-            f"Then write an email reply applying to the job. "
-        ).add_message(
-            f"For the body of the email reply, only provide two paragraphs. "
-        ).add_message(
-            f"Write in a tone that is very matter-of-factly, very sincere, but also an informal tone. "
-            f"Write as if you are a nerd in tech since you were twelve years old, and very relaxed with all technologies. "
-        )
+    if ollama.is_ready():
+
+        for prompt in prompts:
+            ollama.add_message(prompt)
+
         ollama.set_context_window(ollama.get_total_tokens() * 1.10)
         ollama_response = ollama.chat().chat_response
 
-        return ollama_response
+        import re
+        try:
+            think_re = re.compile(r"(<think>.*</think>)", flags=re.DOTALL)
+            think_ = think_re.search(ollama_response).groups()
+            think_ = str(think_).strip()
+
+            response_re = re.compile(r"<think>.*</think>(.*)", flags=re.DOTALL)
+            response_ = response_re.search(ollama_response).groups()
+            response_ = str(response_[0]).strip()
+        except:
+            raise
+
+        return response_
 
 
 if __name__ == '__main__':
