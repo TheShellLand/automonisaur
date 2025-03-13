@@ -526,6 +526,16 @@ class GoogleGmailClient:
                 f"[GoogleGmailClient] :: messages_modify :: ERROR :: {len(addLabelIds)=} {len(addLabelIds)=} > 100")
 
         api = UsersMessages(self._userId).modify(id)
+
+        for addLabelId in addLabelIds:
+            if type(addLabelId) is Label:
+                addLabelIds = [addLabelId.id for addLabelId in addLabelIds]
+                break
+        for removeLabelId in removeLabelIds:
+            if type(removeLabelId) is Label:
+                removeLabelIds = [removeLabelId.id for removeLabelId in removeLabelIds]
+                break
+
         data = {
             "addLabelIds": addLabelIds,
             "removeLabelIds": removeLabelIds

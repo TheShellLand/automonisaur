@@ -39,6 +39,14 @@ if gmail.is_ready():
     label_resume = gmail.labels_get_by_name(name='automon/resume')
     label_read = gmail.labels_get_by_name(name='automon/read')
 
+    all_labels = [
+        label_automon,
+        label_processed,
+        label_drafted,
+        label_reviewed,
+        label_read,
+    ]
+
     gmail.labels_update(id=label_automon.id, color=color)
     gmail.labels_update(id=label_processed.id, color=color)
     gmail.labels_update(id=label_drafted.id, color=color)
@@ -76,13 +84,9 @@ class MyTestCase(unittest.TestCase):
             for _ in resume_search.messages:
                 resume_selected = _
 
-            gmail.messages_modify(id=email_selected.id, removeLabelIds=[label_processed.id,
-                                                                        label_drafted.id,
-                                                                        label_read.id,
-                                                                        label_reviewed.id,
-                                                                        ])
+            gmail.messages_modify(id=email_selected.id, removeLabelIds=all_labels)
 
-            email = email_selected
+            email = email_selected.automon_attachment.bs4()
             threadId = email_selected.threadId
             to = email_selected.automon_sender.value
             from_ = 'ericjaw@gmail.com'
@@ -95,20 +99,24 @@ class MyTestCase(unittest.TestCase):
                                                          filename='ERIC JAW RESUME 2025' + '.txt',
                                                          mimeType=resume_ollama.mimeType)
 
-            gmail.messages_modify(id=email_selected.id, addLabelIds=[label_read.id])
-
             response = None
 
             prompts = [
                 ollama.use_template_chatbot_with_thinking(),
                 f"Read this email: <EMAIL>{email}</EMAIL>",
                 f"Read this resume: <RESUME>{resume_str}</RESUME>",
-                f"Tell me how relevant the <RESUME> is with the job description in the <EMAIL>",
+                f"Tell me the entire email back word for word, if the email does not contain a job description. ",
+                f"Tell me how relevant my <RESUME> is with the job description in the <EMAIL>, and tell me why. ",
+                f"Tell me a percentage of relevance, if not use 0%. ",
                 f"Then write an email reply applying to the job. ",
-                f"Write in a tone that is very matter-of-factly, sincere, curious, fun, and informal. ",
-                f"Don't respond cocky. "
-                f"Write as if you are a nerd in tech, and very relaxed with using all technologies in all scenarios. ",
-                f"Write only one paragraph, with two short sentences. ",
+                f"Do Write in a tone that is very matter-of-factly, sincere, and curious. ",
+                f"Don't repeat the name of the job position. ",
+                f"Don't respond cocky. ",
+                f"Don't respond too nerdy, that's so awkward. ",
+                f"Don't suck up to the recruiter. ",
+                f"Do Write as if you are a geek in tech, and very relaxed with using all technologies in all scenarios. ",
+                f"Do Write only two paragraphs, with two short sentences. The first sentence should say how relevant the job is to the resume. The second sentence should say to follow up by grabbing a time slot on the calendar in the resume. ",
+                f"Do write a second paragraph something meaningful to the job using only what's in my resume. "
             ]
 
             if USE_OLLAMA:
@@ -118,13 +126,23 @@ class MyTestCase(unittest.TestCase):
                 response = run_gemini(prompts=prompts)
 
             if response is None:
-                raise Exception
+                raise Exception(f"missing llm response")
 
             gmail.config.refresh_token()
 
             raw = response
 
-            gmail.messages_modify(id=threadId, addLabelIds=[label_processed.id])
+            import re
+            percentage = re.compile(r'\d+%').search(raw).group()
+
+            if not percentage:
+                raise Exception(f"missing percentage")
+
+            gmail.labels_create(name=f'automon/relevance/{percentage}', color=color)
+            label_percentage = gmail.labels_get_by_name(name=f'automon/relevance/{percentage}')
+            gmail.labels_update(id=label_percentage.id, color=color)
+
+            gmail.messages_modify(id=threadId, addLabelIds=[label_percentage])
 
             subject = None
             body = raw
@@ -140,7 +158,7 @@ class MyTestCase(unittest.TestCase):
 
             draft_get = gmail.messages_get_automon(id=threadId)
 
-            gmail.messages_modify(id=threadId, addLabelIds=[label_drafted.id])
+            gmail.messages_modify(id=threadId, addLabelIds=[label_drafted])
 
             gmail.config.refresh_token()
 

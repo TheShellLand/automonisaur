@@ -459,12 +459,15 @@ class AutomonAttachment(DictUpdate):
     decoded: str
     base64decoded: bytes
     BytesIO: io.BytesIO
-    bs4: bs4.BeautifulSoup
     hash_md5: str
 
     def __init__(self, attachment: dict):
         super().__init__()
         self.update_dict(attachment)
+
+    def bs4(self) -> bs4.BeautifulSoup:
+        if hasattr(self, 'base64decoded'):
+            return bs4.BeautifulSoup(self.base64decoded)
 
 
 class AutomonAttachments(DictUpdate):

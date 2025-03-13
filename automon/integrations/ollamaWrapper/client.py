@@ -552,8 +552,9 @@ class OllamaClient(object):
 
         template = f"""
 You are a chat bot talking to a person.
-You will never make up an answer, if you don't have an answer just say you don't have an answer.
-You will always give short and direct answers. 
+You will only answer using information provided. 
+You must provide an answer. 
+You will always give concise and direct answers. 
 """
         return template
 
