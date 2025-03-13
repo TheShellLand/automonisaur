@@ -487,6 +487,9 @@ class AutomonAttachments(DictUpdate):
                 return attachment
         raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
 
+    def first(self) -> MessagePart:
+        return self.attachments[0]
+
 
 class Message(DictUpdate):
     id: str

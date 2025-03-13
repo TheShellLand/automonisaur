@@ -86,7 +86,11 @@ class MyTestCase(unittest.TestCase):
 
             gmail.messages_modify(id=email_selected.id, removeLabelIds=all_labels)
 
-            email = email_selected.automon_attachment.bs4()
+            try:
+                email = email_selected.automon_attachment.bs4().html.text
+            except:
+                email = email_selected.automon_attachments.first().automon_attachment.bs4().html.text
+
             threadId = email_selected.threadId
             to = email_selected.automon_sender.value
             from_ = 'ericjaw@gmail.com'
