@@ -61,6 +61,9 @@ class MyTestCase(unittest.TestCase):
         USE_OLLAMA = False
         USE_GEMINI = True
 
+        if not gmail.is_ready():
+            return
+
         while True:
 
             email_search = gmail.messages_list_automon(
@@ -89,7 +92,10 @@ class MyTestCase(unittest.TestCase):
             try:
                 email = email_selected.automon_attachment.bs4().html.text
             except:
-                email = email_selected.automon_attachments.first().automon_attachment.bs4().html.text
+                try:
+                    email = email_selected.automon_attachments.first().automon_attachment.bs4().html.text
+                except:
+                    pass
 
             threadId = email_selected.threadId
             to = email_selected.automon_sender.value
@@ -109,11 +115,11 @@ class MyTestCase(unittest.TestCase):
                 ollama.use_template_chatbot_with_thinking(),
                 f"Read this email: <EMAIL>{email}</EMAIL>",
                 f"Read this resume: <RESUME>{resume_str}</RESUME>",
-                f"Tell me the entire email back word for word, if the email does not contain a job description. ",
-                f"Tell me how relevant my <RESUME> is with the job description in the <EMAIL>, and tell me why. ",
-                f"Tell me a percentage of relevance, if not use 0%. ",
-                f"Then write an email reply applying to the job. ",
-                f"Do Write in a tone that is very matter-of-factly, sincere, and curious. ",
+                f"You must tell me if the email is a job description? ",
+                f"You must tell me how relevant my <RESUME> is with the job description in the <EMAIL>, and tell me why. ",
+                f"You must tell me a percentage of relevance, even if you can't determine the relevance. ",
+                f"You must write an email reply applying to the job. ",
+                f"You must write in a tone that is very matter-of-factly, sincere, and curious. ",
                 f"Don't repeat the name of the job position. ",
                 f"Don't respond cocky. ",
                 f"Don't respond too nerdy, that's so awkward. ",
@@ -148,7 +154,7 @@ class MyTestCase(unittest.TestCase):
 
             gmail.messages_modify(id=threadId, addLabelIds=[label_percentage])
 
-            subject = None
+            subject = "Re: " + email_selected.automon_subject.value
             body = raw
 
             draft = gmail.draft_create(

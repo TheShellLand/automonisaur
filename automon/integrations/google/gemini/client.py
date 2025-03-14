@@ -1,4 +1,5 @@
 import json
+import readline
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
@@ -21,6 +22,7 @@ class GoogleGeminiClient(object):
 
         self._prompt = GeminiPrompt()
         self._chat: GeminiResponse = None
+        self._history: [Content] = []
 
     def __repr__(self):
         return f"[GoogleGeminiClient] :: {self.config=}"
@@ -29,6 +31,7 @@ class GoogleGeminiClient(object):
         part = Part(text=prompt)
         content = Content(role=role).add_part(part=part)
         self._prompt.add_content(content=content)
+        self._history.append(content)
 
         return self
 
@@ -49,6 +52,7 @@ class GoogleGeminiClient(object):
         """
 
         url = GoogleGeminiApi().base.v1beta.models(self.model).generateContent.key(key=self.config.api_key).url
+        self._prompt.add_history(self._history)
         json = self._prompt.to_dict()
         chat = self._requests.post(url=url, json=json, headers=self.config.headers())
 
@@ -61,6 +65,22 @@ class GoogleGeminiClient(object):
             self._chat.print_stream()
 
         return self
+
+    def chat_forever(self):
+
+        while True:
+
+            prompt = ''
+            try:
+                prompt += input(f"\n$> ")
+                prompt = prompt.strip()
+            except KeyboardInterrupt:
+                break
+
+            if not prompt:
+                continue
+
+            self.add_content(prompt=prompt).chat()
 
     def chat_response(self):
         return self._chat.to_string()

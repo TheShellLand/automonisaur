@@ -31,6 +31,20 @@ class GoogleGeminiApi(object):
 
 
 class GeminiModels:
+    """
+    Current rate limits
+    Free Tier
+    Model	RPM	TPM	RPD
+    Gemini 2.0 Flash	15	1,000,000	1,500
+    Gemini 2.0 Flash-Lite	30	1,000,000	1,500
+    Gemini 2.0 Pro Experimental 02-05	2	1,000,000	50
+    Gemini 2.0 Flash Thinking Experimental 01-21	10	4,000,000	1,500
+    Gemini 1.5 Flash	15	1,000,000	1,500
+    Gemini 1.5 Flash-8B	15	1,000,000	1,500
+    Gemini 1.5 Pro	2	32,000	50
+    Imagen 3	--	--	--
+    Gemini Embedding Experimental 03-07	5	--	100
+    """
 
     @property
     def gemini_embedding_exp_03_07(self):
@@ -173,14 +187,20 @@ class Candidate(DictUpdate):
 
 class GeminiPrompt(DictUpdate):
     contents: [Content]
+    history: [Content]
 
     def __init__(self):
         super().__init__()
 
         self.contents = []
+        self.history = []
 
     def add_content(self, content: Content):
         self.contents.append(content)
+        return self
+
+    def add_history(self, history: [Content]):
+        self.history = history
         return self
 
 
