@@ -13,6 +13,7 @@ LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLe
 LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
 LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(ERROR)
+LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(ERROR)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)
 
 gmail = GoogleGmailClient()
@@ -95,7 +96,10 @@ class MyTestCase(unittest.TestCase):
                 try:
                     email = email_selected.automon_attachments.first().automon_attachment.bs4().html.text
                 except:
-                    pass
+                    try:
+                        email = email_selected.automon_attachments.first().automon_attachments.first().automon_attachment.bs4().html.text
+                    except:
+                        raise Exception(f"email not found")
 
             threadId = email_selected.threadId
             to = email_selected.automon_sender.value
@@ -112,11 +116,14 @@ class MyTestCase(unittest.TestCase):
             response = None
 
             prompts = [
-                # OllamaClient().use_template_chatbot_with_thinking(),
-                f"This is an email: <EMAIL>{email}</EMAIL>",
-                f"This is a resume: <RESUME>{resume_str}</RESUME>",
-                f"Is there a job description in the email? If not, explain why."
-                f"How relevant is the resume to the job description in the email?"
+                f"This is the email: <EMAIL>{email}</EMAIL>",
+                f"This is your resume: <RESUME>{resume_str}</RESUME>",
+                f"Do you see a job description in the email? If not, explain why. Otherwise don't answer that question.",
+                f"Answer the following questions only if the email is a job description:",
+                f"What's the relevance of the job ot you?",
+                f"In a sentence, show me the % the job is relevant to you?",
+                f"Furthermore, where can I schedule a call with you?",
+                f"Just tell me that your resume is attached in a short sentence."
             ]
 
             if USE_OLLAMA:
@@ -124,7 +131,7 @@ class MyTestCase(unittest.TestCase):
 
             if USE_GEMINI:
                 response, model = run_gemini(prompts=prompts)
-                model.chat_forever()
+                # model.chat_forever()
 
             if response is None:
                 raise Exception(f"missing llm response")
@@ -134,16 +141,16 @@ class MyTestCase(unittest.TestCase):
             raw = response
 
             import re
-            percentage = re.compile(r'\d+%').search(raw).group()
+            percentage = re.compile(r'\d+%').search(raw)
 
-            if not percentage:
-                raise Exception(f"missing percentage")
+            if percentage:
+                percentage = percentage.group()
 
-            gmail.labels_create(name=f'automon/relevance/{percentage}', color=color)
-            label_percentage = gmail.labels_get_by_name(name=f'automon/relevance/{percentage}')
-            gmail.labels_update(id=label_percentage.id, color=color)
+                gmail.labels_create(name=f'automon/relevance/{percentage}', color=color)
+                label_percentage = gmail.labels_get_by_name(name=f'automon/relevance/{percentage}')
+                gmail.labels_update(id=label_percentage.id, color=color)
 
-            gmail.messages_modify(id=threadId, addLabelIds=[label_percentage])
+                gmail.messages_modify(id=threadId, addLabelIds=[label_percentage])
 
             subject = "Re: " + email_selected.automon_subject.value
             body = raw
@@ -172,6 +179,10 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
 
     if gemini.is_ready():
 
+        gemini.add_content(role='model', prompt=f"You are to a person.")
+        gemini.add_content(role='model', prompt=f"Assume the experience in the provided resume.")
+        gemini.add_content(role='model', prompt=f"Respond with the tone and use of words from the resume.")
+
         for prompt in prompts:
             gemini.add_content(prompt)
 
@@ -184,6 +195,10 @@ def run_ollama(prompts: list) -> (str, OllamaClient):
     ollama.set_model('deepseek-r1:8b')
 
     if ollama.is_ready():
+
+        ollama.add_message(role='model', content=f"You are to a person.")
+        ollama.add_message(role='model', content=f"Assume the experience in the provided resume.")
+        ollama.add_message(role='model', content=f"Respond with the tone and use of words from the resume.")
 
         for prompt in prompts:
             ollama.add_message(prompt)
