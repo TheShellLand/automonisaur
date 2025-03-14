@@ -8,7 +8,7 @@ class TestGoogleGeminiClient(unittest.TestCase):
         gemini = GoogleGeminiClient()
 
         if gemini.is_ready():
-            gemini.add_content("what is today's date?").chat()
+            gemini.chat_forever()
 
             pass
 

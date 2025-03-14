@@ -45,9 +45,8 @@ class GoogleGmailClient:
 
     @property
     def _userId(self):
-        if not self.config.user_info_email:
-            raise Exception(f"[GoogleGmailClient] :: _userId :: ERROR :: {self.config.user_info_email=}")
-        return self.config.user_info_email
+        if self.config.user_info_email:
+            return self.config.user_info_email
 
     def draft_create(self,
                      threadId: str = None,
@@ -527,6 +526,16 @@ class GoogleGmailClient:
                 f"[GoogleGmailClient] :: messages_modify :: ERROR :: {len(addLabelIds)=} {len(addLabelIds)=} > 100")
 
         api = UsersMessages(self._userId).modify(id)
+
+        for addLabelId in addLabelIds:
+            if type(addLabelId) is Label:
+                addLabelIds = [addLabelId.id for addLabelId in addLabelIds]
+                break
+        for removeLabelId in removeLabelIds:
+            if type(removeLabelId) is Label:
+                removeLabelIds = [removeLabelId.id for removeLabelId in removeLabelIds]
+                break
+
         data = {
             "addLabelIds": addLabelIds,
             "removeLabelIds": removeLabelIds

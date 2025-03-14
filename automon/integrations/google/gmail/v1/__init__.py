@@ -1,5 +1,6 @@
 import io
 import bs4
+import json
 import base64
 
 from automon.helpers import cryptography
@@ -157,6 +158,9 @@ class DictUpdate(dict):
     def __iter__(self):
         return self
 
+    def __repr__(self):
+        return f"{self.__dict__}"
+
     def update_dict(self, update: dict):
         if type(update) is not dict:
 
@@ -171,8 +175,31 @@ class DictUpdate(dict):
         self.enhance()
         return self
 
+    def update_json(self, json_: str):
+        self.update_dict(json.loads(json_))
+        return self
+
     def to_dict(self):
-        return self.__dict__
+        return self._to_dict(self)
+
+    def _to_dict(self, obj):
+
+        if not hasattr(obj, "__dict__"):
+            return obj
+
+        result = {}
+        for key, value in obj.__dict__.items():
+            if key.startswith("_"):
+                continue
+
+            if type(value) is list:
+                value = [self._to_dict(x) for x in value]
+            else:
+                value = self._to_dict(value)
+
+            result[key] = value
+
+        return result
 
 
 class InternalDateSource:
@@ -314,7 +341,6 @@ class MessagePartBody(DictUpdate):
         if hasattr(self, 'data'):
             setattr(self, 'automon_data_base64decoded', base64.urlsafe_b64decode(self.data))
             setattr(self, 'automon_data_BytesIO', io.BytesIO(self.automon_data_base64decoded))
-            setattr(self, 'automon_data_bs4', bs4.BeautifulSoup(self.automon_data_base64decoded))
 
             try:
                 setattr(self, 'automon_data_decoded', self.automon_data_base64decoded.decode())
@@ -326,12 +352,15 @@ class MessagePartBody(DictUpdate):
             setattr(self, 'automon_attachment', AutomonAttachment(dict(decoded=self.automon_data_decoded,
                                                                        base64decoded=self.automon_data_base64decoded,
                                                                        BytesIO=self.automon_data_BytesIO,
-                                                                       bs4=self.automon_data_bs4,
                                                                        hash_md5=cryptography.Hashlib.md5(hash))))
 
     def __repr__(self):
         if hasattr(self, 'attachmentId'):
             return f"{self.attachmentId}"
+
+    def automon_data_bs4(self):
+        if hasattr(self, 'automon_data_base64decoded'):
+            return bs4.BeautifulSoup(self.automon_data_base64decoded)
 
 
 class MessagePart(DictUpdate):
@@ -430,12 +459,15 @@ class AutomonAttachment(DictUpdate):
     decoded: str
     base64decoded: bytes
     BytesIO: io.BytesIO
-    bs4: bs4.BeautifulSoup
     hash_md5: str
 
     def __init__(self, attachment: dict):
         super().__init__()
         self.update_dict(attachment)
+
+    def bs4(self) -> bs4.BeautifulSoup:
+        if hasattr(self, 'base64decoded'):
+            return bs4.BeautifulSoup(self.base64decoded)
 
 
 class AutomonAttachments(DictUpdate):
@@ -454,6 +486,9 @@ class AutomonAttachments(DictUpdate):
             if hash_md5 == attachment.automon_attachment.hash_md5:
                 return attachment
         raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
+
+    def first(self) -> MessagePart:
+        return self.attachments[0]
 
 
 class Message(DictUpdate):
