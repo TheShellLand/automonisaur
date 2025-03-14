@@ -159,7 +159,7 @@ class DictUpdate(dict):
         return self
 
     def __repr__(self):
-        return f"{self.__dict__}"
+        return f"{self.to_dict()}"
 
     def update_dict(self, update: dict):
         if type(update) is not dict:
@@ -694,16 +694,14 @@ class Draft(DictUpdate):
 
     def enhance(self):
         if hasattr(self, 'message'):
-            setattr(self, 'message', Message().update_dict(self.message))
-
-    def to_dict(self):
-        return dict(
-            id=self.id,
-            message=self.message.to_dict()
-        )
+            if self.message is not None:
+                setattr(self, 'message', Message().update_dict(self.message))
 
     def __repr__(self):
-        return f'{self.id} :: {self.message.automon_subject.value}'
+        try:
+            return f'{self.id} :: {self.message.automon_subject.value}'
+        except:
+            return f"{self.id}"
 
 
 class DraftList(DictUpdate):

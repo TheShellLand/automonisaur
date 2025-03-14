@@ -58,6 +58,54 @@ if gmail.is_ready():
     gmail.labels_update(id=label_sent, color=color)
 
 
+def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
+    gemini = GoogleGeminiClient()
+    gemini.set_model(gemini.models.gemini_2_0_flash)
+
+    if gemini.is_ready():
+
+        gemini.add_content(role='model', prompt=f"You are to a person.")
+        gemini.add_content(role='model', prompt=f"Assume the experience in the provided resume.")
+        gemini.add_content(role='model', prompt=f"Respond with the tone and use of words from the resume.")
+
+        for prompt in prompts:
+            gemini.add_content(prompt)
+
+        gemini_response = gemini.chat().chat_response()
+        return gemini_response, gemini
+
+
+def run_ollama(prompts: list) -> (str, OllamaClient):
+    ollama = OllamaClient()
+    ollama.set_model('deepseek-r1:8b')
+
+    if ollama.is_ready():
+
+        ollama.add_message(role='model', content=f"You are to a person.")
+        ollama.add_message(role='model', content=f"Assume the experience in the provided resume.")
+        ollama.add_message(role='model', content=f"Respond with the tone and use of words from the resume.")
+
+        for prompt in prompts:
+            ollama.add_message(prompt)
+
+        ollama.set_context_window(ollama.get_total_tokens() * 1.10)
+        ollama_response = ollama.chat().chat_response
+
+        import re
+        try:
+            think_re = re.compile(r"(<think>.*</think>)", flags=re.DOTALL)
+            think_ = think_re.search(ollama_response).groups()
+            think_ = str(think_).strip()
+
+            response_re = re.compile(r"<think>.*</think>(.*)", flags=re.DOTALL)
+            response_ = response_re.search(ollama_response).groups()
+            response_ = str(response_[0]).strip()
+        except:
+            raise
+
+        return response_, ollama
+
+
 class MyTestCase(unittest.TestCase):
     def test_something(self):
 
@@ -107,11 +155,11 @@ class MyTestCase(unittest.TestCase):
             to = email_selected.automon_sender.value
             from_ = 'ericjaw@gmail.com'
 
-            resume_ollama = resume_selected.automon_attachments.from_hash('f4da226b765738cd8919bcd101e3047e')
+            resume_ollama = resume_selected.automon_attachments.from_hash('fe1f9bde3cdb1985bb6d678d0d0c30ce')
             resume_str = resume_ollama.automon_attachment.decoded
 
-            resume_attachment = resume_selected.automon_attachments.from_hash('6adf97f83acf6453d4a6a4b1070f3754')
-            resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_ollama.body.automon_data_base64decoded,
+            resume_attachment = resume_selected.automon_attachments.from_hash('fe1f9bde3cdb1985bb6d678d0d0c30ce')
+            resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded,
                                                          filename='ERIC JAW RESUME 2025' + '.txt',
                                                          mimeType=resume_ollama.mimeType)
 
@@ -134,7 +182,7 @@ class MyTestCase(unittest.TestCase):
 
             if USE_GEMINI:
                 response, model = run_gemini(prompts=prompts)
-                # model.chat_forever()
+                model.chat_forever()
 
             if response is None:
                 raise Exception(f"missing llm response")
@@ -170,61 +218,12 @@ class MyTestCase(unittest.TestCase):
 
             gmail.messages_modify(id=threadId, addLabelIds=[label_drafted])
 
-            draft_sent = gmail.draft_send(draft=draft)
-
-            gmail.messages_modify(id=threadId, addLabelIds=[label_sent])
+            # draft_sent = gmail.draft_send(draft=draft)
+            # gmail.messages_modify(id=threadId, addLabelIds=[label_sent])
 
             gmail.config.refresh_token()
 
         pass
-
-
-def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
-    gemini = GoogleGeminiClient()
-    gemini.set_model(gemini.models.gemini_2_0_flash)
-
-    if gemini.is_ready():
-
-        gemini.add_content(role='model', prompt=f"You are to a person.")
-        gemini.add_content(role='model', prompt=f"Assume the experience in the provided resume.")
-        gemini.add_content(role='model', prompt=f"Respond with the tone and use of words from the resume.")
-
-        for prompt in prompts:
-            gemini.add_content(prompt)
-
-        gemini_response = gemini.chat().chat_response()
-        return gemini_response, gemini
-
-
-def run_ollama(prompts: list) -> (str, OllamaClient):
-    ollama = OllamaClient()
-    ollama.set_model('deepseek-r1:8b')
-
-    if ollama.is_ready():
-
-        ollama.add_message(role='model', content=f"You are to a person.")
-        ollama.add_message(role='model', content=f"Assume the experience in the provided resume.")
-        ollama.add_message(role='model', content=f"Respond with the tone and use of words from the resume.")
-
-        for prompt in prompts:
-            ollama.add_message(prompt)
-
-        ollama.set_context_window(ollama.get_total_tokens() * 1.10)
-        ollama_response = ollama.chat().chat_response
-
-        import re
-        try:
-            think_re = re.compile(r"(<think>.*</think>)", flags=re.DOTALL)
-            think_ = think_re.search(ollama_response).groups()
-            think_ = str(think_).strip()
-
-            response_re = re.compile(r"<think>.*</think>(.*)", flags=re.DOTALL)
-            response_ = response_re.search(ollama_response).groups()
-            response_ = str(response_[0]).strip()
-        except:
-            raise
-
-        return response_, ollama
 
 
 if __name__ == '__main__':
