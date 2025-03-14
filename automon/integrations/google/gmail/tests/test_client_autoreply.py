@@ -32,28 +32,30 @@ if gmail.is_ready():
     gmail.labels_create(name='automon/reviewed', color=color)
     gmail.labels_create(name='automon/resume', color=color)
     gmail.labels_create(name='automon/read', color=color)
+    gmail.labels_create(name='automon/sent', color=color)
 
     label_automon = gmail.labels_get_by_name(name='automon')
     label_processed = gmail.labels_get_by_name(name='automon/processed')
     label_drafted = gmail.labels_get_by_name(name='automon/drafted')
+    label_sent = gmail.labels_get_by_name(name='automon/sent')
     label_reviewed = gmail.labels_get_by_name(name='automon/reviewed')
     label_resume = gmail.labels_get_by_name(name='automon/resume')
     label_read = gmail.labels_get_by_name(name='automon/read')
 
     all_labels = [
-        label_automon,
         label_processed,
         label_drafted,
         label_reviewed,
         label_read,
     ]
 
-    gmail.labels_update(id=label_automon.id, color=color)
-    gmail.labels_update(id=label_processed.id, color=color)
-    gmail.labels_update(id=label_drafted.id, color=color)
-    gmail.labels_update(id=label_reviewed.id, color=color)
-    gmail.labels_update(id=label_resume.id, color=color)
-    gmail.labels_update(id=label_read.id, color=color)
+    gmail.labels_update(id=label_automon, color=color)
+    gmail.labels_update(id=label_processed, color=color)
+    gmail.labels_update(id=label_drafted, color=color)
+    gmail.labels_update(id=label_reviewed, color=color)
+    gmail.labels_update(id=label_resume, color=color)
+    gmail.labels_update(id=label_read, color=color)
+    gmail.labels_update(id=label_sent, color=color)
 
 
 class MyTestCase(unittest.TestCase):
@@ -68,7 +70,7 @@ class MyTestCase(unittest.TestCase):
         while True:
 
             email_search = gmail.messages_list_automon(
-                q=f"label:automon -label:automon/drafted -label:automon/reviewed -label:automon/resume",
+                q=f"label:automon -label:automon/sent -label:automon/drafted -label:automon/resume",
                 maxResults=1,
             )
 
@@ -80,7 +82,7 @@ class MyTestCase(unittest.TestCase):
             # gmail.draft_list_automon(maxResults=5, q="")
 
             if not email_search or not resume_search:
-                gmail._sleep.seconds(5)
+                gmail._sleep.seconds(15)
                 continue
 
             for _ in email_search.messages:
@@ -149,7 +151,7 @@ class MyTestCase(unittest.TestCase):
 
                 gmail.labels_create(name=f'automon/relevance/{percentage}', color=color)
                 label_percentage = gmail.labels_get_by_name(name=f'automon/relevance/{percentage}')
-                gmail.labels_update(id=label_percentage.id, color=color)
+                gmail.labels_update(id=label_percentage, color=color)
 
                 gmail.messages_modify(id=threadId, addLabelIds=[label_percentage])
 
@@ -164,10 +166,13 @@ class MyTestCase(unittest.TestCase):
                 draft_body=body,
                 draft_attachments=[resume_attachment]
             )
-
             draft_get = gmail.messages_get_automon(id=threadId)
 
             gmail.messages_modify(id=threadId, addLabelIds=[label_drafted])
+
+            draft_sent = gmail.draft_send(draft=draft)
+
+            gmail.messages_modify(id=threadId, addLabelIds=[label_sent])
 
             gmail.config.refresh_token()
 

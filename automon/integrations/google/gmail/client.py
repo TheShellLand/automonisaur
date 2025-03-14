@@ -144,9 +144,12 @@ class GoogleGmailClient:
         return self.requests.to_dict()
 
     def draft_get(self,
-                  id: int,
+                  id: int or Draft,
                   format: Format = Format.full) -> Draft:
         """Gets the specified draft."""
+        if type(id) is Draft:
+            id = id.id
+
         api = UsersDrafts(self._userId).get(id)
         params = dict(
             format=format,
@@ -201,12 +204,12 @@ class GoogleGmailClient:
         drafts = self._improved_draft_list(drafts=drafts)
         return drafts
 
-    def draft_send(self):
+    def draft_send(self, draft: Draft) -> Message:
         """Sends the specified, existing draft to the recipients in the To, Cc, and Bcc headers."""
         api = UsersDrafts(self._userId).send
-        data = Draft().to_dict()
+        data = draft.to_dict()
         self.requests.post(api, headers=self.config.headers, json=data)
-        return self.requests.to_dict()
+        return Message().update_dict(self.requests.to_dict())
 
     def draft_update(self, id: int):
         api = UsersDrafts(self._userId).update(id)
@@ -301,11 +304,14 @@ class GoogleGmailClient:
         return self.requests.to_dict()
 
     def labels_update(self,
-                      id: str,
+                      id: str or Label,
                       color: Color = None,
                       backgroundColor: str = None,
                       textColor: str = None):
         """Updates the specified label."""
+        if type(id) is Label:
+            id = id.id
+
         if color:
             color = color
         else:
