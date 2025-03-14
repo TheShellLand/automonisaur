@@ -1,7 +1,7 @@
 import unittest
 
 from automon.integrations.google.gmail import GoogleGmailClient
-from automon import LoggingClient, ERROR, DEBUG
+from automon import LoggingClient, ERROR, DEBUG, CRITICAL
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
@@ -10,12 +10,12 @@ LoggingClient.logging.getLogger('httpcore').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.client').setLevel(DEBUG)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.utils').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(ERROR)
+LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
+LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(ERROR)
+LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(ERROR)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)
 
 gmail = GoogleGmailClient()
-
-ollama = OllamaClient()
-gemini = GoogleGeminiClient()
 
 # gmail.config.add_gmail_scopes()
 gmail.config.add_scopes(
@@ -112,28 +112,19 @@ class MyTestCase(unittest.TestCase):
             response = None
 
             prompts = [
-                ollama.use_template_chatbot_with_thinking(),
-                f"Read this email: <EMAIL>{email}</EMAIL>",
-                f"Read this resume: <RESUME>{resume_str}</RESUME>",
-                f"You must tell me if the email is a job description? ",
-                f"You must tell me how relevant my <RESUME> is with the job description in the <EMAIL>, and tell me why. ",
-                f"You must tell me a percentage of relevance, even if you can't determine the relevance. ",
-                f"You must write an email reply applying to the job. ",
-                f"You must write in a tone that is very matter-of-factly, sincere, and curious. ",
-                f"Don't repeat the name of the job position. ",
-                f"Don't respond cocky. ",
-                f"Don't respond too nerdy, that's so awkward. ",
-                f"Don't suck up to the recruiter. ",
-                f"Do Write as if you are a geek in tech, and very relaxed with using all technologies in all scenarios. ",
-                f"Do Write only two paragraphs, with two short sentences. The first sentence should say how relevant the job is to the resume. The second sentence should say to follow up by grabbing a time slot on the calendar in the resume. ",
-                f"Do write a second paragraph something meaningful to the job using only what's in my resume. "
+                # OllamaClient().use_template_chatbot_with_thinking(),
+                f"This is an email: <EMAIL>{email}</EMAIL>",
+                f"This is a resume: <RESUME>{resume_str}</RESUME>",
+                f"Is there a job description in the email? If not, explain why."
+                f"How relevant is the resume to the job description in the email?"
             ]
 
             if USE_OLLAMA:
-                response = run_ollama(prompts=prompts)
+                response, model = run_ollama(prompts=prompts)
 
             if USE_GEMINI:
-                response = run_gemini(prompts=prompts)
+                response, model = run_gemini(prompts=prompts)
+                model.chat_forever()
 
             if response is None:
                 raise Exception(f"missing llm response")
@@ -175,7 +166,7 @@ class MyTestCase(unittest.TestCase):
         pass
 
 
-def run_gemini(prompts: list):
+def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
     gemini = GoogleGeminiClient()
     gemini.set_model(gemini.models.gemini_2_0_flash)
 
@@ -185,10 +176,10 @@ def run_gemini(prompts: list):
             gemini.add_content(prompt)
 
         gemini_response = gemini.chat().chat_response()
-        return gemini_response
+        return gemini_response, gemini
 
 
-def run_ollama(prompts: list):
+def run_ollama(prompts: list) -> (str, OllamaClient):
     ollama = OllamaClient()
     ollama.set_model('deepseek-r1:8b')
 
@@ -212,7 +203,7 @@ def run_ollama(prompts: list):
         except:
             raise
 
-        return response_
+        return response_, ollama
 
 
 if __name__ == '__main__':

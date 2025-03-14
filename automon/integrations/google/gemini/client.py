@@ -78,6 +78,13 @@ class GoogleGeminiClient(object):
             if not prompt:
                 continue
 
+            if prompt == '/exit':
+                break
+
+            if prompt == '/clear':
+                self._prompt.clear_history()
+                break
+
             self.add_content(prompt=prompt).chat()
 
     def chat_response(self):

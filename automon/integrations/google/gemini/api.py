@@ -197,6 +197,10 @@ class GeminiPrompt(DictUpdate):
         self.contents.append(content)
         return self
 
+    def clear_history(self):
+        self.contents = []
+        return self
+
 
 class GeminiResponse(DictUpdate):
     candidates: [Candidate]
