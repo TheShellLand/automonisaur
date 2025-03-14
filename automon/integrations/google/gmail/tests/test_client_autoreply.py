@@ -118,7 +118,8 @@ class MyTestCase(unittest.TestCase):
             prompts = [
                 f"This is the email: <EMAIL>{email}</EMAIL>",
                 f"This is your resume: <RESUME>{resume_str}</RESUME>",
-                f"Do you see a job description in the email? If not, explain why. Otherwise don't answer that question.",
+                f"Answer this question only if the email is not a job description:",
+                f"What is this email?",
                 f"Answer the following questions only if the email is a job description:",
                 f"What's the relevance of the job ot you?",
                 f"In a sentence, show me the % the job is relevant to you?",
