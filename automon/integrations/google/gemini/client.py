@@ -22,7 +22,6 @@ class GoogleGeminiClient(object):
 
         self._prompt = GeminiPrompt()
         self._chat: GeminiResponse = None
-        self._history: [Content] = []
 
     def __repr__(self):
         return f"[GoogleGeminiClient] :: {self.config=}"
@@ -31,7 +30,6 @@ class GoogleGeminiClient(object):
         part = Part(text=prompt)
         content = Content(role=role).add_part(part=part)
         self._prompt.add_content(content=content)
-        self._history.append(content)
 
         return self
 
@@ -52,7 +50,6 @@ class GoogleGeminiClient(object):
         """
 
         url = GoogleGeminiApi().base.v1beta.models(self.model).generateContent.key(key=self.config.api_key).url
-        self._prompt.add_history(self._history)
         json = self._prompt.to_dict()
         chat = self._requests.post(url=url, json=json, headers=self.config.headers())
 
@@ -64,6 +61,7 @@ class GoogleGeminiClient(object):
         if print_stream:
             self._chat.print_stream()
 
+        self._prompt.add_content(self._chat.candidates[0].content)
         return self
 
     def chat_forever(self):

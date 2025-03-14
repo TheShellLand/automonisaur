@@ -187,20 +187,14 @@ class Candidate(DictUpdate):
 
 class GeminiPrompt(DictUpdate):
     contents: [Content]
-    history: [Content]
 
     def __init__(self):
         super().__init__()
 
         self.contents = []
-        self.history = []
 
     def add_content(self, content: Content):
         self.contents.append(content)
-        return self
-
-    def add_history(self, history: [Content]):
-        self.history = history
         return self
 
 
