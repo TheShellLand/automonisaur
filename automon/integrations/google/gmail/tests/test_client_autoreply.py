@@ -1,7 +1,7 @@
 import unittest
 
 from automon.integrations.google.gmail import GoogleGmailClient
-from automon import LoggingClient, ERROR, DEBUG, CRITICAL
+from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
@@ -13,7 +13,7 @@ LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLe
 LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
 LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(ERROR)
-LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(ERROR)
+LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(INFO)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)
 
 gmail = GoogleGmailClient()
