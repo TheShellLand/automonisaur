@@ -1,7 +1,7 @@
 import unittest
 
 from automon.integrations.google.gmail import GoogleGmailClient
-from automon import LoggingClient, ERROR, DEBUG, CRITICAL
+from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
@@ -13,7 +13,7 @@ LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLe
 LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
 LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(ERROR)
-LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(ERROR)
+LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(INFO)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)
 
 gmail = GoogleGmailClient()
@@ -32,146 +32,30 @@ if gmail.is_ready():
     gmail.labels_create(name='automon/reviewed', color=color)
     gmail.labels_create(name='automon/resume', color=color)
     gmail.labels_create(name='automon/read', color=color)
+    gmail.labels_create(name='automon/sent', color=color)
 
     label_automon = gmail.labels_get_by_name(name='automon')
     label_processed = gmail.labels_get_by_name(name='automon/processed')
     label_drafted = gmail.labels_get_by_name(name='automon/drafted')
+    label_sent = gmail.labels_get_by_name(name='automon/sent')
     label_reviewed = gmail.labels_get_by_name(name='automon/reviewed')
     label_resume = gmail.labels_get_by_name(name='automon/resume')
     label_read = gmail.labels_get_by_name(name='automon/read')
 
     all_labels = [
-        label_automon,
         label_processed,
         label_drafted,
         label_reviewed,
         label_read,
     ]
 
-    gmail.labels_update(id=label_automon.id, color=color)
-    gmail.labels_update(id=label_processed.id, color=color)
-    gmail.labels_update(id=label_drafted.id, color=color)
-    gmail.labels_update(id=label_reviewed.id, color=color)
-    gmail.labels_update(id=label_resume.id, color=color)
-    gmail.labels_update(id=label_read.id, color=color)
-
-
-class MyTestCase(unittest.TestCase):
-    def test_something(self):
-
-        USE_OLLAMA = False
-        USE_GEMINI = True
-
-        if not gmail.is_ready():
-            return
-
-        while True:
-
-            email_search = gmail.messages_list_automon(
-                q=f"label:automon -label:automon/drafted -label:automon/reviewed -label:automon/resume",
-                maxResults=1,
-            )
-
-            resume_search = gmail.messages_list_automon(
-                q=f"label:automon/resume",
-                maxResults=1,
-            )
-
-            # gmail.draft_list_automon(maxResults=5, q="")
-
-            if not email_search or not resume_search:
-                gmail._sleep.seconds(5)
-                continue
-
-            for _ in email_search.messages:
-                email_selected = _
-            for _ in resume_search.messages:
-                resume_selected = _
-
-            gmail.messages_modify(id=email_selected.id, removeLabelIds=all_labels)
-
-            try:
-                email = email_selected.automon_attachment.bs4().html.text
-            except:
-                try:
-                    email = email_selected.automon_attachments.first().automon_attachment.bs4().html.text
-                except:
-                    try:
-                        email = email_selected.automon_attachments.first().automon_attachments.first().automon_attachment.bs4().html.text
-                    except:
-                        raise Exception(f"email not found")
-
-            threadId = email_selected.threadId
-            to = email_selected.automon_sender.value
-            from_ = 'ericjaw@gmail.com'
-
-            resume_ollama = resume_selected.automon_attachments.from_hash('f4da226b765738cd8919bcd101e3047e')
-            resume_str = resume_ollama.automon_attachment.decoded
-
-            resume_attachment = resume_selected.automon_attachments.from_hash('6adf97f83acf6453d4a6a4b1070f3754')
-            resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_ollama.body.automon_data_base64decoded,
-                                                         filename='ERIC JAW RESUME 2025' + '.txt',
-                                                         mimeType=resume_ollama.mimeType)
-
-            response = None
-
-            prompts = [
-                f"This is the email: <EMAIL>{email}</EMAIL>",
-                f"This is your resume: <RESUME>{resume_str}</RESUME>",
-                f"Answer this question only if the email is not a job description:",
-                f"What is this email?",
-                f"Answer the following questions only if the email is a job description:",
-                f"What's the relevance of the job ot you?",
-                f"In a sentence, show me the % the job is relevant to you?",
-                f"Furthermore, where can I schedule a call with you?",
-                f"Just tell me that your resume is attached in a short sentence."
-            ]
-
-            if USE_OLLAMA:
-                response, model = run_ollama(prompts=prompts)
-
-            if USE_GEMINI:
-                response, model = run_gemini(prompts=prompts)
-                # model.chat_forever()
-
-            if response is None:
-                raise Exception(f"missing llm response")
-
-            gmail.config.refresh_token()
-
-            raw = response
-
-            import re
-            percentage = re.compile(r'\d+%').search(raw)
-
-            if percentage:
-                percentage = percentage.group()
-
-                gmail.labels_create(name=f'automon/relevance/{percentage}', color=color)
-                label_percentage = gmail.labels_get_by_name(name=f'automon/relevance/{percentage}')
-                gmail.labels_update(id=label_percentage.id, color=color)
-
-                gmail.messages_modify(id=threadId, addLabelIds=[label_percentage])
-
-            subject = "Re: " + email_selected.automon_subject.value
-            body = raw
-
-            draft = gmail.draft_create(
-                threadId=threadId,
-                draft_to=to,
-                draft_from=from_,
-                draft_subject=subject,
-                draft_body=body,
-                draft_attachments=[resume_attachment]
-            )
-
-            draft_get = gmail.messages_get_automon(id=threadId)
-
-            gmail.messages_modify(id=threadId, addLabelIds=[label_drafted])
-
-            gmail.config.refresh_token()
-
-        pass
+    gmail.labels_update(id=label_automon, color=color)
+    gmail.labels_update(id=label_processed, color=color)
+    gmail.labels_update(id=label_drafted, color=color)
+    gmail.labels_update(id=label_reviewed, color=color)
+    gmail.labels_update(id=label_resume, color=color)
+    gmail.labels_update(id=label_read, color=color)
+    gmail.labels_update(id=label_sent, color=color)
 
 
 def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
@@ -220,6 +104,126 @@ def run_ollama(prompts: list) -> (str, OllamaClient):
             raise
 
         return response_, ollama
+
+
+class MyTestCase(unittest.TestCase):
+    def test_something(self):
+
+        USE_OLLAMA = False
+        USE_GEMINI = True
+
+        if not gmail.is_ready():
+            return
+
+        while True:
+
+            email_search = gmail.messages_list_automon(
+                q=f"label:automon -label:automon/sent -label:automon/drafted -label:automon/resume",
+                maxResults=1,
+            )
+
+            resume_search = gmail.messages_list_automon(
+                q=f"label:automon/resume",
+                maxResults=1,
+            )
+
+            # gmail.draft_list_automon(maxResults=5, q="")
+
+            if not email_search or not resume_search:
+                gmail._sleep.seconds(15)
+                continue
+
+            for _ in email_search.messages:
+                email_selected = _
+            for _ in resume_search.messages:
+                resume_selected = _
+
+            gmail.messages_modify(id=email_selected.id, removeLabelIds=all_labels)
+
+            try:
+                email = email_selected.automon_attachment.bs4().html.text
+            except:
+                try:
+                    email = email_selected.automon_attachments.first().automon_attachment.bs4().html.text
+                except:
+                    try:
+                        email = email_selected.automon_attachments.first().automon_attachments.first().automon_attachment.bs4().html.text
+                    except:
+                        raise Exception(f"email not found")
+
+            threadId = email_selected.threadId
+            to = email_selected.automon_sender.value
+            from_ = 'ericjaw@gmail.com'
+
+            resume_ollama = resume_selected.automon_attachments.from_hash('fe1f9bde3cdb1985bb6d678d0d0c30ce')
+            resume_str = resume_ollama.automon_attachment.decoded
+
+            resume_attachment = resume_selected.automon_attachments.from_hash('fe1f9bde3cdb1985bb6d678d0d0c30ce')
+            resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded,
+                                                         filename='ERIC JAW RESUME 2025' + '.txt',
+                                                         mimeType=resume_ollama.mimeType)
+
+            response = None
+
+            prompts = [
+                f"This is the email: <EMAIL>{email}</EMAIL>",
+                f"This is your resume: <RESUME>{resume_str}</RESUME>",
+                f"Answer this question only if the email is not a job description:",
+                f"What is this email?",
+                f"Answer the following questions only if the email is a job description:",
+                f"What's the relevance of the job ot you?",
+                f"In a sentence, show me the % the job is relevant to you?",
+                f"Furthermore, where can I schedule a call with you?",
+                f"Just tell me that your resume is attached in a short sentence."
+            ]
+
+            if USE_OLLAMA:
+                response, model = run_ollama(prompts=prompts)
+
+            if USE_GEMINI:
+                response, model = run_gemini(prompts=prompts)
+                model.chat_forever()
+
+            if response is None:
+                raise Exception(f"missing llm response")
+
+            gmail.config.refresh_token()
+
+            raw = response
+
+            import re
+            percentage = re.compile(r'\d+%').search(raw)
+
+            if percentage:
+                percentage = percentage.group()
+
+                gmail.labels_create(name=f'automon/relevance/{percentage}', color=color)
+                label_percentage = gmail.labels_get_by_name(name=f'automon/relevance/{percentage}')
+                gmail.labels_update(id=label_percentage, color=color)
+
+                gmail.messages_modify(id=threadId, addLabelIds=[label_percentage])
+
+            subject = "Re: " + email_selected.automon_subject.value
+            body = raw
+
+            draft = gmail.draft_create(
+                threadId=threadId,
+                draft_to=to,
+                draft_from=from_,
+                draft_subject=subject,
+                draft_body=body,
+                draft_attachments=[resume_attachment]
+            )
+            draft_get = gmail.messages_get_automon(id=threadId)
+
+            gmail.messages_modify(id=threadId, addLabelIds=[label_drafted])
+
+            # draft_sent = gmail.draft_send(draft=draft)
+            # gmail.messages_modify(id=threadId, addLabelIds=[label_sent])
+
+            gmail.config.refresh_token()
+
+        pass
 
 
 if __name__ == '__main__':
