@@ -350,7 +350,7 @@ class GoogleGmailClient:
 
         return drafts
 
-    def _improved_messages_get(self, message: Message):
+    def _improved_messages_get(self, message: Message) -> Message:
         """Better labels."""
 
         if hasattr(message, 'labelIds'):
@@ -364,9 +364,8 @@ class GoogleGmailClient:
         for _message in messages.messages:
 
             # update messages
-            _message.update_dict(
-                self.messages_get_automon(id=_message.id)
-            )
+            _get = self.messages_get_automon(id=_message.id)
+            _message.update_dict(_get)
 
             # update attachments
             if hasattr(_message, 'payload'):
@@ -384,6 +383,19 @@ class GoogleGmailClient:
                                 setattr(_payload_part, 'automon_attachment', _payload_part.body.automon_attachment)
 
         return messages
+
+    def _improved_thread_list(self, threads: ThreadList) -> ThreadList:
+        """Better threads."""
+
+        for _thread in threads.threads:
+            _get = self.thread_get(id=_thread.id)
+            _thread.update_dict(_get)
+
+            for _message in _thread.messages:
+                _get_message = self._improved_messages_get(_message)
+                _message.update_dict(_get_message)
+
+        return threads
 
     def messages_attachments_get(self,
                                  messageId: str,
@@ -579,6 +591,105 @@ class GoogleGmailClient:
         api = UsersMessages(self._userId).untrash(id)
         self.requests.post(api, headers=self.config.headers)
         return self.requests.to_dict()
+
+    def thread_delete(self, id: str) -> Thread:
+        api = UsersThread(self._userId).delete(id=id)
+        self.requests.delete(api, headers=self.config.headers)
+        return Thread().update_dict(self.requests.to_dict())
+
+    def thread_get(self,
+                   id: str,
+                   format: Format = Format.full,
+                   metadataHeaders: list = None) -> Thread:
+        """
+
+        format
+        enum (Format)
+
+        The format to return the messages in.
+
+        metadataHeaders[]
+        string
+
+        When given and format is METADATA, only include headers specified.
+        """
+        api = UsersThread(self._userId).get(id=id)
+        params = dict(
+            format=format,
+            metadataHeaders=metadataHeaders
+        )
+        self.requests.get(api, headers=self.config.headers, params=params)
+        return Thread().update_dict(self.requests.to_dict())
+
+    def thread_list(self,
+                    maxResults: int = 100,
+                    pageToken: str = '',
+                    q: str = '',
+                    labelIds: list = [],
+                    includeSpamTrash: bool = False) -> ThreadList:
+        """
+
+        maxResults
+        integer (uint32 format)
+
+        Maximum number of threads to return. This field defaults to 100. The maximum allowed value for this field is 500.
+
+        pageToken
+        string
+
+        Page token to retrieve a specific page of results in the list.
+
+        q
+        string
+
+        Only return threads matching the specified query. Supports the same query format as the Gmail search box. For example, "from:someuser@example.com rfc822msgid:<somemsgid@example.com> is:unread". Parameter cannot be used when accessing the api using the gmail.metadata scope.
+
+        labelIds[]
+        string
+
+        Only return threads with labels that match all of the specified label IDs.
+
+        includeSpamTrash
+        boolean
+
+        Include threads from SPAM and TRASH in the results.
+        """
+        for label in labelIds:
+            if type(label) is Label:
+                labelIds = [x.id for x in labelIds]
+
+        api = UsersThread(self._userId).list
+        params = dict(
+            maxResults=maxResults,
+            pageToken=pageToken,
+            q=q,
+            labelIds=labelIds,
+            includeSpamTrash=includeSpamTrash
+        )
+        self.requests.get(api, headers=self.config.headers, params=params)
+        return ThreadList().update_dict(self.requests.to_dict())
+
+    def thread_list_automon(self, *args, **kwargs) -> ThreadList:
+        """Enhanced `thread_list`"""
+        threads = self.thread_list(*args, **kwargs)
+        if threads:
+            threads = self._improved_thread_list(threads=threads)
+        return threads
+
+    def thread_modify(self, id: str) -> Thread:
+        api = UsersThread(self._userId).modify(id=id)
+        self.requests.post(api, headers=self.config.headers)
+        return Thread().update_dict(self.requests.to_dict())
+
+    def thread_trash(self, id: str) -> Thread:
+        api = UsersThread(self._userId).trash(id=id)
+        self.requests.post(api, headers=self.config.headers)
+        return Thread().update_dict(self.requests.to_dict())
+
+    def thread_untrash(self, id: str):
+        api = UsersThread(self._userId).untrash(id=id)
+        self.requests.post(api, headers=self.config.headers)
+        return Thread().update_dict(self.requests.to_dict())
 
     def users_watch(self):
         """Set up or update a push notification watch on the given user mailbox."""

@@ -247,10 +247,6 @@ class UsersSettingsSendAsSmimeInfo:
     pass
 
 
-class UsersThread:
-    pass
-
-
 class MessageListVisibility:
     show = 'show'
     hide = 'hide'
@@ -606,7 +602,8 @@ class Message(DictUpdate):
         return self
 
     def __repr__(self):
-        return f"{self.automon_labels} :: {self.automon_subject.value}"
+        if hasattr(self, 'snippet'):
+            return self.snippet
 
 
 class MessageList(DictUpdate):
@@ -647,6 +644,90 @@ class MessageAdded:
 
 class MessageDeleted:
     pass
+
+
+class Thread(DictUpdate):
+    id: str
+    snippet: str
+    historyId: str
+    messages: [Message]
+
+    addLabelIds: list
+    removeLabelIds: list
+
+    """
+    A collection of messages representing a conversation.
+
+    {
+      "id": string,
+      "snippet": string,
+      "historyId": string,
+      "messages": [
+        {
+          object (Message)
+        }
+      ]
+    }
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    def __repr__(self):
+        if hasattr(self, 'snippet'):
+            return self.snippet
+
+    def enhance(self):
+        if hasattr(self, 'messages'):
+            self.messages = [Message().update_dict(x) for x in self.messages]
+
+
+class ThreadList(DictUpdate):
+    threads: [Thread]
+    nextPageToken: str
+    resultSizeEstimate: int
+
+    """
+    {
+      "threads": [
+        {
+          object (Thread)
+        }
+      ],
+      "nextPageToken": string,
+      "resultSizeEstimate": integer
+    }
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    def __bool__(self):
+        if hasattr(self, 'threads'):
+            return True
+
+    def enhance(self):
+        if hasattr(self, 'threads'):
+            self.threads = [Thread().update_dict(x) for x in self.threads]
+
+
+class UsersThread(Users):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def delete(self, id: str): """requests.delete"""; return self.url + f'/threads/{id}'
+
+    def get(self, id: str): """requests.get"""; return self.url + f'/threads/{id}'
+
+    @property
+    def list(self): """requests.get"""; return self.url + f'/threads'
+
+    def modify(self, id: str): """requests.post"""; return self.url + f'/threads/{id}/modify'
+
+    def trash(self, id: str): """requests.post"""; return self.url + f'/threads/{id}/trash'
+
+    def untrash(self, id: str): """reqiests.post"""; return self.url + f'/threads/{id}/untrash'
 
 
 class Draft(DictUpdate):
@@ -830,8 +911,8 @@ class Label(DictUpdate):
         super().__init__()
         self.id = id
         self.name = name
-        if color:
-            self.color = color.to_dict()
+        if type(color) is dict:
+            self.color = Color().update_dict(color)
         self.messageListVisibility = messageListVisibility
         self.labelListVisibility = labelListVisibility
 
