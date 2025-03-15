@@ -162,12 +162,8 @@ class DictUpdate(dict):
         return f"{self.to_dict()}"
 
     def update_dict(self, update: dict):
-        if type(update) is not dict:
-
-            if hasattr(update, 'to_dict'):
-                update = update.to_dict()
-            else:
-                raise Exception(f"I don't now what this is. {update=}")
+        if hasattr(update, '__dict__'):
+            update = update.__dict__
 
         for key, value in update.items():
             setattr(self, key, value)
