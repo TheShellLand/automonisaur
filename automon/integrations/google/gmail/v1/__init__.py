@@ -162,6 +162,9 @@ class DictUpdate(dict):
         return f"{self.to_dict()}"
 
     def update_dict(self, update: dict):
+        if update is None:
+            return self
+
         if hasattr(update, '__dict__'):
             update = update.__dict__
 
@@ -635,7 +638,8 @@ class MessageList(DictUpdate):
         return self
 
     def __repr__(self):
-        return self.to_dict()
+        if hasattr(self, 'messages'):
+            return f'{len(self.messages)} messages'
 
 
 class MessageAdded:
@@ -709,6 +713,10 @@ class ThreadList(DictUpdate):
     def enhance(self):
         if hasattr(self, 'threads'):
             self.threads = [Thread().update_dict(x) for x in self.threads]
+
+    def __repr__(self):
+        if hasattr(self, 'threads'):
+            return f"{len(self.threads)} threads"
 
 
 class UsersThread(Users):
@@ -911,14 +919,17 @@ class Label(DictUpdate):
         super().__init__()
         self.id = id
         self.name = name
-        if type(color) is dict:
-            self.color = Color().update_dict(color)
+        self.color = color
         self.messageListVisibility = messageListVisibility
         self.labelListVisibility = labelListVisibility
 
     def __repr__(self):
         if self.name:
             return f"{self.name}"
+
+    def enhance(self):
+        if hasattr(self, 'color'):
+            self.color = Color().update_dict(self.color)
 
 
 class LabelAdded:

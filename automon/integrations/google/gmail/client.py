@@ -254,21 +254,15 @@ class GoogleGmailClient:
 
     def labels_create(self,
                       name: str,
-                      color: Color = None,
-                      backgroundColor: str = None,
-                      textColor: str = None):
+                      color: Color = None):
         """Creates a new label.
 
         Max labels 10,000
         """
         logger.debug(f"[GoogleGmailClient] :: labels_create :: {name=} :: >>>>")
-        if color:
-            color = color
-        else:
-            color = Color(backgroundColor=backgroundColor, textColor=textColor)
         api = UsersLabels(userId=self._userId).create
-        data = Label(name=name, color=color).to_dict()
-        self.requests.post(api, headers=self.config.headers, json=data)
+        json = Label(name=name, color=color).to_dict()
+        self.requests.post(api, headers=self.config.headers, json=json)
         logger.info(f"[GoogleGmailClient] :: labels_create :: done")
         return Label().update_dict(self.requests.to_dict())
 
@@ -313,17 +307,10 @@ class GoogleGmailClient:
 
     def labels_update(self,
                       id: str or Label,
-                      color: Color = None,
-                      backgroundColor: str = None,
-                      textColor: str = None) -> Label:
+                      color: Color = None) -> Label:
         """Updates the specified label."""
         if type(id) is Label:
             id = id.id
-
-        if color:
-            color = color
-        else:
-            color = Color(backgroundColor=backgroundColor, textColor=textColor)
 
         api = UsersLabels(self._userId).update(id)
         data = Label(id=id, color=color).to_dict()
@@ -377,7 +364,8 @@ class GoogleGmailClient:
                             _attachmentId = _payload_part.body.attachmentId
                             _payload_part.body.update_dict(
                                 self.messages_attachments_get(messageId=_message.id,
-                                                              attachmentId=_attachmentId))
+                                                              attachmentId=_attachmentId)
+                            )
 
                             if hasattr(_payload_part.body, 'automon_attachment'):
                                 setattr(_payload_part, 'automon_attachment', _payload_part.body.automon_attachment)
@@ -595,6 +583,7 @@ class GoogleGmailClient:
     def thread_delete(self, id: str) -> Thread:
         api = UsersThread(self._userId).delete(id=id)
         self.requests.delete(api, headers=self.config.headers)
+        logger.info(f"[GoogleGmailClient] :: thread_delete :: done")
         return Thread().update_dict(self.requests.to_dict())
 
     def thread_get(self,
@@ -619,6 +608,7 @@ class GoogleGmailClient:
             metadataHeaders=metadataHeaders
         )
         self.requests.get(api, headers=self.config.headers, params=params)
+        logger.info(f"[GoogleGmailClient] :: thread_get :: done")
         return Thread().update_dict(self.requests.to_dict())
 
     def thread_list(self,
@@ -667,6 +657,7 @@ class GoogleGmailClient:
             includeSpamTrash=includeSpamTrash
         )
         self.requests.get(api, headers=self.config.headers, params=params)
+        logger.info(f"[GoogleGmailClient] :: thread_list :: done")
         return ThreadList().update_dict(self.requests.to_dict())
 
     def thread_list_automon(self, *args, **kwargs) -> ThreadList:
@@ -674,21 +665,25 @@ class GoogleGmailClient:
         threads = self.thread_list(*args, **kwargs)
         if threads:
             threads = self._improved_thread_list(threads=threads)
+        logger.info(f"[GoogleGmailClient] :: thread_list_automon :: done")
         return threads
 
     def thread_modify(self, id: str) -> Thread:
         api = UsersThread(self._userId).modify(id=id)
         self.requests.post(api, headers=self.config.headers)
+        logger.info(f"[GoogleGmailClient] :: thread_modify :: done")
         return Thread().update_dict(self.requests.to_dict())
 
     def thread_trash(self, id: str) -> Thread:
         api = UsersThread(self._userId).trash(id=id)
         self.requests.post(api, headers=self.config.headers)
+        logger.info(f"[GoogleGmailClient] :: thread_trash :: done")
         return Thread().update_dict(self.requests.to_dict())
 
     def thread_untrash(self, id: str):
         api = UsersThread(self._userId).untrash(id=id)
         self.requests.post(api, headers=self.config.headers)
+        logger.info(f"[GoogleGmailClient] :: thread_untrash :: done")
         return Thread().update_dict(self.requests.to_dict())
 
     def users_watch(self):

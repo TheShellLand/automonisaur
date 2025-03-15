@@ -117,7 +117,7 @@ class MyTestCase(unittest.TestCase):
 
         while True:
 
-            email_search = gmail.messages_list_automon(
+            email_search = gmail.thread_list_automon(
                 q=f"label:automon -label:automon/sent -label:automon/drafted -label:automon/resume",
                 maxResults=1,
             )
@@ -133,7 +133,7 @@ class MyTestCase(unittest.TestCase):
                 gmail._sleep.seconds(15)
                 continue
 
-            for _ in email_search.messages:
+            for _ in email_search.threads:
                 email_selected = _
             for _ in resume_search.messages:
                 resume_selected = _
