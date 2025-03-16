@@ -25,6 +25,7 @@ gmail.config.add_scopes(
 
 if gmail.is_ready():
     color = gmail.v1.Color(backgroundColor='#653e9b', textColor='#b694e8')
+    color_error = gmail.v1.Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
 
     gmail.labels_create(name='automon', color=color)
     gmail.labels_create(name='automon/processed', color=color)
@@ -33,6 +34,7 @@ if gmail.is_ready():
     gmail.labels_create(name='automon/resume', color=color)
     gmail.labels_create(name='automon/read', color=color)
     gmail.labels_create(name='automon/sent', color=color)
+    gmail.labels_create(name='automon/error', color=color_error)
 
     label_automon = gmail.labels_get_by_name(name='automon')
     label_processed = gmail.labels_get_by_name(name='automon/processed')
@@ -41,6 +43,7 @@ if gmail.is_ready():
     label_reviewed = gmail.labels_get_by_name(name='automon/reviewed')
     label_resume = gmail.labels_get_by_name(name='automon/resume')
     label_read = gmail.labels_get_by_name(name='automon/read')
+    label_error = gmail.labels_get_by_name(name='automon/error')
 
     all_labels = [
         label_processed,
@@ -56,6 +59,7 @@ if gmail.is_ready():
     gmail.labels_update(id=label_resume, color=color)
     gmail.labels_update(id=label_read, color=color)
     gmail.labels_update(id=label_sent, color=color)
+    gmail.labels_update(id=label_error, color=color_error)
 
 
 def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
@@ -118,7 +122,7 @@ class MyTestCase(unittest.TestCase):
         while True:
 
             email_search = gmail.thread_list_automon(
-                q=f"label:automon -label:automon/sent -label:automon/drafted -label:automon/resume",
+                q=f"label:automon -label:automon/sent -label:automon/drafted -label:automon/resume -label:automon/error",
                 maxResults=10,
             )
 
@@ -134,15 +138,23 @@ class MyTestCase(unittest.TestCase):
             email_selected = email_search.threads[0]
             resume_selected = resume_search.messages[0]
 
-            email = email_selected.automon_message_latest.automon_attachments.attachments[0].body.automon_data_html_text
-
-            resume = resume_selected.automon_attachments.attachments[0].body.automon_data_html_text
-            resume_attachment = resume_selected.automon_attachments.with_filename()[0]
-            resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded,
-                                                         filename=resume_attachment.filename,
-                                                         mimeType=resume_attachment.mimeType)
-
             threadId = email_selected.id
+
+            try:
+
+                email = email_selected.automon_message_latest.automon_attachments.attachments[0].body.automon_data_html_text
+
+                resume = resume_selected.automon_attachments.attachments[0].body.automon_data_html_text
+                resume_attachment = resume_selected.automon_attachments.with_filename()[0]
+                resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded,
+                                                             filename=resume_attachment.filename,
+                                                             mimeType=resume_attachment.mimeType)
+            except Exception as error:
+                gmail.messages_modify(id=threadId, addLabelIds=[label_error])
+                gmail.draft_create(threadId=threadId,
+                                   draft_body=str(error))
+                continue
+
             to = email_selected.automon_message_first.automon_sender.value
             from_ = email_selected.automon_message_first.automon_to.value
 

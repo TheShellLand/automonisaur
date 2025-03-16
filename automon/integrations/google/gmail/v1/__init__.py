@@ -313,7 +313,7 @@ class Headers(DictUpdate):
 
     def __repr__(self):
         if self.name:
-            return f"{self.name}"
+            return f"{self.name} :: {self.value}"
 
 
 class MessagePartBody(DictUpdate):

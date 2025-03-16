@@ -58,7 +58,7 @@ class GoogleGmailClient:
                      draft_cc: list = [],
                      draft_bc: list = [],
                      draft_body: str = None,
-                     draft_attachments: [EmailAttachment] = None,
+                     draft_attachments: [EmailAttachment] = [],
                      **kwargs) -> Draft:
         """Creates a new draft with the DRAFT label."""
         if raw:
