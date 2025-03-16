@@ -119,7 +119,7 @@ class MyTestCase(unittest.TestCase):
 
             email_search = gmail.thread_list_automon(
                 q=f"label:automon -label:automon/sent -label:automon/drafted -label:automon/resume",
-                maxResults=1,
+                maxResults=10,
             )
 
             resume_search = gmail.messages_list_automon(
@@ -127,47 +127,30 @@ class MyTestCase(unittest.TestCase):
                 maxResults=1,
             )
 
-            # gmail.draft_list_automon(maxResults=5, q="")
-
             if not email_search or not resume_search:
                 gmail._sleep.seconds(15)
                 continue
 
-            for _ in email_search.threads:
-                email_selected = _
-            for _ in resume_search.messages:
-                resume_selected = _
+            email_selected = email_search.threads[0]
+            resume_selected = resume_search.messages[0]
 
-            gmail.messages_modify(id=email_selected.id, removeLabelIds=all_labels)
+            email = email_selected.automon_message_latest.automon_attachments.attachments[0].body.automon_data_html_text
 
-            try:
-                email = email_selected.automon_attachment.bs4().html.text
-            except:
-                try:
-                    email = email_selected.automon_attachments.first().automon_attachment.bs4().html.text
-                except:
-                    try:
-                        email = email_selected.automon_attachments.first().automon_attachments.first().automon_attachment.bs4().html.text
-                    except:
-                        raise Exception(f"email not found")
-
-            threadId = email_selected.threadId
-            to = email_selected.automon_sender.value
-            from_ = 'ericjaw@gmail.com'
-
-            resume_ollama = resume_selected.automon_attachments.from_hash('fe1f9bde3cdb1985bb6d678d0d0c30ce')
-            resume_str = resume_ollama.automon_attachment.decoded
-
-            resume_attachment = resume_selected.automon_attachments.from_hash('fe1f9bde3cdb1985bb6d678d0d0c30ce')
+            resume = resume_selected.automon_attachments.attachments[0].body.automon_data_html_text
+            resume_attachment = resume_selected.automon_attachments.with_filename()[0]
             resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded,
-                                                         filename='ERIC JAW RESUME 2025' + '.txt',
-                                                         mimeType=resume_ollama.mimeType)
+                                                         filename=resume_attachment.filename,
+                                                         mimeType=resume_attachment.mimeType)
 
-            response = None
+            threadId = email_selected.id
+            to = email_selected.automon_message_first.automon_sender.value
+            from_ = email_selected.automon_message_first.automon_to.value
+
+            gmail.messages_modify(id=threadId, removeLabelIds=all_labels)
 
             prompts = [
                 f"This is the email: <EMAIL>{email}</EMAIL>",
-                f"This is your resume: <RESUME>{resume_str}</RESUME>",
+                f"This is your resume: <RESUME>{resume}</RESUME>",
                 f"Answer this question only if the email is not a job description:",
                 f"What is this email?",
                 f"Answer the following questions only if the email is a job description:",
@@ -176,6 +159,8 @@ class MyTestCase(unittest.TestCase):
                 f"Furthermore, where can I schedule a call with you?",
                 f"Just tell me that your resume is attached in a short sentence."
             ]
+
+            response = None
 
             if USE_OLLAMA:
                 response, model = run_ollama(prompts=prompts)
@@ -203,7 +188,8 @@ class MyTestCase(unittest.TestCase):
 
                 gmail.messages_modify(id=threadId, addLabelIds=[label_percentage])
 
-            subject = "Re: " + email_selected.automon_subject.value
+            subject = "Re: " + email_selected.automon_message_first.automon_subject.value
+
             body = raw
 
             draft = gmail.draft_create(

@@ -300,6 +300,7 @@ class Color(DictUpdate):
     def __bool__(self):
         if self.backgroundColor and self.textColor:
             return True
+        return False
 
 
 class Headers(DictUpdate):
@@ -339,15 +340,12 @@ class MessagePartBody(DictUpdate):
 
             try:
                 setattr(self, 'automon_data_decoded', self.automon_data_base64decoded.decode())
+                setattr(self, 'automon_data_hash', cryptography.Hashlib.md5(self.automon_data_decoded))
             except Exception as error:
                 setattr(self, 'automon_data_decoded', None)
+                setattr(self, 'automon_data_hash', None)
 
-            hash = self.automon_data_decoded
-
-            setattr(self, 'automon_attachment', AutomonAttachment(dict(decoded=self.automon_data_decoded,
-                                                                       base64decoded=self.automon_data_base64decoded,
-                                                                       BytesIO=self.automon_data_BytesIO,
-                                                                       hash_md5=cryptography.Hashlib.md5(hash))))
+            setattr(self, 'automon_data_html_text', self._html_text())
 
     def __repr__(self):
         if hasattr(self, 'attachmentId'):
@@ -357,6 +355,12 @@ class MessagePartBody(DictUpdate):
         if hasattr(self, 'automon_data_base64decoded'):
             return bs4.BeautifulSoup(self.automon_data_base64decoded)
 
+    def _html_text(self):
+        try:
+            return self.automon_data_bs4().html.text
+        except:
+            return None
+
 
 class MessagePart(DictUpdate):
     partId: str
@@ -365,6 +369,8 @@ class MessagePart(DictUpdate):
     headers: [Headers]
     body: MessagePartBody
     parts: ['MessagePart']
+
+    automon_attachments: 'AutomonAttachments'
 
     """
     A single MIME message part.
@@ -430,9 +436,6 @@ class MessagePart(DictUpdate):
         if hasattr(self, 'body'):
             setattr(self, 'body', MessagePartBody().update_dict(self.body))
 
-            if hasattr(self.body, 'automon_attachment'):
-                setattr(self, 'automon_attachment', self.body.automon_attachment)
-
         if hasattr(self, 'headers'):
             setattr(self, 'headers', [Headers().update_dict(x) for x in self.headers])
 
@@ -448,21 +451,6 @@ class MessagePart(DictUpdate):
             return f"{self.filename} :: {self.mimeType}"
         elif getattr(self, 'mimeType'):
             return f"{self.mimeType}"
-
-
-class AutomonAttachment(DictUpdate):
-    decoded: str
-    base64decoded: bytes
-    BytesIO: io.BytesIO
-    hash_md5: str
-
-    def __init__(self, attachment: dict):
-        super().__init__()
-        self.update_dict(attachment)
-
-    def bs4(self) -> bs4.BeautifulSoup:
-        if hasattr(self, 'base64decoded'):
-            return bs4.BeautifulSoup(self.base64decoded)
 
 
 class AutomonAttachments(DictUpdate):
@@ -482,8 +470,11 @@ class AutomonAttachments(DictUpdate):
                 return attachment
         raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
 
-    def first(self) -> MessagePart:
+    def first_attachment(self) -> MessagePart:
         return self.attachments[0]
+
+    def with_filename(self) -> MessagePart:
+        return [x for x in self.attachments if x.filename]
 
 
 class Message(DictUpdate):
@@ -496,6 +487,8 @@ class Message(DictUpdate):
     payload: MessagePart
     sizeEstimate: str
     raw: str
+
+    automon_attachments: AutomonAttachments
 
     """
     {
@@ -598,9 +591,8 @@ class Message(DictUpdate):
 
             if hasattr(self.payload, 'automon_attachments'):
                 setattr(self, 'automon_attachments', self.payload.automon_attachments)
-
-            if hasattr(self.payload, 'automon_attachment'):
-                setattr(self, 'automon_attachment', self.payload.automon_attachment)
+            else:
+                setattr(self, 'automon_attachments', AutomonAttachments(attachments=[self.payload]))
 
         return self
 
@@ -681,9 +673,26 @@ class Thread(DictUpdate):
         if hasattr(self, 'snippet'):
             return self.snippet
 
+    @property
+    def automon_message_first(self) -> Message:
+        if hasattr(self, 'messages'):
+            return self.messages[0]
+
+    @property
+    def automon_message_latest(self) -> Message:
+        if hasattr(self, 'messages'):
+            return self.messages[-1]
+
     def enhance(self):
         if hasattr(self, 'messages'):
             self.messages = [Message().update_dict(x) for x in self.messages]
+
+        return self
+
+    def __bool__(self):
+        if hasattr(self, 'messages'):
+            return True
+        return False
 
 
 class ThreadList(DictUpdate):
@@ -709,6 +718,7 @@ class ThreadList(DictUpdate):
     def __bool__(self):
         if hasattr(self, 'threads'):
             return True
+        return False
 
     def enhance(self):
         if hasattr(self, 'threads'):

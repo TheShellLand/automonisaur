@@ -2,6 +2,7 @@ import io
 import os
 import bs4
 import email
+import email.encoders
 import email.mime.text
 import email.mime.multipart
 import email.mime.image
@@ -344,32 +345,32 @@ class GoogleGmailClient:
         if hasattr(message, 'labelIds'):
             setattr(message, 'automon_labels', [self.labels_get(x) for x in message.labelIds])
 
+        # update attachments
+        if hasattr(message, 'payload'):
+
+            if hasattr(message.payload, 'parts'):
+
+                for _payload_part in message.payload.parts:
+                    if hasattr(_payload_part.body, 'attachmentId'):
+                        _attachmentId = _payload_part.body.attachmentId
+
+                        _messages_attachments_get = self.messages_attachments_get(messageId=message.id,
+                                                                                  attachmentId=_attachmentId)
+
+                        _payload_part.body.update_dict(_messages_attachments_get)
+
+                        if hasattr(_payload_part.body, 'automon_attachment'):
+                            setattr(_payload_part, 'automon_attachment', _payload_part.body.automon_attachment)
+
         return message
 
     def _improved_messages_list(self, messages: MessageList) -> MessageList:
         """Better messages."""
 
         for _message in messages.messages:
-
             # update messages
             _get = self.messages_get_automon(id=_message.id)
             _message.update_dict(_get)
-
-            # update attachments
-            if hasattr(_message, 'payload'):
-
-                if hasattr(_message.payload, 'parts'):
-
-                    for _payload_part in _message.payload.parts:
-                        if hasattr(_payload_part.body, 'attachmentId'):
-                            _attachmentId = _payload_part.body.attachmentId
-                            _payload_part.body.update_dict(
-                                self.messages_attachments_get(messageId=_message.id,
-                                                              attachmentId=_attachmentId)
-                            )
-
-                            if hasattr(_payload_part.body, 'automon_attachment'):
-                                setattr(_payload_part, 'automon_attachment', _payload_part.body.automon_attachment)
 
         return messages
 
@@ -449,11 +450,11 @@ class GoogleGmailClient:
         self.requests.post(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
-    def messages_delete(self, id: int):
+    def messages_delete(self, id: int) -> Message:
         """Immediately and permanently deletes the specified message. This operation cannot be undone. Prefer messages.trash instead."""
         api = UsersMessages(self._userId).delete(id)
         self.requests.delete(api, headers=self.config.headers)
-        return self.requests.to_dict()
+        return Message().update_dict(self.requests.to_dict())
 
     def messages_get(self,
                      id: str,
