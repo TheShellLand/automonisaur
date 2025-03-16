@@ -124,6 +124,7 @@ class GoogleGmailClient:
 
                     msg = email.mime.base.MIMEBase(content_type, encoding)
                     msg.set_payload(bytes_)
+                    email.encoders.encode_base64(msg)
 
                 msg.add_header('Content-Disposition', 'attachment', filename=filename)
                 email_build.attach(msg)
