@@ -25,21 +25,22 @@ class OpenTelemetryClient(object):
             **kwargs
         )
 
-    def clear(self):
-        logger.debug('clear')
-        return self.config.clear()
+    # def clear(self):
+    #     logger.debug('clear')
+    #     return self.config.clear()
 
     def is_ready(self):
         if self.config.is_ready():
             return True
+        return False
 
-    def get_finished_spans(self):
-        logger.debug('get_finished_spans')
-        return self.config.get_finished_spans()
+    # def get_finished_spans(self):
+    #     logger.debug('get_finished_spans')
+    #     return self.config.get_finished_spans()
 
-    def pop_finished_spans(self):
-        logger.debug('pop_finished_spans')
-        return self.config.pop_finished_spans()
+    # def pop_finished_spans(self):
+    #     logger.debug('pop_finished_spans')
+    #     return self.config.pop_finished_spans()
 
     def record_exception(self, exception: Exception):
         logger.error(f'{exception}')
@@ -71,41 +72,29 @@ class OpenTelemetryClient(object):
             pass
         return
 
-    def test(self):
-        with self.tracer.start_as_current_span(name='rootSpan') as trace_root:
-            trace_root.add_event('AAAAAAAA')
+    # def to_dict(self):
+    #     return [
+    #         json.loads(span.to_json())
+    #         for span in self.get_finished_spans()
+    #     ]
 
-            with self.tracer.start_as_current_span(name='childSpan') as trace_child:
-                trace_child.add_event('AAAAAAAA')
-                trace_child.add_event('BBBBBBBB')
-
-            trace_root.add_event('BBBBBBBB')
-
-        return True
-
-    def to_dict(self):
-        return [
-            json.loads(span.to_json())
-            for span in self.get_finished_spans()
-        ]
-
-    def to_datadog(self):
-        log = []
-        for span in self.to_dict():
-            message = dict(span).copy()
-            ddsource = None
-            ddtags = ','.join([f"{x[0]}:{x[1]}" for x in span.get("resource").get("attributes").items()])
-            hostname = span['context']['trace_id']
-            service = span['context']['span_id']
-
-            log.append(dict(
-                ddsource=ddsource,
-                ddtags=ddtags,
-                hostname=hostname,
-                service=service,
-                message=message,
-            ))
-        return log
+    # def to_datadog(self):
+    #     log = []
+    #     for span in self.to_dict():
+    #         message = dict(span).copy()
+    #         ddsource = None
+    #         ddtags = ','.join([f"{x[0]}:{x[1]}" for x in span.get("resource").get("attributes").items()])
+    #         hostname = span['context']['trace_id']
+    #         service = span['context']['span_id']
+    #
+    #         log.append(dict(
+    #             ddsource=ddsource,
+    #             ddtags=ddtags,
+    #             hostname=hostname,
+    #             service=service,
+    #             message=message,
+    #         ))
+    #     return log
 
     @property
     def tracer(self):

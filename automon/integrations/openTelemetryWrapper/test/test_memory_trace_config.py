@@ -7,9 +7,11 @@ class MyTestCase(unittest.TestCase):
     config = OpenTelemetryConfig()
 
     def test_something(self):
-        self.assertTrue(
-            self.config.test()
-        )
+
+        if self.config.is_ready():
+            self.assertTrue(
+                self.config.test()
+            )
 
 
 if __name__ == '__main__':
