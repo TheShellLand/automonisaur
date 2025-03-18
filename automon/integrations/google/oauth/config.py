@@ -174,7 +174,10 @@ class GoogleAuthConfig(object):
 
         self.credentials_pickle_load()
 
-        self.refresh_token()
+        try:
+            self.refresh_token()
+        except:
+            pass
 
         if self.credentials and not self.credentials.expired:
             return self.credentials
@@ -385,12 +388,13 @@ class GoogleAuthConfig(object):
     def is_ready(self):
         """return True if configured"""
         try:
-            if self.GOOGLE_CREDENTIALS_FILE or self.GOOGLE_CREDENTIALS_BASE64:
+            if os.path.exists(self.GOOGLE_CREDENTIALS_FILE) or self.GOOGLE_CREDENTIALS_BASE64:
                 return True
         except Exception as error:
             logger.error(f'[GoogleAuthConfig] :: is_ready :: ERROR :: {error=}')
 
-        logger.error(f'[GoogleAuthConfig] :: is_ready :: ERROR :: {self.GOOGLE_CREDENTIALS_FILE=} :: {self.GOOGLE_CREDENTIALS_BASE64=}')
+        logger.error(
+            f'[GoogleAuthConfig] :: is_ready :: ERROR :: {self.GOOGLE_CREDENTIALS_FILE=} :: {self.GOOGLE_CREDENTIALS_BASE64=}')
         return False
 
     def refresh_token(self):
