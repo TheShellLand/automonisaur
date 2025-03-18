@@ -28,9 +28,6 @@ GOOGLE_CREDENTIALS_BASE64=
 GOOGLE_SHEET_ID=
 GOOGLE_GEMINI_API_KEY=
 
-# Grafana Cloud
-GRAFANA_SERVICE_ACCOUNT_TOKEN=
-
 # Instagram
 INSTAGRAM_LOGIN=
 INSTAGRAM_PASSWORD=
@@ -68,10 +65,17 @@ OTEL_PYTHON_LOG_CORRELATION=true
 OTEL_PYTHON_LOG_FORMAT='%(asctime)s\t%(levelname)s\t[%(name)s]\t[%(filename)s:%(lineno)d]\t[trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s trace_sampled=%(otelTraceSampled)s]\t%(message)s'
 OTEL_PYTHON_LOG_LEVEL=debug
 # https://opentelemetry.io/docs/languages/python/automatic/
-OTEL_SERVICE_NAME=your-service-name
+OTEL_SERVICE_NAME=automonisaur
 OTEL_TRACES_EXPORTER=console,otlp
 OTEL_METRICS_EXPORTER=console
 OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=0.0.0.0:4317
+# grafana
+OTEL_EXPORTER_OTLP_PROTOCOL="grpc"
+OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp-gateway-<zone>.grafana.net/otlp"
+OTEL_EXPORTER_OTLP_HEADERS="Authorization=Basic <your_api_key>"
+
+# Grafana Cloud
+GRAFANA_SERVICE_ACCOUNT_TOKEN=
 
 # Splunk SOAR
 SPLUNK_SOAR_HOST=
