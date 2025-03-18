@@ -1,6 +1,8 @@
 import json
 import readline
 
+import automon.integrations.ollamaWrapper.prompt_templates
+
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
 
@@ -13,6 +15,7 @@ logger.setLevel(DEBUG)
 
 class GoogleGeminiClient(object):
     models = GeminiModels()
+    prompts = automon.integrations.ollamaWrapper.prompt_templates.AgentTemplates()
 
     def __init__(self, config: GoogleGeminiConfig = None, model: GeminiModels = None):
         self.config = config or GoogleGeminiConfig()
