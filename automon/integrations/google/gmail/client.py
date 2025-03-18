@@ -705,3 +705,38 @@ class GoogleGmailClient:
         api = f'/gmail/v1/users/{self._userId}/stop'
         self.requests.post(api, headers=self.config.headers)
         return self.requests.to_dict()
+
+
+class AutomonLabels:
+    labels = dict(
+        automon='automon',
+        processed='automon/processed',
+        drafted='automon/drafted',
+        reviewed='automon/reviewed',
+        resume='automon/resume',
+        read='automon/read',
+        sent='automon/sent',
+        error='automon/error',
+    )
+
+    def __init__(self):
+        self.automon = None
+        self.processed = None
+        self.drafted = None
+        self.reviewed = None
+        self.resume = None
+        self.read = None
+        self.sent = None
+        self.error = None
+
+        self.color = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
+        self.color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
+
+    @property
+    def all_labels(self):
+        return [
+            self.processed,
+            self.drafted,
+            self.reviewed,
+            self.read
+        ]
