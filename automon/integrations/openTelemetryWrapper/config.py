@@ -1,10 +1,44 @@
-import opentelemetry
-import queue
+try:
+    import opentelemetry
+    import queue
 
-import opentelemetry.sdk.trace
-import opentelemetry.sdk.trace.export
-import opentelemetry.sdk.trace.export.in_memory_span_exporter
-import opentelemetry.exporter.otlp.proto.grpc.trace_exporter
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import SimpleSpanProcessor, BatchSpanProcessor
+    from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.trace import set_tracer_provider, get_tracer
+except:
+    class TracerProvider:
+
+        def add_span_processor(self, *args, **kwrags):
+            pass
+
+
+    class SimpleSpanProcessor:
+        def __init__(self, *args, **kwargs):
+            pass
+
+
+    class BatchSpanProcessor:
+        def __init__(self, *args, **kwrags):
+            pass
+
+
+    class InMemorySpanExporter:
+        pass
+
+
+    class OTLPSpanExporter:
+        def __init__(self, *args, **kwargs):
+            pass
+
+
+    def set_tracer_provider(*args, **kwargs):
+        pass
+
+
+    def get_tracer(*args, **kwargs):
+        pass
 
 from automon.helpers.osWrapper import environ
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
@@ -19,7 +53,7 @@ class OpenTelemetryConfig(object):
         self.insecure = insecure or environ('OTEL_EXPORTER_OTLP_TRACES_ENDPOINT_INSECURE')
 
         self.opentelemetry = opentelemetry
-        self.provider = opentelemetry.sdk.trace.TracerProvider()
+        self.provider = TracerProvider()
 
         self.tracer = None
 
@@ -28,26 +62,26 @@ class OpenTelemetryConfig(object):
 
     def enable_memory_processor(self):
         """Enable simple in-memory exporter"""
-        exporter = opentelemetry.sdk.trace.export.in_memory_span_exporter.InMemorySpanExporter()
-        span_processor = opentelemetry.sdk.trace.export.SimpleSpanProcessor(exporter)
+        exporter = InMemorySpanExporter()
+        span_processor = SimpleSpanProcessor(exporter)
 
         self.provider.add_span_processor(span_processor)
-        opentelemetry.trace.set_tracer_provider(self.provider)
+        set_tracer_provider(self.provider)
 
-        self.tracer = opentelemetry.trace.get_tracer(__name__)
+        self.tracer = get_tracer(__name__)
         logger.info(f"enable_memory_processor :: done")
         return self
 
     def enable_batch_processor(self):
         """Enable external endpoint exporter"""
-        exporter = opentelemetry.exporter.otlp.proto.grpc.trace_exporter.OTLPSpanExporter(endpoint=self.endpoint,
-                                                                                          insecure=self.insecure)
-        span_processor = opentelemetry.sdk.trace.export.BatchSpanProcessor(exporter)
+        exporter = OTLPSpanExporter(endpoint=self.endpoint,
+                                    insecure=self.insecure)
+        span_processor = BatchSpanProcessor(exporter)
 
         self.provider.add_span_processor(span_processor)
         opentelemetry.trace.set_tracer_provider(self.provider)
 
-        self.tracer = opentelemetry.trace.get_tracer(__name__)
+        self.tracer = get_tracer(__name__)
         logger.info(f"enable_batch_processor :: done")
         return self
 
