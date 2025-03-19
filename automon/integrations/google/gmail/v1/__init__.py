@@ -942,6 +942,18 @@ class Label(DictUpdate):
             self.color = Color().update_dict(self.color)
 
 
+class LabelList(DictUpdate):
+    labels: [Label]
+
+    def __init__(self):
+        super().__init__()
+        self.labels = []
+
+    def enhance(self):
+        if hasattr(self, 'labels'):
+            setattr(self, 'labels', [Label().update_dict(x) for x in self.labels])
+
+
 class LabelAdded:
     pass
 

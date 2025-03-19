@@ -292,7 +292,7 @@ class GoogleGmailClient:
 
     def labels_create(self,
                       name: str,
-                      color: Color = None):
+                      color: Color = None) -> Label:
         """Creates a new label.
 
         Max labels 10,000
@@ -304,16 +304,22 @@ class GoogleGmailClient:
         logger.info(f"[GoogleGmailClient] :: labels_create :: done")
         return Label().update_dict(self.requests.to_dict())
 
-    def labels_delete(self, id: str):
+    def labels_delete(self, id: str) -> bool:
         """Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to."""
+        if type(id) is Label:
+            id = id.id
+
         api = UsersLabels(self._userId).delete(id)
         self.requests.delete(api, headers=self.config.headers)
         if self.requests.status_code == 204:
             return True
         return False
 
-    def labels_get(self, id: str):
+    def labels_get(self, id: str) -> Label:
         """Gets the specified label."""
+        if type(id) is Label:
+            id = id.id
+
         api = UsersLabels(self._userId).get(id)
         self.requests.get(api, headers=self.config.headers)
         logger.info(f"[GoogleGmailClient] :: labels_get :: done")
@@ -321,9 +327,8 @@ class GoogleGmailClient:
 
     def labels_get_by_name(self, name: str) -> Label:
         """Gets label by name"""
-        self.labels_list()
-        labels = self.requests.to_dict()['labels']
-        for label in labels:
+        labels = self.labels_list()
+        for label in labels.labels:
             if label['name'] == name:
                 logger.info(f"[GoogleGmailClient] :: labels_get_by_name :: done")
                 return Label().update_dict(label)
@@ -333,10 +338,13 @@ class GoogleGmailClient:
         api = UsersLabels(self._userId).list
         self.requests.get(api, headers=self.config.headers)
         logger.info(f"[GoogleGmailClient] :: labels_list :: done")
-        return self.requests.to_dict()
+        return LabelList().update_dict(self.requests.to_dict())
 
     def labels_patch(self, id: str):
         """Patch the specified label."""
+        if type(id) is Label:
+            id = id.id
+
         api = UsersLabels(self._userId).patch(id)
         data = Label().to_dict()
         self.requests.patch(api, headers=self.config.headers, json=data)
