@@ -30,6 +30,9 @@ class GoogleGeminiClient(object):
         return f"[GoogleGeminiClient] :: {self.config=}"
 
     def add_content(self, prompt: str, role: str = 'user'):
+        if type(prompt) is not str:
+            return self
+
         part = Part(text=prompt)
         content = Content(role=role).add_part(part=part)
         self._prompt.add_content(content=content)
@@ -86,7 +89,7 @@ class GoogleGeminiClient(object):
 
             if prompt == '/clear':
                 self._prompt.clear_history()
-                break
+                continue
 
             self.add_content(prompt=prompt).chat()
 

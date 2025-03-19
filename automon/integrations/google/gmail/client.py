@@ -329,7 +329,7 @@ class GoogleGmailClient:
         """Gets label by name"""
         labels = self.labels_list()
         for label in labels.labels:
-            if label['name'] == name:
+            if label.name == name:
                 logger.info(f"[GoogleGmailClient] :: labels_get_by_name :: done")
                 return Label().update_dict(label)
 
