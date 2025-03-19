@@ -568,6 +568,10 @@ class Message(DictUpdate):
         self.threadId = threadId
         self.raw = raw
 
+        self.automon_from = None
+        self.automon_to = None
+        self.automon_subject = None
+
     def enhance(self):
 
         if self.raw is not None:
@@ -583,7 +587,7 @@ class Message(DictUpdate):
 
                 for header in self.payload.headers:
                     if header.name == 'From':
-                        setattr(self, 'automon_sender', header)
+                        setattr(self, 'automon_from', header)
                     if header.name == 'Subject':
                         setattr(self, 'automon_subject', header)
                     if header.name == 'To':
