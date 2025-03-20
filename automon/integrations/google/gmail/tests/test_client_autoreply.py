@@ -190,16 +190,17 @@ def main():
         prompts.append(
             f"1. Ignore all emails with label names of 'TRASH' and 'DRAFT'. "
             f"\n\n"
-            f"2. Must write a reply without violating any of the following rules: "
+            f"2. Rules for writing an email reply: "
             f"Don't reply if last email is not from the sender of the first email. "
             f"Don't include a subject line. "
             f"Don't include any internal thought process. "
-            f"Only write in plain text. "
+            f"Must write in plain english. "
+            f"Must write in first person. "
+            f"Must think of three versions and provide the best one. "
             f"Provide only the body of the email. "
             f"\n\n"
-            f"3. Must do if the email has the 'bad' label name: "
-            f"Tell me which rule was violated, and tell me to remove the label name "
-            f"in order for you to try again. "
+            f"3. Rules if the last email contains the label name `automon/bad`: "
+            f"Tell me which rule was violated, and tell me to remove the `autmon/drafted` label in order for you to try again. "
         )
 
         print([len(x) for x in prompts])
