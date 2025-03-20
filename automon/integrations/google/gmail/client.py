@@ -60,7 +60,8 @@ class AutomonLabels:
         # general
         self.drafted = Label(name=self.labels.get('drafted'), color=self._color_default)
         self.sent = Label(name=self.labels.get('sent'), color=self._color_default)
-        self.unread = Label(name='UNREAD')
+        self.unread = Label(name='UNREAD', id='UNREAD')
+        self.trash = Label(name='TRASH', id='TRASH')
 
         # allow auto reply
         self.auto_reply_enabled = Label(name=self.labels.get('auto_reply_enabled'), color=self._color_enabled)

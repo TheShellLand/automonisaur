@@ -186,9 +186,17 @@ def main():
 
         prompts.append(
             f"First, Ignore all emails with label names of 'TRASH' and 'DRAFT'. "
-            f"Write a reply only if you are not the sender of the last email. "
+            f"Write a reply without violating any of the following rules: \n"
+            f"Don't reply if you are not the sender of the last email. "
             f"Don't include a subject line. "
+            f"Don't include any internal thought process. "
             f"Provide only the body of the email. "
+            f"\n\n"
+            f"If the email has the 'bad' label name, it means it has violated the rules. "
+            f"Tell me which rule was violated, "
+            f"If the last email has the 'bad' label name, mention at the bottom to remove it. "
+            f"If the last email has the 'drafted' label name, mention at the bottom to remove it. "
+            f"If either of the two rules above happens, mention to have you try again. "
         )
 
         response, model = run_llm(prompts=prompts)
@@ -225,12 +233,22 @@ def main():
         )
         draft_get = gmail.messages_get_automon(id=threadId)
 
-        gmail.messages_modify(id=threadId, addLabelIds=[labels.drafted,
-                                                        labels.unread,
-                                                        ])
+        gmail.messages_modify(id=threadId,
+                              addLabelIds=[labels.drafted,
+                                           labels.unread,
+                                           ],
+                              removeLabelIds=[labels.bad])
 
-        # draft_sent = gmail.draft_send(draft=draft)
-        # gmail.messages_modify(id=threadId, addLabelIds=[labels.sent])
+        prompts.append(
+            f"Respond only yes or no, does any of the emails have the 'auto reply enabled' label name?"
+        )
+        relevant, _ = run_llm(prompts)
+        relevant = relevant.lower()
+
+        if 'yes' in relevant:
+            draft_sent = gmail.draft_send(draft=draft)
+        elif 'no' in relevant:
+            pass
 
         gmail.config.refresh_token()
 
