@@ -18,6 +18,7 @@ from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
 from .chat import OllamaChat
 from .utils import chr_to_tokens, sum_tokens
+from .prompt_templates import *
 
 LoggingClient.logging.getLogger('httpcore.http11').setLevel(ERROR)
 LoggingClient.logging.getLogger('httpcore.connection').setLevel(ERROR)
@@ -27,6 +28,7 @@ logger.setLevel(DEBUG)
 
 
 class OllamaClient(object):
+    prompts = AgentTemplates()
 
     def __init__(self, model: str = 'deepseek-r1:14b', messages: list = [], stream: bool = True):
         self.ollama: ollama = ollama

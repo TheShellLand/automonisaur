@@ -26,3 +26,7 @@ def environ_list(env_var: str, delimiter: str = ',', default: list = []) -> list
         env = [str(x).strip('"') for x in env]
         return env
     return default
+
+
+def environ_set(key: str, value):
+    os.environ[key] = value

@@ -1,5 +1,6 @@
 import socket
-from urllib.parse import urlparse
+
+import urllib.parse
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, INFO
 
@@ -11,10 +12,10 @@ class Networking:
 
     @staticmethod
     def check_connection(url, timeout: int = 1):
-        endpoint = urlparse(url)
+        endpoint = urllib.parse.urlparse(url)
 
         if not endpoint.hostname:
-            endpoint = urlparse(f'x://{url}')
+            endpoint = urllib.parse.urlparse(f'x://{url}')
 
         host = endpoint.hostname
         port = endpoint.port
@@ -32,4 +33,12 @@ class Networking:
 
     @staticmethod
     def urlparse(url):
-        return urlparse(url)
+        return urllib.parse.urlparse(url)
+
+    @staticmethod
+    def quote(url: str, *args, **kwargs) -> str:
+        return urllib.parse.quote(url, *args, **kwargs)
+
+    @staticmethod
+    def quote_plus(url: str, *args, **kwargs) -> str:
+        return urllib.parse.quote_plus(url, *args, **kwargs)

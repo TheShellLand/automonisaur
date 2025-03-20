@@ -1,6 +1,8 @@
 import json
 import readline
 
+import automon.integrations.ollamaWrapper.prompt_templates
+
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
 
@@ -13,6 +15,7 @@ logger.setLevel(DEBUG)
 
 class GoogleGeminiClient(object):
     models = GeminiModels()
+    prompts = automon.integrations.ollamaWrapper.prompt_templates.AgentTemplates()
 
     def __init__(self, config: GoogleGeminiConfig = None, model: GeminiModels = None):
         self.config = config or GoogleGeminiConfig()
@@ -27,6 +30,9 @@ class GoogleGeminiClient(object):
         return f"[GoogleGeminiClient] :: {self.config=}"
 
     def add_content(self, prompt: str, role: str = 'user'):
+        if type(prompt) is not str:
+            return self
+
         part = Part(text=prompt)
         content = Content(role=role).add_part(part=part)
         self._prompt.add_content(content=content)
@@ -73,21 +79,21 @@ class GoogleGeminiClient(object):
                 prompt += input(f"\n$> ")
                 prompt = prompt.strip()
             except KeyboardInterrupt:
-                break
+                return self
 
             if not prompt:
                 continue
 
             if prompt == '/exit':
-                break
+                return self
 
             if prompt == '/clear':
                 self._prompt.clear_history()
-                break
+                continue
 
             self.add_content(prompt=prompt).chat()
 
-    def chat_response(self):
+    def chat_response(self) -> str:
         return self._chat.to_string()
 
     def is_ready(self):
