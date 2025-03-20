@@ -249,7 +249,9 @@ def main():
                            draft_body=bug_report,
                            draft_subject=f"Bug Report",
                            draft_to=[email_error])
-        gmail.messages_modify(id=threadId, addLabelIds=[labels.error])
+        gmail.messages_modify(id=threadId, addLabelIds=[labels.error,
+                                                        labels.unread,
+                                                        ])
 
         import traceback
         traceback.print_exc()

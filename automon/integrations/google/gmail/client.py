@@ -55,7 +55,7 @@ class AutomonLabels:
         self.automon = Label(name=self.labels.get('automon'), color=self._color_default)
 
         # resume
-        self.resume = Label(name=self.labels.get('resume'), color=self._color_default)
+        self.resume = Label(name=self.labels.get('resume'), color=self._color_resume)
 
         # general
         self.drafted = Label(name=self.labels.get('drafted'), color=self._color_default)
@@ -225,9 +225,9 @@ class GoogleGmailClient:
         return Draft().update_dict(self.requests.to_dict())
 
     def draft_list(self,
+                   q: bool = '',
                    maxResults: int = 100,
                    pageToken: str = '',
-                   q: bool = '',
                    includeSpamTrash: bool = None) -> DraftList:
         """Lists the drafts in the user's mailbox.
 
@@ -687,9 +687,9 @@ class GoogleGmailClient:
         return Thread().update_dict(self.requests.to_dict())
 
     def thread_list(self,
+                    q: str = '',
                     maxResults: int = 100,
                     pageToken: str = '',
-                    q: str = '',
                     labelIds: list = [],
                     includeSpamTrash: bool = False) -> ThreadList:
         """
