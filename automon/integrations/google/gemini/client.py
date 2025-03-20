@@ -79,13 +79,13 @@ class GoogleGeminiClient(object):
                 prompt += input(f"\n$> ")
                 prompt = prompt.strip()
             except KeyboardInterrupt:
-                break
+                return self
 
             if not prompt:
                 continue
 
             if prompt == '/exit':
-                break
+                return self
 
             if prompt == '/clear':
                 self._prompt.clear_history()
@@ -93,7 +93,7 @@ class GoogleGeminiClient(object):
 
             self.add_content(prompt=prompt).chat()
 
-    def chat_response(self):
+    def chat_response(self) -> str:
         return self._chat.to_string()
 
     def is_ready(self):
