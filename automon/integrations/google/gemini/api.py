@@ -225,6 +225,7 @@ class GeminiResponse(DictUpdate):
     def print_stream(self):
         for chunk in self._get_chunks():
             print(f'{chunk}', end='', flush=True)
+        print('\n', flush=True)
         return self
 
     def to_string(self):
