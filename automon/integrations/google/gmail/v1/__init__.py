@@ -161,6 +161,9 @@ class DictUpdate(dict):
     def __repr__(self):
         return f"{self.to_dict()}"
 
+    def get(self, key, *args, **kwargs):
+        return self.__dict__.get(key, *args, **kwargs)
+
     def update_dict(self, update: dict):
         if update is None:
             return self
@@ -309,7 +312,9 @@ class Headers(DictUpdate):
 
     def __init__(self):
         super().__init__()
-        self.enhance()
+
+        self.name = ''
+        self.value = ''
 
     def __repr__(self):
         if self.name:
@@ -568,9 +573,9 @@ class Message(DictUpdate):
         self.threadId = threadId
         self.raw = raw
 
-        self.automon_from = None
-        self.automon_to = None
-        self.automon_subject = None
+        self.automon_from = Headers()
+        self.automon_to = Headers()
+        self.automon_subject = Headers()
 
     def enhance(self):
 

@@ -27,37 +27,66 @@ logger.setLevel(DEBUG)
 
 
 class AutomonLabels:
-    labels = dict(
-        automon='automon',
-        processed='automon/processed',
-        drafted='automon/drafted',
-        reviewed='automon/reviewed',
-        resume='automon/resume',
-        read='automon/read',
-        sent='automon/sent',
-        error='automon/error',
-    )
+    labels = {
+        'automon': 'automon',
+        'resume': 'automon/resume',
+        'processed': 'automon/processed',
+        'drafted': 'automon/drafted',
+        'reviewed': 'automon/reviewed',
+        'read': 'automon/read',
+        'relevant': 'automon/relevant',
+        'not_relevant': 'automon/not relevant',
+        'sent': 'automon/sent',
+        'error': 'automon/error',
+        "auto_reply_enabled": 'automon/auto reply enabled',
+        "user_action_required": 'automon/user action required',
+        "bad": 'automon/bad',
+    }
 
     def __init__(self):
-        self.automon = None
-        self.processed = None
-        self.drafted = None
-        self.reviewed = None
-        self.resume = None
-        self.read = None
-        self.sent = None
-        self.error = None
+        self._reset_labels = False
 
-        self.color = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
-        self.color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
+        self._color_default = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
+        self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
+        self._color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
+        self._color_enabled = Color(backgroundColor='#076239', textColor='#b9e4d0')
+
+        # required
+        self.automon = Label(name=self.labels.get('automon'), color=self._color_default)
+
+        # resume
+        self.resume = Label(name=self.labels.get('resume'), color=self._color_default)
+
+        # general
+        self.drafted = Label(name=self.labels.get('drafted'), color=self._color_default)
+        self.sent = Label(name=self.labels.get('sent'), color=self._color_default)
+        self.unread = Label(name='UNREAD')
+
+        # allow auto reply
+        self.auto_reply_enabled = Label(name=self.labels.get('auto_reply_enabled'), color=self._color_enabled)
+
+        # issues encountered
+        self.error = Label(name=self.labels.get('error'), color=self._color_error)
+        self.user_action_required = Label(name=self.labels.get('user_action_required'), color=self._color_error)
+
+        # use as bad output
+        self.bad = Label(name=self.labels.get('bad'), color=self._color_error)
+
+        # relevance
+        self.relevant = Label(name=self.labels.get('relevant'), color=self._color_default)
+        self.not_relevant = Label(name=self.labels.get('not_relevant'), color=self._color_default)
+
+        # more detailed flow but not used right now
+        self.processed = Label(name=self.labels.get('processed'), color=self._color_default)
+        self.reviewed = Label(name=self.labels.get('reviewed'), color=self._color_default)
+        self.read = Label(name=self.labels.get('read'), color=self._color_default)
 
     @property
     def all_labels(self):
         return [
-            self.processed,
-            self.drafted,
-            self.reviewed,
-            self.read
+            getattr(self, x) for x in self.labels.keys()
+            if not x.startswith("_")
+            if not x == 'automon'
         ]
 
 
