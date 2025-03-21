@@ -37,6 +37,7 @@ class GoogleGeminiClient(object):
         content = Content(role=role).add_part(part=part)
         self._prompt.add_content(content=content)
 
+        logger.info(f"[GoogleGeminiClient] :: add_content :: done")
         return self
 
     @property
@@ -68,6 +69,7 @@ class GoogleGeminiClient(object):
             self._chat.print_stream()
 
         self._prompt.add_content(self._chat.candidates[0].content)
+        logger.info(f"[GoogleGeminiClient] :: chat :: done")
         return self
 
     def chat_forever(self):
@@ -79,12 +81,14 @@ class GoogleGeminiClient(object):
                 prompt += input(f"\n$> ")
                 prompt = prompt.strip()
             except KeyboardInterrupt:
+                logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
                 return self
 
             if not prompt:
                 continue
 
             if prompt == '/exit':
+                logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
                 return self
 
             if prompt == '/clear':
@@ -103,5 +107,7 @@ class GoogleGeminiClient(object):
         return False
 
     def set_model(self, model: GeminiModels):
+        logger.debug(f"[GoogleGeminiClient] :: set_model :: {model=}")
         self.model = model
+        logger.info(f"[GoogleGeminiClient] :: set_model :: done")
         return self

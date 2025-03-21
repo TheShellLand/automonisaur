@@ -340,17 +340,26 @@ class MessagePartBody(DictUpdate):
     def enhance(self):
 
         if hasattr(self, 'data'):
-            setattr(self, 'automon_data_base64decoded', base64.urlsafe_b64decode(self.data))
-            setattr(self, 'automon_data_BytesIO', io.BytesIO(self.automon_data_base64decoded))
-
-            try:
-                setattr(self, 'automon_data_decoded', self.automon_data_base64decoded.decode())
-                setattr(self, 'automon_data_hash', cryptography.Hashlib.md5(self.automon_data_decoded))
-            except Exception as error:
-                setattr(self, 'automon_data_decoded', None)
-                setattr(self, 'automon_data_hash', None)
-
+            setattr(self, 'automon_data_BytesIO', io.BytesIO(self.automon_data_base64decoded()))
             setattr(self, 'automon_data_html_text', self._html_text())
+
+    def automon_data_base64decoded(self):
+        if hasattr(self, 'data'):
+            return base64.urlsafe_b64decode(self.data)
+
+    def automon_data_decoded(self):
+        if hasattr(self, 'data'):
+            try:
+                return self.automon_data_base64decoded().decode()
+            except Exception as error:
+                pass
+
+    def automon_data_hash(self):
+        if hasattr(self, 'data'):
+            try:
+                return setattr(self, 'automon_data_hash', cryptography.Hashlib.md5(self.automon_data_decoded()))
+            except Exception as error:
+                pass
 
     def __repr__(self):
         if hasattr(self, 'attachmentId'):
@@ -358,7 +367,7 @@ class MessagePartBody(DictUpdate):
 
     def automon_data_bs4(self):
         if hasattr(self, 'automon_data_base64decoded'):
-            return bs4.BeautifulSoup(self.automon_data_base64decoded)
+            return bs4.BeautifulSoup(self.automon_data_base64decoded())
 
     def _html_text(self):
         try:
@@ -374,8 +383,6 @@ class MessagePart(DictUpdate):
     headers: [Headers]
     body: MessagePartBody
     parts: ['MessagePart']
-
-    automon_attachments: 'AutomonAttachments'
 
     """
     A single MIME message part.
@@ -447,9 +454,11 @@ class MessagePart(DictUpdate):
         if hasattr(self, 'parts'):
             setattr(self, 'parts', [MessagePart().update_dict(x) for x in self.parts])
 
-            setattr(self, 'automon_attachments', AutomonAttachments(attachments=self.parts))
-
         return self
+
+    def automon_attachments(self):
+        if hasattr(self, 'parts'):
+            return AutomonAttachments(attachments=self.parts)
 
     def __repr__(self):
         if getattr(self, 'filename') and getattr(self, 'mimeType'):
@@ -492,8 +501,6 @@ class Message(DictUpdate):
     payload: MessagePart
     sizeEstimate: str
     raw: str
-
-    automon_attachments: AutomonAttachments
 
     """
     {
@@ -573,37 +580,50 @@ class Message(DictUpdate):
         self.threadId = threadId
         self.raw = raw
 
-        self.automon_from = Headers()
-        self.automon_to = Headers()
-        self.automon_subject = Headers()
-
     def enhance(self):
-
-        if self.raw is not None:
-            setattr(self, 'automon_raw_decoded', base64.urlsafe_b64decode(self.raw).decode())
-
-        if hasattr(self, 'automon_raw_decoded'):
-            setattr(self, 'automon_any_message', [self.automon_raw_decoded])
 
         if hasattr(self, 'payload'):
             setattr(self, 'payload', MessagePart().update_dict(self.payload))
 
+        return self
+
+    def automon_from(self):
+        if hasattr(self, 'payload'):
             if hasattr(self.payload, 'headers'):
 
                 for header in self.payload.headers:
                     if header.name == 'From':
-                        setattr(self, 'automon_from', header)
+                        return header
+        return Headers()
+
+    def automon_subject(self):
+        if hasattr(self, 'payload'):
+            if hasattr(self.payload, 'headers'):
+
+                for header in self.payload.headers:
                     if header.name == 'Subject':
-                        setattr(self, 'automon_subject', header)
+                        return header
+        return Headers()
+
+    def automon_to(self):
+        if hasattr(self, 'payload'):
+            if hasattr(self.payload, 'headers'):
+
+                for header in self.payload.headers:
                     if header.name == 'To':
-                        setattr(self, 'automon_to', header)
+                        return header
+        return Headers()
 
+    def automon_raw_decoded(self):
+        if self.raw is not None:
+            return base64.urlsafe_b64decode(self.raw).decode()
+
+    def automon_attachments(self):
+        if hasattr(self, 'payload'):
             if hasattr(self.payload, 'automon_attachments'):
-                setattr(self, 'automon_attachments', self.payload.automon_attachments)
+                return self.payload.automon_attachments()
             else:
-                setattr(self, 'automon_attachments', AutomonAttachments(attachments=[self.payload]))
-
-        return self
+                return AutomonAttachments(attachments=[self.payload])
 
     def __repr__(self):
         if hasattr(self, 'snippet'):
@@ -803,7 +823,7 @@ class Draft(DictUpdate):
 
     def __repr__(self):
         try:
-            return f'{self.id} :: {self.message.automon_subject.value}'
+            return f'{self.id} :: {self.message.automon_subject().value}'
         except:
             return f"{self.id}"
 

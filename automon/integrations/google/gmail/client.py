@@ -35,12 +35,13 @@ class AutomonLabels:
         'reviewed': 'automon/reviewed',
         'read': 'automon/read',
         'relevant': 'automon/relevant',
-        'not_relevant': 'automon/not relevant',
         'sent': 'automon/sent',
         'error': 'automon/error',
         "auto_reply_enabled": 'automon/auto reply enabled',
         "user_action_required": 'automon/user action required',
         "bad": 'automon/bad',
+        "remote": 'automon/remote',
+        "bug": 'automon/bug',
     }
 
     def __init__(self):
@@ -70,12 +71,15 @@ class AutomonLabels:
         self.error = Label(name=self.labels.get('error'), color=self._color_error)
         self.user_action_required = Label(name=self.labels.get('user_action_required'), color=self._color_error)
 
-        # use as bad output
+        # use as bad output or bug
         self.bad = Label(name=self.labels.get('bad'), color=self._color_error)
+        self.bug = Label(name=self.labels.get('bug'), color=self._color_error)
 
         # relevance
         self.relevant = Label(name=self.labels.get('relevant'), color=self._color_default)
-        self.not_relevant = Label(name=self.labels.get('not_relevant'), color=self._color_default)
+
+        # remote
+        self.remote = Label(name=self.labels.get('remote'), color=self._color_default)
 
         # more detailed flow but not used right now
         self.processed = Label(name=self.labels.get('processed'), color=self._color_default)
