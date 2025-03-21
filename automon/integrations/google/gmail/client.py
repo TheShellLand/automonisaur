@@ -42,6 +42,7 @@ class AutomonLabels:
         "bad": 'automon/bad',
         "remote": 'automon/remote',
         "bug": 'automon/bug',
+        "test": 'automon/test',
     }
 
     def __init__(self):
@@ -80,6 +81,9 @@ class AutomonLabels:
 
         # remote
         self.remote = Label(name=self.labels.get('remote'), color=self._color_default)
+
+        # test
+        self.test = Label(name=self.labels.get('test'), color=self._color_enabled)
 
         # more detailed flow but not used right now
         self.processed = Label(name=self.labels.get('processed'), color=self._color_default)

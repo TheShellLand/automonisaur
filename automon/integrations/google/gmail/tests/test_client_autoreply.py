@@ -69,7 +69,7 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
         gemini.models.gemini_2_0_flash,
         # gemini.models.gemini_2_0_flash_lite,
         # gemini.models.gemini_2_0_flash_thinking_exp_01_21,
-        gemini.models.gemini_2_0_pro_exp_02_05,
+        # gemini.models.gemini_2_0_pro_exp_02_05,
         # gemini.models.gemini_1_5_flash,
         # gemini.models.gemini_1_5_pro,
     ]
@@ -133,18 +133,27 @@ def run_llm(prompts: list) -> (str, any):
         except Exception as error:
             print(error)
 
+    if response is None:
+        raise Exception(f"missing llm response")
+
     return response, model
 
 
 def main():
     email_search = gmail.thread_list_automon(
-        q=f"label:automon -label:automon/sent -label:automon/drafted -label:automon/resume -label:automon/error",
+        q=f"label:automon label:automon/test",
         maxResults=1,
     )
 
     if not email_search:
         email_search = gmail.thread_list_automon(
-            q=f"label:automon label:automon/drafted label:automon/bad -label:automon/sent -label:automon/resume -label:automon/error",
+            q=f"label:automon -label:automon/drafted -label:automon/resume -label:automon/error",
+            maxResults=1,
+        )
+
+    if not email_search:
+        email_search = gmail.thread_list_automon(
+            q=f"label:automon/bad",
             maxResults=1,
         )
 
@@ -178,88 +187,94 @@ def main():
         to = email_selected.automon_message_first.automon_from().get('value')
         from_ = email_selected.automon_message_first.automon_to().get('value')
 
-        prompts_base = [f"This is a resume: <RESUME>{resume}</RESUME>\n\n", ]
+        prompts_base = []
+        prompts_resume = [f"This is a resume: <RESUME>{resume}</RESUME>\n\n", ]
+
         i = 1
+        prompts_emails = []
         for message in email_selected.messages:
-            prompts_base.append(
+            prompts_emails.append(
                 f"This is email {i} in an email chain: {message.to_dict()}\n\n"
             )
             i += 1
 
-        prompts = prompts_base.copy()
+        prompts = []
+        prompts.extend(prompts_resume)
+        prompts.extend(prompts_emails)
         prompts.append(
-            f"1. Ignore all emails with label names of 'TRASH' and 'DRAFT'. "
+            f"0. If the rules are not followed, keep thinking until all rules are satisfied. "
+            f"\n\n"
+            f"1. EXCLUDE emails that have the labels 'TRASH' or 'DRAFT'. "
             f"\n\n"
             f"2. Rules for writing an email reply: "
-            f"Don't reply if last email is not from the sender of the first email. "
-            f"Don't include a subject line. "
-            f"Don't include any internal thought process. "
+            f"EXCLUDE the reply if last email is not from the sender of the first email. "
+            f"EXCLUDE any subject line. "
+            f"EXCLUDE any internal thought process. "
             f"Must write in plain english. "
             f"Must write in first person. "
-            f"Must think of three versions and provide the best one. "
             f"Provide only the body of the email. "
             f"\n\n"
-            f"3. Rules if the last email contains the label name `automon/bad`: "
-            f"Tell me which rule was violated, and tell me to remove the `autmon/drafted` label in order for you to try again. "
+            f"3. Rules if an email contains the label name `automon/bad`: "
+            f"INCLUDE the the first line with 'Rule Violated'"
+            f"INCLUDE which rule was violated and provide evidence. "
+            f"At the bottom, tell me to delete the draft in order for you to try again. "
         )
 
         print([len(x) for x in prompts])
 
         response, model = run_llm(prompts=prompts)
-
-        if response is None:
-            raise Exception(f"missing llm response")
+        model.chat_forever()
 
         gmail.config.refresh_token()
 
         raw = response
 
-        prompts = prompts_base.copy()
+        prompts = prompts_emails.copy()
         prompts.append(
             f"Respond only yes or no, is the job relevant?"
         )
-        relevant, _ = run_llm(prompts)
-        relevant = relevant.lower()
+        response, model = run_llm(prompts)
+        relevant = response.lower()
 
         if 'yes' in relevant:
-            gmail.messages_modify(id=threadId, addLabelIds=[labels.relevant])
+            gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.relevant])
 
-        prompts = prompts_base.copy()
+        prompts = prompts_emails.copy()
         prompts.append(
             f"Respond only yes or no, is the job remote?"
         )
-        remote, _ = run_llm(prompts)
-        remote = remote.lower()
+        response, model = run_llm(prompts)
+        remote = response.lower()
 
         if 'yes' in remote:
-            gmail.messages_modify(id=threadId, addLabelIds=[labels.remote])
+            gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.remote])
 
         subject = "Re: " + email_selected.automon_message_first.automon_subject().value
 
         body = raw
 
         draft = gmail.draft_create(
-            threadId=threadId,
+            threadId=email_selected.id,
             draft_to=to,
             draft_from=from_,
             draft_subject=subject,
             draft_body=body,
             draft_attachments=[resume_attachment]
         )
-        draft_get = gmail.messages_get_automon(id=threadId)
+        draft_get = gmail.messages_get_automon(id=email_selected.id)
 
-        gmail.messages_modify(id=threadId,
+        gmail.messages_modify(id=draft_get.id,
                               addLabelIds=[labels.drafted,
                                            labels.unread,
                                            ],
                               removeLabelIds=[labels.bad])
 
-        prompts = prompts_base.copy()
+        prompts = prompts_emails.copy()
         prompts.append(
             f"Respond only yes or no, does any of the emails have the 'auto reply enabled' label name?"
         )
-        auto_send, _ = run_llm(prompts)
-        auto_send = auto_send.lower()
+        response, model = run_llm(prompts)
+        auto_send = response.lower()
 
         if 'yes' in auto_send:
             draft_sent = gmail.draft_send(draft=draft)
@@ -277,13 +292,13 @@ def main():
                       f"If you would like to submit this bug report. "
                       f"Feel free to send this to {email_error}. ")
 
-        gmail.draft_create(threadId=threadId,
+        gmail.draft_create(threadId=email_selected.id,
                            draft_body=bug_report,
                            draft_subject=f"Bug Report",
                            draft_to=[email_error])
-        gmail.messages_modify(id=threadId, addLabelIds=[labels.error,
-                                                        labels.unread,
-                                                        ])
+        gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.error,
+                                                                 labels.unread,
+                                                                 ])
 
         import traceback
         traceback.print_exc()
