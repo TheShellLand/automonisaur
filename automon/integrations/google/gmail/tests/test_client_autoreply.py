@@ -158,8 +158,12 @@ def main():
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
 
-            if (labels.retry in _first.automon_labels
-                    or labels.retry in _latest.automon_labels):
+            if (
+                    labels.retry in _first.automon_labels
+                    or labels.retry in _latest.automon_labels
+                    or labels.auto_reply_enabled in _latest.automon_labels
+
+            ):
                 _FOUND = True
                 break
 
@@ -184,7 +188,7 @@ def main():
         labelIds=[labels.resume]
     )
 
-    if _thread is None or not resume_search:
+    if _thread is None:
         try:
             gmail._sleep.seconds(15)
         except KeyboardInterrupt:
@@ -195,10 +199,17 @@ def main():
 
     try:
 
+        # init
+
+        # resume check
+
         # retry
         for _message in _thread.messages:
             _RETRY = False
-            if labels.retry in _message.automon_labels:
+            if (
+                    labels.retry in _message.automon_labels
+                    or labels.auto_reply_enabled in _message.automon_labels
+            ):
                 _RETRY = True
                 gmail.messages_modify(id=_message.id,
                                       removeLabelIds=[labels.retry,
@@ -240,27 +251,23 @@ def main():
         prompts.extend(prompts_resume)
         prompts.extend(prompts_emails)
         prompts.append(
-            f"0. If the rules are not followed, keep thinking until all rules are satisfied. "
+            f"Follow all of the following rules completely: "
             f"\n\n"
-            f"1. EXCLUDE emails that have the labels 'TRASH' or 'DRAFT'. "
+            f"EXCLUDE emails that have the labels 'TRASH' or 'DRAFT'. "
             f"\n\n"
-            f"2. Rules for writing an email reply: "
+            f"Follow all the following rules for writing an email reply: "
             f"EXCLUDE the reply if last email is not from the sender of the first email. "
-            f"EXCLUDE any subject line. "
+            f"EXCLUDE any email subject line. "
             f"EXCLUDE any internal thought process. "
             f"Must write in plain english. "
             f"Must write in first person. "
-            f"Provide only the body of the email. "
-            f"\n\n"
-            f"3. Rules if an email contains the label name `automon/bad`: "
-            f"INCLUDE the the first line with 'Rule Violated'"
-            f"INCLUDE which rule was violated and provide evidence. "
+            f"Must provide only the body of the email. "
         )
 
         print([len(x) for x in prompts])
 
         response, model = run_llm(prompts=prompts)
-        # model.chat_forever()
+        model.chat_forever()
 
         gmail.config.refresh_token()
 
