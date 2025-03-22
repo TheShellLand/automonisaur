@@ -203,8 +203,14 @@ def main():
     try:
 
         # init
+        _welcome_email = gmail.draft_create(
+            draft_subject=f"Usage Manual"
+        )
 
         # resume check
+        gmail.draft_create(
+            draft_subject=f""
+        )
 
         # retry
         for _message in _thread.messages:

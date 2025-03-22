@@ -36,6 +36,7 @@ class AutomonLabels:
         'drafted': 'automon/drafted',
         'relevant': 'automon/relevant',
         "remote": 'automon/remote',
+        "help": 'automon/help',
         "auto_reply_enabled": 'automon/auto reply enabled',
         "user_action_required": 'automon/user action required',
     }
@@ -47,9 +48,13 @@ class AutomonLabels:
         self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
         self._color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
         self._color_enabled = Color(backgroundColor='#076239', textColor='#b9e4d0')
+        self._color_help = Color(backgroundColor='#fad165', textColor='#a46a21')
 
         # required
         self.automon = Label(name=self.labels.get('automon'), color=self._color_default)
+
+        # help
+        self.help = Label(name=self.labels.get('help'), color=self._color_help)
 
         # resume
         self.resume = Label(name=self.labels.get('resume'), color=self._color_resume)
