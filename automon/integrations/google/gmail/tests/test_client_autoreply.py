@@ -303,9 +303,10 @@ def main():
 
         prompts.append(
             GoogleGeminiClient.prompts.agent_machine_job_applicant,
-            f"MUST EXCLUDE the reply if last email is not from the sender of the first email. \n",
+            f"MUST NOT reply if last email is not from the sender of the first email. \n",
             f"MUST EXCLUDE any email subject line. \n"
             f"MUST EXCLUDE any internal thought process. \n"
+            f"MUST EXCLUDE any chain of thought process. \n"
             f"MUST write in plain english. \n"
             f"MUST write in first person. \n"
             f"MUST provide only the body of the email. \n"
@@ -350,7 +351,7 @@ def main():
         if 'yes' in auto_send:
             draft_sent = gmail.draft_send(draft=draft)
 
-        prompts = prompts_emails.copy()
+        prompts = [prompts_emails[0]] + prompts_resume
         prompts.append(
             f"Respond only yes or no, is the job relevant?"
         )
@@ -360,7 +361,7 @@ def main():
         if 'yes' in relevant:
             gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.relevant])
 
-        prompts = prompts_emails.copy()
+        prompts = [prompts_emails[0]]
         prompts.append(
             f"Respond only yes or no, is the job remote?"
         )
