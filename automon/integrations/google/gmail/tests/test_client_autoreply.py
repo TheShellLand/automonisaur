@@ -19,7 +19,8 @@ LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').se
 
 USE_OLLAMA = False
 USE_GEMINI = True
-CHAT_FOREVER = False
+CHAT_FOREVER = True
+CHAT_ONCE = 0
 
 gmail = GoogleGmailClient()
 
@@ -85,8 +86,10 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
         for prompt in prompts:
             gemini.add_content(prompt)
 
-        if CHAT_FOREVER:
+        global CHAT_ONCE
+        if CHAT_FOREVER and CHAT_ONCE == 0:
             gemini_response = gemini.chat().chat_forever().chat_response()
+            CHAT_ONCE += 1
         else:
             gemini_response = gemini.chat().chat_response()
         return gemini_response, gemini
@@ -242,8 +245,19 @@ def main():
         i = 1
         prompts_emails = []
         for message in email_selected.messages:
+            if labels.draft in message.automon_labels:
+                continue
+
+            _message = f"{message.to_dict()}"
+
+            import re
+
+            _del = re.compile(r"'data': ('[a-zA-Z0-9-_=]+')").findall(_message)
+            for _x in _del:
+                _message = _message.replace(_x, "''")
+
             prompts_emails.append(
-                f"This is email {i} in an email chain: {message.to_dict()}\n\n"
+                f"This is email {i} in an email chain: {_message}\n\n"
             )
             i += 1
 
@@ -251,52 +265,27 @@ def main():
         prompts.extend(prompts_resume)
         prompts.extend(prompts_emails)
         prompts.append(
-            f"Follow all of the following rules completely: "
+            f"MUST EXCLUDE the reply if last email is not from the sender of the first email. \n"
+            f"MUST EXCLUDE any email subject line. \n"
+            f"MUST EXCLUDE any internal thought process. \n"
+            f"MUST write in plain english. \n"
+            f"MUST write in first person. \n"
+            f"MUST provide only the body of the email. \n"
+            f"MUST check for a job description in the email chain before continuing. \n"
             f"\n\n"
-            f"EXCLUDE emails that have the labels 'TRASH' or 'DRAFT'. "
-            f"\n\n"
-            f"Follow all the following rules for writing an email reply: "
-            f"EXCLUDE the reply if last email is not from the sender of the first email. "
-            f"EXCLUDE any email subject line. "
-            f"EXCLUDE any internal thought process. "
-            f"Must write in plain english. "
-            f"Must write in first person. "
-            f"Must provide only the body of the email. "
+            f"Create a rely. "
         )
 
         print([len(x) for x in prompts])
 
         response, model = run_llm(prompts=prompts)
-        model.chat_forever()
 
         gmail.config.refresh_token()
 
+        # create draft
         raw = response
-
-        prompts = prompts_emails.copy()
-        prompts.append(
-            f"Respond only yes or no, is the job relevant?"
-        )
-        response, model = run_llm(prompts)
-        relevant = response.lower()
-
-        if 'yes' in relevant:
-            gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.relevant])
-
-        prompts = prompts_emails.copy()
-        prompts.append(
-            f"Respond only yes or no, is the job remote?"
-        )
-        response, model = run_llm(prompts)
-        remote = response.lower()
-
-        if 'yes' in remote:
-            gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.remote])
-
-        subject = "Re: " + email_selected.automon_message_first.automon_subject().value
-
         body = raw
-
+        subject = "Re: " + email_selected.automon_message_first.automon_subject().value
         draft = gmail.draft_create(
             threadId=email_selected.id,
             draft_to=to,
@@ -323,7 +312,29 @@ def main():
         if 'yes' in auto_send:
             draft_sent = gmail.draft_send(draft=draft)
 
+        prompts = prompts_emails.copy()
+        prompts.append(
+            f"Respond only yes or no, is the job relevant?"
+        )
+        response, model = run_llm(prompts)
+        relevant = response.lower()
+
+        if 'yes' in relevant:
+            gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.relevant])
+
+        prompts = prompts_emails.copy()
+        prompts.append(
+            f"Respond only yes or no, is the job remote?"
+        )
+        response, model = run_llm(prompts)
+        remote = response.lower()
+
+        if 'yes' in remote:
+            gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.remote])
+
         gmail.config.refresh_token()
+
+        CHAT_ONCE = 0
 
     except Exception as error:
         email_error = 'naisanza@gmail.com'
