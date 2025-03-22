@@ -140,29 +140,49 @@ def run_llm(prompts: list) -> (str, any):
 
 
 def main():
-    email_search = gmail.thread_list_automon(
-        q=f"label:automon label:automon/test",
-        maxResults=1,
-    )
+    _thread = None
+    _nextPageToken = None
+    while True:
 
-    if not email_search:
+        _FOUND = None
         email_search = gmail.thread_list_automon(
-            q=f"label:automon -label:automon/drafted -label:automon/resume -label:automon/error",
             maxResults=1,
+            pageToken=_nextPageToken,
+            labelIds=[labels.automon],
         )
+        _nextPageToken = email_search.nextPageToken
 
-    if not email_search:
-        email_search = gmail.thread_list_automon(
-            q=f"label:automon/bad",
-            maxResults=1,
-        )
+        for _thread in email_search.threads:
+
+            _first = _thread.automon_message_first
+            _latest = _thread.automon_message_latest
+
+            if (labels.retry in _first.automon_labels
+                    or labels.retry in _latest.automon_labels):
+                break
+
+            if labels.resume in _first.automon_labels:
+                continue
+
+            if labels.draft in _latest.automon_labels:
+                continue
+
+            if labels.sent in _latest.automon_labels:
+                continue
+
+            if _thread:
+                _FOUND = True
+                break
+
+        if _FOUND:
+            break
 
     resume_search = gmail.messages_list_automon(
-        q=f"label:automon/resume",
         maxResults=1,
+        labelIds=[labels.resume]
     )
 
-    if not email_search or not resume_search:
+    if _thread is None or not resume_search:
         try:
             gmail._sleep.seconds(15)
         except KeyboardInterrupt:
@@ -173,7 +193,23 @@ def main():
 
     try:
 
-        email_selected = email_search.threads[0]
+        # retry
+        for _message in _thread.messages:
+            _RETRY = False
+            if labels.retry in _message.automon_labels:
+                _RETRY = True
+                gmail.messages_modify(id=_message.id,
+                                      removeLabelIds=[labels.retry,
+                                                      labels.drafted])
+
+            if _RETRY:
+                # delete DRAFT
+                if labels.draft in _message.automon_labels:
+                    gmail.messages_trash(id=_message.id)
+
+            email_search.threads = [gmail.thread_get_automon(id=_message.threadId)]
+
+        email_selected = _thread
         resume_selected = resume_search.messages[0]
 
         threadId = email_selected.id
@@ -217,13 +253,12 @@ def main():
             f"3. Rules if an email contains the label name `automon/bad`: "
             f"INCLUDE the the first line with 'Rule Violated'"
             f"INCLUDE which rule was violated and provide evidence. "
-            f"At the bottom, tell me to delete the draft in order for you to try again. "
         )
 
         print([len(x) for x in prompts])
 
         response, model = run_llm(prompts=prompts)
-        model.chat_forever()
+        # model.chat_forever()
 
         gmail.config.refresh_token()
 
@@ -261,13 +296,13 @@ def main():
             draft_body=body,
             draft_attachments=[resume_attachment]
         )
-        draft_get = gmail.messages_get_automon(id=email_selected.id)
+        draft_get = gmail.draft_get_automon(id=draft.id)
 
-        gmail.messages_modify(id=draft_get.id,
+        gmail.messages_modify(id=email_selected.id,
                               addLabelIds=[labels.drafted,
                                            labels.unread,
                                            ],
-                              removeLabelIds=[labels.bad])
+                              )
 
         prompts = prompts_emails.copy()
         prompts.append(

@@ -580,6 +580,13 @@ class Message(DictUpdate):
         self.threadId = threadId
         self.raw = raw
 
+        self.automon_labels = []
+
+    def __eq__(self, other):
+        if self.id == other.id:
+            return True
+        return False
+
     def enhance(self):
 
         if hasattr(self, 'payload'):
@@ -743,6 +750,8 @@ class ThreadList(DictUpdate):
 
     def __init__(self):
         super().__init__()
+
+        self.nextPageToken = ''
 
     def __bool__(self):
         if hasattr(self, 'threads'):
@@ -965,6 +974,11 @@ class Label(DictUpdate):
     def __repr__(self):
         if self.name:
             return f"{self.name}"
+
+    def __eq__(self, other):
+        if self.id == other.id and self.name == other.name:
+            return True
+        return False
 
     def enhance(self):
         if hasattr(self, 'color'):
