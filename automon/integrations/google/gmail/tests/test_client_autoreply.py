@@ -12,6 +12,7 @@ LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.utils').setL
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
 LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(ERROR)
+LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(ERROR)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)
@@ -159,6 +160,7 @@ def main():
 
             if (labels.retry in _first.automon_labels
                     or labels.retry in _latest.automon_labels):
+                _FOUND = True
                 break
 
             if labels.resume in _first.automon_labels:
