@@ -19,7 +19,7 @@ LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').se
 
 USE_OLLAMA = False
 USE_GEMINI = True
-CHAT_FOREVER = True
+CHAT_FOREVER = False
 CHAT_ONCE = 0
 
 gmail = GoogleGmailClient()
@@ -81,7 +81,7 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
 
     if gemini.is_ready():
 
-        gemini.add_content(role='model', prompt=gemini.prompts.agent_machine_job_applicant)
+        # gemini.add_content(role='model', prompt=gemini.prompts.agent_machine_job_applicant)
 
         for prompt in prompts:
             gemini.add_content(prompt)
@@ -101,7 +101,7 @@ def run_ollama(prompts: list) -> (str, OllamaClient):
 
     if ollama.is_ready():
 
-        ollama.add_message(role='model', content=ollama.prompts.agent_machine_job_applicant)
+        # ollama.add_message(role='model', content=ollama.prompts.agent_machine_job_applicant)
 
         for prompt in prompts:
             ollama.add_message(prompt)
@@ -144,6 +144,46 @@ def run_llm(prompts: list) -> (str, any):
 
 
 def main():
+    # init
+    _welcome_email = gmail.messages_list_automon(labelIds=[labels.automon,
+                                                           labels.welcome])
+
+    if _welcome_email.messages:
+        gmail.messages_delete(id=_welcome_email.messages[0].id)
+
+    _welcome_body, model = run_llm(prompts=[
+        f"Create an HTML format email message for a service that helps you automate "
+        f"responding to job recruiter emails. \n"
+        f"The service is called TiredofReplying.com. \n"
+        f"Everything runs directly from your Gmail inbox. "
+        f"It does this by analyzing the recruiter emails and your resume, then it "
+        f"creates a personalized email using your relevant job history and "
+        f"experience. "
+        f"\n\n"
+        f"Return the code between <html> code </html>. "
+        f"Exclude the code fences (```html and ```) surrounding the HTML code. "
+        f"Exclude everything else. "
+    ])
+
+    _welcome_email_parts = [gmail.v1.EmailAttachment(
+        bytes_=_welcome_body.encode(),
+        mimeType=x
+    ) for x in ['text/html']]
+
+    _welcome_email = gmail.draft_create(
+        draft_subject=f"Welcome to your personal job assistant!",
+        draft_attachments=_welcome_email_parts,
+    )
+
+    gmail.messages_modify(id=_welcome_email.message.id,
+                          addLabelIds=[labels.automon,
+                                       labels.welcome])
+
+    # resume check
+    # gmail.draft_create(
+    #     draft_subject=f""
+    # )
+
     _thread = None
     _nextPageToken = None
     while True:
@@ -201,16 +241,6 @@ def main():
     threadId = None
 
     try:
-
-        # init
-        _welcome_email = gmail.draft_create(
-            draft_subject=f"Usage Manual"
-        )
-
-        # resume check
-        gmail.draft_create(
-            draft_subject=f""
-        )
 
         # retry
         for _message in _thread.messages:
@@ -270,8 +300,10 @@ def main():
         prompts = []
         prompts.extend(prompts_resume)
         prompts.extend(prompts_emails)
+
         prompts.append(
-            f"MUST EXCLUDE the reply if last email is not from the sender of the first email. \n"
+            GoogleGeminiClient.prompts.agent_machine_job_applicant,
+            f"MUST EXCLUDE the reply if last email is not from the sender of the first email. \n",
             f"MUST EXCLUDE any email subject line. \n"
             f"MUST EXCLUDE any internal thought process. \n"
             f"MUST write in plain english. \n"

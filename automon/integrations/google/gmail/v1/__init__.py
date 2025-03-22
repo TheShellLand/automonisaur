@@ -71,9 +71,9 @@ class UsersDrafts(Users):
     @property
     def create(self): """requests.post"""; return self.url + f'/drafts'
 
-    def delete(self, id: int): """requests.delete"""; return self.url + f'/drafts/{id}'
+    def delete(self, id: str): """requests.delete"""; return self.url + f'/drafts/{id}'
 
-    def get(self, id: int): """requests.get"""; return self.url + f'/drafts/{id}'
+    def get(self, id: str): """requests.get"""; return self.url + f'/drafts/{id}'
 
     @property
     def list(self): """requests.get"""; return self.url + f'/drafts'
@@ -81,7 +81,7 @@ class UsersDrafts(Users):
     @property
     def send(self): """requests.post"""; return self.url + f'/drafts/send'
 
-    def update(self, id: int): """requests.put"""; return self.url + f'/drafts/{id}'
+    def update(self, id: str): """requests.put"""; return self.url + f'/drafts/{id}'
 
 
 class UsersHistory(Users):
@@ -104,13 +104,13 @@ class UsersLabels(Users):
     @property
     def list(self): """requests.get"""; return self.url + f'/labels'
 
-    def delete(self, id: int): """requests.delete"""; return self.url + f'/labels/{id}'
+    def delete(self, id: str): """requests.delete"""; return self.url + f'/labels/{id}'
 
-    def get(self, id: int): """requests.get"""; return self.url + f'/labels/{id}'
+    def get(self, id: str): """requests.get"""; return self.url + f'/labels/{id}'
 
-    def patch(self, id: int): """requests.get"""; return self.url + f'/labels/{id}'
+    def patch(self, id: str): """requests.get"""; return self.url + f'/labels/{id}'
 
-    def update(self, id: int): """requests.get"""; return self.url + f'/labels/{id}'
+    def update(self, id: str): """requests.get"""; return self.url + f'/labels/{id}'
 
 
 class UsersMessages(Users):
@@ -124,7 +124,7 @@ class UsersMessages(Users):
     @property
     def batchModify(self): """post"""; return self.url + f'/messages/batchModify'
 
-    def delete(self, id: int): """delete"""; return self.url + f'/messages/{id}'
+    def delete(self, id: str): """delete"""; return self.url + f'/messages/{id}'
 
     def get(self, id: str): """get"""; return self.url + f'/messages/{id}'
 
@@ -137,14 +137,14 @@ class UsersMessages(Users):
     @property
     def list(self): """get"""; return self.url + f'/messages'
 
-    def modify(self, id: int): """post"""; return self.url + f'/messages/{id}/modify'
+    def modify(self, id: str): """post"""; return self.url + f'/messages/{id}/modify'
 
     @property
     def send(self): """post"""; return self.url + f'/messages/send'
 
-    def trash(self, id: int): """post"""; return self.url + f'/messages/{id}/trash'
+    def trash(self, id: str): """post"""; return self.url + f'/messages/{id}/trash'
 
-    def untrash(self, id: int): """post"""; return self.url + f'/messages/{id}/untrash'
+    def untrash(self, id: str): """post"""; return self.url + f'/messages/{id}/untrash'
 
 
 class DictUpdate(dict):
@@ -653,6 +653,11 @@ class MessageList(DictUpdate):
       "resultSizeEstimate": integer
     }
     """
+
+    def __init__(self):
+        super().__init__()
+
+        self.messages = []
 
     def __bool__(self):
         if hasattr(self, 'messages'):
