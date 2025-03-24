@@ -756,7 +756,9 @@ class ThreadList(DictUpdate):
     def __init__(self):
         super().__init__()
 
+        self.threads = []
         self.nextPageToken = ''
+        self.resultSizeEstimate = None
 
     def __bool__(self):
         if hasattr(self, 'threads'):

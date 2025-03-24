@@ -20,7 +20,6 @@ LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').se
 USE_OLLAMA = False
 USE_GEMINI = True
 CHAT_FOREVER = False
-CHAT_ONCE = 0
 
 gmail = GoogleGmailClient()
 
@@ -86,10 +85,8 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
         for prompt in prompts:
             gemini.add_content(prompt)
 
-        global CHAT_ONCE
-        if CHAT_FOREVER and CHAT_ONCE == 0:
+        if CHAT_FOREVER:
             gemini_response = gemini.chat().chat_forever().chat_response()
-            CHAT_ONCE += 1
         else:
             gemini_response = gemini.chat().chat_response()
         return gemini_response, gemini
@@ -158,9 +155,11 @@ def main():
         f"Everything runs directly from your Gmail inbox. "
         f"It does this by analyzing the recruiter emails and your resume, then it "
         f"creates a personalized email using your relevant job history and "
-        f"experience. "
+        f"experience. \n"
+        f"And all you have to do is tag an email with the `automon` label. "
+        f"The rest is handled automatically. "
         f"\n\n"
-        f"Return the code between <html> code </html>. "
+        f"MUST Return only the code between <html> code </html>. "
         f"Exclude the code fences (```html and ```) surrounding the HTML code. "
         f"Exclude everything else. "
     ])
@@ -195,6 +194,9 @@ def main():
             labelIds=[labels.automon],
         )
         _nextPageToken = email_search.nextPageToken
+
+        if not email_search.threads:
+            continue
 
         for _thread in email_search.threads:
 
@@ -261,6 +263,7 @@ def main():
 
             email_search.threads = [gmail.thread_get_automon(id=_message.threadId)]
 
+        global email_selected
         email_selected = _thread
         resume_selected = resume_search.messages[0]
 
@@ -297,13 +300,13 @@ def main():
             )
             i += 1
 
-        prompts = []
-        prompts.extend(prompts_resume)
-        prompts.extend(prompts_emails)
+        prompts = prompts_resume + prompts_emails
 
         prompts.append(
             GoogleGeminiClient.prompts.agent_machine_job_applicant,
-            f"MUST NOT reply if last email is not from the sender of the first email. \n",
+        )
+        prompts.append(
+            f"MUST NOT reply if last email is not from the sender of the first email. \n"
             f"MUST EXCLUDE any email subject line. \n"
             f"MUST EXCLUDE any internal thought process. \n"
             f"MUST EXCLUDE any chain of thought process. \n"
@@ -376,25 +379,25 @@ def main():
         CHAT_ONCE = 0
 
     except Exception as error:
+
+        import traceback
+        llm_check = [
+                        f"Tell me what the error from this stacktrace could be. \n"
+                    ] + [str(dict(line=x.line, filename=x.filename)) for x in traceback.extract_stack()]
+        response, model = run_llm(llm_check)
+
         email_error = 'naisanza@gmail.com'
 
-        bug_report = (f"A error has occurred. \n\n"
-                      f"<error>"
-                      f"\n{error}\n"
-                      f"</error>"
-                      f"\n\n"
-                      f"If you would like to submit this bug report. "
-                      f"Feel free to send this to {email_error}. ")
+        bug_report = (f"{response}")
 
-        gmail.draft_create(threadId=email_selected.id,
-                           draft_body=bug_report,
-                           draft_subject=f"Bug Report",
-                           draft_to=[email_error])
-        gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.error,
+        _draft = gmail.draft_create(threadId=email_selected.messages[0].id,
+                                    draft_subject=f"Bug Report",
+                                    draft_body=bug_report,
+                                    draft_to=[email_error])
+        gmail.messages_modify(id=_draft.message.id, addLabelIds=[labels.error,
                                                                  labels.unread,
                                                                  ])
 
-        import traceback
         traceback.print_exc()
         return
 
