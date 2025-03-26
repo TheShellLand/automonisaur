@@ -235,8 +235,10 @@ def main():
                 print('retry', end='')
                 break
 
-            if _first.automon_from() != _latest.automon_from():
-                continue
+            if _first.automon_from() == _latest.automon_from():
+                _FOUND = True
+                print('new', end='')
+                break
 
             if labels.resume in _first.automon_labels:
                 continue
