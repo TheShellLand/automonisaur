@@ -30,6 +30,7 @@ class AutomonLabels:
     labels = {
         'automon': 'automon',
         'resume': 'automon/resume',
+        'analyze': 'automon/analyze',
         "retry": 'automon/retry',
         "test": 'automon/test',
         'error': 'automon/error',
@@ -60,6 +61,9 @@ class AutomonLabels:
 
         # resume
         self.resume = Label(name=self.labels.get('resume'), color=self._color_resume)
+
+        # analyze
+        self.analyze = Label(name=self.labels.get('analyze'), color=self._color_default)
 
         # general
         self.draft = Label(name='DRAFT', id='DRAFT')
