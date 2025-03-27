@@ -1,4 +1,6 @@
 import io
+import re
+
 import bs4
 import json
 import base64
@@ -657,6 +659,9 @@ class Message(DictUpdate):
     automon_labels: ['Label']
     automon_subject: Headers
     automon_to: Headers
+    automon_from: Headers
+    automon_to_email: str
+    automon_from_email: str
     automon_subject: Headers
     automon_raw_decoded: str
     automon_attachments: AutomonAttachments
@@ -753,7 +758,7 @@ class Message(DictUpdate):
 
         return self
 
-    def automon_from(self):
+    def automon_from(self) -> Headers:
         if hasattr(self, 'payload'):
             if hasattr(self.payload, 'headers'):
 
@@ -761,6 +766,13 @@ class Message(DictUpdate):
                     if header.name == 'From':
                         return header
         return Headers()
+
+    def automon_from_email(self) -> str:
+        email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
+        email_re = re.compile(email_re, flags=re.IGNORECASE)
+        email = email_re.search(self.automon_from().value).group()
+
+        return email
 
     def automon_subject(self):
         if hasattr(self, 'payload'):
@@ -779,6 +791,13 @@ class Message(DictUpdate):
                     if header.name == 'To':
                         return header
         return Headers()
+
+    def automon_to_email(self) -> str:
+        email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
+        email_re = re.compile(email_re, flags=re.IGNORECASE)
+        email = email_re.search(self.automon_to().value).group()
+
+        return email
 
     def automon_raw_decoded(self):
         if self.raw is not None:

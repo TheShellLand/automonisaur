@@ -216,10 +216,13 @@ def main():
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
 
-            if labels.resume in _first.automon_labels:
-                continue
+            if _first.automon_from_email().lower() == _latest.automon_from_email().lower():
+                _FOUND = True
+                print('new', end='')
+                break
 
-            if (labels.auto_reply_enabled in _latest.automon_labels
+            if (labels.auto_reply_enabled in _first.automon_labels
+                    or labels.auto_reply_enabled in _latest.automon_labels
             ):
                 _FOUND = True
                 print('auto', end='')
@@ -231,6 +234,12 @@ def main():
                 print('analyze', end='')
                 break
 
+            if (labels.test in _first.automon_labels
+            ):
+                _FOUND = True
+                print('test', end='')
+                break
+
             if (labels.retry in _first.automon_labels
                     or labels.retry in _latest.automon_labels
             ):
@@ -238,16 +247,14 @@ def main():
                 print('retry', end='')
                 break
 
+            if labels.resume in _first.automon_labels:
+                continue
+
             if labels.draft in _latest.automon_labels:
                 continue
 
             if labels.sent in _latest.automon_labels:
                 continue
-
-            if _first.automon_from() == _latest.automon_from():
-                _FOUND = True
-                print('new', end='')
-                break
 
         if _FOUND:
             print(' :)')
@@ -274,7 +281,7 @@ def main():
 
                 # delete DRAFT
                 if labels.draft in _message.automon_labels:
-                        gmail.messages_trash(id=_message.id)
+                    gmail.messages_trash(id=_message.id)
 
             email_search.threads = [gmail.thread_get_automon(id=_message.threadId)]
 
