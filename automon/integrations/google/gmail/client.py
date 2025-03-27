@@ -32,7 +32,6 @@ class AutomonLabels:
         'resume': 'automon/resume',
         'analyze': 'automon/analyze',
         "retry": 'automon/retry',
-        "test": 'automon/test',
         'error': 'automon/error',
         'drafted': 'automon/drafted',
         'relevant': 'automon/relevant',
@@ -86,9 +85,6 @@ class AutomonLabels:
 
         # remote
         self.remote = Label(name=self.labels.get('remote'), color=self._color_default)
-
-        # test
-        self.test = Label(name=self.labels.get('test'), color=self._color_enabled)
 
         # need user input
         self.user_action_required = Label(name=self.labels.get('user_action_required'), color=self._color_error)

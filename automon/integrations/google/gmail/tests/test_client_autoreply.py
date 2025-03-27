@@ -5,6 +5,9 @@ from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
+DEBUG = False
+INFO = False
+
 LoggingClient.logging.getLogger('httpx').setLevel(ERROR)
 LoggingClient.logging.getLogger('httpcore').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.client').setLevel(DEBUG)
@@ -12,10 +15,18 @@ LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.utils').setL
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
 LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(ERROR)
-LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(ERROR)
+LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(ERROR)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)
+
+if INFO:
+    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
+    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(INFO)
+
+if DEBUG:
+    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
+    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
 
 USE_OLLAMA = False
 USE_GEMINI = True
@@ -181,12 +192,6 @@ def main():
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
 
-            if (labels.test in _first.automon_labels
-            ):
-                _FOUND = True
-                print('test', end='')
-                break
-
             if (labels.retry in _first.automon_labels
                     or labels.retry in _latest.automon_labels
             ):
@@ -200,16 +205,15 @@ def main():
                 print('analyze', end='')
                 break
 
-            if (labels.auto_reply_enabled in _first.automon_labels
-                    or labels.auto_reply_enabled in _latest.automon_labels
-                    and labels.sent not in _latest.automon_labels
+            if ((labels.auto_reply_enabled in _first.automon_labels
+                 or labels.auto_reply_enabled in _latest.automon_labels)
+                    and (labels.sent not in _latest.automon_labels)
             ):
                 _FOUND = True
                 print('auto', end='')
                 break
 
-            if (gmail._userId != _first.automon_from_email()
-                    and _first.automon_from_email().lower() == _latest.automon_from_email().lower()):
+            if labels.sent not in _latest.automon_labels:
                 _FOUND = True
                 print('new', end='')
                 break
@@ -244,7 +248,8 @@ def main():
                 _RETRY = True
                 gmail.messages_modify(id=_message.id,
                                       removeLabelIds=[labels.retry,
-                                                      labels.drafted])
+                                                      labels.drafted,
+                                                      labels.error])
 
                 # delete DRAFT
                 if labels.draft in _message.automon_labels:
@@ -325,7 +330,7 @@ def main():
                 f"Create a response. "
             )
 
-            if labels.test in email_selected.automon_labels:
+            if labels.retry in email_selected.automon_message_first.automon_labels:
                 response, model = run_llm(prompts=prompts, chat=True)
             else:
                 response, model = run_llm(prompts=prompts, chat=False)
@@ -349,18 +354,16 @@ def main():
         draft_get = gmail.draft_get_automon(id=draft.id)
 
         gmail.messages_modify(id=email_selected.id,
-                              addLabelIds=[labels.drafted,
-                                           labels.unread,
-                                           ],
+                              addLabelIds=[labels.unread],
                               )
 
-        prompts = prompts_emails.copy()
-        prompts.append(
-            f"Respond only true or false, does any of the emails have the 'auto reply enabled' label name?"
-        )
-        response, model = run_llm(prompts)
-        if gemini.true_or_false(response.lower()):
+        if (labels.auto_reply_enabled in email_selected.automon_message_latest.automon_labels
+                and labels.sent not in email_selected.automon_message_latest.automon_labels
+        ):
             draft_sent = gmail.draft_send(draft=draft)
+            gmail.messages_modify(id=email_selected.automon_message_first.id,
+                                  addLabelIds=[labels.unread],
+                                  removeLabelIds=[labels.drafted])
 
         prompts = [prompts_emails[0]] + prompts_resume
         prompts.append(
