@@ -167,7 +167,7 @@ class GoogleAuthConfig(object):
         logger.info(f"[GoogleAuthConfig] :: credentials_pickle_load :: done")
         return True
 
-    def Credentials(self) -> google.oauth2.credentials.Credentials:
+    def Credentials(self, reauth: bool = False) -> google.oauth2.credentials.Credentials:
         """return Google Credentials object"""
 
         logger.debug(f"[GoogleAuthConfig] :: Credentials :: >>>>")
@@ -179,7 +179,7 @@ class GoogleAuthConfig(object):
         except:
             pass
 
-        if self.credentials and not self.credentials.expired:
+        if self.credentials and not self.credentials.expired and not reauth:
             return self.credentials
 
         scopes = self.scopes
@@ -415,7 +415,11 @@ class GoogleAuthConfig(object):
     def userinfo(self):
         logger.debug(f'[GoogleAuthConfig] :: userinfo :: >>>>')
 
-        service = self.build_service(serviceName='oauth2', version='v2', credentials=self.credentials)
+        service = self.build_service(serviceName='oauth2',
+                                     version='v2',
+                                     credentials=self.credentials,
+                                     num_retries=30,
+                                     )
         userinfo = service.userinfo().get().execute()
 
         user_info = service.userinfo().get().execute()

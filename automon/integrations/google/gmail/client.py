@@ -30,18 +30,17 @@ class AutomonLabels:
     labels = {
         'automon': 'automon',
         'resume': 'automon/resume',
-        'processed': 'automon/processed',
-        'drafted': 'automon/drafted',
-        'reviewed': 'automon/reviewed',
-        'read': 'automon/read',
-        'relevant': 'automon/relevant',
-        'sent': 'automon/sent',
+        'analyze': 'automon/analyze',
+        "retry": 'automon/retry',
+        "test": 'automon/test',
         'error': 'automon/error',
+        'drafted': 'automon/drafted',
+        'relevant': 'automon/relevant',
+        "remote": 'automon/remote',
+        "welcome": 'automon/welcome',
+        "help": 'automon/help',
         "auto_reply_enabled": 'automon/auto reply enabled',
         "user_action_required": 'automon/user action required',
-        "bad": 'automon/bad',
-        "remote": 'automon/remote',
-        "bug": 'automon/bug',
     }
 
     def __init__(self):
@@ -51,29 +50,36 @@ class AutomonLabels:
         self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
         self._color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
         self._color_enabled = Color(backgroundColor='#076239', textColor='#b9e4d0')
+        self._color_welcome = Color(backgroundColor='#8e63ce', textColor='#ffffff')
 
         # required
         self.automon = Label(name=self.labels.get('automon'), color=self._color_default)
 
+        # welcome
+        self.welcome = Label(name=self.labels.get('welcome'), color=self._color_welcome)
+        self.help = Label(name=self.labels.get('help'), color=self._color_welcome)
+
         # resume
         self.resume = Label(name=self.labels.get('resume'), color=self._color_resume)
 
+        # analyze
+        self.analyze = Label(name=self.labels.get('analyze'), color=self._color_default)
+
         # general
-        self.drafted = Label(name=self.labels.get('drafted'), color=self._color_default)
-        self.sent = Label(name=self.labels.get('sent'), color=self._color_default)
+        self.draft = Label(name='DRAFT', id='DRAFT')
+        self.sent = Label(name='SENT', id='SENT')
         self.unread = Label(name='UNREAD', id='UNREAD')
         self.trash = Label(name='TRASH', id='TRASH')
+        self.drafted = Label(name=self.labels.get('drafted'), color=self._color_default)
 
         # allow auto reply
         self.auto_reply_enabled = Label(name=self.labels.get('auto_reply_enabled'), color=self._color_enabled)
 
         # issues encountered
         self.error = Label(name=self.labels.get('error'), color=self._color_error)
-        self.user_action_required = Label(name=self.labels.get('user_action_required'), color=self._color_error)
 
-        # use as bad output or bug
-        self.bad = Label(name=self.labels.get('bad'), color=self._color_error)
-        self.bug = Label(name=self.labels.get('bug'), color=self._color_error)
+        # retry draft
+        self.retry = Label(name=self.labels.get('retry'), color=self._color_error)
 
         # relevance
         self.relevant = Label(name=self.labels.get('relevant'), color=self._color_default)
@@ -81,10 +87,11 @@ class AutomonLabels:
         # remote
         self.remote = Label(name=self.labels.get('remote'), color=self._color_default)
 
-        # more detailed flow but not used right now
-        self.processed = Label(name=self.labels.get('processed'), color=self._color_default)
-        self.reviewed = Label(name=self.labels.get('reviewed'), color=self._color_default)
-        self.read = Label(name=self.labels.get('read'), color=self._color_default)
+        # test
+        self.test = Label(name=self.labels.get('test'), color=self._color_enabled)
+
+        # need user input
+        self.user_action_required = Label(name=self.labels.get('user_action_required'), color=self._color_error)
 
     @property
     def all_labels(self):
@@ -127,7 +134,7 @@ class GoogleGmailClient:
                      draft_to: list = [],
                      draft_cc: list = [],
                      draft_bc: list = [],
-                     draft_body: str = None,
+                     draft_body: str = '',
                      draft_attachments: [EmailAttachment] = [],
                      **kwargs) -> Draft:
         """Creates a new draft with the DRAFT label."""
@@ -209,14 +216,14 @@ class GoogleGmailClient:
         self.requests.post(api, headers=self.config.headers, json=data)
         return Draft().update_dict(self.requests.to_dict())
 
-    def draft_delete(self, id: int):
+    def draft_delete(self, id: str):
         """Immediately and permanently deletes the specified draft."""
         api = UsersDrafts(self._userId).delete(id)
         self.requests.delete(api, headers=self.config.headers)
         return self.requests.to_dict()
 
     def draft_get(self,
-                  id: int or Draft,
+                  id: str or Draft,
                   format: Format = Format.full) -> Draft:
         """Gets the specified draft."""
         if type(id) is Draft:
@@ -228,6 +235,10 @@ class GoogleGmailClient:
         )
         self.requests.get(api, headers=self.config.headers, params=params)
         return Draft().update_dict(self.requests.to_dict())
+
+    def draft_get_automon(self, *args, **kwargs):
+        draft = self.draft_get(*args, **kwargs)
+        return self._improved_draft_get(draft=draft)
 
     def draft_list(self,
                    q: bool = '',
@@ -286,11 +297,11 @@ class GoogleGmailClient:
         logger.info(f"[GoogleGmailClient] :: draft_send :: done")
         return Message().update_dict(self.requests.to_dict())
 
-    def draft_update(self, id: int):
+    def draft_update(self, id: str) -> Draft:
         api = UsersDrafts(self._userId).update(id)
         data = Draft().to_dict()
         self.requests.put(api, headers=self.config.headers, json=data)
-        return self.requests.to_dict()
+        return Draft().update_dict(self.requests.to_dict())
 
     def history_list(self,
                      startHistoryId: str,
@@ -417,8 +428,16 @@ class GoogleGmailClient:
 
         return drafts
 
+    def _improved_draft_get(self, draft: Draft) -> Draft:
+        """Better draft."""
+
+        if hasattr(draft, 'message'):
+            draft.message = self.messages_get_automon(draft.message.id)
+
+        return draft
+
     def _improved_messages_get(self, message: Message) -> Message:
-        """Better labels."""
+        """Better messages."""
 
         if hasattr(message, 'labelIds'):
             setattr(message, 'automon_labels', [self.labels_get(x) for x in message.labelIds])
@@ -452,11 +471,23 @@ class GoogleGmailClient:
 
         return messages
 
+    def _improved_thread_get(self, thread: Thread) -> Thread:
+        """Better thread."""
+
+        _get = self.thread_get(id=thread.id)
+        thread.update_dict(_get)
+
+        for _message in thread.messages:
+            _get_message = self._improved_messages_get(_message)
+            _message.update_dict(_get_message)
+
+        return thread
+
     def _improved_thread_list(self, threads: ThreadList) -> ThreadList:
-        """Better threads."""
+        """Better thread list."""
 
         for _thread in threads.threads:
-            _get = self.thread_get(id=_thread.id)
+            _get = self.thread_get_automon(id=_thread.id)
             _thread.update_dict(_get)
 
             for _message in _thread.messages:
@@ -528,7 +559,7 @@ class GoogleGmailClient:
         self.requests.post(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
-    def messages_delete(self, id: int) -> Message:
+    def messages_delete(self, id: str) -> Message:
         """Immediately and permanently deletes the specified message. This operation cannot be undone. Prefer messages.trash instead."""
         api = UsersMessages(self._userId).delete(id)
         self.requests.delete(api, headers=self.config.headers)
@@ -585,7 +616,7 @@ class GoogleGmailClient:
                       maxResults: int = 100,
                       pageToken: str = None,
                       q: str = None,
-                      labelIds: str = None,
+                      labelIds: list = [],
                       includeSpamTrash: bool = False) -> MessageList:
         """Lists the messages in the user's mailbox."""
         logger.debug(
@@ -593,6 +624,11 @@ class GoogleGmailClient:
 
         if maxResults > 500:
             raise Exception(f"[GoogleGmailClient] :: message_list :: ERROR :: {maxResults=} > 500")
+
+        for label in labelIds:
+            if type(label) is Label:
+                labelIds = [x.id for x in labelIds]
+                break
 
         api = UsersMessages(self._userId).list
         params = dict(
@@ -607,7 +643,7 @@ class GoogleGmailClient:
         logger.info(f"[GoogleGmailClient] :: message_list :: done")
         return MessageList().update_dict(self.requests.to_dict())
 
-    def messages_list_automon(self, *args, **kwargs):
+    def messages_list_automon(self, *args, **kwargs) -> MessageList:
         """Enhanced `message_list`"""
         messages = self.messages_list(*args, **kwargs)
         if messages:
@@ -615,9 +651,9 @@ class GoogleGmailClient:
         return messages
 
     def messages_modify(self,
-                        id: int,
+                        id: str,
                         addLabelIds: list = [],
-                        removeLabelIds: list = []):
+                        removeLabelIds: list = []) -> Message:
         """Modifies the labels on the specified message."""
         if len(addLabelIds) > 100 or len(removeLabelIds) > 100:
             raise Exception(
@@ -648,13 +684,13 @@ class GoogleGmailClient:
         self.requests.post(api, headers=self.config.headers, json=data)
         return self.requests.to_dict()
 
-    def messages_trash(self, id: int):
+    def messages_trash(self, id: str) -> Message:
         """Moves the specified message to the trash."""
         api = UsersMessages(self._userId).trash(id)
         self.requests.post(api, headers=self.config.headers)
-        return self.requests.to_dict()
+        return Message().update_dict(self.requests.to_dict())
 
-    def messages_untrash(self, id: int):
+    def messages_untrash(self, id: str):
         """Removes the specified message from the trash."""
         api = UsersMessages(self._userId).untrash(id)
         self.requests.post(api, headers=self.config.headers)
@@ -690,6 +726,13 @@ class GoogleGmailClient:
         self.requests.get(api, headers=self.config.headers, params=params)
         logger.info(f"[GoogleGmailClient] :: thread_get :: done")
         return Thread().update_dict(self.requests.to_dict())
+
+    def thread_get_automon(self, *args, **kwargs) -> Thread:
+
+        thread = self.thread_get(*args, **kwargs)
+        thread = self._improved_thread_get(thread=thread)
+
+        return thread
 
     def thread_list(self,
                     q: str = '',
@@ -727,6 +770,7 @@ class GoogleGmailClient:
         for label in labelIds:
             if type(label) is Label:
                 labelIds = [x.id for x in labelIds]
+                break
 
         api = UsersThread(self._userId).list
         params = dict(
