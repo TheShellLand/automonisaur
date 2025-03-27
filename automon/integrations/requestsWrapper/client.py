@@ -1,5 +1,6 @@
 import json
 import requests
+import requests.adapters
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from .config import RequestsConfig
@@ -80,17 +81,45 @@ class RequestsClient(object):
     def content_to_dict(self):
         return self.to_dict()
 
+    def _set_retry(self, max_retries: int = None, **kwargs):
+
+        if max_retries is None:
+            retries = requests.adapters.Retry(total=max_retries,
+                                              backoff_factor=0.1,
+                                              **kwargs)
+        else:
+            retries = requests.adapters.Retry(total=max_retries,
+                                              backoff_factor=0.1,
+                                              status_forcelist=[500, 502, 503, 504],
+                                              **kwargs)
+
+        self.session.mount('http://', requests.adapters.HTTPAdapter(max_retries=retries))
+        self.session.mount('https://', requests.adapters.HTTPAdapter(max_retries=retries))
+
+        return self
+
+    def _set_proxy(self):
+        if self.config.proxies:
+            if self.config.use_random_proxies:
+                self.proxies = self.config.get_random_proxy()
+            else:
+                self.proxies = self.config.get_proxy()
+
+        logger.debug(f'RequestsClient :: SET PROXY :: {self.proxies}')
+        return self
+
     def delete(
             self,
             url: str = None,
             data: dict = None,
             headers: dict = None,
+            max_retries: int = 5,
             **kwargs
     ) -> bool:
         """requests.delete"""
 
         url, data, headers = self._params(url, data, headers)
-
+        self._set_retry(max_retries=max_retries)
         self._set_proxy()
 
         logger.debug(f'RequestsClient :: DELETE :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
@@ -108,26 +137,18 @@ class RequestsClient(object):
             raise Exception(f'RequestsClient :: DELETE :: ERROR :: {error=}')
         return False
 
-    def _set_proxy(self):
-        if self.config.proxies:
-            if self.config.use_random_proxies:
-                self.proxies = self.config.get_random_proxy()
-            else:
-                self.proxies = self.config.get_proxy()
-
-        logger.debug(f'RequestsClient :: SET PROXY :: {self.proxies}')
-
     def get(
             self,
             url: str = None,
             data: dict = None,
             headers: dict = None,
+            max_retries: int = None,
             **kwargs
     ) -> bool:
         """requests.get"""
 
         url, data, headers = self._params(url, data, headers)
-
+        self._set_retry(max_retries=max_retries)
         self._set_proxy()
 
         logger.debug(f'RequestsClient :: GET :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
@@ -152,12 +173,13 @@ class RequestsClient(object):
             url: str = None,
             data: dict = None,
             headers: dict = None,
+            max_retries: int = None,
             **kwargs
     ) -> bool:
         """requests.patch"""
 
         url, data, headers = self._params(url, data, headers)
-
+        self._set_retry(max_retries=max_retries)
         self._set_proxy()
 
         logger.debug(f'RequestsClient :: PATCH :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
@@ -182,12 +204,13 @@ class RequestsClient(object):
             url: str = None,
             data: dict = None,
             headers: dict = None,
+            max_retries: int = None,
             **kwargs
     ) -> bool:
         """requests.post"""
 
         url, data, headers = self._params(url, data, headers)
-
+        self._set_retry(max_retries=max_retries)
         self._set_proxy()
 
         logger.debug(f'RequestsClient :: POST :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
@@ -212,12 +235,13 @@ class RequestsClient(object):
             url: str = None,
             data: dict = None,
             headers: dict = None,
+            max_retries: int = None,
             **kwargs
     ) -> bool:
         """requests.put"""
 
         url, data, headers = self._params(url, data, headers)
-
+        self._set_retry(max_retries=max_retries)
         self._set_proxy()
 
         logger.debug(f'RequestsClient :: PUT :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')

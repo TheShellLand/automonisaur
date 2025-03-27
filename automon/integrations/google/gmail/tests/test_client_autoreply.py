@@ -156,7 +156,7 @@ def main():
                                                            labels.welcome])
 
     if _welcome_email.messages:
-        gmail.messages_delete(id=_welcome_email.messages[0].id)
+        gmail.messages_trash(id=_welcome_email.messages[0].id)
 
     _welcome_body, model = run_llm(prompts=[
         f"Create an HTML format email message for a service that helps you automate "
@@ -216,6 +216,9 @@ def main():
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
 
+            if labels.resume in _first.automon_labels:
+                continue
+
             if (labels.auto_reply_enabled in _latest.automon_labels
             ):
                 _FOUND = True
@@ -235,19 +238,16 @@ def main():
                 print('retry', end='')
                 break
 
-            if _first.automon_from() == _latest.automon_from():
-                _FOUND = True
-                print('new', end='')
-                break
-
-            if labels.resume in _first.automon_labels:
-                continue
-
             if labels.draft in _latest.automon_labels:
                 continue
 
             if labels.sent in _latest.automon_labels:
                 continue
+
+            if _first.automon_from() == _latest.automon_from():
+                _FOUND = True
+                print('new', end='')
+                break
 
         if _FOUND:
             print(' :)')
@@ -274,7 +274,7 @@ def main():
 
                 # delete DRAFT
                 if labels.draft in _message.automon_labels:
-                    gmail.messages_trash(id=_message.id)
+                        gmail.messages_trash(id=_message.id)
 
             email_search.threads = [gmail.thread_get_automon(id=_message.threadId)]
 
@@ -314,6 +314,9 @@ def main():
 
             i += 1
 
+        if not prompts_emails:
+            return
+
         response = None
         for _message in email_selected.messages:
             if labels.analyze in _message.automon_labels:
@@ -341,13 +344,13 @@ def main():
                 f"EXCLUDE any conversational parts. \n"
                 f"MUST write in plain english. \n"
                 f"MUST write in first person. \n"
-                f"MUST only return the body of the email, \n"
-                f"MUST provide only the body of the email. \n"
-                f"MUST check for a job description in the email chain before continuing. \n"
+                f"MUST respond as if in a conversation. \n"
+                f"MUST provide only the body of the response. \n"
+                f"MUST check for a job description in the first email before continuing. \n"
                 f"\n\n"
-                f"Create a rely. "
+                f"Create a response. "
             )
-            response, model = run_llm(prompts=prompts, chat=True)
+            response, model = run_llm(prompts=prompts, chat=False)
 
         resume_attachment = resume_selected.automon_attachments().with_filename()[0]
         resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded(),
