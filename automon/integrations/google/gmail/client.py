@@ -32,9 +32,7 @@ class AutomonLabels:
         'resume': 'automon/resume',
         'analyze': 'automon/analyze',
         "retry": 'automon/retry',
-        "test": 'automon/test',
         'error': 'automon/error',
-        'drafted': 'automon/drafted',
         'relevant': 'automon/relevant',
         "remote": 'automon/remote',
         "welcome": 'automon/welcome',
@@ -70,7 +68,6 @@ class AutomonLabels:
         self.sent = Label(name='SENT', id='SENT')
         self.unread = Label(name='UNREAD', id='UNREAD')
         self.trash = Label(name='TRASH', id='TRASH')
-        self.drafted = Label(name=self.labels.get('drafted'), color=self._color_default)
 
         # allow auto reply
         self.auto_reply_enabled = Label(name=self.labels.get('auto_reply_enabled'), color=self._color_enabled)
@@ -86,9 +83,6 @@ class AutomonLabels:
 
         # remote
         self.remote = Label(name=self.labels.get('remote'), color=self._color_default)
-
-        # test
-        self.test = Label(name=self.labels.get('test'), color=self._color_enabled)
 
         # need user input
         self.user_action_required = Label(name=self.labels.get('user_action_required'), color=self._color_error)
