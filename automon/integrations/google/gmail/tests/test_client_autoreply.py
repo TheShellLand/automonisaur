@@ -158,41 +158,6 @@ def main():
     if _welcome_email.messages:
         gmail.messages_trash(id=_welcome_email.messages[0].id)
 
-    _welcome_body, model = run_llm(prompts=[
-        f"Create an HTML format email message for a service that helps you automate "
-        f"responding to job recruiter emails. \n"
-        f"The service is called TiredofReplying.com. \n"
-        f"Everything runs directly from your Gmail inbox. "
-        f"It does this by analyzing the recruiter emails and your resume, then it "
-        f"creates a personalized email using your relevant job history and "
-        f"experience. \n"
-        f"And all you have to do is tag an email with the `automon` label. "
-        f"The rest is handled automatically. "
-        f"\n\n"
-        f"MUST Return only the code between <html> code </html>. "
-        f"Exclude the code fences (```html and ```) surrounding the HTML code. "
-        f"Exclude everything else. "
-    ])
-
-    _welcome_email_parts = [gmail.v1.EmailAttachment(
-        bytes_=_welcome_body.encode(),
-        mimeType=x
-    ) for x in ['text/html']]
-
-    _welcome_email = gmail.draft_create(
-        draft_subject=f"Welcome to your personal job assistant!",
-        draft_attachments=_welcome_email_parts,
-    )
-
-    gmail.messages_modify(id=_welcome_email.message.id,
-                          addLabelIds=[labels.automon,
-                                       labels.welcome])
-
-    # resume check
-    # gmail.draft_create(
-    #     draft_subject=f""
-    # )
-
     _thread = None
     _nextPageToken = None
     while gmail.is_ready():
@@ -216,19 +181,6 @@ def main():
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
 
-            if (labels.auto_reply_enabled in _first.automon_labels
-                    or labels.auto_reply_enabled in _latest.automon_labels
-            ):
-                _FOUND = True
-                print('auto', end='')
-                break
-
-            if (labels.analyze in _first.automon_labels
-            ):
-                _FOUND = True
-                print('analyze', end='')
-                break
-
             if (labels.test in _first.automon_labels
             ):
                 _FOUND = True
@@ -242,7 +194,22 @@ def main():
                 print('retry', end='')
                 break
 
-            if _first.automon_from_email().lower() == _latest.automon_from_email().lower():
+            if (labels.analyze in _first.automon_labels
+            ):
+                _FOUND = True
+                print('analyze', end='')
+                break
+
+            if (labels.auto_reply_enabled in _first.automon_labels
+                    or labels.auto_reply_enabled in _latest.automon_labels
+                    and labels.sent not in _latest.automon_labels
+            ):
+                _FOUND = True
+                print('auto', end='')
+                break
+
+            if (gmail._userId != _first.automon_from_email()
+                    and _first.automon_from_email().lower() == _latest.automon_from_email().lower()):
                 _FOUND = True
                 print('new', end='')
                 break
@@ -357,7 +324,11 @@ def main():
                 f"\n\n"
                 f"Create a response. "
             )
-            response, model = run_llm(prompts=prompts, chat=False)
+
+            if labels.test in email_selected.automon_labels:
+                response, model = run_llm(prompts=prompts, chat=True)
+            else:
+                response, model = run_llm(prompts=prompts, chat=False)
 
         resume_attachment = resume_selected.automon_attachments().with_filename()[0]
         resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded(),
