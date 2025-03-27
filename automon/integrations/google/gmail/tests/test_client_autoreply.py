@@ -216,11 +216,6 @@ def main():
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
 
-            if _first.automon_from_email().lower() == _latest.automon_from_email().lower():
-                _FOUND = True
-                print('new', end='')
-                break
-
             if (labels.auto_reply_enabled in _first.automon_labels
                     or labels.auto_reply_enabled in _latest.automon_labels
             ):
@@ -245,6 +240,11 @@ def main():
             ):
                 _FOUND = True
                 print('retry', end='')
+                break
+
+            if _first.automon_from_email().lower() == _latest.automon_from_email().lower():
+                _FOUND = True
+                print('new', end='')
                 break
 
             if labels.resume in _first.automon_labels:
