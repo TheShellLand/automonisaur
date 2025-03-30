@@ -187,10 +187,10 @@ def main():
 
         for _thread in email_search.threads:
 
-            print(f" {_thread.id} ::", end='')
-
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
+
+            print(f"{_first.payload.get_header('subject')}")
 
             if labels.resume in _first.automon_labels:
                 continue

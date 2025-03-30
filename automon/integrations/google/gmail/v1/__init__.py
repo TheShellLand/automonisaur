@@ -264,7 +264,7 @@ class LabelListVisibility:
 class AutomonAttachments(DictUpdate):
     attachments: ['MessagePart']
 
-    def __init__(self, attachments: ['MessagePart']):
+    def __init__(self, attachments: ['MessagePart'] = []):
         super().__init__()
 
         self.attachments = attachments
@@ -937,6 +937,8 @@ class MessagePart(DictUpdate):
     def __init__(self):
         super().__init__()
 
+        self.headers = []
+
     def enhance(self):
 
         if hasattr(self, 'body'):
@@ -950,9 +952,15 @@ class MessagePart(DictUpdate):
 
         return self
 
-    def automon_attachments(self):
+    def automon_attachments(self) -> AutomonAttachments:
         if hasattr(self, 'parts'):
             return AutomonAttachments(attachments=self.parts)
+        return AutomonAttachments()
+
+    def get_header(self, header: str) -> Headers:
+        for _header in self.headers:
+            if header.lower() in _header.name.lower():
+                return _header
 
     def __repr__(self):
         if getattr(self, 'filename') and getattr(self, 'mimeType'):
