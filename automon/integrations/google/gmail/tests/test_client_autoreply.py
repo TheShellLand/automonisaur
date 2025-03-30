@@ -187,7 +187,7 @@ def main():
 
         for _thread in email_search.threads:
 
-            print('.', end='')
+            print(f" {_thread.id} ::", end='')
 
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
@@ -196,6 +196,27 @@ def main():
                 continue
 
             if labels.sent in _latest.automon_labels:
+                continue
+
+            if (labels.draft in _latest.automon_labels
+                    and labels.trash not in _latest.automon_labels
+            ):
+                continue
+
+            if labels.sent not in _latest.automon_labels:
+                _sent = False
+                for _message in _thread.messages:
+                    if labels.sent in _message.automon_labels:
+                        _sent = True
+                    elif (labels.draft not in _message.automon_labels
+                          and labels.trash not in _message.automon_labels
+                    ):
+                        _sent = False
+
+                if not _sent:
+                    _FOUND = True
+                    print('new', end='')
+                    break
                 continue
 
             if (labels.retry in _first.automon_labels
@@ -219,21 +240,6 @@ def main():
                 print('auto', end='')
                 break
 
-            if labels.sent not in _latest.automon_labels:
-                _sent = False
-                for _message in _thread.messages:
-                    if labels.sent in _message.automon_labels:
-                        _sent = True
-
-                if not _sent:
-                    _FOUND = True
-                    print('new', end='')
-                    break
-                continue
-
-            if labels.draft in _latest.automon_labels:
-                continue
-
         if _FOUND:
             print(' :)')
             break
@@ -255,7 +261,7 @@ def main():
                 _RETRY = True
                 gmail.messages_modify(id=_message.id,
                                       removeLabelIds=[labels.retry,
-                                                      labels.error])
+                                                      ])
 
                 # delete DRAFT
                 if labels.draft in _message.automon_labels:
@@ -279,6 +285,9 @@ def main():
         prompts_emails = []
         prompts_emails_all = []
         for message in email_selected.messages:
+
+            if labels.draft in message.automon_labels:
+                continue
 
             _message = f"{message.to_dict()}"
 
@@ -396,7 +405,7 @@ def main():
                                     draft_subject=f"Bug Report",
                                     draft_body=bug_report,
                                     draft_to=[email_error])
-        gmail.messages_modify(id=_draft.message.id, addLabelIds=[labels.error,
+        gmail.messages_modify(id=_draft.message.id, addLabelIds=[labels.retry,
                                                                  labels.unread,
                                                                  ])
 
