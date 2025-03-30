@@ -187,16 +187,23 @@ def main():
 
         for _thread in email_search.threads:
 
+            # _thread = gmail.thread_get_automon('195da1cbcaa5573b')
+
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
 
-            print(f"{_first.payload.get_header('subject')}")
+            print(f"{_thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels}")
 
             if labels.resume in _first.automon_labels:
-                continue
 
-            if labels.sent in _latest.automon_labels:
-                continue
+                if labels.sent in _latest.automon_labels:
+                    continue
+
+            if [x for x in _thread.messages
+                if labels.retry in x.automon_labels]:
+                _FOUND = True
+                print('retry', end='')
+                break
 
             if (labels.draft in _latest.automon_labels
                     and labels.trash not in _latest.automon_labels
@@ -218,13 +225,6 @@ def main():
                     print('new', end='')
                     break
                 continue
-
-            if (labels.retry in _first.automon_labels
-                    or labels.retry in _latest.automon_labels
-            ):
-                _FOUND = True
-                print('retry', end='')
-                break
 
             if (labels.analyze in _first.automon_labels
             ):
@@ -259,9 +259,7 @@ def main():
                     or labels.auto_reply_enabled in _message.automon_labels
             ):
                 _RETRY = True
-                gmail.messages_modify(id=_message.id,
-                                      removeLabelIds=[labels.retry,
-                                                      ])
+                gmail.messages_modify(id=_message.id)
 
                 # delete DRAFT
                 if labels.draft in _message.automon_labels:
@@ -361,6 +359,7 @@ def main():
 
         gmail.messages_modify(id=email_selected.id,
                               addLabelIds=[labels.unread],
+                              removeLabelIds=[labels.retry]
                               )
 
         if (labels.auto_reply_enabled in email_selected.automon_message_latest.automon_labels
@@ -381,7 +380,7 @@ def main():
 
         prompts = [prompts_emails[0]]
         prompts.append(
-            f"Respond only true or false, is the job remote?"
+            f"Respond only true or false, is the job fully and completely remote, with no in-office days?"
         )
         response, model = run_llm(prompts)
         if gemini.true_or_false(response.lower()):
@@ -390,6 +389,8 @@ def main():
         CHAT_ONCE = 0
 
     except Exception as error:
+
+        gmail.config.refresh_token()
 
         import traceback
         llm_check = [
