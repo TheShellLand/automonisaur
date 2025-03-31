@@ -355,6 +355,7 @@ class GoogleGmailClient:
         if type(id) is Label:
             id = id.id
 
+        logger.debug(f"[GoogleGmailClient] :: labels_get :: {id=}")
         api = UsersLabels(self._userId).get(id)
         self.requests.get(api, headers=self.config.headers)
         logger.info(f"[GoogleGmailClient] :: labels_get :: done")
@@ -516,8 +517,10 @@ class GoogleGmailClient:
 
         api = UsersMessagesAttachments(self._userId).get(messageId=messageId, id=attachmentId)
         self.requests.get(api, headers=self.config.headers)
+        attachments = MessagePartBody().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: messages_attachments_get :: {attachments=}")
         logger.info(f"[GoogleGmailClient] :: messages_attachments_get :: done")
-        return MessagePartBody().update_dict(self.requests.to_dict())
+        return attachments
 
     def messages_batchDelete(self, ids: list):
         """Deletes many messages by message ID. Provides no guarantees that messages were not already deleted or even existed at all."""

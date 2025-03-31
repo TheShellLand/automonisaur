@@ -37,6 +37,7 @@ class GoogleGeminiClient(object):
         content = Content(role=role).add_part(part=part)
         self._prompt.add_content(content=content)
 
+        logger.debug(f"[GoogleGeminiClient] :: add_content :: {content=}")
         logger.info(f"[GoogleGeminiClient] :: add_content :: done")
         return self
 
