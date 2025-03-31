@@ -187,17 +187,44 @@ def main():
 
         for _thread in email_search.threads:
 
-            print('.', end='')
+            # _thread = gmail.thread_get_automon('195da1cbcaa5573b')
 
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
 
-            if (labels.retry in _first.automon_labels
-                    or labels.retry in _latest.automon_labels
-            ):
+            print(f"{_thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels}")
+
+            if labels.resume in _first.automon_labels:
+
+                if labels.sent in _latest.automon_labels:
+                    continue
+
+            if [x for x in _thread.messages
+                if labels.retry in x.automon_labels]:
                 _FOUND = True
                 print('retry', end='')
                 break
+
+            if (labels.draft in _latest.automon_labels
+                    and labels.trash not in _latest.automon_labels
+            ):
+                continue
+
+            if labels.sent not in _latest.automon_labels:
+                _sent = False
+                for _message in _thread.messages:
+                    if labels.sent in _message.automon_labels:
+                        _sent = True
+                    elif (labels.draft not in _message.automon_labels
+                          and labels.trash not in _message.automon_labels
+                    ):
+                        _sent = False
+
+                if not _sent:
+                    _FOUND = True
+                    print('new', end='')
+                    break
+                continue
 
             if (labels.analyze in _first.automon_labels
             ):
@@ -212,20 +239,6 @@ def main():
                 _FOUND = True
                 print('auto', end='')
                 break
-
-            if labels.sent not in _latest.automon_labels:
-                _FOUND = True
-                print('new', end='')
-                break
-
-            if labels.resume in _first.automon_labels:
-                continue
-
-            if labels.draft in _latest.automon_labels:
-                continue
-
-            if labels.sent in _latest.automon_labels:
-                continue
 
         if _FOUND:
             print(' :)')
@@ -246,10 +259,7 @@ def main():
                     or labels.auto_reply_enabled in _message.automon_labels
             ):
                 _RETRY = True
-                gmail.messages_modify(id=_message.id,
-                                      removeLabelIds=[labels.retry,
-                                                      labels.drafted,
-                                                      labels.error])
+                gmail.messages_modify(id=_message.id)
 
                 # delete DRAFT
                 if labels.draft in _message.automon_labels:
@@ -261,7 +271,7 @@ def main():
         email_selected = _thread
         resume_selected = resume_search.messages[0]
 
-        resume = resume_selected.automon_attachments().attachments[0].body.automon_data_html_text
+        resume = resume_selected.automon_attachments().attachments[0].parts[0].body.automon_data_html_text
 
         to = email_selected.automon_message_first.automon_from().get('value')
         from_ = email_selected.automon_message_first.automon_to().get('value')
@@ -273,6 +283,9 @@ def main():
         prompts_emails = []
         prompts_emails_all = []
         for message in email_selected.messages:
+
+            if labels.draft in message.automon_labels:
+                continue
 
             _message = f"{message.to_dict()}"
 
@@ -316,15 +329,6 @@ def main():
                 GoogleGeminiClient.prompts.agent_machine_job_applicant,
             )
             prompts.append(
-                f"MUST NOT have a reply if last email is not from the sender of the first email. \n"
-                f"EXCLUDE any email subject line. \n"
-                f"EXCLUDE any internal thought process. \n"
-                f"EXCLUDE any chain of thought process. \n"
-                f"EXCLUDE any conversational parts. \n"
-                f"MUST write in plain english. \n"
-                f"MUST write in first person. \n"
-                f"MUST respond as if in a conversation. \n"
-                f"MUST provide only the body of the response. \n"
                 f"MUST check for a job description in the first email before continuing. \n"
                 f"\n\n"
                 f"Create a response. "
@@ -355,6 +359,7 @@ def main():
 
         gmail.messages_modify(id=email_selected.id,
                               addLabelIds=[labels.unread],
+                              removeLabelIds=[labels.retry]
                               )
 
         if (labels.auto_reply_enabled in email_selected.automon_message_latest.automon_labels
@@ -363,7 +368,7 @@ def main():
             draft_sent = gmail.draft_send(draft=draft)
             gmail.messages_modify(id=email_selected.automon_message_first.id,
                                   addLabelIds=[labels.unread],
-                                  removeLabelIds=[labels.drafted])
+                                  )
 
         prompts = [prompts_emails[0]] + prompts_resume
         prompts.append(
@@ -375,7 +380,7 @@ def main():
 
         prompts = [prompts_emails[0]]
         prompts.append(
-            f"Respond only true or false, is the job remote?"
+            f"Respond only true or false, is the job fully and completely remote, with no in-office days?"
         )
         response, model = run_llm(prompts)
         if gemini.true_or_false(response.lower()):
@@ -384,6 +389,8 @@ def main():
         CHAT_ONCE = 0
 
     except Exception as error:
+
+        gmail.config.refresh_token()
 
         import traceback
         llm_check = [
@@ -399,7 +406,7 @@ def main():
                                     draft_subject=f"Bug Report",
                                     draft_body=bug_report,
                                     draft_to=[email_error])
-        gmail.messages_modify(id=_draft.message.id, addLabelIds=[labels.error,
+        gmail.messages_modify(id=_draft.message.id, addLabelIds=[labels.retry,
                                                                  labels.unread,
                                                                  ])
 

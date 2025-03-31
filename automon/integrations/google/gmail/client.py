@@ -32,8 +32,6 @@ class AutomonLabels:
         'resume': 'automon/resume',
         'analyze': 'automon/analyze',
         "retry": 'automon/retry',
-        'error': 'automon/error',
-        'drafted': 'automon/drafted',
         'relevant': 'automon/relevant',
         "remote": 'automon/remote',
         "welcome": 'automon/welcome',
@@ -69,13 +67,9 @@ class AutomonLabels:
         self.sent = Label(name='SENT', id='SENT')
         self.unread = Label(name='UNREAD', id='UNREAD')
         self.trash = Label(name='TRASH', id='TRASH')
-        self.drafted = Label(name=self.labels.get('drafted'), color=self._color_default)
 
         # allow auto reply
         self.auto_reply_enabled = Label(name=self.labels.get('auto_reply_enabled'), color=self._color_enabled)
-
-        # issues encountered
-        self.error = Label(name=self.labels.get('error'), color=self._color_error)
 
         # retry draft
         self.retry = Label(name=self.labels.get('retry'), color=self._color_error)

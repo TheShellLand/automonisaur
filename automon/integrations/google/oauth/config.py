@@ -420,7 +420,12 @@ class GoogleAuthConfig(object):
                                      credentials=self.credentials,
                                      num_retries=30,
                                      )
-        userinfo = service.userinfo().get().execute()
+        userinfo = None
+        while userinfo is None:
+            try:
+                userinfo = service.userinfo().get().execute()
+            except Exception as error:
+                logger.error(f'[GoogleAuthConfig] :: userinfo :: error :: {error=}')
 
         user_info = service.userinfo().get().execute()
         self.user_info = userinfo
