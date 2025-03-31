@@ -5,8 +5,8 @@ from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
-DEBUG = False
-INFO = False
+DEBUG_ = False
+INFO_ = False
 
 LoggingClient.logging.getLogger('httpx').setLevel(ERROR)
 LoggingClient.logging.getLogger('httpcore').setLevel(ERROR)
@@ -20,11 +20,11 @@ LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').set
 LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(ERROR)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)
 
-if INFO:
+if INFO_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(INFO)
 
-if DEBUG:
+if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
 
@@ -259,13 +259,11 @@ def main():
                     or labels.auto_reply_enabled in _message.automon_labels
             ):
                 _RETRY = True
-                gmail.messages_modify(id=_message.id)
+                gmail.messages_modify(id=_message.id, removeLabelIds=[labels.retry])
 
                 # delete DRAFT
                 if labels.draft in _message.automon_labels:
                     gmail.messages_trash(id=_message.id)
-
-            email_search.threads = [gmail.thread_get_automon(id=_message.threadId)]
 
         global email_selected
         email_selected = _thread
@@ -334,7 +332,7 @@ def main():
                 f"Create a response. "
             )
 
-            if labels.retry in email_selected.automon_message_first.automon_labels:
+            if [x for x in email_selected.messages if labels.retry in x.automon_labels]:
                 response, model = run_llm(prompts=prompts, chat=True)
             else:
                 response, model = run_llm(prompts=prompts, chat=False)

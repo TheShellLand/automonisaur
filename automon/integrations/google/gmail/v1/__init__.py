@@ -831,6 +831,8 @@ class MessagePartBody(DictUpdate):
     def __init__(self):
         super().__init__()
 
+        self.attachmentId = ''
+
     def enhance(self):
 
         if hasattr(self, 'data'):
@@ -856,8 +858,7 @@ class MessagePartBody(DictUpdate):
                 pass
 
     def __repr__(self):
-        if hasattr(self, 'attachmentId'):
-            return f"{self.attachmentId}"
+        return f"{self.attachmentId}"
 
     def automon_data_bs4(self):
         if hasattr(self, 'automon_data_base64decoded'):
