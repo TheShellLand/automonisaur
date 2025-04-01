@@ -210,6 +210,20 @@ def main():
             ):
                 continue
 
+            if (labels.analyze in _first.automon_labels
+            ):
+                _FOUND = True
+                print('analyze', end='')
+                break
+
+            if ((labels.auto_reply_enabled in _first.automon_labels
+                 or labels.auto_reply_enabled in _latest.automon_labels)
+                    and (labels.sent not in _latest.automon_labels)
+            ):
+                _FOUND = True
+                print('auto', end='')
+                break
+
             if labels.sent not in _latest.automon_labels:
                 _sent = False
                 for _message in _thread.messages:
@@ -224,21 +238,18 @@ def main():
                     _FOUND = True
                     print('new', end='')
                     break
+
+                import dateutil.parser
+
+                _first_date = dateutil.parser.parse(_first.payload.get_header('Date').value)
+                _latest_date = dateutil.parser.parse(_latest.payload.get_header('Date').value)
+
+                if (_latest_date - _first_date).days > 4:
+                    _FOUND = True
+                    print('followup', end='')
+                    break
+
                 continue
-
-            if (labels.analyze in _first.automon_labels
-            ):
-                _FOUND = True
-                print('analyze', end='')
-                break
-
-            if ((labels.auto_reply_enabled in _first.automon_labels
-                 or labels.auto_reply_enabled in _latest.automon_labels)
-                    and (labels.sent not in _latest.automon_labels)
-            ):
-                _FOUND = True
-                print('auto', end='')
-                break
 
         if _FOUND:
             print(' :)')
