@@ -337,6 +337,8 @@ def main():
             else:
                 response, model = run_llm(prompts=prompts, chat=False)
 
+        gmail.config.refresh_token()
+
         resume_attachment = resume_selected.automon_attachments().with_filename()[0]
         resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded(),
                                                      filename=resume_attachment.filename,
