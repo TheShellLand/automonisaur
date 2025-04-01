@@ -1,5 +1,8 @@
 import unittest
 
+import datetime
+import dateutil.parser
+
 from automon.integrations.google.gmail import GoogleGmailClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
 from automon.integrations.ollamaWrapper import OllamaClient
@@ -192,12 +195,10 @@ def main():
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
 
-            print(f"{_thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels}")
+            print(f"{_thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels} :: ", end='')
 
             if labels.resume in _first.automon_labels:
-
-                if labels.sent in _latest.automon_labels:
-                    continue
+                continue
 
             if [x for x in _thread.messages
                 if labels.retry in x.automon_labels]:
@@ -224,6 +225,20 @@ def main():
                 print('auto', end='')
                 break
 
+            if labels.sent in _latest.automon_labels:
+                _latest_date = dateutil.parser.parse(_latest.payload.get_header('Date').value)
+                _time_delta = ((datetime.datetime.now() + _latest_date.utcoffset()).replace(
+                    tzinfo=datetime.timezone(_latest_date.utcoffset())) - _latest_date)
+
+                print(f'{_time_delta.days} days ago :: ')
+
+                if _time_delta.days >= 4:
+                    _FOUND = True
+                    print('followup', end='')
+                    break
+
+                continue
+
             if labels.sent not in _latest.automon_labels:
                 _sent = False
                 for _message in _thread.messages:
@@ -237,16 +252,6 @@ def main():
                 if not _sent:
                     _FOUND = True
                     print('new', end='')
-                    break
-
-                import dateutil.parser
-
-                _first_date = dateutil.parser.parse(_first.payload.get_header('Date').value)
-                _latest_date = dateutil.parser.parse(_latest.payload.get_header('Date').value)
-
-                if (_latest_date - _first_date).days > 4:
-                    _FOUND = True
-                    print('followup', end='')
                     break
 
                 continue
