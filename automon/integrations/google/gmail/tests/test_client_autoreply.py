@@ -174,9 +174,13 @@ def main():
 
     _thread = None
     _nextPageToken = None
+
+    _FOUND = None
+    _FOLLOW_UP = None
     while gmail.is_ready():
 
         _FOUND = None
+        _FOLLOW_UP = None
         email_search = gmail.thread_list_automon(
             maxResults=1,
             pageToken=_nextPageToken,
@@ -230,10 +234,11 @@ def main():
                 _time_delta = ((datetime.datetime.now() + _latest_date.utcoffset()).replace(
                     tzinfo=datetime.timezone(_latest_date.utcoffset())) - _latest_date)
 
-                print(f'{_time_delta.days} days ago :: ')
+                print(f'{_time_delta.days} days ago :: ', end='')
 
                 if _time_delta.days >= 4:
                     _FOUND = True
+                    _FOLLOW_UP = True
                     print('followup', end='')
                     break
 
@@ -259,6 +264,8 @@ def main():
         if _FOUND:
             print(' :)')
             break
+
+        print("\n")
 
     resume_search = gmail.messages_list_automon(
         maxResults=1,
@@ -355,10 +362,13 @@ def main():
 
         gmail.config.refresh_token()
 
-        resume_attachment = resume_selected.automon_attachments().with_filename()[0]
-        resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded(),
-                                                     filename=resume_attachment.filename,
-                                                     mimeType=resume_attachment.mimeType)
+        if _FOLLOW_UP:
+            resume_attachment = []
+        else:
+            resume_attachment = resume_selected.automon_attachments().with_filename()[0]
+            resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded(),
+                                                         filename=resume_attachment.filename,
+                                                         mimeType=resume_attachment.mimeType)
 
         # create draft
         body = response
@@ -409,23 +419,6 @@ def main():
         gmail.config.refresh_token()
 
         import traceback
-        llm_check = [
-                        f"Tell me what the error from this stacktrace could be. \n"
-                    ] + [str(dict(line=x.line, filename=x.filename)) for x in traceback.extract_stack()]
-        response, model = run_llm(llm_check)
-
-        email_error = 'naisanza@gmail.com'
-
-        bug_report = (f"{response}")
-
-        _draft = gmail.draft_create(threadId=email_selected.messages[0].id,
-                                    draft_subject=f"Bug Report",
-                                    draft_body=bug_report,
-                                    draft_to=[email_error])
-        gmail.messages_modify(id=_draft.message.id, addLabelIds=[labels.retry,
-                                                                 labels.unread,
-                                                                 ])
-
         traceback.print_exc()
         return
 
