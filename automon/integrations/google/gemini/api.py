@@ -56,6 +56,17 @@ class GeminiModels:
         return f'gemini-embedding-exp-03-07'
 
     @property
+    def gemini_2_5_pro_exp_03_25(self):
+        """
+        Gemini 2.5 Pro Experimental
+        Enhanced thinking and reasoning, multimodal understanding, advanced coding, and more
+
+        input: Audio, images, videos, and text
+        output: Text
+        """
+        return f'gemini-2.5-pro-exp-03-25'
+
+    @property
     def gemini_2_0_pro_exp_02_05(self):
         """
         Gemini 2.0 Pro
@@ -142,6 +153,17 @@ class GeminiModels:
         output: Text embeddings
         """
         return f'text-embedding-004'
+
+    @property
+    def imagen_3_0_generate_002(self):
+        """
+        Imagen 3
+        Our most advanced image generation model
+
+        input: Text
+        output: Images
+        """
+        return f'imagen-3.0-generate-002'
 
 
 class Part(DictUpdate):
