@@ -1,6 +1,9 @@
 import unittest
 
 from automon.integrations.google.gemini import GoogleGeminiClient
+from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
+
+LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(ERROR)
 
 
 class TestGoogleGeminiClient(unittest.TestCase):
@@ -9,8 +12,6 @@ class TestGoogleGeminiClient(unittest.TestCase):
 
         if gemini.is_ready():
             gemini.chat_forever()
-
-            pass
 
 
 if __name__ == '__main__':

@@ -1245,6 +1245,10 @@ class SeleniumBrowser(object):
         if self.webdriver:
             return self.config.webdriver_wrapper.session_id
 
+    def set_webdriver_wrapper(self, driver):
+        self.config.webdriver_wrapper = driver
+        return self
+
     def set_window_size(self, width=1920, height=1080, device_type=None) -> bool:
         """set browser resolution"""
         logger.debug(f'[SeleniumBrowser] :: set_window_size :: {width=} :: {height=} :: {device_type=}')

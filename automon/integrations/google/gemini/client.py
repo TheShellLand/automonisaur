@@ -1,6 +1,7 @@
 import json
 import readline
 
+import automon.integrations.seleniumWrapper
 import automon.integrations.ollamaWrapper.prompt_templates
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
@@ -29,6 +30,28 @@ class GoogleGeminiClient(object):
     def __repr__(self):
         return f"[GoogleGeminiClient] :: {self.config=}"
 
+    def _agent_download(self, message: str) -> str:
+        logger.debug(f'[GoogleGeminiClient] :: _agent_download :: >>>>')
+
+        download = message[len('/download'):].strip()
+        url = download
+
+        print(f":: SYSTEM :: downloading {url} ::")
+
+        browser = automon.integrations.seleniumWrapper.SeleniumBrowser().set_webdriver_wrapper(
+            automon.integrations.seleniumWrapper.ChromeWrapper().enable_defaults()
+        )
+        browser.start()
+        browser.get(url=url)
+        browser.refresh()
+        browser.refresh()
+        download = f"{browser.get_page_source_beautifulsoup().html}"
+        # download = browser.get_page_source_beautifulsoup().html.text
+        browser.quit()
+
+        logger.info(f'[GoogleGeminiClient] :: _download :: done')
+        return download
+
     def add_content(self, prompt: str, role: str = 'user'):
         if type(prompt) is not str:
             return self
@@ -37,7 +60,11 @@ class GoogleGeminiClient(object):
         content = Content(role=role).add_part(part=part)
         self._prompt.add_content(content=content)
 
-        logger.debug(f"[GoogleGeminiClient] :: add_content :: {content=}")
+        import automon.integrations.ollamaWrapper
+
+        content_len = automon.integrations.ollamaWrapper.chr_to_tokens(string=prompt)
+
+        logger.debug(f"[GoogleGeminiClient] :: add_content :: {content_len:,} tokens")
         logger.info(f"[GoogleGeminiClient] :: add_content :: done")
         return self
 
@@ -94,6 +121,11 @@ class GoogleGeminiClient(object):
 
             if prompt == '/clear':
                 self._prompt.clear_history()
+                continue
+
+            if '/download' in prompt[:len('/download')]:
+                prompt = self._agent_download(message=prompt)
+                self.add_content(prompt=prompt)
                 continue
 
             self.add_content(prompt=prompt).chat()
