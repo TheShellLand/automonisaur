@@ -445,6 +445,11 @@ class EmailAttachment(DictUpdate):
             self.content_type = content_type
             self.encoding = encoding
 
+    def __bool__(self):
+        if self.bytes_:
+            return True
+        return False
+
 
 class Format:
     minimal = 'minimal'
