@@ -1,6 +1,9 @@
+import bs4
 import json
 import requests
 import requests.adapters
+
+import automon.integrations.seleniumWrapper.user_agents
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from .config import RequestsConfig
@@ -10,7 +13,7 @@ logger.setLevel(DEBUG)
 
 
 class RequestsClient(object):
-    def __init__(self, url: str = None, data: dict = None, headers: dict = None,
+    def __init__(self, url: str = None, data: dict = None, headers: dict = {},
                  config: RequestsConfig = None):
         """Wrapper for requests library"""
 
@@ -24,6 +27,8 @@ class RequestsClient(object):
         self.requests = requests
         self.session = self.requests.Session()
         self.proxies = self.config.get_proxy()
+
+        self._bs4 = bs4.BeautifulSoup
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -75,8 +80,13 @@ class RequestsClient(object):
 
     @property
     def content(self):
-        if 'content' in dir(self.response):
+        if hasattr(self.response, 'content'):
             return self.response.content
+
+    @property
+    def content_bs4(self):
+        if self.content:
+            return self._bs4(self.content)
 
     def content_to_dict(self):
         return self.to_dict()
@@ -96,6 +106,15 @@ class RequestsClient(object):
         self.session.mount('http://', requests.adapters.HTTPAdapter(max_retries=retries))
         self.session.mount('https://', requests.adapters.HTTPAdapter(max_retries=retries))
 
+        return self
+
+    def set_user_agent(self, user_agent: str):
+        self.update_headers({'User-Agent': user_agent})
+        return self
+
+    def set_random_user_agent(self):
+        self.set_user_agent(
+            user_agent=automon.integrations.seleniumWrapper.user_agents.SeleniumUserAgentBuilder().get_top())
         return self
 
     def _set_proxy(self):

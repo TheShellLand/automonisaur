@@ -154,6 +154,9 @@ class GoogleGmailClient:
 
             for attachment in draft_attachments:
 
+                if not attachment:
+                    continue
+
                 filename = attachment.filename
                 bytes_ = attachment.bytes_
                 mimeType = attachment.mimeType

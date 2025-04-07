@@ -9,7 +9,7 @@ from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
 DEBUG_ = False
-INFO_ = False
+INFO_ = True
 
 LoggingClient.logging.getLogger('httpx').setLevel(ERROR)
 LoggingClient.logging.getLogger('httpcore').setLevel(ERROR)
@@ -255,6 +255,9 @@ def main():
                         _sent = False
 
                 if not _sent:
+                    if len(_thread.messages) > 1:
+                        _FOLLOW_UP = True
+
                     _FOUND = True
                     print('new', end='')
                     break
