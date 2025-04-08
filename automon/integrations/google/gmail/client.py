@@ -445,10 +445,10 @@ class GoogleGmailClient:
                     if hasattr(_payload_part.body, 'attachmentId'):
                         _attachmentId = _payload_part.body.attachmentId
 
-                        _messages_attachments_get = self.messages_attachments_get(messageId=message.id,
-                                                                                  attachmentId=_attachmentId)
-
-                        _payload_part.body.update_dict(_messages_attachments_get)
+                        if _attachmentId:
+                            _messages_attachments_get = self.messages_attachments_get(messageId=message.id,
+                                                                                      attachmentId=_attachmentId)
+                            _payload_part.body.update_dict(_messages_attachments_get)
 
                         if hasattr(_payload_part.body, 'automon_attachment'):
                             setattr(_payload_part, 'automon_attachment', _payload_part.body.automon_attachment)
@@ -519,9 +519,12 @@ class GoogleGmailClient:
             return
 
         api = UsersMessagesAttachments(self._userId).get(messageId=messageId, id=attachmentId)
-        self.requests.get(api, headers=self.config.headers)
-        attachments = MessagePartBody().update_dict(self.requests.to_dict())
-        logger.debug(f"[GoogleGmailClient] :: messages_attachments_get :: {attachments=}")
+        if self.requests.get(api, headers=self.config.headers):
+            attachments = MessagePartBody().update_dict(self.requests.to_dict())
+            logger.debug(f"[GoogleGmailClient] :: messages_attachments_get :: {attachments=}")
+        else:
+            raise Exception(f"[GoogleGmailClient] :: messages_attachments_get :: error :: {self.requests.text}")
+
         logger.info(f"[GoogleGmailClient] :: messages_attachments_get :: done")
         return attachments
 
