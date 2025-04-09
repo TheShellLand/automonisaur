@@ -204,12 +204,6 @@ def main():
             if labels.resume in _first.automon_labels:
                 continue
 
-            if [x for x in _thread.messages
-                if labels.retry in x.automon_labels]:
-                _FOUND = True
-                print('retry', end='')
-                break
-
             if (labels.draft in _latest.automon_labels
                     and labels.trash not in _latest.automon_labels
             ):

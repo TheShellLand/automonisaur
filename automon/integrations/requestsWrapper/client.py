@@ -150,7 +150,6 @@ class RequestsClient(object):
             if self.status_code == 200:
                 return True
 
-            return False
         except Exception as error:
             self.errors = error
             raise Exception(f'RequestsClient :: DELETE :: ERROR :: {error=}')
@@ -181,7 +180,6 @@ class RequestsClient(object):
 
             self.errors = self.content
 
-            return False
         except Exception as error:
             self.errors = error
             raise Exception(f'RequestsClient :: GET :: ERROR :: {error=}')
@@ -212,7 +210,6 @@ class RequestsClient(object):
 
             self.errors = self.content
 
-            return False
         except Exception as error:
             self.errors = error
             raise Exception(f'RequestsClient :: PATCH :: ERROR :: {error=}')
@@ -243,7 +240,6 @@ class RequestsClient(object):
 
             self.errors = self.content
 
-            return False
         except Exception as error:
             self.errors = error
             raise Exception(f'RequestsClient :: POST :: ERROR :: {error=}')
@@ -274,7 +270,6 @@ class RequestsClient(object):
 
             self.errors = self.content
 
-            return False
         except Exception as error:
             self.errors = error
             raise Exception(f'RequestsClient :: PUT :: ERROR :: {error=}')
@@ -300,14 +295,14 @@ class RequestsClient(object):
             try:
                 return json.loads(self.content)
             except Exception as error:
-                logger.error(f'RequestsClient :: TO DICT :: ERROR :: {error=}')
+                raise Exception(f'RequestsClient :: TO DICT :: ERROR :: {error=}')
 
     def to_json(self):
         if self.content:
             try:
                 return json.dumps(json.loads(self.content))
             except Exception as error:
-                logger.error(f'RequestsClient :: TO JSON :: ERROR :: {error=}')
+                raise Exception(f'RequestsClient :: TO JSON :: ERROR :: {error=}')
 
     def update_headers(self, headers: dict):
         return self.session.headers.update(headers)
