@@ -523,7 +523,7 @@ class GoogleGmailClient:
             attachments = MessagePartBody().update_dict(self.requests.to_dict())
             logger.debug(f"[GoogleGmailClient] :: messages_attachments_get :: {attachments=}")
         else:
-            raise Exception(f"[GoogleGmailClient] :: messages_attachments_get :: error :: {self.requests.text}")
+            raise Exception(f"[GoogleGmailClient] :: messages_attachments_get :: error :: {self.requests}")
 
         logger.info(f"[GoogleGmailClient] :: messages_attachments_get :: done")
         return attachments
