@@ -204,16 +204,16 @@ def main():
             if labels.resume in _first.automon_labels:
                 continue
 
-            if (labels.draft in _latest.automon_labels
-                    and labels.trash not in _latest.automon_labels
-            ):
-                continue
-
             if (labels.analyze in _first.automon_labels
             ):
                 _FOUND = True
                 print('analyze', end='')
                 break
+
+            if (labels.draft in _latest.automon_labels
+                    and labels.trash not in _latest.automon_labels
+            ):
+                continue
 
             if ((labels.auto_reply_enabled in _first.automon_labels
                  or labels.auto_reply_enabled in _latest.automon_labels)
@@ -336,7 +336,7 @@ def main():
                 _draft = email_selected.automon_message_latest
                 _resume = _draft.automon_attachments().attachments[0].body.automon_data_html_text
                 prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
-                response, model = run_llm(prompts=prompts, chat=True)
+                response, model = run_llm(prompts=prompts, chat=False)
                 gmail.messages_modify(id=_draft.id, removeLabelIds=[labels.analyze])
                 gmail.messages_trash(id=_draft.id)
                 break
