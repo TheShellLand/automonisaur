@@ -1,5 +1,5 @@
 # automon
-#git+https://github.com/TheShellLand/automonisaur.git
+git+https://github.com/TheShellLand/automonisaur.git
 #automonisaur
 
 # base
