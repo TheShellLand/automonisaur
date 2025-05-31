@@ -3,6 +3,7 @@ import unittest
 import datetime
 import dateutil.parser
 
+import automon.integrations.google.gmail.v1
 from automon.integrations.google.gmail import GoogleGmailClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
 from automon.integrations.ollamaWrapper import OllamaClient
@@ -162,6 +163,44 @@ def run_llm(prompts: list, chat: bool = False) -> (str, any):
     return response, model
 
 
+def is_sent(message: automon.integrations.google.gmail.v1.Message) -> bool:
+    if labels.sent in message.automon_labels:
+        return True
+    return False
+
+
+def not_draft(message: automon.integrations.google.gmail.v1.Message) -> bool:
+    if labels.draft not in message.automon_labels and labels.trash not in message.automon_labels:
+        return True
+    return False
+
+
+def needs_followup(
+        message: automon.integrations.google.gmail.v1.Message,
+        days: int = 4
+) -> bool:
+    if labels.sent in message.automon_labels:
+
+        latest_date = dateutil.parser.parse(message.payload.get_header('Date').value)
+        now = datetime.datetime.now()
+        time_delta = ((now + latest_date.utcoffset()).replace(
+            tzinfo=datetime.timezone(latest_date.utcoffset())) - latest_date)
+
+        print(f'{time_delta.days} days ago :: {latest_date=} :: {now=}', end='')
+
+        if time_delta.days >= days:
+            print('followup', end='')
+            return True
+        
+    return False
+
+
+def delete_draft(message: automon.integrations.google.gmail.v1.Message):
+    # delete DRAFT
+    if labels.draft in message.automon_labels:
+        return gmail.messages_trash(id=message.id)
+
+
 def main():
     global gemini
 
@@ -170,7 +209,7 @@ def main():
                                                            labels.welcome])
 
     if _welcome_email.messages:
-        gmail.messages_trash(id=_welcome_email.messages[0].id)
+        delete_draft(_welcome_email.messages[0].id)
 
     _thread = None
     _nextPageToken = None
@@ -201,51 +240,41 @@ def main():
 
             print(f"{_thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels} :: ", end='')
 
+            # resume
             if labels.resume in _first.automon_labels:
                 continue
 
-            if (labels.analyze in _first.automon_labels
-            ):
+            # analyze
+            if labels.analyze in _first.automon_labels:
                 _FOUND = True
                 print('analyze', end='')
                 break
 
-            if (labels.draft in _latest.automon_labels
-                    and labels.trash not in _latest.automon_labels
-            ):
-                continue
+            # auto reply
+            for _message in _thread.messages:
+                if labels.auto_reply_enabled in _message.automon_labels:
+                    if labels.sent not in _latest.automon_labels:
+                        _FOUND = True
+                        print('auto', end='')
+                        break
 
-            if ((labels.auto_reply_enabled in _first.automon_labels
-                 or labels.auto_reply_enabled in _latest.automon_labels)
-                    and (labels.sent not in _latest.automon_labels)
-            ):
+            # if (labels.draft in _latest.automon_labels
+            #         and labels.trash not in _latest.automon_labels
+            # ):
+            #     continue
+
+            # needs followup
+            if needs_followup(_latest):
                 _FOUND = True
-                print('auto', end='')
+                _FOLLOW_UP = True
                 break
-
-            if labels.sent in _latest.automon_labels:
-                _latest_date = dateutil.parser.parse(_latest.payload.get_header('Date').value)
-                _time_delta = ((datetime.datetime.now() + _latest_date.utcoffset()).replace(
-                    tzinfo=datetime.timezone(_latest_date.utcoffset())) - _latest_date)
-
-                print(f'{_time_delta.days} days ago :: ', end='')
-
-                if _time_delta.days >= 4:
-                    _FOUND = True
-                    _FOLLOW_UP = True
-                    print('followup', end='')
-                    break
-
-                continue
 
             if labels.sent not in _latest.automon_labels:
                 _sent = False
                 for _message in _thread.messages:
-                    if labels.sent in _message.automon_labels:
+                    if is_sent(_message):
                         _sent = True
-                    elif (labels.draft not in _message.automon_labels
-                          and labels.trash not in _message.automon_labels
-                    ):
+                    elif not_draft(_message):
                         _sent = False
 
                 if not _sent:
@@ -281,9 +310,7 @@ def main():
                 _RETRY = True
                 gmail.messages_modify(id=_message.id, removeLabelIds=[labels.retry])
 
-                # delete DRAFT
-                if labels.draft in _message.automon_labels:
-                    gmail.messages_trash(id=_message.id)
+            delete_draft(_message)
 
         global email_selected
         email_selected = _thread
@@ -338,7 +365,7 @@ def main():
                 prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
                 response, model = run_llm(prompts=prompts, chat=False)
                 gmail.messages_modify(id=_draft.id, removeLabelIds=[labels.analyze])
-                gmail.messages_trash(id=_draft.id)
+                delete_draft(_draft.id)
                 break
 
         if response is None:
