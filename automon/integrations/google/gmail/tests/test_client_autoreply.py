@@ -186,12 +186,17 @@ def needs_followup(
         time_delta = ((now + latest_date.utcoffset()).replace(
             tzinfo=datetime.timezone(latest_date.utcoffset())) - latest_date)
 
-        print(f'{time_delta.days} days ago :: {latest_date=} :: {now=}', end='')
+        if time_delta.days < 0:
+            time_delta_check = f'{round(time_delta.seconds / 60 / 60)} hours ago'
+        else:
+            time_delta_check = f'{time_delta.days} days ago'
+
+        print(f'{time_delta_check} :: ', end='')
 
         if time_delta.days >= days:
             print('followup', end='')
             return True
-        
+
     return False
 
 
