@@ -109,11 +109,15 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
         for prompt in prompts:
             gemini.add_content(prompt)
 
-        if CHAT_FOREVER:
-            gemini_response = gemini.chat().chat_forever().chat_response()
-        else:
-            gemini_response = gemini.chat().chat_response()
-        return gemini_response, gemini
+        try:
+            if CHAT_FOREVER:
+                gemini_response = gemini.chat().chat_forever().chat_response()
+            else:
+                gemini_response = gemini.chat().chat_response()
+            return gemini_response, gemini
+        except Exception as error:
+            print(f'[run_gemini] :: ERROR :: {error=}')
+            run_gemini(prompts)
 
 
 def run_ollama(prompts: list) -> (str, OllamaClient):
