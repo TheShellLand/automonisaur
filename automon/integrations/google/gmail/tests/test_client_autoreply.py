@@ -177,7 +177,7 @@ def not_draft(message: automon.integrations.google.gmail.v1.Message) -> bool:
 
 def needs_followup(
         message: automon.integrations.google.gmail.v1.Message,
-        days: int = 4
+        days: int = 3
 ) -> bool:
     if labels.sent in message.automon_labels:
 
@@ -187,9 +187,9 @@ def needs_followup(
             tzinfo=datetime.timezone(latest_date.utcoffset())) - latest_date)
 
         if time_delta.days < 0:
-            time_delta_check = f'{round(time_delta.seconds / 60 / 60)} hours ago'
+            time_delta_check = f'last sent {round(time_delta.seconds / 60 / 60)} hours ago'
         else:
-            time_delta_check = f'{time_delta.days} days ago'
+            time_delta_check = f'last sent {time_delta.days} days ago'
 
         print(f'{time_delta_check} :: ', end='')
 
@@ -248,6 +248,10 @@ def main():
             # resume
             if labels.resume in _first.automon_labels:
                 continue
+
+            # clean drafts
+            for _message in _thread.messages:
+                delete_draft(_message)
 
             # analyze
             if labels.analyze in _first.automon_labels:
