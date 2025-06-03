@@ -60,42 +60,48 @@ class GeminiModels:
     @property
     def gemini_2_5_flash_preview_tts(self):
         """
-        Audio, images, videos, and text	Text	Adaptive thinking, cost efficiency
+        Audio, images, videos, and text
+        Text	Adaptive thinking, cost efficiency
         """
         return f'gemini-2.5-flash-preview-tts'
 
     @property
     def gemini_2_5_flash_preview_05_20(self):
         """
-        Audio, images, videos, and text	Text	Adaptive thinking, cost efficiency
+        Audio, images, videos, and text
+        Text	Adaptive thinking, cost efficiency
         """
         return f'gemini-2.5-flash-preview-05-20'
 
     @property
     def gemini_2_5_flash_preview_native_audio_dialog(self):
         """
-        Audio, videos, and text	Text and audio, interleaved	High quality, natural conversational audio outputs, with or without thinking
+        Audio, videos, and text
+        Text and audio, interleaved	High quality, natural conversational audio outputs, with or without thinking
         """
         return f'gemini-2.5-flash-preview-native-audio-dialog'
 
     @property
     def gemini_2_5_flash_exp_native_audio_thinking_dialog(self):
         """
-        Audio, videos, and text	Text and audio, interleaved	High quality, natural conversational audio outputs, with or without thinking
+        Audio, videos, and text
+        Text and audio, interleaved	High quality, natural conversational audio outputs, with or without thinking
         """
         return f'gemini-2.5-flash-exp-native-audio-thinking-dialog'
 
     @property
     def gemini_2_5_pro_preview_tts(self):
         """
-        Audio, images, videos, and text	Text	Enhanced thinking and reasoning, multimodal understanding, advanced coding, and more
+        Audio, images, videos, and text
+        Text	Enhanced thinking and reasoning, multimodal understanding, advanced coding, and more
         """
         return f'gemini-2.5-pro-preview-tts'
 
     @property
     def gemini_2_5_pro_preview_05_06(self):
         """
-        Audio, images, videos, and text	Text	Enhanced thinking and reasoning, multimodal understanding, advanced coding, and more
+        Audio, images, videos, and text
+        Text	Enhanced thinking and reasoning, multimodal understanding, advanced coding, and more
         """
         return f'gemini-2.5-pro-preview-05-06'
 
