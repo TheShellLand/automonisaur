@@ -261,6 +261,9 @@ def main():
 
             # _thread = gmail.thread_get_automon('195da1cbcaa5573b')
 
+            _clean_thread = _thread.automon_clean_thread
+            _latest_message = _clean_thread[-1]
+
             _first = _thread.automon_message_first
             _latest = _thread.automon_message_latest
 
@@ -294,7 +297,7 @@ def main():
             #     continue
 
             # needs followup
-            if needs_followup(_latest):
+            if needs_followup(_latest_message):
                 _FOUND = True
                 _FOLLOW_UP = True
                 break
