@@ -79,6 +79,8 @@ if gmail.is_ready():
 
     all_labels = labels.all_labels
 
+MODEL_USAGE = {}
+
 
 def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
     gemini = GoogleGeminiClient()
@@ -100,7 +102,16 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
     ]
 
     import random
-    gemini.set_model(random.choice(free_models))
+    pick_a_model = random.choice(free_models)
+    gemini.set_model(pick_a_model)
+
+    global MODEL_USAGE
+    if pick_a_model in MODEL_USAGE.keys():
+        MODEL_USAGE[pick_a_model] += 1
+    else:
+        MODEL_USAGE[pick_a_model] = 1
+
+    print(f'{MODEL_USAGE}')
 
     if gemini.is_ready():
 
