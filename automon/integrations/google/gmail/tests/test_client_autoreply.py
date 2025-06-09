@@ -79,7 +79,7 @@ if gmail.is_ready():
 
     all_labels = labels.all_labels
 
-MODEL_USAGE = {}
+MODEL_ERRORS = {}
 
 
 def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
@@ -92,7 +92,7 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
         gemini.models.gemini_2_5_flash_exp_native_audio_thinking_dialog,
         gemini.models.gemini_2_5_pro_preview_05_06,
         gemini.models.gemini_2_5_pro_preview_tts,
-        gemini.models.gemini_2_5_pro_exp_03_25,
+        # gemini.models.gemini_2_5_pro_exp_03_25,
         gemini.models.gemini_2_0_flash,
         # gemini.models.gemini_2_0_flash_lite,
         # gemini.models.gemini_2_0_flash_thinking_exp_01_21,
@@ -105,13 +105,7 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
     pick_a_model = random.choice(free_models)
     gemini.set_model(pick_a_model)
 
-    global MODEL_USAGE
-    if pick_a_model in MODEL_USAGE.keys():
-        MODEL_USAGE[pick_a_model] += 1
-    else:
-        MODEL_USAGE[pick_a_model] = 1
-
-    print(f'{MODEL_USAGE}')
+    print(f'{MODEL_ERRORS}')
 
     if gemini.is_ready():
 
@@ -128,6 +122,13 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
             return gemini_response, gemini
         except Exception as error:
             print(f'[run_gemini] :: ERROR :: {error=}')
+
+            # global MODEL_ERRORS
+            if pick_a_model in MODEL_ERRORS.keys():
+                MODEL_ERRORS[pick_a_model] += 1
+            else:
+                MODEL_ERRORS[pick_a_model] = 1
+
             run_gemini(prompts)
 
 
