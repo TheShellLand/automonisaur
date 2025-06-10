@@ -88,8 +88,8 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
 
     free_models = [
         gemini.models.gemini_2_5_flash_preview_05_20,
-        gemini.models.gemini_2_5_flash_preview_tts,
-        gemini.models.gemini_2_5_flash_exp_native_audio_thinking_dialog,
+        # gemini.models.gemini_2_5_flash_preview_tts,
+        # gemini.models.gemini_2_5_flash_exp_native_audio_thinking_dialog,
         # gemini.models.gemini_2_5_pro_preview_05_06,
         # gemini.models.gemini_2_5_pro_preview_tts,
         # gemini.models.gemini_2_5_pro_exp_03_25,
