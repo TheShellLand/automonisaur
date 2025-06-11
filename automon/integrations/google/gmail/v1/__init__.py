@@ -342,6 +342,9 @@ class AutomonLabels:
         # need user input
         self.user_action_required = Label(name=self.labels.get('user_action_required'), color=self._color_error)
 
+        # debugging
+        self.debug = Label(name=self.labels.get('debug'), color=self._color_error)
+
     @property
     def all_labels(self):
         return [
