@@ -303,9 +303,9 @@ def main():
                 _FOLLOW_UP = True
                 break
 
-            if labels.sent not in _latest.automon_labels:
+            if not is_sent(_latest_message):
                 _sent = False
-                for _message in _thread.messages:
+                for _message in _clean_thread:
                     if is_sent(_message):
                         _sent = True
                     elif not_draft(_message):
