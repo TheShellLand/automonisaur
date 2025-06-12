@@ -145,7 +145,7 @@ class GoogleGeminiClient(object):
         logger.info(f"[GoogleGeminiClient] :: set_model :: done")
         return self
 
-    def true_or_false(self, response: str):
+    def true_or_false(self, response: str) -> bool:
         if 'true' in response.lower():
             return True
         if 'false' in response.lower():
