@@ -1142,6 +1142,14 @@ class Thread(DictUpdate):
         return clean
 
     @property
+    def automon_clean_thread_first(self) -> Message:
+        return self.automon_clean_thread[0]
+
+    @property
+    def automon_clean_thread_latest(self) -> Message:
+        return self.automon_clean_thread[-1]
+
+    @property
     def automon_message_first(self) -> Message:
         if hasattr(self, 'messages'):
             return self.messages[0]
