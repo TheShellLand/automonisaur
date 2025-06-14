@@ -288,25 +288,29 @@ class AutomonAttachments(DictUpdate):
 class AutomonLabels:
     labels = {
         'automon': 'automon',
-        'resume': 'automon/resume',
+        "auto_reply_enabled": 'automon/auto reply enabled',
         'analyze': 'automon/analyze',
-        "retry": 'automon/retry',
+        'debug': 'automon/debug',
+        "help": 'automon/help',
+        "processing": 'automon/processing >>>',
+        'resume': 'automon/resume',
         'relevant': 'automon/relevant',
         "remote": 'automon/remote',
-        "welcome": 'automon/welcome',
-        "help": 'automon/help',
-        "auto_reply_enabled": 'automon/auto reply enabled',
         "user_action_required": 'automon/user action required',
+        "waiting": 'automon/waiting',
+        "welcome": 'automon/welcome',
     }
 
     def __init__(self):
-        self._reset_labels = False
+        self._reset_labels = True
 
         self._color_default = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
         self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
         self._color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
         self._color_enabled = Color(backgroundColor='#076239', textColor='#b9e4d0')
         self._color_welcome = Color(backgroundColor='#8e63ce', textColor='#ffffff')
+        self._color_waiting = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
+        self._color_processing = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
 
         # required
         self.automon = Label(name=self.labels.get('automon'), color=self._color_default)
@@ -321,6 +325,12 @@ class AutomonLabels:
         # analyze
         self.analyze = Label(name=self.labels.get('analyze'), color=self._color_default)
 
+        # waiting
+        self.waiting = Label(name=self.labels.get('waiting'), color=self._color_default)
+
+        # currently processing
+        self.processing = Label(name=self.labels.get('processing'), color=self._color_processing)
+
         # general
         self.draft = Label(name='DRAFT', id='DRAFT')
         self.sent = Label(name='SENT', id='SENT')
@@ -329,9 +339,6 @@ class AutomonLabels:
 
         # allow auto reply
         self.auto_reply_enabled = Label(name=self.labels.get('auto_reply_enabled'), color=self._color_enabled)
-
-        # retry draft
-        self.retry = Label(name=self.labels.get('retry'), color=self._color_error)
 
         # relevance
         self.relevant = Label(name=self.labels.get('relevant'), color=self._color_default)

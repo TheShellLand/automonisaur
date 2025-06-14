@@ -49,6 +49,7 @@ gmail.config.add_scopes([
 
 if gmail.is_ready():
 
+    # create labels
     labels = gmail._automon_labels
     labels._reset_labels = True
 
@@ -222,13 +223,6 @@ def is_resume(message: automon.integrations.google.gmail.v1.Message) -> bool:
     return False
 
 
-def is_retry(thread: automon.integrations.google.gmail.v1.Thread) -> bool:
-    for message in thread.messages:
-        if labels.retry in message.automon_labels:
-            return True
-    return False
-
-
 def is_sent(message: automon.integrations.google.gmail.v1.Message) -> bool:
     if labels.sent in message.automon_labels:
         return True
@@ -252,7 +246,7 @@ def needs_followup(
         time_delta = ((now + latest_date.utcoffset()).replace(
             tzinfo=datetime.timezone(latest_date.utcoffset())) - latest_date)
 
-        if time_delta.days < 0:
+        if time_delta.days <= 0:
             time_delta_check = f'last sent {round(time_delta.seconds / 60 / 60)} hours ago'
         else:
             time_delta_check = f'last sent {time_delta.days} days ago'
@@ -315,6 +309,10 @@ def main():
 
             print(f"{thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels}", end='')
 
+            gmail.messages_modify(
+                id=_clean_thread_latest.id,
+                addLabelIds=[labels.processing])
+
             # resume
             if is_resume(_first):
                 continue
@@ -323,17 +321,17 @@ def main():
             if needs_followup(_clean_thread_latest):
                 _NEW = True
                 _FOLLOW_UP = True
+                gmail.messages_modify(
+                    id=_clean_thread_latest.id,
+                    removeLabelIds=[labels.waiting])
                 break
+            else:
+                gmail.messages_modify(id=_clean_thread_latest.id,
+                                      addLabelIds=[labels.waiting])
 
             # already sent
             if is_sent(_clean_thread_latest):
                 continue
-
-            # retry
-            if is_retry(thread):
-                clean_drafts(thread)
-                _NEW = True
-                break
 
             # clean drafts
             clean_drafts(thread)
@@ -479,17 +477,14 @@ def main():
         draft_get = gmail.draft_get_automon(id=draft.id)
 
         gmail.messages_modify(id=email_selected.id,
-                              addLabelIds=[labels.unread],
-                              removeLabelIds=[labels.retry]
-                              )
+                              addLabelIds=[labels.unread])
 
         if (labels.auto_reply_enabled in email_selected.automon_message_latest.automon_labels
                 and labels.sent not in email_selected.automon_message_latest.automon_labels
         ):
             draft_sent = gmail.draft_send(draft=draft)
             gmail.messages_modify(id=email_selected.automon_message_first.id,
-                                  addLabelIds=[labels.unread],
-                                  )
+                                  addLabelIds=[labels.unread])
 
         prompts = [prompts_emails[0]] + prompts_resume
         prompts.append(
@@ -509,7 +504,15 @@ def main():
 
         CHAT_ONCE = 0
 
+        gmail.messages_modify(
+            id=_clean_thread_latest.id,
+            removeLabelIds=[labels.processing])
+
     except Exception as error:
+
+        gmail.messages_modify(
+            id=_clean_thread_latest.id,
+            removeLabelIds=[labels.processing])
 
         gmail.config.refresh_token()
 
