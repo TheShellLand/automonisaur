@@ -291,6 +291,7 @@ class AutomonLabels:
         "auto_reply_enabled": 'automon/auto reply enabled',
         'analyze': 'automon/analyze',
         'debug': 'automon/debug',
+        'error': 'automon/error',
         "help": 'automon/help',
         "processing": 'automon/processing >>>',
         'resume': 'automon/resume',
@@ -304,13 +305,14 @@ class AutomonLabels:
     def __init__(self):
         self._reset_labels = True
 
+        # colors
         self._color_default = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
         self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
         self._color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
         self._color_enabled = Color(backgroundColor='#076239', textColor='#b9e4d0')
         self._color_welcome = Color(backgroundColor='#8e63ce', textColor='#ffffff')
         self._color_waiting = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
-        self._color_processing = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
+        self._color_processing = Color(backgroundColor='#cf8933', textColor='#ffd6a2')
 
         # required
         self.automon = Label(name=self.labels.get('automon'), color=self._color_default)
@@ -351,6 +353,9 @@ class AutomonLabels:
 
         # debugging
         self.debug = Label(name=self.labels.get('debug'), color=self._color_error)
+
+        # error
+        self.error = Label(name=self.labels.get('error'), color=self._color_error)
 
     @property
     def all_labels(self):
