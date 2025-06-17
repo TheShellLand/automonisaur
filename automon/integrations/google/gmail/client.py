@@ -457,7 +457,7 @@ class GoogleGmailClient:
         api = UsersMessagesAttachments(self._userId).get(messageId=messageId, id=attachmentId)
         if self.requests.get(api, headers=self.config.headers):
             attachments = MessagePartBody().update_dict(self.requests.to_dict())
-            logger.debug(f"[GoogleGmailClient] :: messages_attachments_get :: {attachments=}")
+            logger.debug(f"[GoogleGmailClient] :: messages_attachments_get :: {attachments.size / 1024:.0f} KB")
         else:
             raise Exception(f"[GoogleGmailClient] :: messages_attachments_get :: error :: {self.requests}")
 
