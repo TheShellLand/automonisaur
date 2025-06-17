@@ -374,10 +374,33 @@ def main():
 
         print("\n")
 
-    resume_search = gmail.messages_list_automon(
-        maxResults=1,
-        labelIds=[labels.resume]
-    )
+    try:
+        resume_search = gmail.messages_list_automon(
+            maxResults=100,
+            labelIds=[labels.resume]
+        )
+
+        assert len(resume_search.messages) == 1, \
+            f'[main] :: ERROR :: more than one resume :: {len(resume_search.messages)} resumes'
+
+        resume_selected = resume_search.messages[0]
+        resume_attachments = resume_selected.automon_attachments().attachments
+
+        assert len(resume_attachments) == 2, \
+            f'[main] :: ERROR :: more than one resume attached :: {len(resume_attachments) - 1} attachments'
+
+        resume = resume_attachments[0].parts[0].body.automon_data_html_text
+
+    except Exception as error:
+        resume_error = gmail.draft_create(
+            draft_subject='resume missing',
+            draft_to=gmail._userId,
+            draft_body=f'Please copy and paste your resume here, and also add it as an attachment.',
+        )
+        gmail.messages_modify(
+            id=resume_error.id,
+            addLabelIds=[labels.automon, labels.error, labels.resume]
+        )
 
     try:
 
