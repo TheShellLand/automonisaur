@@ -9,7 +9,7 @@ from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
-DEBUG_ = False
+DEBUG_ = True
 INFO_ = True
 
 LoggingClient.logging.getLogger('httpx').setLevel(ERROR)
@@ -191,9 +191,10 @@ def clean_drafts(thread: automon.integrations.google.gmail.v1.Thread):
         delete_draft(message)
 
 
-def is_analyze(message: automon.integrations.google.gmail.v1.Message) -> bool:
-    if labels.analyze in message.automon_labels:
-        return True
+def is_analyze(thread: automon.integrations.google.gmail.v1.Thread) -> bool:
+    for message in thread.messages:
+        if labels.analyze in message.automon_labels:
+            return True
     return False
 
 
@@ -323,12 +324,11 @@ def main():
 
             print(f"{thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels}", end='')
 
-            gmail.messages_modify(
-                id=_clean_thread_latest.id,
-                addLabelIds=[labels.processing])
+            mark_processing(_clean_thread_latest)
 
             # resume
             if is_resume(_first):
+                unmark_processing(_clean_thread_latest)
                 continue
 
             # needs followup
@@ -343,18 +343,19 @@ def main():
                 gmail.messages_modify(id=_clean_thread_latest.id,
                                       addLabelIds=[labels.waiting])
 
+            # analyze
+            if is_analyze(thread):
+                _NEW = True
+                print(' :: ANALYZE', end='')
+                break
+
             # already sent
             if is_sent(_clean_thread_latest):
+                unmark_processing(_clean_thread_latest)
                 continue
 
             # clean drafts
             clean_drafts(thread)
-
-            # analyze
-            if is_analyze(_first):
-                _NEW = True
-                print(' :: ANALYZE', end='')
-                break
 
             # auto reply
             if is_auto_reply(thread):
@@ -380,12 +381,14 @@ def main():
                     print(' :: NEW', end='')
                     break
 
+                unmark_processing(_clean_thread_latest)
                 continue
 
         if _NEW:
             print(' :: FOUND')
             break
 
+        unmark_processing(_clean_thread_latest)
         print("\n")
 
     try:
@@ -419,9 +422,7 @@ def main():
     try:
 
         email_selected = thread
-        resume_selected = resume_search.messages[0]
-
-        resume = resume_selected.automon_attachments().attachments[0].parts[0].body.automon_data_html_text
+        _clean_thread = thread.automon_clean_thread
 
         to = email_selected.automon_message_first.automon_from().get('value')
         from_ = email_selected.automon_message_first.automon_to().get('value')
@@ -460,15 +461,17 @@ def main():
             return
 
         response = None
-        for _message in email_selected.messages:
 
-            if is_analyze(_message):
+        # analyze
+        if is_analyze(_clean_thread):
+            for _message in _clean_thread.messages:
+
                 if is_sent(_message):
                     break
 
                 _draft = email_selected.automon_message_latest
                 _resume = _draft.automon_attachments().attachments[0].body.automon_data_html_text
-                prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
+                prompts = [_resume] + [f"Give me an analysis of the email thread. \n"]
                 response, model = run_llm(prompts=prompts, chat=False)
                 gmail.messages_modify(id=_draft.id, removeLabelIds=[labels.analyze])
                 delete_draft(_draft.id)
@@ -541,16 +544,12 @@ def main():
 
         CHAT_ONCE = 0
 
-        gmail.messages_modify(
-            id=_clean_thread_latest.id,
-            removeLabelIds=[labels.processing])
+        unmark_processing(_clean_thread_latest)
+
 
     except Exception as error:
 
-        gmail.messages_modify(
-            id=_clean_thread_latest.id,
-            removeLabelIds=[labels.processing])
-
+        unmark_processing(_clean_thread_latest)
         gmail.config.refresh_token()
 
         import traceback
