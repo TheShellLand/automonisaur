@@ -903,6 +903,7 @@ class Message(DictUpdate):
     def __repr__(self):
         if hasattr(self, 'snippet'):
             return self.snippet
+        return ''
 
 
 class MessagePartBody(DictUpdate):
