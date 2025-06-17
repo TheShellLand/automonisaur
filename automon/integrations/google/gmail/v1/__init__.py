@@ -1,9 +1,10 @@
 import io
 import re
-
 import bs4
+import copy
 import json
 import base64
+import typing
 
 from automon.helpers import cryptography
 from automon.helpers.loggingWrapper import LoggingClient, INFO
@@ -1134,13 +1135,14 @@ class Thread(DictUpdate):
 
     def __init__(self):
         super().__init__()
+        self.messages = []
 
     def __repr__(self):
         if hasattr(self, 'snippet'):
             return self.snippet
 
     @property
-    def automon_clean_thread(self) -> [Message]:
+    def automon_clean_thread(self) -> typing.Self:
         """Return a clean list of messages without DRAFT or TRASH"""
         clean = []
         labels = AutomonLabels()
@@ -1151,15 +1153,17 @@ class Thread(DictUpdate):
                     if labels.trash not in message.automon_labels:
                         clean.append(message)
 
-        return clean
+        thread_copy = copy.deepcopy(self)
+        thread_copy.messages = clean
+        return thread_copy
 
     @property
     def automon_clean_thread_first(self) -> Message:
-        return self.automon_clean_thread[0]
+        return self.automon_clean_thread.messages[0]
 
     @property
     def automon_clean_thread_latest(self) -> Message:
-        return self.automon_clean_thread[-1]
+        return self.automon_clean_thread.messages[-1]
 
     @property
     def automon_message_first(self) -> Message:
