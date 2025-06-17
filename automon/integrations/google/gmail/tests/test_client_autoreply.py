@@ -229,6 +229,20 @@ def is_sent(message: automon.integrations.google.gmail.v1.Message) -> bool:
     return False
 
 
+def mark_processing(message: automon.integrations.google.gmail.v1.Message):
+    return gmail.messages_modify(
+        id=message.id,
+        addLabelIds=[labels.processing]
+    )
+
+
+def unmark_processing(message: automon.integrations.google.gmail.v1.Message):
+    return gmail.messages_modify(
+        id=message.id,
+        removeLabelIds=[labels.processing]
+    )
+
+
 def not_draft_and_trash(message: automon.integrations.google.gmail.v1.Message) -> bool:
     if labels.draft not in message.automon_labels and labels.trash not in message.automon_labels:
         return True
