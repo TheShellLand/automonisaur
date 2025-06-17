@@ -464,18 +464,16 @@ def main():
 
         # analyze
         if is_analyze(_clean_thread):
+
+            _prompts_email_thread = []
+
             for _message in _clean_thread.messages:
+                _prompts_email_thread.append(
+                    _message.automon_attachments().attachments[0].body.automon_data_html_text
+                )
 
-                if is_sent(_message):
-                    break
-
-                _draft = email_selected.automon_message_latest
-                _resume = _draft.automon_attachments().attachments[0].body.automon_data_html_text
-                prompts = [_resume] + [f"Give me an analysis of the email thread. \n"]
-                response, model = run_llm(prompts=prompts, chat=False)
-                gmail.messages_modify(id=_draft.id, removeLabelIds=[labels.analyze])
-                delete_draft(_draft.id)
-                break
+            prompts = _prompts_email_thread + [f"Give me an analysis of the email thread. \n"]
+            response, model = run_llm(prompts=prompts, chat=False)
 
         if response is None:
             prompts = prompts_resume + prompts_emails
