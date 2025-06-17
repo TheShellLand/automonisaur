@@ -4,7 +4,6 @@ import bs4
 import copy
 import json
 import base64
-import typing
 
 from automon.helpers import cryptography
 from automon.helpers.loggingWrapper import LoggingClient, INFO
@@ -1143,7 +1142,7 @@ class Thread(DictUpdate):
             return self.snippet
 
     @property
-    def automon_clean_thread(self) -> typing.Self:
+    def automon_clean_thread(self):
         """Return a clean list of messages without DRAFT or TRASH"""
         clean = []
         labels = AutomonLabels()
