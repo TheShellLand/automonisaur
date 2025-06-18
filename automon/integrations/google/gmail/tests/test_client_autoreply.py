@@ -251,9 +251,11 @@ def not_draft_and_trash(message: automon.integrations.google.gmail.v1.Message) -
 
 
 def needs_followup(
-        message: automon.integrations.google.gmail.v1.Message,
+        thread: automon.integrations.google.gmail.v1.Thread,
         days: int = 3
 ) -> bool:
+    message = thread.automon_clean_thread_latest
+
     if labels.sent in message.automon_labels:
 
         latest_date = dateutil.parser.parse(message.payload.get_header('Date').value)
@@ -331,8 +333,10 @@ def main():
                 unmark_processing(_clean_thread_latest)
                 continue
 
+            # clean_drafts(thread)
+
             # needs followup
-            if needs_followup(_clean_thread_latest):
+            if needs_followup(thread):
                 _NEW = True
                 _FOLLOW_UP = True
                 gmail.messages_modify(
@@ -367,7 +371,7 @@ def main():
             # everything else
             if not is_sent(_clean_thread_latest):
                 _sent = False
-                for _message in _clean_thread:
+                for _message in _clean_thread.messages:
                     if is_sent(_message):
                         _sent = True
                     elif not_draft_and_trash(_message):
