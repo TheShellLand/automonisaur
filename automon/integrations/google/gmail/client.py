@@ -302,24 +302,32 @@ class GoogleGmailClient:
 
     def labels_get_by_name(self, name: str) -> Label:
         """Gets label by name"""
+        logger.debug(f"[GoogleGmailClient] :: labels_get_by_name :: {name=}")
+
         labels = self.labels_list()
         for label in labels.labels:
             if label.name == name:
                 logger.info(f"[GoogleGmailClient] :: labels_get_by_name :: done")
                 return Label().update_dict(label)
 
+        logger.error(f"[GoogleGmailClient] :: labels_get_by_name :: ERROR :: label not found {name=}")
+        return Label()
+
     def labels_list(self):
         """Lists all labels in the user's mailbox."""
         api = UsersLabels(self._userId).list
         self.requests.get(api, headers=self.config.headers)
+        labels = LabelList().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: labels_list :: {len(labels.labels)} labels")
         logger.info(f"[GoogleGmailClient] :: labels_list :: done")
-        return LabelList().update_dict(self.requests.to_dict())
+        return labels
 
     def labels_patch(self, id: str):
         """Patch the specified label."""
         if type(id) is Label:
             id = id.id
 
+        logger.debug(f"[GoogleGmailClient] :: labels_patch :: {id=}")
         api = UsersLabels(self._userId).patch(id)
         data = Label().to_dict()
         self.requests.patch(api, headers=self.config.headers, json=data)
@@ -333,6 +341,7 @@ class GoogleGmailClient:
         if type(id) is Label:
             id = id.id
 
+        logger.debug(f"[GoogleGmailClient] :: labels_update :: {id=} :: {color=}")
         api = UsersLabels(self._userId).update(id)
         data = Label(id=id, color=color).to_dict()
         self.requests.put(api, headers=self.config.headers, json=data)
