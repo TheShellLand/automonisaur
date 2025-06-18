@@ -166,7 +166,8 @@ def run_llm(prompts: list, chat: bool = False) -> (str, any):
     global CHAT_FOREVER
     CHAT_FOREVER = chat
 
-    print([f"{len(x):,}" for x in prompts])
+    _tokens = [len(x) for x in prompts]
+    print(f'[run_llm] :: {[f"{x:,}" for x in _tokens]} :: {sum(_tokens)} tokens')
 
     while True:
         try:
@@ -326,13 +327,16 @@ def main():
 
             print(f"{thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels}", end='')
 
-            mark_processing(_clean_thread_latest)
-
             # resume
             if is_resume(_first):
-                unmark_processing(_clean_thread_latest)
+                unmark_processing(_latest)
                 continue
 
+            if _clean_thread_latest is None:
+                unmark_processing(_latest)
+                continue
+
+            mark_processing(_clean_thread_latest)
             # clean_drafts(thread)
 
             # needs followup
@@ -358,15 +362,16 @@ def main():
                 unmark_processing(_clean_thread_latest)
                 continue
 
-            # clean drafts
-            clean_drafts(thread)
-
             # auto reply
             if is_auto_reply(thread):
                 if not is_sent(_clean_thread_latest):
-                    _NEW = True
-                    print(' :: AUTO', end='')
-                    break
+                    if not is_draft(_clean_thread_latest):
+                        _NEW = True
+                        print(' :: AUTO', end='')
+                        break
+
+            # clean drafts
+            clean_drafts(thread)
 
             # everything else
             if not is_sent(_clean_thread_latest):
