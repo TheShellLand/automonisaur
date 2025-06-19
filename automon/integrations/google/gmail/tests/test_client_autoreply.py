@@ -1,5 +1,6 @@
 import unittest
 
+import re
 import datetime
 import dateutil.parser
 
@@ -190,6 +191,17 @@ def run_llm(prompts: list, chat: bool = False) -> (str, any):
 def clean_drafts(thread: automon.integrations.google.gmail.v1.Thread):
     for message in thread.messages:
         delete_draft(message)
+
+
+def delete_extra_data(message: automon.integrations.google.gmail.v1.Message):
+    message_str = f"{message.to_dict()}"
+
+    delete_regex = r"'data': ('[a-zA-Z0-9-_=]+')"
+    delete_list = re.compile(delete_regex).findall(message_str)
+    for delete in delete_list:
+        message_str = message_str.replace(delete, "''")
+
+    return message_str
 
 
 def is_analyze(thread: automon.integrations.google.gmail.v1.Thread) -> bool:
@@ -428,28 +440,14 @@ def main():
 
         i = 1
         prompts_emails = []
-        prompts_emails_all = []
-        for message in email_selected.messages:
+        for message in email_selected.automon_full_thread:
 
-            if is_draft(message):
-                continue
-
-            _message = f"{message.to_dict()}"
-
-            import re
-
-            _del = re.compile(r"'data': ('[a-zA-Z0-9-_=]+')").findall(_message)
-            for _x in _del:
-                _message = _message.replace(_x, "''")
+            _message = delete_extra_data(message)
 
             if not is_draft(message):
                 prompts_emails.append(
                     f"This is email {i} in an email chain: {_message}\n\n"
                 )
-
-            prompts_emails_all.append(
-                f"This is email {i} in an email chain: {_message}\n\n"
-            )
 
             i += 1
 
