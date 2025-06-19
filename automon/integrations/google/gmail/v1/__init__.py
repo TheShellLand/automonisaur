@@ -304,7 +304,7 @@ class AutomonLabels:
     }
 
     def __init__(self):
-        self._reset_labels = True
+        self._reset_labels = False
 
         # colors
         self._color_default = Color(backgroundColor='#653e9b', textColor='#e4d7f5')

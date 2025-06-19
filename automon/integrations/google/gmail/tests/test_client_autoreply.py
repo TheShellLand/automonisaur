@@ -64,7 +64,7 @@ if gmail.is_ready():
         if _get_label.id is None:
             _labels_get_by_name = gmail.labels_get_by_name(_name)
 
-            if _labels_get_by_name is None:
+            if _labels_get_by_name.id is None:
                 _get_label.update_dict(
                     gmail.labels_create(
                         name=_name,
@@ -452,7 +452,7 @@ def main():
             i += 1
 
         if not prompts_emails:
-            return
+            raise Exception(f'prompts_emails list is empty')
 
         response = None
 
