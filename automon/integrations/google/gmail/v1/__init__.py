@@ -1149,7 +1149,7 @@ class Thread(DictUpdate):
 
         if hasattr(self, 'messages'):
             for message in self.messages:
-                if labels.draft not in message.automon_labels:
+                if labels.trash not in message.automon_labels:
                     clean.append(message)
 
         thread_copy = copy.deepcopy(self)

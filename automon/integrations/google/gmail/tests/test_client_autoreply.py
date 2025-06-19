@@ -167,7 +167,7 @@ def run_llm(prompts: list, chat: bool = False) -> (str, any):
     CHAT_FOREVER = chat
 
     _tokens = [len(x) for x in prompts]
-    print(f'[run_llm] :: {[f"{x:,}" for x in _tokens]} :: {sum(_tokens)} tokens')
+    print(f'[run_llm] :: {[f"{x:,}" for x in _tokens]} :: {sum(_tokens):,f} tokens')
 
     while True:
         try:
@@ -219,9 +219,10 @@ def is_debug(thread: automon.integrations.google.gmail.v1.Thread) -> bool:
     return False
 
 
-def is_resume(message: automon.integrations.google.gmail.v1.Message) -> bool:
-    if labels.resume in message.automon_labels:
-        return True
+def is_resume(thread: automon.integrations.google.gmail.v1.Thread) -> bool:
+    for message in thread.messages:
+        if labels.resume in message.automon_labels:
+            return True
     return False
 
 
@@ -231,16 +232,16 @@ def is_sent(message: automon.integrations.google.gmail.v1.Message) -> bool:
     return False
 
 
-def mark_processing(message: automon.integrations.google.gmail.v1.Message):
+def mark_processing(thread: automon.integrations.google.gmail.v1.Thread):
     return gmail.messages_modify(
-        id=message.id,
+        id=thread.automon_clean_thread_latest.id,
         addLabelIds=[labels.processing]
     )
 
 
-def unmark_processing(message: automon.integrations.google.gmail.v1.Message):
+def unmark_processing(thread: automon.integrations.google.gmail.v1.Thread):
     return gmail.messages_modify(
-        id=message.id,
+        id=thread.automon_clean_thread_latest.id,
         removeLabelIds=[labels.processing]
     )
 
@@ -327,16 +328,17 @@ def main():
 
             print(f"{thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels}", end='')
 
+            mark_processing(thread)
+
             # resume
-            if is_resume(_first):
-                unmark_processing(_latest)
+            if is_resume(thread):
+                unmark_processing(thread)
                 continue
 
             if _clean_thread_latest is None:
-                unmark_processing(_latest)
+                unmark_processing(thread)
                 continue
 
-            mark_processing(_clean_thread_latest)
             # clean_drafts(thread)
 
             # needs followup
@@ -359,7 +361,7 @@ def main():
 
             # already sent
             if is_sent(_clean_thread_latest):
-                unmark_processing(_clean_thread_latest)
+                unmark_processing(thread)
                 continue
 
             # auto reply
@@ -373,31 +375,14 @@ def main():
             # clean drafts
             clean_drafts(thread)
 
-            # everything else
-            if not is_sent(_clean_thread_latest):
-                _sent = False
-                for _message in _clean_thread.messages:
-                    if is_sent(_message):
-                        _sent = True
-                    elif not_draft_and_trash(_message):
-                        _sent = False
-
-                if not _sent:
-                    if len(thread.messages) > 1:
-                        _FOLLOW_UP = True
-
-                    _NEW = True
-                    print(' :: NEW', end='')
-                    break
-
-                unmark_processing(_clean_thread_latest)
-                continue
+            unmark_processing(thread)
+            continue
 
         if _NEW:
             print(' :: FOUND')
             break
 
-        unmark_processing(_clean_thread_latest)
+        unmark_processing(thread)
         print("\n")
 
     try:
@@ -406,15 +391,8 @@ def main():
             labelIds=[labels.resume]
         )
 
-        assert len(resume_search.messages) == 1, \
-            f'[main] :: ERROR :: more than one resume :: {len(resume_search.messages)} resumes'
-
         resume_selected = resume_search.messages[0]
         resume_attachments = resume_selected.automon_attachments().attachments
-
-        assert len(resume_attachments) == 2, \
-            f'[main] :: ERROR :: more than one resume attached :: {len(resume_attachments) - 1} attachments'
-
         resume = resume_attachments[0].parts[0].body.automon_data_html_text
 
     except Exception as error:
@@ -551,12 +529,12 @@ def main():
 
         CHAT_ONCE = 0
 
-        unmark_processing(_clean_thread_latest)
+        unmark_processing(thread)
 
 
     except Exception as error:
 
-        unmark_processing(_clean_thread_latest)
+        unmark_processing(thread)
         gmail.config.refresh_token()
 
         import traceback
