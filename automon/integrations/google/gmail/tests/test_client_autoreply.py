@@ -206,6 +206,13 @@ def is_auto_reply(thread: automon.integrations.google.gmail.v1.Thread) -> bool:
     return False
 
 
+def is_chat(thread: automon.integrations.google.gmail.v1.Thread) -> bool:
+    for message in thread.messages:
+        if labels.chat in message.automon_labels:
+            return True
+    return False
+
+
 def is_draft(message: automon.integrations.google.gmail.v1.Message) -> bool:
     if labels.draft in message.automon_labels:
         return True
@@ -298,11 +305,11 @@ def main():
     thread = None
     _nextPageToken = None
 
-    _NEW = None
+    _FOUND = None
     _FOLLOW_UP = None
     while gmail.is_ready():
 
-        _NEW = None
+        _FOUND = None
         _FOLLOW_UP = None
         email_search = gmail.thread_list_automon(
             maxResults=1,
@@ -335,15 +342,17 @@ def main():
                 unmark_processing(thread)
                 continue
 
-            if _clean_thread_latest is None:
-                unmark_processing(thread)
-                continue
+            # chat
+            if is_chat(thread):
+                _FOUND = True
+                print(' :: CHAT', end='')
+                break
 
             # clean_drafts(thread)
 
             # needs followup
             if needs_followup(thread):
-                _NEW = True
+                _FOUND = True
                 _FOLLOW_UP = True
                 gmail.messages_modify(
                     id=_clean_thread_latest.id,
@@ -355,7 +364,7 @@ def main():
 
             # analyze
             if is_analyze(thread):
-                _NEW = True
+                _FOUND = True
                 print(' :: ANALYZE', end='')
                 break
 
@@ -368,7 +377,7 @@ def main():
             if is_auto_reply(thread):
                 if not is_sent(_clean_thread_latest):
                     if not is_draft(_clean_thread_latest):
-                        _NEW = True
+                        _FOUND = True
                         print(' :: AUTO', end='')
                         break
 
@@ -378,7 +387,7 @@ def main():
             unmark_processing(thread)
             continue
 
-        if _NEW:
+        if _FOUND:
             print(' :: FOUND')
             break
 
