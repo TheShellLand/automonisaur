@@ -290,6 +290,7 @@ class AutomonLabels:
         'automon': 'automon',
         "auto_reply_enabled": 'automon/auto reply enabled',
         'analyze': 'automon/analyze',
+        'chat': 'automon/chat',
         'debug': 'automon/debug',
         'error': 'automon/error',
         "help": 'automon/help',
@@ -356,6 +357,9 @@ class AutomonLabels:
 
         # error
         self.error = Label(name=self.labels.get('error'), color=self._color_error)
+
+        # chat
+        self.chat = Label(name=self.labels.get('chat'), color=self._color_error)
 
     @property
     def all_labels(self):
@@ -1143,17 +1147,17 @@ class Thread(DictUpdate):
 
     @property
     def automon_clean_thread(self):
-        """Return a clean list of messages without DRAFT or TRASH"""
-        clean = []
+        """Return a clean list of messages not labeled with TRASH"""
+        messages = []
         labels = AutomonLabels()
 
-        if hasattr(self, 'messages'):
+        if self.messages:
             for message in self.messages:
                 if labels.trash not in message.automon_labels:
-                    clean.append(message)
+                    messages.append(message)
 
         thread_copy = copy.deepcopy(self)
-        thread_copy.messages = clean
+        thread_copy.messages = messages
         return thread_copy
 
     @property
@@ -1167,23 +1171,48 @@ class Thread(DictUpdate):
             return self.automon_clean_thread.messages[-1]
 
     @property
+    def automon_full_thread(self):
+        """Return the full thread including TRASH messages"""
+        messages = []
+        labels = AutomonLabels()
+
+        if self.messages:
+            for message in self.messages:
+                if labels.draft not in message.automon_labels:
+                    messages.append(message)
+
+        thread_copy = copy.deepcopy(self)
+        thread_copy.messages = messages
+        return thread_copy
+
+    @property
+    def automon_full_thread_first(self) -> Message:
+        if self.automon_full_thread.messages:
+            return self.automon_full_thread.messages[0]
+
+    @property
+    def automon_full_thread_latest(self) -> Message:
+        if self.automon_full_thread.messages:
+            return self.automon_full_thread.messages[-1]
+
+    @property
     def automon_message_first(self) -> Message:
-        if hasattr(self, 'messages'):
+        if self.messages:
             return self.messages[0]
 
     @property
     def automon_message_latest(self) -> Message:
-        if hasattr(self, 'messages'):
+        if self.messages:
             return self.messages[-1]
 
     def enhance(self):
-        if hasattr(self, 'messages'):
+        if self.messages:
             self.messages = [Message().update_dict(x) for x in self.messages]
 
         return self
 
     def __bool__(self):
-        if hasattr(self, 'messages'):
+        if self.messages:
             return True
         return False
 
