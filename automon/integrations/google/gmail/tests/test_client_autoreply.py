@@ -435,7 +435,7 @@ def main():
 
         i = 1
         prompts_emails = []
-        for message in email_selected.automon_full_thread:
+        for message in email_selected.automon_full_thread.messages:
             _message = delete_extra_data(message)
 
             prompts_emails.append(
@@ -536,7 +536,7 @@ def main():
 
         import traceback
         traceback.print_exc()
-        return
+        raise
 
 
 class MyTestCase(unittest.TestCase):
