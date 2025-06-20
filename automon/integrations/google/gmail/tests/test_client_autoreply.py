@@ -107,7 +107,7 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
     pick_a_model = random.choice(free_models)
     gemini.set_model(pick_a_model)
 
-    print(f'{MODEL_ERRORS=}')
+    print(f'[run_gemini] :: {MODEL_ERRORS=}')
 
     if gemini.is_ready():
 
