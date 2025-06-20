@@ -318,11 +318,9 @@ def main():
     _nextPageToken = None
 
     _FOUND = None
-    _FOLLOW_UP = None
     while gmail.is_ready():
 
         _FOUND = None
-        _FOLLOW_UP = None
         email_search = gmail.thread_list_automon(
             maxResults=1,
             pageToken=_nextPageToken,
@@ -331,7 +329,7 @@ def main():
         _nextPageToken = email_search.nextPageToken
 
         if not email_search.threads:
-            print('NO THREADS', end='')
+            print('NO THREADS')
             continue
 
         for thread in email_search.threads:
@@ -360,12 +358,9 @@ def main():
                 print(' :: CHAT', end='')
                 break
 
-            # clean_drafts(thread)
-
             # needs followup
             if needs_followup(thread):
                 _FOUND = True
-                _FOLLOW_UP = True
                 gmail.messages_modify(
                     id=_clean_thread_latest.id,
                     removeLabelIds=[labels.waiting])
@@ -441,13 +436,11 @@ def main():
         i = 1
         prompts_emails = []
         for message in email_selected.automon_full_thread:
-
             _message = delete_extra_data(message)
 
-            if not is_draft(message):
-                prompts_emails.append(
-                    f"This is email {i} in an email chain: {_message}\n\n"
-                )
+            prompts_emails.append(
+                f"This is email {i} in an email chain: {_message}\n\n"
+            )
 
             i += 1
 
@@ -458,15 +451,12 @@ def main():
 
         # analyze
         if is_analyze(_clean_thread):
+            prompts = prompts_emails + [f"Give me an analysis of the email thread. \n"]
+            response, model = run_llm(prompts=prompts, chat=False)
 
-            _prompts_email_thread = []
-
-            for _message in _clean_thread.messages:
-                _prompts_email_thread.append(
-                    _message.automon_attachments().attachments[0].body.automon_data_html_text
-                )
-
-            prompts = _prompts_email_thread + [f"Give me an analysis of the email thread. \n"]
+        # chat
+        if is_chat(email_selected):
+            prompts = prompts_emails
             response, model = run_llm(prompts=prompts, chat=False)
 
         if response is None:
@@ -487,7 +477,7 @@ def main():
 
         gmail.config.refresh_token()
 
-        if _FOLLOW_UP:
+        if needs_followup(email_selected):
             resume_attachment = []
         else:
             resume_attachment = resume_selected.automon_attachments().with_filename()[0]
