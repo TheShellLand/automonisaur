@@ -394,7 +394,7 @@ class GoogleAuthConfig(object):
         return False
 
     def refresh_token(self):
-        logger.debug(f'[GoogleAuthConfig] :: refresh :: >>>>')
+        logger.debug(f'[GoogleAuthConfig] :: refresh_token :: >>>>')
 
         creds = self.credentials
         Request = google.auth.transport.requests.Request()
@@ -403,9 +403,9 @@ class GoogleAuthConfig(object):
             try:
                 creds.refresh(Request)
             except Exception as error:
-                raise Exception(f'[GoogleAuthConfig] :: refresh :: ERROR :: {error=}')
+                raise Exception(f'[GoogleAuthConfig] :: refresh_token :: ERROR :: {error=}')
 
-        logger.info(f'[GoogleAuthConfig] :: refresh :: done')
+        logger.info(f'[GoogleAuthConfig] :: refresh_token :: done')
         return True
 
     def userinfo(self):
