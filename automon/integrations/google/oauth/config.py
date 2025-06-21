@@ -126,11 +126,7 @@ class GoogleAuthConfig(object):
 
     @property
     def credentials_file_client_id(self):
-        try:
-            for item in self.credentials_file.items():
-                return item[1]['client_id']
-        except Exception as error:
-            pass
+        return self.credentials_file.get('client_id')
 
     def credentials_pickle_save(self):
         logger.debug(f"[GoogleAuthConfig] :: credentials_pickle_save :: >>>>")
