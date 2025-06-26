@@ -20,7 +20,7 @@ class RequestsClient(object):
         self.config = config or RequestsConfig()
 
         self.url: str = url
-        self.data: dict = data
+        self.data: any = data
         self.errors: bytes = b''
         self.headers: dict = headers
         self.response = None
@@ -218,7 +218,7 @@ class RequestsClient(object):
     def post(
             self,
             url: str = None,
-            data: dict = None,
+            data: any = None,
             headers: dict = None,
             max_retries: int = None,
             **kwargs
