@@ -1,8 +1,9 @@
+import json
+
 from automon.log import logging
 from automon.integrations.requestsWrapper import RequestsClient
 
 from .config import XSOARConfig
-from .endpoints import v1
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level=logging.DEBUG)
@@ -19,10 +20,20 @@ class XSOARClient(object):
             host: str = None,
             api_key: str = None,
             api_key_id: str = None,
-            config: XSOARConfig = None
+            config: XSOARConfig = None,
+            xsoar_version: int = 6,
     ):
-        self.config = config or XSOARConfig(host=host, api_key=api_key, api_key_id=api_key_id)
+        self.config = config or XSOARConfig(
+            host=host,
+            api_key=api_key,
+            api_key_id=api_key_id,
+            xsoar_version=xsoar_version
+        )
+        self.api = self.config.api
+
         self._requests = RequestsClient()
+
+        self._incidents = {}
 
     def is_ready(self):
         if self.config.is_ready():
@@ -37,32 +48,70 @@ class XSOARClient(object):
         return self._requests.errors
 
     def get(self, endpoint: str):
-        logger.info(dict(
-            endpoint=f'{self.config.host}/{endpoint}'
-        ))
-        response = self._requests.get(url=f'{self.config.host}/{endpoint}', headers=self.config.headers)
+        url = f'{self.config.host}/{endpoint}'
+        logger.debug(f'[XSOARClient] :: get :: {url=}')
+
+        response = self._requests.get(url=url, headers=self.config.headers, verify=self.config.verify_cert)
 
         if response:
+            logger.info(f'[XSOARClient] :: get :: done')
             return response
 
-        logger.error(self.errors)
+        error = self.errors
+        logger.error(f'[XSOARClient] :: get :: ERROR :: {error=}')
         raise Exception(self.errors)
 
-    def post(self, endpoint: str):
-        logger.info(dict(
-            endpoint=f'{self.config.host}/{endpoint}'
-        ))
-        response = self._requests.post(url=f'{self.config.host}/{endpoint}', headers=self.config.headers)
+    def post(
+            self,
+            endpoint: str,
+            params: dict = None,
+            data: dict = None,
+    ):
+        url = f'{self.config.host}/{endpoint}'
+        logger.debug(f'[XSOARClient] :: post :: {url=}')
+
+        data = json.dumps(data)
+
+        response = self._requests.post(
+            url=url,
+            headers=self.config.headers,
+            verify=self.config.verify_cert,
+            params=params,
+            data=data,
+        )
 
         if response:
+            logger.info(f'[XSOARClient] :: post :: done')
             return response
 
-        logger.error(self.errors)
+        error = self.errors
+        logger.error(f'[XSOARClient] :: post :: ERROR :: {error=}')
         raise Exception(self.errors)
 
     def reports(self):
-        reports = self.get(endpoint=v1.Reports.reports)
-        logger.info(dict(
-            reports=self._requests.content
-        ))
+        reports = self.get(endpoint=self.api.Reports.reports)
+        logger.debug(f'[XSOARClient] :: reports :: {reports=}')
+        logger.info(f'[XSOARClient] :: reports :: done')
         return reports
+
+    def incidents(self):
+        """"""
+        data = {
+            "filter": {
+
+            }
+        }
+        incidents = self.post(endpoint=self.api.Incidents.incidents, data=data)
+
+        if incidents:
+            incidents = self._requests.to_dict()
+            self._incidents = incidents
+            logger.debug(
+                f'[XSOARClient] :: incidents'
+                f' :: {incidents["total"]} total'
+                f' :: {len(incidents["data"])} results')
+            logger.info(f'[XSOARClient] :: incidents :: done')
+            return self
+
+        logger.error(f'[XSOARClient] :: incidents :: ERROR :: {self._requests.content}')
+        raise Exception
