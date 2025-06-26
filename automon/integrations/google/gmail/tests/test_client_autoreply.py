@@ -168,7 +168,7 @@ def run_llm(prompts: list, chat: bool = False) -> (str, any):
     CHAT_FOREVER = chat
 
     _tokens = [len(x) for x in prompts]
-    print(f'[run_llm] :: {[f"{x:,}" for x in _tokens]} :: {sum(_tokens):,f} tokens')
+    print(f'[run_llm] :: {[f"{x:,}" for x in _tokens]} :: {sum(_tokens):,} tokens')
 
     while True:
         try:
@@ -421,6 +421,8 @@ def main():
             id=resume_error.id,
             addLabelIds=[labels.automon, labels.error, labels.resume]
         )
+
+        raise Exception(f'failed to get resume :: ERROR :: {error=}')
 
     try:
 
