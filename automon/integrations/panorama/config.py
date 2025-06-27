@@ -1,4 +1,4 @@
-import automon.helpers.osWrapper
+from automon.helpers.osWrapper import environ
 
 
 class PanoramaConfig(object):
@@ -8,8 +8,8 @@ class PanoramaConfig(object):
             panorama_host: str = None,
             panorama_api_key: str = None
     ):
-        self.PANORAMA_HOST: str = panorama_host or automon.helpers.osWrapper.environ(f'PANORAMA_HOST')
-        self.PANORAMA_API_KEY: str = panorama_api_key or automon.helpers.osWrapper.environ(f'PANORAMA_API_KEY')
+        self.PANORAMA_HOST: str = panorama_host or environ(f'PANORAMA_HOST')
+        self.PANORAMA_API_KEY: str = panorama_api_key or environ(f'PANORAMA_API_KEY')
 
     def auth_header(self) -> dict:
         if self.PANORAMA_API_KEY:
@@ -18,3 +18,9 @@ class PanoramaConfig(object):
             )
 
         raise Exception(f'PanoramaConfig :: ERROR :: missing PANORAMA_API_KEY')
+
+    @property
+    def is_ready(self) -> bool:
+        if self.PANORAMA_HOST and self.PANORAMA_API_KEY:
+            return True
+        return False

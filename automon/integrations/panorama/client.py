@@ -9,12 +9,19 @@ class PanoramaClient(object):
     def __init__(self, panorama_host: str = None, panorama_api_key: str = None):
         self.config = PanoramaConfig(panorama_host=panorama_host, panorama_api_key=panorama_api_key)
         self.host = self.config.PANORAMA_HOST
-        self.headers = self.config.auth_header()
+        self.headers = None
 
         self._requests = automon.integrations.requestsWrapper.RequestsClient()
 
     def _api_url(self, endpoint) -> str:
         return f'{self.host}/{endpoint}'
+
+    @property
+    def is_ready(self) -> bool:
+        if self.config.is_ready:
+            self.headers = self.config.auth_header()
+            return True
+        return False
 
     def _request_get(self, url, params=None, **kwargs) -> bool:
         url = self._api_url(url)
@@ -43,6 +50,13 @@ class PanoramaClient(object):
 
         url = Api().keygen
         request = self._request_post(url=url)
+
+        if request:
+            self.config.PANORAMA_API_KEY = self._requests.text
+        else:
+            error = self._requests.content
+            raise Exception(f'[PanoramaClient] :: get_api_key :: ERROR :: {error=}')
+
         return self
 
     def get_firewall_device(self):
