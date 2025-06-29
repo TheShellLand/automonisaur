@@ -736,6 +736,14 @@ class GoogleGmailClient:
         logger.info(f"[GoogleGmailClient] :: thread_list_automon :: done")
         return threads
 
+    def thread_list_by_subject(self, q: str, *args, **kwargs) -> ThreadList:
+        """Enhanced `thread_list` with email subject search"""
+        q = f'subject:"{q}"'
+        logger.debug(f"[GoogleGmailClient] :: thread_list_by_subject :: {q=} :: {args=} :: {kwargs=}")
+        threads = self.thread_list_automon(q=q, *args, **kwargs)
+        logger.info(f"[GoogleGmailClient] :: thread_list_by_subject :: done")
+        return threads
+
     def thread_modify(self, id: str) -> Thread:
         api = UsersThread(self._userId).modify(id=id)
         self.requests.post(api, headers=self.config.headers)
