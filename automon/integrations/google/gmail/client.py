@@ -619,6 +619,7 @@ class GoogleGmailClient:
             "removeLabelIds": removeLabelIds
         }
         self.requests.post(api, headers=self.config.headers, json=data)
+        logger.info(f"[GoogleGmailClient] :: messages_modify :: done")
         return Message().update_dict(self.requests.to_dict())
 
     def messages_send(self):
@@ -744,9 +745,27 @@ class GoogleGmailClient:
         logger.info(f"[GoogleGmailClient] :: thread_list_by_subject :: done")
         return threads
 
-    def thread_modify(self, id: str) -> Thread:
+    def thread_modify(self,
+                      id: str,
+                      addLabelIds: list = [],
+                      removeLabelIds: list = []) -> Thread:
         api = UsersThread(self._userId).modify(id=id)
-        self.requests.post(api, headers=self.config.headers)
+
+        for addLabelId in addLabelIds:
+            if type(addLabelId) is Label:
+                addLabelIds = [addLabelId.id for addLabelId in addLabelIds]
+                break
+        for removeLabelId in removeLabelIds:
+            if type(removeLabelId) is Label:
+                removeLabelIds = [removeLabelId.id for removeLabelId in removeLabelIds]
+                break
+
+        data = {
+            "addLabelIds": addLabelIds,
+            "removeLabelIds": removeLabelIds
+        }
+
+        self.requests.post(api, headers=self.config.headers, json=data)
         logger.info(f"[GoogleGmailClient] :: thread_modify :: done")
         return Thread().update_dict(self.requests.to_dict())
 

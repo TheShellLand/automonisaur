@@ -1272,7 +1272,12 @@ class UsersThread(Users):
     @property
     def list(self): """requests.get"""; return self.url + f'/threads'
 
-    def modify(self, id: str): """requests.post"""; return self.url + f'/threads/{id}/modify'
+    def modify(self, id: str):
+        """Modifies the labels applied to the thread. This applies to all messages in the thread.
+
+        requests.post
+        """
+        return self.url + f'/threads/{id}/modify'
 
     def trash(self, id: str): """requests.post"""; return self.url + f'/threads/{id}/trash'
 

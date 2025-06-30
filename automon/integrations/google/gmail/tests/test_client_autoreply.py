@@ -252,15 +252,15 @@ def is_sent(message: automon.integrations.google.gmail.v1.Message) -> bool:
 
 
 def mark_processing(thread: automon.integrations.google.gmail.v1.Thread):
-    return gmail.messages_modify(
-        id=thread.automon_clean_thread_latest.id,
+    return gmail.thread_modify(
+        id=thread.id,
         addLabelIds=[labels.processing]
     )
 
 
 def unmark_processing(thread: automon.integrations.google.gmail.v1.Thread):
-    return gmail.messages_modify(
-        id=thread.automon_clean_thread_latest.id,
+    return gmail.thread_modify(
+        id=thread.id,
         removeLabelIds=[labels.processing]
     )
 
