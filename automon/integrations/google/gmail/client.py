@@ -296,7 +296,7 @@ class GoogleGmailClient:
         api = UsersLabels(self._userId).get(id)
         self.requests.get(api, headers=self.config.headers)
         label = Label().update_dict(self.requests.to_dict())
-        logger.debug(f"[GoogleGmailClient] :: labels_get :: {label.name}")
+        logger.debug(f"[GoogleGmailClient] :: labels_get :: {label.name=}")
         logger.info(f"[GoogleGmailClient] :: labels_get :: done")
         return label
 
