@@ -6,6 +6,19 @@ class Reports:
     reports: str = f'/reports'
 
 
+class Files:
+    """
+    https://cortex-panw.stoplight.io/docs/cortex-xsoar-6/43ko2zqvunjz0-download-file
+
+    """
+
+    def __init__(self):
+        pass
+
+    def get_by_entryid(self, entryid: str) -> str:
+        return f'/entry/download/{entryid}'
+
+
 class Incidents:
     """
     https://cortex-panw.stoplight.io/docs/cortex-xsoar-6/4ewvqjrm5eps4-search-incidents-by-filter

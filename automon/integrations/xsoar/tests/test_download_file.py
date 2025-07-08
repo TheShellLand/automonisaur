@@ -12,8 +12,8 @@ class MyTestCase(unittest.TestCase):
 
     if client.is_ready():
         def test_auth(self):
-            id = ''
-            result = self.client.incidents(id=id)
+            entryid = ''
+            result = self.client.download_file(entryid=entryid)
             pass
 
 

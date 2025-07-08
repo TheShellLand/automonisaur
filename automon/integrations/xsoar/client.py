@@ -34,6 +34,7 @@ class XSOARClient(object):
         self._requests = RequestsClient()
 
         self._incidents = {}
+        self._file = None
 
     def is_ready(self):
         if self.config.is_ready():
@@ -41,13 +42,13 @@ class XSOARClient(object):
         return False
 
     def auth(self):
-        return
+        raise NotImplementedError
 
     @property
-    def errors(self):
+    def _client_errors(self):
         return self._requests.errors
 
-    def get(self, endpoint: str):
+    def _get(self, endpoint: str):
         url = f'{self.config.host}/{endpoint}'
         logger.debug(f'[XSOARClient] :: get :: {url=}')
 
@@ -57,11 +58,11 @@ class XSOARClient(object):
             logger.info(f'[XSOARClient] :: get :: done')
             return response
 
-        error = self.errors
+        error = self._client_errors
         logger.error(f'[XSOARClient] :: get :: ERROR :: {error=}')
-        raise Exception(self.errors)
+        raise Exception(self._client_errors)
 
-    def post(
+    def _post(
             self,
             endpoint: str,
             params: dict = None,
@@ -84,24 +85,29 @@ class XSOARClient(object):
             logger.info(f'[XSOARClient] :: post :: done')
             return response
 
-        error = self.errors
+        error = self._client_errors
         logger.error(f'[XSOARClient] :: post :: ERROR :: {error=}')
-        raise Exception(self.errors)
+        raise Exception(self._client_errors)
 
     def reports(self):
-        reports = self.get(endpoint=self.api.Reports.reports)
+        reports = self._get(endpoint=self.api.Reports.reports)
         logger.debug(f'[XSOARClient] :: reports :: {reports=}')
         logger.info(f'[XSOARClient] :: reports :: done')
         return reports
 
-    def incidents(self):
-        """"""
+    def incidents(
+            self,
+            id: str = None
+    ):
+
         data = {
             "filter": {
-
+                "id": [
+                    id
+                ]
             }
         }
-        incidents = self.post(endpoint=self.api.Incidents.incidents, data=data)
+        incidents = self._post(endpoint=self.api.Incidents.incidents, data=data)
 
         if incidents:
             incidents = self._requests.to_dict()
@@ -114,4 +120,18 @@ class XSOARClient(object):
             return self
 
         logger.error(f'[XSOARClient] :: incidents :: ERROR :: {self._requests.content}')
+        raise Exception
+
+    def download_file(self, entryid: str):
+
+        file = self._get(endpoint=self.api.Files().get_by_entryid(entryid=entryid))
+
+        if file:
+            file = self._requests.to_dict()
+            self._file = file
+            logger.debug(f'[XSOARClient] :: download_file :: {file=}')
+            logger.info(f'[XSOARClient] :: download_file :: done')
+            return self
+
+        logger.error(f'[XSOARClient] :: download_file :: ERROR :: {self._requests.content}')
         raise Exception
