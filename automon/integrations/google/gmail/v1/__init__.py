@@ -839,6 +839,11 @@ class Message(DictUpdate):
 
         self.automon_labels = []
 
+    def __bool__(self):
+        if self.id:
+            return True
+        return False
+
     def __eq__(self, other):
         if self.id == other.id:
             return True
