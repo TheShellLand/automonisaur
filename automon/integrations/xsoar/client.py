@@ -1,5 +1,7 @@
 import json
 
+from lxml.html.diff import end_tag
+
 from automon.log import logging
 from automon.integrations.requestsWrapper import RequestsClient
 
@@ -33,6 +35,7 @@ class XSOARClient(object):
 
         self._requests = RequestsClient()
 
+        self._incident_created = None
         self._incidents = {}
         self._file = None
 
@@ -85,15 +88,46 @@ class XSOARClient(object):
             logger.info(f'[XSOARClient] :: post :: done')
             return response
 
+        if self._requests.status_code == 201:
+            status_code = self._requests.status_code
+            logger.info(f'[XSOARClient] :: post :: {status_code=} :: done')
+            return True
+
         error = self._client_errors
         logger.error(f'[XSOARClient] :: post :: ERROR :: {error=}')
         raise Exception(self._client_errors)
 
-    def reports(self):
-        reports = self._get(endpoint=self.api.Reports.reports)
-        logger.debug(f'[XSOARClient] :: reports :: {reports=}')
-        logger.info(f'[XSOARClient] :: reports :: done')
-        return reports
+    def create_incident(self, body: dict):
+
+        incident = self._post(
+            endpoint=self.api.Incidents().create_incident,
+            data=body,
+        )
+
+        if incident:
+            incident = self._requests.to_dict()
+            self._incident_created = incident
+            logger.debug(f'[XSOARClient] :: create_incident :: {incident=}')
+            print(f'[XSOARClient] :: create_incident :: {incident=}')
+            logger.info(f'[XSOARClient] :: create_incident :: done')
+            return self
+
+        logger.error(f'[XSOARClient] :: create_incident :: ERROR :: {self._requests.content}')
+        raise Exception
+
+    def download_file(self, entryid: str):
+
+        file = self._get(endpoint=self.api.Files().get_by_entryid(entryid=entryid))
+
+        if file:
+            file = self._requests.to_dict()
+            self._file = file
+            logger.debug(f'[XSOARClient] :: download_file :: {file=}')
+            logger.info(f'[XSOARClient] :: download_file :: done')
+            return self
+
+        logger.error(f'[XSOARClient] :: download_file :: ERROR :: {self._requests.content}')
+        raise Exception
 
     def incidents(
             self,
@@ -122,16 +156,8 @@ class XSOARClient(object):
         logger.error(f'[XSOARClient] :: incidents :: ERROR :: {self._requests.content}')
         raise Exception
 
-    def download_file(self, entryid: str):
-
-        file = self._get(endpoint=self.api.Files().get_by_entryid(entryid=entryid))
-
-        if file:
-            file = self._requests.to_dict()
-            self._file = file
-            logger.debug(f'[XSOARClient] :: download_file :: {file=}')
-            logger.info(f'[XSOARClient] :: download_file :: done')
-            return self
-
-        logger.error(f'[XSOARClient] :: download_file :: ERROR :: {self._requests.content}')
-        raise Exception
+    def reports(self):
+        reports = self._get(endpoint=self.api.Reports.reports)
+        logger.debug(f'[XSOARClient] :: reports :: {reports=}')
+        logger.info(f'[XSOARClient] :: reports :: done')
+        return reports

@@ -54,5 +54,6 @@ class XSOARConfig(object):
         return {
             'Authorization': f'{self.api_key}',
             'x-xdr-auth-id': f'{self.api_key_id}',
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Accept": "application/json",
         }
