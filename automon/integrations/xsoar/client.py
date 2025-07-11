@@ -36,7 +36,8 @@ class XSOARClient(object):
         self._requests = RequestsClient()
 
         self._incident_created = None
-        self._incidents = {}
+        self._incident_deleted = None
+        self._incidents_search = {}
         self._file = None
 
     def is_ready(self):
@@ -48,8 +49,16 @@ class XSOARClient(object):
         raise NotImplementedError
 
     @property
+    def _client_content(self):
+        return self._requests.content
+
+    @property
     def _client_errors(self):
         return self._requests.errors
+
+    @property
+    def _client_response(self):
+        return self._requests.to_dict()
 
     def _get(self, endpoint: str):
         url = f'{self.config.host}/{endpoint}'
@@ -63,7 +72,7 @@ class XSOARClient(object):
 
         error = self._client_errors
         logger.error(f'[XSOARClient] :: get :: ERROR :: {error=}')
-        raise Exception(self._client_errors)
+        raise Exception(f'[XSOARClient] :: get :: ERROR :: {error=}')
 
     def _post(
             self,
@@ -95,57 +104,103 @@ class XSOARClient(object):
 
         error = self._client_errors
         logger.error(f'[XSOARClient] :: post :: ERROR :: {error=}')
-        raise Exception(self._client_errors)
-
-    def create_incident(self, body: dict):
-
-        incident = self._post(
-            endpoint=self.api.Incidents().create_incident,
-            data=body,
-        )
-
-        if incident:
-            incident = self._requests.to_dict()
-            self._incident_created = incident
-            logger.debug(f'[XSOARClient] :: create_incident :: {incident=}')
-            print(f'[XSOARClient] :: create_incident :: {incident=}')
-            logger.info(f'[XSOARClient] :: create_incident :: done')
-            return self
-
-        logger.error(f'[XSOARClient] :: create_incident :: ERROR :: {self._requests.content}')
-        raise Exception
+        raise Exception(f'[XSOARClient] :: post :: ERROR :: {error=}')
 
     def download_file(self, entryid: str):
 
         file = self._get(endpoint=self.api.Files().get_by_entryid(entryid=entryid))
 
         if file:
-            file = self._requests.to_dict()
+            file = self._client_response
             self._file = file
             logger.debug(f'[XSOARClient] :: download_file :: {file=}')
             logger.info(f'[XSOARClient] :: download_file :: done')
             return self
 
-        logger.error(f'[XSOARClient] :: download_file :: ERROR :: {self._requests.content}')
+        logger.error(f'[XSOARClient] :: download_file :: ERROR :: {self._client_content}')
         raise Exception
 
-    def incidents(
+    def incident_create(self,
+                        name: str = None,
+                        type: str = None,
+                        labels: list = [],
+                        createInvestigation: bool = True,
+
+                        body: dict = None
+                        ):
+
+        if name or type:
+            if body:
+                raise Exception(f'[XSOARClient] :: incident_create :: ERROR :: `body` must be used by itself')
+
+        incident = {}
+
+        if name:
+            incident['name'] = name
+
+        if type:
+            incident['type'] = type
+
+        if not name and not type:
+            incident['name'] = 'Test'
+
+        if labels:
+            incident['labels'] = labels
+
+        if createInvestigation:
+            incident['createInvestigation'] = createInvestigation
+
+        incident = self._post(
+            endpoint=self.api.Incidents().create_incident,
+            data=incident,
+        )
+
+        if incident:
+            incident = self._client_response
+            self._incident_created = incident
+            logger.debug(f'[XSOARClient] :: incident_create :: {incident=}')
+            print(f'[XSOARClient] :: incident_create :: {incident=}')
+            logger.info(f'[XSOARClient] :: incident_create :: done')
+            return self
+
+        logger.error(f'[XSOARClient] :: incident_create :: ERROR :: {self._client_content}')
+        raise Exception
+
+    def incident_delete(self, body: dict):
+
+        incident = self._post(
+            endpoint=self.api.Incidents().delete_incident_batch(),
+            data=body,
+        )
+
+        if incident:
+            incident = self._client_response
+            self._incident_deleted = incident
+            logger.debug(f'[XSOARClient] :: incident_delete :: {incident=}')
+            print(f'[XSOARClient] :: incident_delete :: {incident=}')
+            logger.info(f'[XSOARClient] :: incident_delete :: done')
+            return self
+
+        logger.error(f'[XSOARClient] :: incident_delete :: ERROR :: {self._client_content}')
+        raise Exception
+
+    def incidents_search(
             self,
             id: str = None
     ):
 
-        data = {
-            "filter": {
-                "id": [
-                    id
-                ]
-            }
-        }
+        data = {}
+
+        data['filter'] = {}
+
+        if id:
+            data['filter']['id'] = [id]
+
         incidents = self._post(endpoint=self.api.Incidents.incidents, data=data)
 
         if incidents:
-            incidents = self._requests.to_dict()
-            self._incidents = incidents
+            incidents = self._client_response
+            self._incidents_search = incidents
             logger.debug(
                 f'[XSOARClient] :: incidents'
                 f' :: {incidents["total"]} total'
@@ -153,7 +208,7 @@ class XSOARClient(object):
             logger.info(f'[XSOARClient] :: incidents :: done')
             return self
 
-        logger.error(f'[XSOARClient] :: incidents :: ERROR :: {self._requests.content}')
+        logger.error(f'[XSOARClient] :: incidents :: ERROR :: {self._client_content}')
         raise Exception
 
     def reports(self):

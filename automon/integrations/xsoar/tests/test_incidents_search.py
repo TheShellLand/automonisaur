@@ -3,7 +3,6 @@ import unittest
 from automon.integrations.xsoar import XSOARClient
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
-from automon.helpers import Sleeper
 
 LoggingClient.logging.getLogger('urllib3.connectionpool').setLevel(ERROR)
 
@@ -13,15 +12,9 @@ class MyTestCase(unittest.TestCase):
 
     if client.is_ready():
         def test_auth(self):
-
-            while True:
-                incident_type = None
-
-                result = self.client.incident_create(
-                    type=incident_type
-                )
-                pass
-                Sleeper.seconds(5)
+            id = None
+            result = self.client.incidents_search(id=id)
+            pass
 
 
 if __name__ == '__main__':
