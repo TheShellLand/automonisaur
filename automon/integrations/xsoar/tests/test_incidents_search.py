@@ -13,7 +13,15 @@ class MyTestCase(unittest.TestCase):
     if client.is_ready():
         def test_auth(self):
             id = None
-            result = self.client.incidents_search(id=id)
+            ids = []
+            type = []
+            query = None
+            result = self.client.incidents_search(
+                query=query,
+                id=id,
+                ids=ids,
+                type=type,
+            )._incidents_search
             pass
 
 
