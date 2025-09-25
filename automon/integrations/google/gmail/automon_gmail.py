@@ -213,10 +213,10 @@ class AutomonGmailClient(GoogleGmailClient):
             else:
                 time_delta_check = f'last sent {time_delta.days} days ago'
 
-            debug(f'{thread} :: needs_followup :: {time_delta_check}')
+            debug(f'needs_followup :: {time_delta_check} :: {thread}')
 
             if time_delta.days >= days:
-                debug(f'{thread} :: needs_followup :: FOLLOW UP')
+                debug(f'needs_followup :: FOLLOW UP :: {thread}')
                 return True
 
         return False
