@@ -285,91 +285,6 @@ class AutomonAttachments(DictUpdate):
         return [x for x in self.attachments if x.filename]
 
 
-class AutomonLabels:
-    labels = {
-        'automon': 'automon',
-        "auto_reply_enabled": 'automon/auto reply enabled',
-        'analyze': 'automon/analyze',
-        'chat': 'automon/chat',
-        'debug': 'automon/debug',
-        'error': 'automon/error',
-        "help": 'automon/help',
-        "processing": 'automon/processing >>>',
-        'resume': 'automon/resume',
-        'relevant': 'automon/relevant',
-        "remote": 'automon/remote',
-        "user_action_required": 'automon/user action required',
-        "waiting": 'automon/waiting',
-        "welcome": 'automon/welcome',
-    }
-
-    def __init__(self):
-        self._reset_labels = False
-
-        # colors
-        self._color_default = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
-        self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
-        self._color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
-        self._color_enabled = Color(backgroundColor='#076239', textColor='#b9e4d0')
-        self._color_welcome = Color(backgroundColor='#8e63ce', textColor='#ffffff')
-        self._color_waiting = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
-        self._color_processing = Color(backgroundColor='#cf8933', textColor='#ffd6a2')
-
-        # required
-        self.automon = Label(name=self.labels.get('automon'), color=self._color_default)
-
-        # welcome
-        self.welcome = Label(name=self.labels.get('welcome'), color=self._color_welcome)
-        self.help = Label(name=self.labels.get('help'), color=self._color_welcome)
-
-        # resume
-        self.resume = Label(name=self.labels.get('resume'), color=self._color_resume)
-
-        # analyze
-        self.analyze = Label(name=self.labels.get('analyze'), color=self._color_default)
-
-        # waiting
-        self.waiting = Label(name=self.labels.get('waiting'), color=self._color_default)
-
-        # currently processing
-        self.processing = Label(name=self.labels.get('processing'), color=self._color_processing)
-
-        # general
-        self.draft = Label(name='DRAFT', id='DRAFT')
-        self.sent = Label(name='SENT', id='SENT')
-        self.unread = Label(name='UNREAD', id='UNREAD')
-        self.trash = Label(name='TRASH', id='TRASH')
-
-        # allow auto reply
-        self.auto_reply_enabled = Label(name=self.labels.get('auto_reply_enabled'), color=self._color_enabled)
-
-        # relevance
-        self.relevant = Label(name=self.labels.get('relevant'), color=self._color_default)
-
-        # remote
-        self.remote = Label(name=self.labels.get('remote'), color=self._color_default)
-
-        # need user input
-        self.user_action_required = Label(name=self.labels.get('user_action_required'), color=self._color_error)
-
-        # debugging
-        self.debug = Label(name=self.labels.get('debug'), color=self._color_error)
-
-        # error
-        self.error = Label(name=self.labels.get('error'), color=self._color_error)
-
-        # chat
-        self.chat = Label(name=self.labels.get('chat'), color=self._color_error)
-
-    @property
-    def all_labels(self):
-        return [
-            getattr(self, x) for x in self.labels.keys()
-            if not x.startswith("_")
-            if not x == 'automon'
-        ]
-
-
 class Color(DictUpdate):
     backgroundColor: str
     textColor: str
@@ -543,6 +458,15 @@ class Format:
     metadata = 'metadata'
 
 
+class GmailLabels:
+
+    def __init__(self):
+        self.draft = Label(name='DRAFT', id='DRAFT')
+        self.sent = Label(name='SENT', id='SENT')
+        self.unread = Label(name='UNREAD', id='UNREAD')
+        self.trash = Label(name='TRASH', id='TRASH')
+
+
 class Headers(DictUpdate):
     name: str
     value: str
@@ -705,8 +629,9 @@ class Label(DictUpdate):
         self.labelListVisibility = labelListVisibility
 
     def __repr__(self):
-        if self.name:
-            return f"{self.name}"
+        if self.id and self.name:
+            return f"{self.id} :: {self.name}"
+        return str(self.id)
 
     def __eq__(self, other):
         if self.id == other.id and self.name == other.name:
@@ -1144,17 +1069,23 @@ class Thread(DictUpdate):
 
     def __init__(self):
         super().__init__()
-        self.messages = []
+        self.messages: [Message] = []
 
     def __repr__(self):
         if hasattr(self, 'snippet'):
             return self.snippet
+        return f'{self.id} :: {self.automon_messages_count} messages'
+
+    def __bool__(self):
+        if self.messages:
+            return True
+        return False
 
     @property
     def automon_clean_thread(self):
         """Return a clean list of messages not labeled with TRASH"""
         messages = []
-        labels = AutomonLabels()
+        labels = GmailLabels()
 
         if self.messages:
             for message in self.messages:
@@ -1179,7 +1110,7 @@ class Thread(DictUpdate):
     def automon_full_thread(self):
         """Return the full thread including TRASH messages"""
         messages = []
-        labels = AutomonLabels()
+        labels = GmailLabels()
 
         if self.messages:
             for message in self.messages:
@@ -1201,6 +1132,10 @@ class Thread(DictUpdate):
             return self.automon_full_thread.messages[-1]
 
     @property
+    def automon_messages_count(self):
+        return len(self.messages)
+
+    @property
     def automon_message_first(self) -> Message:
         if self.messages:
             return self.messages[0]
@@ -1215,11 +1150,6 @@ class Thread(DictUpdate):
             self.messages = [Message().update_dict(x) for x in self.messages]
 
         return self
-
-    def __bool__(self):
-        if self.messages:
-            return True
-        return False
 
 
 class ThreadList(DictUpdate):

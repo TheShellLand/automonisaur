@@ -31,7 +31,6 @@ class GoogleGmailClient:
     _temp = automon.helpers.tempfileWrapper.Tempfile
     _sleep = automon.helpers.Sleeper
     _bs4 = bs4
-    _automon_labels = AutomonLabels()
 
     """Google Gmail client
 
@@ -39,7 +38,6 @@ class GoogleGmailClient:
     """
 
     def __init__(self, config: GoogleGmailConfig = None):
-        logger.debug(f"[GoogleGmailClient] :: init :: >>>>")
         self.config = config or GoogleGmailConfig()
         self.endpoint = self.config.GOOGLE_GMAIL_ENDPOINT
 
@@ -206,8 +204,9 @@ class GoogleGmailClient:
             includeSpamTrash=includeSpamTrash,
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        logger.info(f"[GoogleGmailClient] :: draft_list :: done")
-        return DraftList().update_dict(self.requests.to_dict())
+        draft = DraftList().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: draft_list :: {draft=}")
+        return draft
 
     def draft_list_automon(self, *args, **kwargs):
         """Enhanced `message_get`"""
@@ -221,8 +220,9 @@ class GoogleGmailClient:
         api = UsersDrafts(self._userId).send
         data = draft.to_dict()
         self.requests.post(api, headers=self.config.headers, json=data)
-        logger.info(f"[GoogleGmailClient] :: draft_send :: done")
-        return Message().update_dict(self.requests.to_dict())
+        message = Message().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: draft_send :: {message=}")
+        return message
 
     def draft_update(self, id: str) -> Draft:
         api = UsersDrafts(self._userId).update(id)
@@ -269,12 +269,12 @@ class GoogleGmailClient:
 
         Max labels 10,000
         """
-        logger.debug(f"[GoogleGmailClient] :: labels_create :: {name=} :: >>>>")
         api = UsersLabels(userId=self._userId).create
         json = Label(name=name, color=color).to_dict()
         self.requests.post(api, headers=self.config.headers, json=json)
-        logger.info(f"[GoogleGmailClient] :: labels_create :: done")
-        return Label().update_dict(self.requests.to_dict())
+        label = Label().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: labels_create :: {label=}")
+        return label
 
     def labels_delete(self, id: str) -> bool:
         """Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to."""
@@ -292,26 +292,24 @@ class GoogleGmailClient:
         if type(id) is Label:
             id = id.id
 
-        logger.debug(f"[GoogleGmailClient] :: labels_get :: {id=}")
         api = UsersLabels(self._userId).get(id)
         self.requests.get(api, headers=self.config.headers)
         label = Label().update_dict(self.requests.to_dict())
-        logger.debug(f"[GoogleGmailClient] :: labels_get :: {label.name=}")
-        logger.info(f"[GoogleGmailClient] :: labels_get :: done")
+        logger.debug(f"[GoogleGmailClient] :: labels_get :: {label}")
         return label
 
     def labels_get_by_name(self, name: str) -> Label:
         """Gets label by name"""
-        logger.debug(f"[GoogleGmailClient] :: labels_get_by_name :: {name=}")
 
         labels = self.labels_list()
+        label = Label()
         for label in labels.labels:
             if label.name == name:
-                logger.info(f"[GoogleGmailClient] :: labels_get_by_name :: done")
-                return Label().update_dict(label)
+                logger.debug(f"[GoogleGmailClient] :: labels_get_by_name :: {label}")
+                return label
 
         logger.error(f"[GoogleGmailClient] :: labels_get_by_name :: ERROR :: label not found {name=}")
-        return Label()
+        return label
 
     def labels_list(self):
         """Lists all labels in the user's mailbox."""
@@ -319,7 +317,6 @@ class GoogleGmailClient:
         self.requests.get(api, headers=self.config.headers)
         labels = LabelList().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: labels_list :: {len(labels.labels)} labels")
-        logger.info(f"[GoogleGmailClient] :: labels_list :: done")
         return labels
 
     def labels_patch(self, id: str):
@@ -327,12 +324,12 @@ class GoogleGmailClient:
         if type(id) is Label:
             id = id.id
 
-        logger.debug(f"[GoogleGmailClient] :: labels_patch :: {id=}")
         api = UsersLabels(self._userId).patch(id)
         data = Label().to_dict()
         self.requests.patch(api, headers=self.config.headers, json=data)
-        logger.info(f"[GoogleGmailClient] :: labels_patch :: done")
-        return self.requests.to_dict()
+        response = self.requests.to_dict()
+        logger.debug(f"[GoogleGmailClient] :: labels_patch :: {id=} :: {response=}")
+        return response
 
     def labels_update(self,
                       id: str or Label,
@@ -341,12 +338,12 @@ class GoogleGmailClient:
         if type(id) is Label:
             id = id.id
 
-        logger.debug(f"[GoogleGmailClient] :: labels_update :: {id=} :: {color=}")
         api = UsersLabels(self._userId).update(id)
         data = Label(id=id, color=color).to_dict()
         self.requests.put(api, headers=self.config.headers, json=data)
-        logger.info(f"[GoogleGmailClient] :: labels_update :: done")
-        return Label().update_dict(self.requests.to_dict())
+        label = Label().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: labels_update :: {label=}")
+        return label
 
     def _improved_draft_list(self, drafts: DraftList) -> DraftList:
         """Better drafts."""
@@ -470,7 +467,6 @@ class GoogleGmailClient:
         else:
             raise Exception(f"[GoogleGmailClient] :: messages_attachments_get :: error :: {self.requests}")
 
-        logger.info(f"[GoogleGmailClient] :: messages_attachments_get :: done")
         return attachments
 
     def messages_batchDelete(self, ids: list):
@@ -483,8 +479,9 @@ class GoogleGmailClient:
             "ids": ids
         }
         self.requests.post(api, headers=self.config.headers, json=data)
-        logger.info(f"[GoogleGmailClient] :: messages_batchDelete :: done")
-        return self.requests.to_dict()
+        response = self.requests.to_dict()
+        logger.debug(f"[GoogleGmailClient] :: messages_batchDelete :: {len(ids)} deleted")
+        return response
 
     def messages_batchModify(self,
                              ids: list = None,
@@ -520,8 +517,9 @@ class GoogleGmailClient:
             metadataHeaders=metadataHeaders
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        logger.info(f"[GoogleGmailClient] :: messages_get :: done")
-        return Message().update_dict(self.requests.to_dict())
+        message = Message().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: messages_get :: {message=}")
+        return message
 
     def messages_get_automon(self, *args, **kwargs, ):
         """Enhanced `message_get`"""
@@ -563,8 +561,6 @@ class GoogleGmailClient:
                       labelIds: list = [],
                       includeSpamTrash: bool = False) -> MessageList:
         """Lists the messages in the user's mailbox."""
-        logger.debug(
-            f"[GoogleGmailClient] :: message_list :: {maxResults=} :: {pageToken=} :: {q=} :: {labelIds=} :: {includeSpamTrash=}")
 
         if maxResults > 500:
             raise Exception(f"[GoogleGmailClient] :: message_list :: ERROR :: {maxResults=} > 500")
@@ -584,8 +580,10 @@ class GoogleGmailClient:
         )
         self.requests.get(api, headers=self.config.headers, params=params)
 
-        logger.info(f"[GoogleGmailClient] :: message_list :: done")
-        return MessageList().update_dict(self.requests.to_dict())
+        messages = MessageList().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: message_list :: "
+                     f"{maxResults=} :: {pageToken=} :: {q=} :: {labelIds=} :: {includeSpamTrash=} :: {messages}")
+        return messages
 
     def messages_list_automon(self, *args, **kwargs) -> MessageList:
         """Enhanced `message_list`"""
@@ -619,8 +617,9 @@ class GoogleGmailClient:
             "removeLabelIds": removeLabelIds
         }
         self.requests.post(api, headers=self.config.headers, json=data)
-        logger.info(f"[GoogleGmailClient] :: messages_modify :: done")
-        return Message().update_dict(self.requests.to_dict())
+        message = Message().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: messages_modify :: {message=}")
+        return message
 
     def messages_send(self):
         """Sends the specified message to the recipients in the To, Cc, and Bcc headers. For example usage, see Sending email."""
@@ -644,8 +643,9 @@ class GoogleGmailClient:
     def thread_delete(self, id: str) -> Thread:
         api = UsersThread(self._userId).delete(id=id)
         self.requests.delete(api, headers=self.config.headers)
-        logger.info(f"[GoogleGmailClient] :: thread_delete :: done")
-        return Thread().update_dict(self.requests.to_dict())
+        thread = Thread().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: thread_delete :: {thread=}")
+        return thread
 
     def thread_get(self,
                    id: str,
@@ -669,8 +669,9 @@ class GoogleGmailClient:
             metadataHeaders=metadataHeaders
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        logger.info(f"[GoogleGmailClient] :: thread_get :: done")
-        return Thread().update_dict(self.requests.to_dict())
+        thread = Thread().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: thread_get :: {thread=}")
+        return thread
 
     def thread_get_automon(self, *args, **kwargs) -> Thread:
 
@@ -726,15 +727,16 @@ class GoogleGmailClient:
             includeSpamTrash=includeSpamTrash
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        logger.info(f"[GoogleGmailClient] :: thread_list :: done")
-        return ThreadList().update_dict(self.requests.to_dict())
+        threads = ThreadList().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: thread_list :: {threads}")
+        return threads
 
     def thread_list_automon(self, *args, **kwargs) -> ThreadList:
         """Enhanced `thread_list`"""
         threads = self.thread_list(*args, **kwargs)
         if threads:
             threads = self._improved_thread_list(threads=threads)
-        logger.info(f"[GoogleGmailClient] :: thread_list_automon :: done")
+        logger.debug(f"[GoogleGmailClient] :: thread_list_automon :: {threads=}")
         return threads
 
     def thread_list_by_subject(self, q: str, *args, **kwargs) -> ThreadList:
@@ -742,7 +744,7 @@ class GoogleGmailClient:
         q = f'subject:"{q}"'
         logger.debug(f"[GoogleGmailClient] :: thread_list_by_subject :: {q=} :: {args=} :: {kwargs=}")
         threads = self.thread_list_automon(q=q, *args, **kwargs)
-        logger.info(f"[GoogleGmailClient] :: thread_list_by_subject :: done")
+        logger.debug(f"[GoogleGmailClient] :: thread_list_by_subject :: {threads=}")
         return threads
 
     def thread_modify(self,
@@ -766,20 +768,23 @@ class GoogleGmailClient:
         }
 
         self.requests.post(api, headers=self.config.headers, json=data)
-        logger.info(f"[GoogleGmailClient] :: thread_modify :: done")
-        return Thread().update_dict(self.requests.to_dict())
+        thread = Thread().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: thread_modify :: {thread=}")
+        return thread
 
     def thread_trash(self, id: str) -> Thread:
         api = UsersThread(self._userId).trash(id=id)
         self.requests.post(api, headers=self.config.headers)
-        logger.info(f"[GoogleGmailClient] :: thread_trash :: done")
-        return Thread().update_dict(self.requests.to_dict())
+        thread = Thread().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: thread_trash :: {thread=}")
+        return thread
 
     def thread_untrash(self, id: str):
         api = UsersThread(self._userId).untrash(id=id)
         self.requests.post(api, headers=self.config.headers)
-        logger.info(f"[GoogleGmailClient] :: thread_untrash :: done")
-        return Thread().update_dict(self.requests.to_dict())
+        thread = Thread().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: thread_untrash :: {thread=}")
+        return thread
 
     def users_watch(self):
         """Set up or update a push notification watch on the given user mailbox."""
