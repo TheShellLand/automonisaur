@@ -63,7 +63,7 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
     pick_a_model = gemini.pick_random_free_model()
     gemini.set_model(pick_a_model)
 
-    print(f'[run_gemini] :: {MODEL_ERRORS=}')
+    debug(f'[*] [run_gemini] :: {MODEL_ERRORS=}')
 
     if gemini.is_ready():
 
@@ -79,7 +79,7 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
                 gemini_response = gemini.chat().chat_response()
             return gemini_response, gemini
         except Exception as error:
-            debug(f'[run_gemini] :: ERROR :: {error=}')
+            debug(f'[*] [run_gemini] :: ERROR :: {error=}')
 
             # global MODEL_ERRORS
             if pick_a_model in MODEL_ERRORS.keys():
@@ -124,7 +124,7 @@ def run_llm(prompts: list, chat: bool = False) -> (str, any):
     CHAT_FOREVER = chat
 
     _tokens = [len(x) for x in prompts]
-    debug(f'[run_llm] :: {[f"{x:,}" for x in _tokens]} :: {sum(_tokens):,} tokens')
+    debug(f'[*] [run_llm] :: {[f"{x:,}" for x in _tokens]} :: {sum(_tokens):,} tokens')
 
     while True:
         try:
@@ -185,7 +185,7 @@ def main():
             _first = thread.automon_message_first
             _latest = thread.automon_message_latest
 
-            debug(f"{thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels}")
+            debug(f"[*] {thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels}")
 
             automon_gmail.mark_processing(thread)
 
@@ -197,7 +197,7 @@ def main():
             # chat
             if automon_gmail.is_chat(thread):
                 _FOUND = True
-                debug(f'{thread} :: CHAT')
+                debug(f'[*] {thread} :: CHAT')
                 break
 
             # needs followup
@@ -214,7 +214,7 @@ def main():
             # analyze
             if automon_gmail.is_analyze(thread):
                 _FOUND = True
-                debug(f'{thread} :: ANALYZE')
+                debug(f'[*] {thread} :: ANALYZE')
                 break
 
             # already sent
@@ -227,7 +227,7 @@ def main():
                 if not automon_gmail.is_sent(_clean_thread_latest):
                     if not automon_gmail.is_draft(_clean_thread_latest):
                         _FOUND = True
-                        debug(f'{thread} :: AUTO')
+                        debug(f'[*] {thread} :: AUTO')
                         break
 
             # clean drafts
@@ -237,7 +237,7 @@ def main():
             continue
 
         if _FOUND:
-            debug(f'{thread} :: FOUND')
+            debug(f'[*] {thread} :: FOUND')
             break
 
         automon_gmail.unmark_processing(thread)
@@ -250,7 +250,7 @@ def main():
         )
 
         resume_selected = resume_search.messages[0]
-        resume_attachments = resume_selected.automon_attachments().attachments
+        resume_attachments = resume_selected.automon_attachments.attachments
         resume = resume_attachments[0].parts[0].body.automon_data_html_text
 
     except Exception as error:
@@ -324,7 +324,7 @@ def main():
         if automon_gmail.needs_followup(email_selected):
             resume_attachment = []
         else:
-            resume_attachment = resume_selected.automon_attachments().with_filename()[0]
+            resume_attachment = resume_selected.automon_attachments.with_filename()[0]
             resume_attachment = automon_gmail.v1.EmailAttachment(
                 bytes_=resume_attachment.body.automon_data_base64decoded(),
                 filename=resume_attachment.filename,
@@ -332,7 +332,7 @@ def main():
 
         # create draft
         body = response
-        subject = "Re: " + email_selected.automon_message_first.automon_subject().value
+        subject = "Re: " + email_selected.automon_message_first.automon_subject.value
         draft = automon_gmail.draft_create(
             threadId=email_selected.id,
             draft_to=to,

@@ -790,6 +790,7 @@ class Message(DictUpdate):
                         return header
         return Headers()
 
+    @property
     def automon_from_email(self) -> str:
         email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
         email_re = re.compile(email_re, flags=re.IGNORECASE)
@@ -797,6 +798,7 @@ class Message(DictUpdate):
 
         return email
 
+    @property
     def automon_subject(self):
         if hasattr(self, 'payload'):
             if hasattr(self.payload, 'headers'):
@@ -815,6 +817,7 @@ class Message(DictUpdate):
                         return header
         return Headers()
 
+    @property
     def automon_to_email(self) -> str:
         email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
         email_re = re.compile(email_re, flags=re.IGNORECASE)
@@ -826,7 +829,8 @@ class Message(DictUpdate):
         if self.raw is not None:
             return base64.urlsafe_b64decode(self.raw).decode()
 
-    def automon_attachments(self):
+    @property
+    def automon_attachments(self) -> AutomonAttachments:
         if hasattr(self, 'payload'):
             if hasattr(self.payload, 'automon_attachments'):
                 return self.payload.automon_attachments()
@@ -1048,9 +1052,6 @@ class Thread(DictUpdate):
 
     addLabelIds: list
     removeLabelIds: list
-
-    automon_message_first: Message
-    automon_message_latest: Message
 
     """
     A collection of messages representing a conversation.
