@@ -194,10 +194,10 @@ def main():
                 automon_gmail.unmark_processing(thread)
                 continue
 
-            # chat
-            if automon_gmail.is_chat(thread):
+            # debug
+            if automon_gmail.is_debug(thread):
                 _FOUND = True
-                debug(f'[*] {thread} :: CHAT')
+                debug(f'[*] {thread} :: DEBUG')
                 break
 
             # needs followup
@@ -243,28 +243,8 @@ def main():
         automon_gmail.unmark_processing(thread)
         debug("\n")
 
-    try:
-        resume_search = automon_gmail.messages_list_automon(
-            maxResults=100,
-            labelIds=[labels.resume]
-        )
-
-        resume_selected = resume_search.messages[0]
-        resume_attachments = resume_selected.automon_attachments.attachments
-        resume = resume_attachments[0].parts[0].body.automon_data_html_text
-
-    except Exception as error:
-        resume_error = automon_gmail.draft_create(
-            draft_subject='resume missing',
-            draft_to=automon_gmail._userId,
-            draft_body=f'Please copy and paste your resume here, and also add it as an attachment.',
-        )
-        automon_gmail.messages_modify(
-            id=resume_error.id,
-            addLabelIds=[labels.automon, labels.error, labels.resume]
-        )
-
-        raise Exception(f'failed to get resume :: ERROR :: {error=}')
+    resume = automon_gmail.get_resume_message()
+    resume_text = automon_gmail.get_resume_text()
 
     try:
 
@@ -275,7 +255,7 @@ def main():
         from_ = email_selected.automon_message_first.automon_to().get('value')
 
         prompts_base = []
-        prompts_resume = [f"This is a resume: <RESUME>{resume}</RESUME>\n\n", ]
+        prompts_resume = [f"This is a resume: <RESUME>{resume_text}</RESUME>\n\n", ]
 
         i = 1
         prompts_emails = []
@@ -324,7 +304,7 @@ def main():
         if automon_gmail.needs_followup(email_selected):
             resume_attachment = []
         else:
-            resume_attachment = resume_selected.automon_attachments.with_filename()[0]
+            resume_attachment = resume.automon_attachments.with_filename()[0]
             resume_attachment = automon_gmail.v1.EmailAttachment(
                 bytes_=resume_attachment.body.automon_data_base64decoded(),
                 filename=resume_attachment.filename,

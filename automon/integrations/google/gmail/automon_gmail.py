@@ -148,6 +148,42 @@ class AutomonGmailClient(GoogleGmailClient):
 
         return message_str
 
+    def get_resume_message(self):
+
+        resume_search = self.messages_list_automon(
+            maxResults=100,
+            labelIds=[self.labels.resume]
+        )
+
+        resume_selected = resume_search.messages[0]
+
+        if resume_selected:
+            return resume_selected
+
+        resume_error = self.draft_create(
+            draft_subject='resume missing',
+            draft_to=self._userId,
+            draft_body=f'Please copy and paste your resume here, and also add it as an attachment.',
+        )
+
+        self.messages_modify(
+            id=resume_error.id,
+            addLabelIds=[self.labels.automon, self.labels.error, self.labels.resume]
+        )
+        raise Exception(f'[ERROR] :: {resume_error}')
+
+    def get_resume_text(self):
+
+        resume_selected = self.get_resume_message()
+
+        resume_attachments = resume_selected.automon_attachments.attachments
+        resume = resume_attachments[0].parts[0].body.automon_data_html_text
+
+        if resume:
+            return resume
+
+        raise Exception(f'[ERROR] :: {resume=}')
+
     def is_analyze(self, thread: Thread) -> bool:
         for message in thread.messages:
             if self.labels.analyze in message.automon_labels:
@@ -213,10 +249,10 @@ class AutomonGmailClient(GoogleGmailClient):
             else:
                 time_delta_check = f'last sent {time_delta.days} days ago'
 
-            debug(f'needs_followup :: {time_delta_check} :: {thread}')
+            debug(f'[*] checking :: {time_delta_check} :: {thread}')
 
             if time_delta.days >= days:
-                debug(f'needs_followup :: FOLLOW UP :: {thread}')
+                debug(f'[*] needs_followup :: FOLLOW UP :: {thread}')
                 return True
 
         return False
