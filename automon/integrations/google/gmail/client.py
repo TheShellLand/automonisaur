@@ -139,7 +139,9 @@ class GoogleGmailClient:
         message = Message(raw=raw, threadId=threadId, **kwargs)
         data = Draft(message=message).to_dict()
         self.requests.post(api, headers=self.config.headers, json=data)
-        return Draft().update_dict(self.requests.to_dict())
+        draft = Draft().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: draft_create :: {draft=}")
+        return draft
 
     def draft_delete(self, id: str):
         """Immediately and permanently deletes the specified draft."""
@@ -159,7 +161,9 @@ class GoogleGmailClient:
             format=format,
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        return Draft().update_dict(self.requests.to_dict())
+        draft = Draft().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: draft_get :: {draft=}")
+        return draft
 
     def draft_get_automon(self, *args, **kwargs):
         draft = self.draft_get(*args, **kwargs)
@@ -212,6 +216,7 @@ class GoogleGmailClient:
         """Enhanced `message_get`"""
         drafts = self.draft_list(*args, **kwargs)
         drafts = self._improved_draft_list(drafts=drafts)
+        logger.debug(f"[GoogleGmailClient] :: draft_list_automon :: {len(drafts)} found")
         return drafts
 
     def draft_send(self, draft: Draft) -> Message:
@@ -228,7 +233,9 @@ class GoogleGmailClient:
         api = UsersDrafts(self._userId).update(id)
         data = Draft().to_dict()
         self.requests.put(api, headers=self.config.headers, json=data)
-        return Draft().update_dict(self.requests.to_dict())
+        draft = Draft().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: draft_update :: {draft=}")
+        return draft
 
     def history_list(self,
                      startHistoryId: str,
@@ -504,7 +511,9 @@ class GoogleGmailClient:
         """Immediately and permanently deletes the specified message. This operation cannot be undone. Prefer messages.trash instead."""
         api = UsersMessages(self._userId).delete(id)
         self.requests.delete(api, headers=self.config.headers)
-        return Message().update_dict(self.requests.to_dict())
+        message = Message().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: messages_delete :: {message=}")
+        return message
 
     def messages_get(self,
                      id: str,
@@ -632,7 +641,9 @@ class GoogleGmailClient:
         """Moves the specified message to the trash."""
         api = UsersMessages(self._userId).trash(id)
         self.requests.post(api, headers=self.config.headers)
-        return Message().update_dict(self.requests.to_dict())
+        message = Message().update_dict(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: messages_trash :: {message=}")
+        return message
 
     def messages_untrash(self, id: str):
         """Removes the specified message from the trash."""
