@@ -42,6 +42,8 @@ class GoogleGmailClient:
         self.endpoint = self.config.GOOGLE_GMAIL_ENDPOINT
 
         self.requests = RequestsClient()
+        
+        self.max_retries = 9999
 
     @property
     def _userId(self):
@@ -138,7 +140,7 @@ class GoogleGmailClient:
         api = UsersDrafts(self._userId).create
         message = Message(raw=raw, threadId=threadId, **kwargs)
         data = Draft(message=message).to_dict()
-        self.requests.post(api, headers=self.config.headers, json=data)
+        self.requests.post(api, headers=self.config.headers, json=data, max_retries=self.max_retries)
         draft = Draft().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: draft_create :: {draft=}")
         return draft
@@ -146,7 +148,7 @@ class GoogleGmailClient:
     def draft_delete(self, id: str):
         """Immediately and permanently deletes the specified draft."""
         api = UsersDrafts(self._userId).delete(id)
-        self.requests.delete(api, headers=self.config.headers)
+        self.requests.delete(api, headers=self.config.headers, max_retries=self.max_retries)
         return self.requests.to_dict()
 
     def draft_get(self,
@@ -160,7 +162,7 @@ class GoogleGmailClient:
         params = dict(
             format=format,
         )
-        self.requests.get(api, headers=self.config.headers, params=params)
+        self.requests.get(api, headers=self.config.headers, params=params, max_retries=self.max_retries)
         draft = Draft().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: draft_get :: {draft=}")
         return draft
@@ -207,7 +209,7 @@ class GoogleGmailClient:
             q=q,
             includeSpamTrash=includeSpamTrash,
         )
-        self.requests.get(api, headers=self.config.headers, params=params)
+        self.requests.get(api, headers=self.config.headers, params=params, max_retries=self.max_retries)
         draft = DraftList().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: draft_list :: {draft=}")
         return draft
@@ -224,7 +226,7 @@ class GoogleGmailClient:
         logger.debug(f"[GoogleGmailClient] :: draft_send :: {draft=}")
         api = UsersDrafts(self._userId).send
         data = draft.to_dict()
-        self.requests.post(api, headers=self.config.headers, json=data)
+        self.requests.post(api, headers=self.config.headers, json=data, max_retries=self.max_retries)
         message = Message().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: draft_send :: {message=}")
         return message
@@ -232,7 +234,7 @@ class GoogleGmailClient:
     def draft_update(self, id: str) -> Draft:
         api = UsersDrafts(self._userId).update(id)
         data = Draft().to_dict()
-        self.requests.put(api, headers=self.config.headers, json=data)
+        self.requests.put(api, headers=self.config.headers, json=data, max_retries=self.max_retries)
         draft = Draft().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: draft_update :: {draft=}")
         return draft
@@ -255,7 +257,7 @@ class GoogleGmailClient:
             labelId=labelId,
             historyTypes=historyTypes
         )
-        self.requests.get(api, headers=self.config.headers, params=params)
+        self.requests.get(api, headers=self.config.headers, params=params, max_retries=self.max_retries)
 
         return self.requests.to_dict()
 
@@ -278,7 +280,7 @@ class GoogleGmailClient:
         """
         api = UsersLabels(userId=self._userId).create
         json = Label(name=name, color=color).to_dict()
-        self.requests.post(api, headers=self.config.headers, json=json)
+        self.requests.post(api, headers=self.config.headers, json=json, max_retries=self.max_retries)
         label = Label().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: labels_create :: {label=}")
         return label
@@ -289,7 +291,7 @@ class GoogleGmailClient:
             id = id.id
 
         api = UsersLabels(self._userId).delete(id)
-        self.requests.delete(api, headers=self.config.headers)
+        self.requests.delete(api, headers=self.config.headers, max_retries=self.max_retries)
         if self.requests.status_code == 204:
             return True
         return False
@@ -300,7 +302,7 @@ class GoogleGmailClient:
             id = id.id
 
         api = UsersLabels(self._userId).get(id)
-        self.requests.get(api, headers=self.config.headers)
+        self.requests.get(api, headers=self.config.headers, max_retries=self.max_retries)
         label = Label().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: labels_get :: {label}")
         return label
@@ -321,7 +323,7 @@ class GoogleGmailClient:
     def labels_list(self):
         """Lists all labels in the user's mailbox."""
         api = UsersLabels(self._userId).list
-        self.requests.get(api, headers=self.config.headers)
+        self.requests.get(api, headers=self.config.headers, max_retries=self.max_retries)
         labels = LabelList().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: labels_list :: {len(labels.labels)} labels")
         return labels
@@ -333,7 +335,7 @@ class GoogleGmailClient:
 
         api = UsersLabels(self._userId).patch(id)
         data = Label().to_dict()
-        self.requests.patch(api, headers=self.config.headers, json=data)
+        self.requests.patch(api, headers=self.config.headers, json=data, max_retries=self.max_retries)
         response = self.requests.to_dict()
         logger.debug(f"[GoogleGmailClient] :: labels_patch :: {id=} :: {response=}")
         return response
@@ -347,7 +349,7 @@ class GoogleGmailClient:
 
         api = UsersLabels(self._userId).update(id)
         data = Label(id=id, color=color).to_dict()
-        self.requests.put(api, headers=self.config.headers, json=data)
+        self.requests.put(api, headers=self.config.headers, json=data, max_retries=self.max_retries)
         label = Label().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: labels_update :: {label=}")
         return label
@@ -468,7 +470,7 @@ class GoogleGmailClient:
             return
 
         api = UsersMessagesAttachments(self._userId).get(messageId=messageId, id=attachmentId)
-        if self.requests.get(api, headers=self.config.headers):
+        if self.requests.get(api, headers=self.config.headers, max_retries=self.max_retries):
             attachments = MessagePartBody().update_dict(self.requests.to_dict())
             logger.debug(f"[GoogleGmailClient] :: messages_attachments_get :: {attachments.size / 1024:.0f} KB")
         else:
@@ -485,7 +487,7 @@ class GoogleGmailClient:
         data = {
             "ids": ids
         }
-        self.requests.post(api, headers=self.config.headers, json=data)
+        self.requests.post(api, headers=self.config.headers, json=data, max_retries=self.max_retries)
         response = self.requests.to_dict()
         logger.debug(f"[GoogleGmailClient] :: messages_batchDelete :: {len(ids)} deleted")
         return response
@@ -504,13 +506,13 @@ class GoogleGmailClient:
             "addLabelIds": addLabelIds,
             "removeLabelIds": removeLabelIds
         }
-        self.requests.post(api, headers=self.config.headers, json=data)
+        self.requests.post(api, headers=self.config.headers, json=data, max_retries=self.max_retries)
         return self.requests.to_dict()
 
     def messages_delete(self, id: str) -> Message:
         """Immediately and permanently deletes the specified message. This operation cannot be undone. Prefer messages.trash instead."""
         api = UsersMessages(self._userId).delete(id)
-        self.requests.delete(api, headers=self.config.headers)
+        self.requests.delete(api, headers=self.config.headers, max_retries=self.max_retries)
         message = Message().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: messages_delete :: {message=}")
         return message
@@ -525,7 +527,7 @@ class GoogleGmailClient:
             format=format,
             metadataHeaders=metadataHeaders
         )
-        self.requests.get(api, headers=self.config.headers, params=params)
+        self.requests.get(api, headers=self.config.headers, params=params, max_retries=self.max_retries)
         message = Message().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: messages_get :: {message=}")
         return message
@@ -548,7 +550,7 @@ class GoogleGmailClient:
             processForCalendar=processForCalendar,
             deleted=deleted
         )
-        self.requests.post(api, headers=self.config.headers, params=params)
+        self.requests.post(api, headers=self.config.headers, params=params, max_retries=self.max_retries)
         return self.requests.to_dict()
 
     def messages_insert(self,
@@ -560,7 +562,7 @@ class GoogleGmailClient:
             internalDateSource=internalDateSource,
             deleted=deleted
         )
-        self.requests.post(api, headers=self.config.headers, params=params)
+        self.requests.post(api, headers=self.config.headers, params=params, max_retries=self.max_retries)
         return self.requests.to_dict()
 
     def messages_list(self,
@@ -587,7 +589,7 @@ class GoogleGmailClient:
             labelIds=labelIds,
             includeSpamTrash=includeSpamTrash
         )
-        self.requests.get(api, headers=self.config.headers, params=params)
+        self.requests.get(api, headers=self.config.headers, params=params, max_retries=self.max_retries)
 
         messages = MessageList().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: message_list :: "
@@ -625,7 +627,7 @@ class GoogleGmailClient:
             "addLabelIds": addLabelIds,
             "removeLabelIds": removeLabelIds
         }
-        self.requests.post(api, headers=self.config.headers, json=data)
+        self.requests.post(api, headers=self.config.headers, json=data, max_retries=self.max_retries)
         message = Message().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: messages_modify :: {message=}")
         return message
@@ -634,13 +636,13 @@ class GoogleGmailClient:
         """Sends the specified message to the recipients in the To, Cc, and Bcc headers. For example usage, see Sending email."""
         api = UsersMessages(self._userId).send
         data = Message().to_dict()
-        self.requests.post(api, headers=self.config.headers, json=data)
+        self.requests.post(api, headers=self.config.headers, json=data, max_retries=self.max_retries)
         return self.requests.to_dict()
 
     def messages_trash(self, id: str) -> Message:
         """Moves the specified message to the trash."""
         api = UsersMessages(self._userId).trash(id)
-        self.requests.post(api, headers=self.config.headers)
+        self.requests.post(api, headers=self.config.headers, max_retries=self.max_retries)
         message = Message().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: messages_trash :: {message=}")
         return message
@@ -648,12 +650,12 @@ class GoogleGmailClient:
     def messages_untrash(self, id: str):
         """Removes the specified message from the trash."""
         api = UsersMessages(self._userId).untrash(id)
-        self.requests.post(api, headers=self.config.headers)
+        self.requests.post(api, headers=self.config.headers, max_retries=self.max_retries)
         return self.requests.to_dict()
 
     def thread_delete(self, id: str) -> Thread:
         api = UsersThread(self._userId).delete(id=id)
-        self.requests.delete(api, headers=self.config.headers)
+        self.requests.delete(api, headers=self.config.headers, max_retries=self.max_retries)
         thread = Thread().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: thread_delete :: {thread=}")
         return thread
@@ -679,7 +681,7 @@ class GoogleGmailClient:
             format=format,
             metadataHeaders=metadataHeaders
         )
-        self.requests.get(api, headers=self.config.headers, params=params)
+        self.requests.get(api, headers=self.config.headers, params=params, max_retries=self.max_retries)
         thread = Thread().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: thread_get :: {thread=}")
         return thread
@@ -737,7 +739,7 @@ class GoogleGmailClient:
             labelIds=labelIds,
             includeSpamTrash=includeSpamTrash
         )
-        self.requests.get(api, headers=self.config.headers, params=params)
+        self.requests.get(api, headers=self.config.headers, params=params, max_retries=self.max_retries)
         threads = ThreadList().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: thread_list :: {threads}")
         return threads
@@ -778,21 +780,21 @@ class GoogleGmailClient:
             "removeLabelIds": removeLabelIds
         }
 
-        self.requests.post(api, headers=self.config.headers, json=data)
+        self.requests.post(api, headers=self.config.headers, json=data, max_retries=self.max_retries)
         thread = Thread().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: thread_modify :: {thread=}")
         return thread
 
     def thread_trash(self, id: str) -> Thread:
         api = UsersThread(self._userId).trash(id=id)
-        self.requests.post(api, headers=self.config.headers)
+        self.requests.post(api, headers=self.config.headers, max_retries=self.max_retries)
         thread = Thread().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: thread_trash :: {thread=}")
         return thread
 
     def thread_untrash(self, id: str):
         api = UsersThread(self._userId).untrash(id=id)
-        self.requests.post(api, headers=self.config.headers)
+        self.requests.post(api, headers=self.config.headers, max_retries=self.max_retries)
         thread = Thread().update_dict(self.requests.to_dict())
         logger.debug(f"[GoogleGmailClient] :: thread_untrash :: {thread=}")
         return thread
@@ -800,17 +802,17 @@ class GoogleGmailClient:
     def users_watch(self):
         """Set up or update a push notification watch on the given user mailbox."""
         api = f'/gmail/v1/users/{self._userId}/watch'
-        self.requests.post(api, headers=self.config.headers)
+        self.requests.post(api, headers=self.config.headers, max_retries=self.max_retries)
         return self.requests.to_dict()
 
     def users_getProfile(self):
         """Gets the current user's Gmail profile."""
         api = Users(self._userId).getProfile
-        self.requests.get(api, headers=self.config.headers)
+        self.requests.get(api, headers=self.config.headers, max_retries=self.max_retries)
         return self.requests.to_dict()
 
     def users_stop(self):
         """Stop receiving push notifications for the given user mailbox."""
         api = f'/gmail/v1/users/{self._userId}/stop'
-        self.requests.post(api, headers=self.config.headers)
+        self.requests.post(api, headers=self.config.headers, max_retries=self.max_retries)
         return self.requests.to_dict()
