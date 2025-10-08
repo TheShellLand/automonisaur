@@ -73,7 +73,7 @@ class MinioClient(object):
         return self.client.get_object(bucket_name, file.object_name)
 
     @_is_connected
-    def get_bucket(self, bucket_name: str, **kwargs) -> Bucket or None:
+    def get_bucket(self, bucket_name: str, **kwargs) -> Bucket:
         """List Minio buckets
         """
         bucket_name = MinioAssertions.bucket_name(bucket_name)
@@ -84,7 +84,7 @@ class MinioClient(object):
             return buckets[bucket_index]
 
         logger.info(msg=f'Get bucket: "{bucket_name}" does not exist')
-        return
+        return Bucket()
 
     @_is_connected
     def is_connected(self):
@@ -202,7 +202,8 @@ class MinioClient(object):
         except Exception as e:
             logger.warning(f'Bucket exists: "{bucket_name}". {e}')
 
-        return self.get_bucket(bucket_name)
+        bucket = self.get_bucket(bucket_name)
+        return bucket
 
     @_is_connected
     def put_object(self, bucket_name: str, object_name: str, data: io.BytesIO, length: int = None,

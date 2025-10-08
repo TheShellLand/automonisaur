@@ -1,7 +1,8 @@
-import json
 import minio
 
 from datetime import datetime
+
+from automon.helpers.jsonWrapper import *
 
 
 class Bucket(minio.datatypes.Bucket):
@@ -9,10 +10,13 @@ class Bucket(minio.datatypes.Bucket):
     creation_date: datetime
 
     def __init__(self, bucket: minio.datatypes.Bucket):
+        self.name: str = ''
+        self.creation_date: datetime = None
+
         self.__dict__.update(bucket.__dict__)
 
     def to_json(self):
-        return json.dumps({k: f'{v}' for k, v in self.__dict__.items()})
+        return Json.dumps_dict(self.__dict__)
 
     def __repr__(self):
         return f'{str(self.creation_date)[:19]} ({self.name})'
