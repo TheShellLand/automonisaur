@@ -174,6 +174,9 @@ class MinioClient(object):
     def remove_objects(self, bucket_name: str, prefix: str = None, **kwargs) -> bool:
         """Remove all objects
         """
+        if not bucket_name:
+            return False
+
         bucket_name = MinioAssertions.bucket_name(bucket_name)
         objects = self.list_objects(bucket_name=bucket_name, prefix=prefix)
         delete_objects = [DeleteObject(x) for x in objects]
@@ -188,7 +191,7 @@ class MinioClient(object):
         if self.list_objects(bucket_name, prefix):
             return self.remove_objects(bucket_name, prefix=prefix)
 
-        return True
+        return False
 
     @_is_connected
     def make_bucket(self, bucket_name: str) -> Bucket:
