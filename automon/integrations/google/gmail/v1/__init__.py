@@ -1070,12 +1070,22 @@ class Thread(DictUpdate):
 
     def __init__(self):
         super().__init__()
+        self.id: str = ''
+        self.historyId: str = ''
         self.messages: [Message] = []
+        self.snippet: str = ''
+
+        self.addLabelIds: list = []
+        self.removeLabelIds: list = []
 
     def __repr__(self):
-        if hasattr(self, 'snippet'):
+        if self.snippet:
             return self.snippet
-        return f'{self.id} :: {self.automon_messages_count} messages'
+
+        if self.id and self.automon_messages_count:
+            return f'{self.id} :: {self.automon_messages_count} messages'
+
+        return f'{self}'
 
     def __bool__(self):
         if self.messages:
