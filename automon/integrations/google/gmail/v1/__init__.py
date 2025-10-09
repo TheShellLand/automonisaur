@@ -1,7 +1,7 @@
 import io
 import re
-
 import bs4
+import copy
 import json
 import base64
 
@@ -458,6 +458,15 @@ class Format:
     metadata = 'metadata'
 
 
+class GmailLabels:
+
+    def __init__(self):
+        self.draft = Label(name='DRAFT', id='DRAFT')
+        self.sent = Label(name='SENT', id='SENT')
+        self.unread = Label(name='UNREAD', id='UNREAD')
+        self.trash = Label(name='TRASH', id='TRASH')
+
+
 class Headers(DictUpdate):
     name: str
     value: str
@@ -620,8 +629,9 @@ class Label(DictUpdate):
         self.labelListVisibility = labelListVisibility
 
     def __repr__(self):
-        if self.name:
-            return f"{self.name}"
+        if self.id and self.name:
+            return f"{self.id} :: {self.name}"
+        return str(self.id)
 
     def __eq__(self, other):
         if self.id == other.id and self.name == other.name:
@@ -754,6 +764,11 @@ class Message(DictUpdate):
 
         self.automon_labels = []
 
+    def __bool__(self):
+        if self.id:
+            return True
+        return False
+
     def __eq__(self, other):
         if self.id == other.id:
             return True
@@ -775,6 +790,7 @@ class Message(DictUpdate):
                         return header
         return Headers()
 
+    @property
     def automon_from_email(self) -> str:
         email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
         email_re = re.compile(email_re, flags=re.IGNORECASE)
@@ -782,6 +798,7 @@ class Message(DictUpdate):
 
         return email
 
+    @property
     def automon_subject(self):
         if hasattr(self, 'payload'):
             if hasattr(self.payload, 'headers'):
@@ -800,6 +817,7 @@ class Message(DictUpdate):
                         return header
         return Headers()
 
+    @property
     def automon_to_email(self) -> str:
         email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
         email_re = re.compile(email_re, flags=re.IGNORECASE)
@@ -811,7 +829,8 @@ class Message(DictUpdate):
         if self.raw is not None:
             return base64.urlsafe_b64decode(self.raw).decode()
 
-    def automon_attachments(self):
+    @property
+    def automon_attachments(self) -> AutomonAttachments:
         if hasattr(self, 'payload'):
             if hasattr(self.payload, 'automon_attachments'):
                 return self.payload.automon_attachments()
@@ -821,6 +840,7 @@ class Message(DictUpdate):
     def __repr__(self):
         if hasattr(self, 'snippet'):
             return self.snippet
+        return ''
 
 
 class MessagePartBody(DictUpdate):
@@ -1033,9 +1053,6 @@ class Thread(DictUpdate):
     addLabelIds: list
     removeLabelIds: list
 
-    automon_message_first: Message
-    automon_message_latest: Message
-
     """
     A collection of messages representing a conversation.
 
@@ -1053,31 +1070,97 @@ class Thread(DictUpdate):
 
     def __init__(self):
         super().__init__()
+        self.id: str = ''
+        self.historyId: str = ''
+        self.messages: [Message] = []
+        self.snippet: str = ''
+
+        self.addLabelIds: list = []
+        self.removeLabelIds: list = []
 
     def __repr__(self):
-        if hasattr(self, 'snippet'):
+        if self.snippet:
             return self.snippet
+
+        if self.id and self.automon_messages_count:
+            return f'{self.id} :: {self.automon_messages_count} messages'
+
+        return f'{self}'
+
+    def __bool__(self):
+        if self.messages:
+            return True
+        return False
+
+    @property
+    def automon_clean_thread(self):
+        """Return a clean list of messages not labeled with TRASH"""
+        messages = []
+        labels = GmailLabels()
+
+        if self.messages:
+            for message in self.messages:
+                if labels.trash not in message.automon_labels:
+                    messages.append(message)
+
+        thread_copy = copy.deepcopy(self)
+        thread_copy.messages = messages
+        return thread_copy
+
+    @property
+    def automon_clean_thread_first(self) -> Message:
+        if self.automon_clean_thread.messages:
+            return self.automon_clean_thread.messages[0]
+
+    @property
+    def automon_clean_thread_latest(self) -> Message:
+        if self.automon_clean_thread.messages:
+            return self.automon_clean_thread.messages[-1]
+
+    @property
+    def automon_full_thread(self):
+        """Return the full thread including TRASH messages"""
+        messages = []
+        labels = GmailLabels()
+
+        if self.messages:
+            for message in self.messages:
+                if labels.draft not in message.automon_labels:
+                    messages.append(message)
+
+        thread_copy = copy.deepcopy(self)
+        thread_copy.messages = messages
+        return thread_copy
+
+    @property
+    def automon_full_thread_first(self) -> Message:
+        if self.automon_full_thread.messages:
+            return self.automon_full_thread.messages[0]
+
+    @property
+    def automon_full_thread_latest(self) -> Message:
+        if self.automon_full_thread.messages:
+            return self.automon_full_thread.messages[-1]
+
+    @property
+    def automon_messages_count(self):
+        return len(self.messages)
 
     @property
     def automon_message_first(self) -> Message:
-        if hasattr(self, 'messages'):
+        if self.messages:
             return self.messages[0]
 
     @property
     def automon_message_latest(self) -> Message:
-        if hasattr(self, 'messages'):
+        if self.messages:
             return self.messages[-1]
 
     def enhance(self):
-        if hasattr(self, 'messages'):
+        if self.messages:
             self.messages = [Message().update_dict(x) for x in self.messages]
 
         return self
-
-    def __bool__(self):
-        if hasattr(self, 'messages'):
-            return True
-        return False
 
 
 class ThreadList(DictUpdate):
@@ -1135,7 +1218,12 @@ class UsersThread(Users):
     @property
     def list(self): """requests.get"""; return self.url + f'/threads'
 
-    def modify(self, id: str): """requests.post"""; return self.url + f'/threads/{id}/modify'
+    def modify(self, id: str):
+        """Modifies the labels applied to the thread. This applies to all messages in the thread.
+
+        requests.post
+        """
+        return self.url + f'/threads/{id}/modify'
 
     def trash(self, id: str): """requests.post"""; return self.url + f'/threads/{id}/trash'
 

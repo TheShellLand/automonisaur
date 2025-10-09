@@ -127,10 +127,15 @@ class GoogleAuthConfig(object):
     @property
     def credentials_file_client_id(self):
         try:
-            for item in self.credentials_file.items():
-                return item[1]['client_id']
+            return self.credentials_file['client_id']
         except Exception as error:
             pass
+
+        for item in self.credentials_file.items():
+            try:
+                return item[1]['client_id']
+            except Exception as error:
+                pass
 
     def credentials_pickle_save(self):
         logger.debug(f"[GoogleAuthConfig] :: credentials_pickle_save :: >>>>")
@@ -398,7 +403,7 @@ class GoogleAuthConfig(object):
         return False
 
     def refresh_token(self):
-        logger.debug(f'[GoogleAuthConfig] :: refresh :: >>>>')
+        logger.debug(f'[GoogleAuthConfig] :: refresh_token :: >>>>')
 
         creds = self.credentials
         Request = google.auth.transport.requests.Request()
@@ -407,9 +412,9 @@ class GoogleAuthConfig(object):
             try:
                 creds.refresh(Request)
             except Exception as error:
-                raise Exception(f'[GoogleAuthConfig] :: refresh :: ERROR :: {error=}')
+                raise Exception(f'[GoogleAuthConfig] :: refresh_token :: ERROR :: {error=}')
 
-        logger.info(f'[GoogleAuthConfig] :: refresh :: done')
+        logger.info(f'[GoogleAuthConfig] :: refresh_token :: done')
         return True
 
     def userinfo(self):

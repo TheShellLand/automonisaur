@@ -20,7 +20,7 @@ class RequestsClient(object):
         self.config = config or RequestsConfig()
 
         self.url: str = url
-        self.data: dict = data
+        self.data: any = data
         self.errors: bytes = b''
         self.headers: dict = headers
         self.response = None
@@ -218,7 +218,7 @@ class RequestsClient(object):
     def post(
             self,
             url: str = None,
-            data: dict = None,
+            data: any = None,
             headers: dict = None,
             max_retries: int = None,
             **kwargs
@@ -286,23 +286,26 @@ class RequestsClient(object):
             return self.response.status_code
 
     @property
-    def text(self):
+    def text(self) -> str:
         if self.response:
             return self.response.text
+        return ''
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         if self.response is not None:
             try:
                 return json.loads(self.content)
             except Exception as error:
                 raise Exception(f'RequestsClient :: TO DICT :: ERROR :: {error=}')
+        return {}
 
-    def to_json(self):
+    def to_json(self) -> str:
         if self.content:
             try:
                 return json.dumps(json.loads(self.content))
             except Exception as error:
                 raise Exception(f'RequestsClient :: TO JSON :: ERROR :: {error=}')
+        return ''
 
     def update_headers(self, headers: dict):
         return self.session.headers.update(headers)

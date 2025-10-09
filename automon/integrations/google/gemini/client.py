@@ -1,4 +1,5 @@
 import json
+import random
 import readline
 
 import automon.integrations.seleniumWrapper
@@ -26,6 +27,21 @@ class GoogleGeminiClient(object):
 
         self._prompt = GeminiPrompt()
         self._chat: GeminiResponse = None
+
+        self.free_models = [
+            self.models.gemini_2_5_flash_preview_05_20,
+            # self.models.gemini_2_5_flash_preview_tts,
+            # self.models.gemini_2_5_flash_exp_native_audio_thinking_dialog,
+            # self.models.gemini_2_5_pro_preview_05_06,
+            # self.models.gemini_2_5_pro_preview_tts,
+            # self.models.gemini_2_5_pro_exp_03_25,
+            self.models.gemini_2_0_flash,
+            # self.models.gemini_2_0_flash_lite,
+            # self.models.gemini_2_0_flash_thinking_exp_01_21,
+            # self.models.gemini_2_0_pro_exp_02_05,
+            # self.models.gemini_1_5_flash,
+            # self.models.gemini_1_5_pro,
+        ]
 
     def __repr__(self):
         return f"[GoogleGeminiClient] :: {self.config=}"
@@ -65,7 +81,6 @@ class GoogleGeminiClient(object):
         content_len = automon.integrations.ollamaWrapper.chr_to_tokens(string=prompt)
 
         logger.debug(f"[GoogleGeminiClient] :: add_content :: {content_len:,} tokens")
-        logger.info(f"[GoogleGeminiClient] :: add_content :: done")
         return self
 
     @property
@@ -139,13 +154,15 @@ class GoogleGeminiClient(object):
         logger.error(f'[GoogleGeminiClient] :: is_ready :: ERROR')
         return False
 
+    def pick_random_free_model(self):
+        return random.choice(self.free_models)
+
     def set_model(self, model: GeminiModels):
-        logger.debug(f"[GoogleGeminiClient] :: set_model :: {model=}")
         self.model = model
-        logger.info(f"[GoogleGeminiClient] :: set_model :: done")
+        logger.debug(f"[GoogleGeminiClient] :: set_model :: {model=}")
         return self
 
-    def true_or_false(self, response: str):
+    def true_or_false(self, response: str) -> bool:
         if 'true' in response.lower():
             return True
         if 'false' in response.lower():
