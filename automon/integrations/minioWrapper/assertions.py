@@ -7,7 +7,7 @@ logger.setLevel(DEBUG)
 class MinioAssertions:
 
     @staticmethod
-    def bucket_name(bucket: str) -> bool:
+    def bucket_name(bucket: str) -> str:
         if bucket == f'{bucket}'.lower():
             return f'{bucket}'
         logger.warning(msg=f'bucket name "{bucket}" must be lower')

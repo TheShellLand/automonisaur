@@ -32,6 +32,8 @@ class MinioClient(object):
 
         self.config = config or MinioConfig(endpoint=endpoint, access_key=access_key, secret_key=secret_key)
 
+        self._is_ready = False
+
     @property
     def client(self):
         client = minio.Minio(
@@ -53,13 +55,14 @@ class MinioClient(object):
         def _wrapper(self, *args, **kwargs):
             if not self.config.is_ready:
                 return False
-            try:
-                self.client.list_buckets()
-                # if not self._sessionExpired() or self.client.list_buckets():
+
+            # if not self._sessionExpired() or self.client.list_buckets():
+            if not self._is_ready:
+                if self.client.list_buckets():
+                    self._is_ready = True
+
+            if self._is_ready:
                 return func(self, *args, **kwargs)
-            except Exception as e:
-                logger.error(f'Minio client not connected. {e}')
-            return False
 
         return _wrapper
 
@@ -77,11 +80,11 @@ class MinioClient(object):
         """List Minio buckets
         """
         bucket_name = MinioAssertions.bucket_name(bucket_name)
-        buckets = self.list_buckets(**kwargs)
+        buckets = self.list_buckets()
 
-        if bucket_name in buckets:
-            bucket_index = buckets.index(bucket_name)
-            return buckets[bucket_index]
+        for bucket in buckets:
+            if bucket_name == bucket:
+                return bucket
 
         raise Exception(f'Get bucket: "{bucket_name}" does not exist')
 
@@ -93,10 +96,10 @@ class MinioClient(object):
         return True
 
     @_is_connected
-    def list_buckets(self, **kwargs) -> [Bucket]:
+    def list_buckets(self) -> list[Bucket]:
         """List Minio buckets
         """
-        buckets = self.client.list_buckets(**kwargs)
+        buckets = self.client.list_buckets()
         buckets = [Bucket(x) for x in buckets]
 
         logger.info(f'List buckets: {len(buckets)}')
@@ -108,7 +111,7 @@ class MinioClient(object):
             bucket_name: str,
             prefix: str = None,
             recursive: bool = False,
-            start_after: str = None, **kwargs) -> [Object]:
+            start_after: str = None, **kwargs) -> list[Object]:
         """List Minio objects
         """
         bucket_name = MinioAssertions.bucket_name(bucket_name)

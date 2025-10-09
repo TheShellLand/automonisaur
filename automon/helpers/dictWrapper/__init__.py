@@ -56,3 +56,6 @@ class DictUpdate(dict):
             result[key] = value
 
         return result
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
