@@ -79,7 +79,7 @@ if gmail.is_ready():
     all_labels = labels.all_labels
 
 
-def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
+def run_gemini(prompts: list) -> tuple[str, GoogleGeminiClient]:
     gemini = GoogleGeminiClient()
     ollama = OllamaClient()
 
@@ -109,7 +109,7 @@ def run_gemini(prompts: list) -> (str, GoogleGeminiClient):
         return gemini_response, gemini
 
 
-def run_ollama(prompts: list) -> (str, OllamaClient):
+def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
     ollama = OllamaClient()
     ollama.set_model('deepseek-r1:8b')
 
@@ -138,7 +138,7 @@ def run_ollama(prompts: list) -> (str, OllamaClient):
         return response_, ollama
 
 
-def run_llm(prompts: list, chat: bool = False) -> (str, any):
+def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
     global CHAT_FOREVER
     CHAT_FOREVER = chat
 
@@ -172,7 +172,7 @@ def main():
     if _welcome_email.messages:
         gmail.messages_trash(id=_welcome_email.messages[0].id)
 
-    _thread = None
+    thread = None
     _nextPageToken = None
 
     _FOUND = None
@@ -192,29 +192,34 @@ def main():
             print('_', end='')
             continue
 
-        for _thread in email_search.threads:
+        for thread in email_search.automon_threads:
 
-            # _thread = gmail.thread_get_automon('195da1cbcaa5573b')
+            # thread = gmail.thread_get_automon('195da1cbcaa5573b')
 
-            _first = _thread.automon_message_first
-            _latest = _thread.automon_message_latest
+            _first = thread.automon_message_first
+            _latest = thread.automon_message_latest
 
-            print(f"{_thread.id} :: {_first.payload.get_header('subject')} :: {_first.automon_labels} :: ", end='')
+            print(f"{thread.id} :: {_first.automon_payload.get_header('subject')} :: {_first.automon_labels} :: ",
+                  end='')
 
+            # resume
             if labels.resume in _first.automon_labels:
                 continue
 
+            # analyze
             if (labels.analyze in _first.automon_labels
             ):
                 _FOUND = True
                 print('analyze', end='')
                 break
 
+            # draft
             if (labels.draft in _latest.automon_labels
                     and labels.trash not in _latest.automon_labels
             ):
                 continue
 
+            # auto
             if ((labels.auto_reply_enabled in _first.automon_labels
                  or labels.auto_reply_enabled in _latest.automon_labels)
                     and (labels.sent not in _latest.automon_labels)
@@ -223,8 +228,9 @@ def main():
                 print('auto', end='')
                 break
 
+            # sent
             if labels.sent in _latest.automon_labels:
-                _latest_date = dateutil.parser.parse(_latest.payload.get_header('Date').value)
+                _latest_date = dateutil.parser.parse(_latest.automon_payload.get_header('Date').value)
                 _time_delta = ((datetime.datetime.now() + _latest_date.utcoffset()).replace(
                     tzinfo=datetime.timezone(_latest_date.utcoffset())) - _latest_date)
 
@@ -238,9 +244,10 @@ def main():
 
                 continue
 
+            # new
             if labels.sent not in _latest.automon_labels:
                 _sent = False
-                for _message in _thread.messages:
+                for _message in thread.messages:
                     if labels.sent in _message.automon_labels:
                         _sent = True
                     elif (labels.draft not in _message.automon_labels
@@ -249,7 +256,7 @@ def main():
                         _sent = False
 
                 if not _sent:
-                    if len(_thread.messages) > 1:
+                    if len(thread.messages) > 1:
                         _FOLLOW_UP = True
 
                     _FOUND = True
@@ -272,7 +279,7 @@ def main():
     try:
 
         # retry
-        for _message in _thread.messages:
+        for _message in thread.messages:
             _RETRY = False
             if (
                     labels.retry in _message.automon_labels
@@ -286,13 +293,13 @@ def main():
                     gmail.messages_trash(id=_message.id)
 
         global email_selected
-        email_selected = _thread
+        email_selected = thread
         resume_selected = resume_search.messages[0]
 
         resume = resume_selected.automon_attachments().attachments[0].parts[0].body.automon_data_html_text
 
-        to = email_selected.automon_message_first.automon_from().get('value')
-        from_ = email_selected.automon_message_first.automon_to().get('value')
+        to = email_selected.automon_message_first.automon_header_from().get('value')
+        from_ = email_selected.automon_message_first.automon_header_to().get('value')
 
         prompts_base = []
         prompts_resume = [f"This is a resume: <RESUME>{resume}</RESUME>\n\n", ]
@@ -334,7 +341,7 @@ def main():
                     break
 
                 _draft = email_selected.automon_message_latest
-                _resume = _draft.automon_attachments().attachments[0].body.automon_data_html_text
+                _resume = _draft.automon_attachments.attachments[0].body.automon_data_html_text
                 prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
                 response, model = run_llm(prompts=prompts, chat=False)
                 gmail.messages_modify(id=_draft.id, removeLabelIds=[labels.analyze])
@@ -369,7 +376,7 @@ def main():
 
         # create draft
         body = response
-        subject = "Re: " + email_selected.automon_message_first.automon_subject().value
+        subject = "Re: " + email_selected.automon_message_first.automon_header_subject.value
         draft = gmail.draft_create(
             threadId=email_selected.id,
             draft_to=to,

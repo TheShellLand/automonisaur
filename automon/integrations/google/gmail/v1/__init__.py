@@ -4,6 +4,9 @@ import bs4
 import copy
 import json
 import base64
+import typing
+import datetime
+import dateutil.parser
 
 from automon.helpers import cryptography
 from automon.helpers.loggingWrapper import LoggingClient, INFO
@@ -173,6 +176,8 @@ class DictUpdate(dict):
         if hasattr(update, '__dict__'):
             update = update.__dict__
 
+        assert type(update) == dict, f"ERROR :: {update=}"
+
         for key, value in update.items():
             setattr(self, key, value)
 
@@ -261,30 +266,6 @@ class LabelListVisibility:
     labelShowIfUnread = 'labelShowIfUnread'
 
 
-class AutomonAttachments(DictUpdate):
-    attachments: ['MessagePart']
-
-    def __init__(self, attachments: ['MessagePart'] = []):
-        super().__init__()
-
-        self.attachments = attachments
-
-    def __repr__(self):
-        return f"{len(self.attachments)} attachments"
-
-    def from_hash(self, hash_md5: str):
-        for attachment in self.attachments:
-            if hash_md5 == attachment.automon_attachment.hash_md5:
-                return attachment
-        raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
-
-    def first_attachment(self) -> 'MessagePart':
-        return self.attachments[0]
-
-    def with_filename(self) -> ['MessagePart']:
-        return [x for x in self.attachments if x.filename]
-
-
 class Color(DictUpdate):
     backgroundColor: str
     textColor: str
@@ -322,107 +303,7 @@ class Color(DictUpdate):
         return False
 
 
-class Draft(DictUpdate):
-    id: str
-    message: 'Message'
-    """
-    A draft email in the user's mailbox.
-    
-    {
-      "message": {
-        "raw": "string"
-      }
-    }
-    
-
-    JSON representation
-    
-    {
-      "id": string,
-      "message": {
-        object (Message)
-      }
-    }
-    Fields
-    id	
-    string
-    
-    The immutable ID of the draft.
-    
-    message	
-    object (Message)
-    
-    The message content of the draft.
-    """
-
-    def __init__(self, id: str = None, message: 'Message' = None):
-        super().__init__()
-
-        self.id = id
-        self.message = message
-
-    def enhance(self):
-        if hasattr(self, 'message'):
-            if self.message is not None:
-                setattr(self, 'message', Message().update_dict(self.message))
-
-    def __repr__(self):
-        try:
-            return f'{self.id} :: {self.message.automon_subject().value}'
-        except:
-            return f"{self.id}"
-
-
-class DraftList(DictUpdate):
-    drafts: list
-    nextPageToken: str
-    resultSizeEstimate: int
-
-    """
-    If successful, the response body contains data with the following structure:
-
-    JSON representation
-    
-    {
-      "drafts": [
-        {
-          object (Draft)
-        }
-      ],
-      "nextPageToken": string,
-      "resultSizeEstimate": integer
-    }
-    Fields
-    drafts[]	
-    object (Draft)
-    
-    List of drafts. Note that the Message property in each Draft resource only contains an id and a threadId. The messages.get method can fetch additional message details.
-    
-    nextPageToken	
-    string
-    
-    Token to retrieve the next page of results in the list.
-    
-    resultSizeEstimate	
-    integer (uint32 format)
-    
-    Estimated total number of results.
-    """
-
-    def __init__(self):
-        super().__init__()
-
-    def __repr__(self):
-        if hasattr(self, 'drafts'):
-            return f"{len(self.drafts)} drafts"
-
-
 class EmailAttachment(DictUpdate):
-    filename: str
-    bytes_: bytes
-    mimeType: str
-    content_type: str
-    encoding: str
 
     def __init__(self,
                  bytes_: bytes,
@@ -435,9 +316,11 @@ class EmailAttachment(DictUpdate):
         if type(bytes_) is not bytes:
             raise Exception(f"Not bytes")
 
-        self.bytes_ = bytes_
-        self.filename = filename
-        self.mimeType = mimeType
+        self.bytes_: bytes = bytes_
+        self.filename: str = filename
+        self.mimeType: str = mimeType
+        self.content_type: str = None
+        self.encoding: str = None
 
         if mimeType:
             self.content_type, self.encoding = mimeType.split('/', 1)
@@ -467,15 +350,16 @@ class GmailLabels:
         self.trash = Label(name='TRASH', id='TRASH')
 
 
-class Headers(DictUpdate):
-    name: str
-    value: str
+class Header(DictUpdate):
 
-    def __init__(self):
+    def __init__(self, header: dict | typing.Self = None):
         super().__init__()
 
-        self.name = ''
-        self.value = ''
+        self.name: str = ''
+        self.value: str = ''
+
+        if header:
+            self.update_dict(header)
 
     def __repr__(self):
         if self.name:
@@ -491,13 +375,6 @@ class Headers(DictUpdate):
 
 
 class HistoryType(DictUpdate):
-    id: str
-    messages: 'Message'
-    messagesAdded: 'MessageAdded'
-    messagesDeleted: 'MessageDeleted'
-    labelsAdded: 'LabelAdded'
-    labelsRemoved: 'LabelRemoved'
-
     """
     {
       "id": string,
@@ -531,6 +408,13 @@ class HistoryType(DictUpdate):
 
     def __init__(self):
         super().__init__()
+
+        self.id: str
+        self.messages: Message = None
+        self.messagesAdded: MessageAdded = None
+        self.messagesDeleted: MessageDeleted = None
+        self.labelsAdded: LabelAdded = None
+        self.labelsRemoved: LabelRemoved = None
 
 
 class MessageListVisibility:
@@ -663,27 +547,192 @@ class LabelRemoved:
     pass
 
 
+class MessagePartBody(DictUpdate):
+    """
+    {
+      "attachmentId": string,
+      "size": integer,
+      "data": string
+    }
+    """
+
+    def __init__(self, message: dict | typing.Self = None):
+        super().__init__()
+
+        self.attachmentId: str = None
+        self.size: int = None
+        self.data: str = None
+
+        if message:
+            self.update_dict(message)
+
+    def __repr__(self):
+        repr = []
+
+        if self.attachmentId:
+            repr.append(self.attachmentId[-8:])
+
+        if self.automon_data_hash:
+            repr.append(self.automon_data_hash)
+
+        if self.size:
+            repr.append(f'{self.size} B')
+
+        return ' :: '.join(repr)
+
+    def automon_data_base64decoded(self) -> bytes | None:
+        if self.data:
+            return base64.urlsafe_b64decode(self.data)
+
+    def automon_data_BytesIO(self) -> io.BytesIO | None:
+        if self.data:
+            return io.BytesIO(self.automon_data_base64decoded())
+
+    def automon_data_html_text(self) -> str | None:
+        if self.data:
+            return self._html_text()
+
+    def automon_data_decoded(self) -> str | None:
+        if self.data:
+            try:
+                return self.automon_data_base64decoded().decode()
+            except Exception as error:
+                pass
+
+    @property
+    def automon_data_hash(self):
+        if self.data:
+            return cryptography.Hashlib.md5(self.data)
+
+    def automon_data_bs4(self) -> bs4.BeautifulSoup | None:
+        decoded = self.automon_data_base64decoded()
+        if decoded:
+            return bs4.BeautifulSoup(decoded)
+
+    def _html_text(self) -> str | None:
+        if self.automon_data_bs4():
+            return self.automon_data_bs4().html.text
+
+
+class MessagePart(DictUpdate):
+    """
+    A single MIME message part.
+
+    JSON representation
+
+    {
+      "partId": string,
+      "mimeType": string,
+      "filename": string,
+      "headers": [
+        {
+          object (Header)
+        }
+      ],
+      "body": {
+        object (MessagePartBody)
+      },
+      "parts": [
+        {
+          object (MessagePart)
+        }
+      ]
+    }
+
+    Fields
+    partId
+    string
+
+    The immutable ID of the message part.
+
+    mimeType
+    string
+
+    The MIME type of the message part.
+
+    filename
+    string
+
+    The filename of the attachment. Only present if this message part represents an attachment.
+
+    headers[]
+    object (Header)
+
+    List of headers on this message part. For the top-level message part, representing the entire message payload, it will contain the standard RFC 2822 email headers such as To, From, and Subject.
+
+    body
+    object (MessagePartBody)
+
+    The message part body for this part, which may be empty for container MIME message parts.
+
+    parts[]
+    object (MessagePart)
+
+    The child MIME message parts of this part. This only applies to container MIME message parts, for example multipart/*. For non- container MIME message part types, such as text/plain, this field is empty. For more information, see RFC 1521.
+    """
+
+    def __init__(self, message: dict | typing.Self = None):
+        super().__init__()
+
+        self.body = None
+        self.filename: str = None
+        self.headers: list = []
+        self.mimeType: str = None
+        self.partId: str = None
+        self.parts: list = []
+        self.size: int = None
+
+        if message:
+            self.update_dict(message)
+
+    def __repr__(self):
+        repr = []
+
+        if self.filename:
+            repr.append(self.filename)
+
+        if self.mimeType:
+            repr.append(self.mimeType)
+
+        if self.size:
+            repr.append(f"{self.size} B")
+
+        return ' :: '.join(repr)
+
+    def __bool__(self):
+        if self.size is not None and self.size > 0:
+            return True
+        if self.automon_attachments:
+            return True
+        return False
+
+    @property
+    def automon_body(self) -> MessagePartBody | None:
+        if self.body:
+            return MessagePartBody(self.body)
+
+    @property
+    def automon_headers(self) -> list[Header] | None:
+        if self.headers:
+            return [Header(x) for x in self.headers]
+
+    @property
+    def automon_parts(self) -> list[typing.Self] | None:
+        if self.parts:
+            return [MessagePart(x) for x in self.parts]
+
+    @property
+    def automon_attachments(self) -> 'MessageAttachments':
+        if self.parts:
+            return MessageAttachments(attachments=self.parts)
+
+    def get_header(self, header: str) -> Header | None:
+        for header_ in self.automon_headers:
+            if header.lower() in header_.name.lower():
+                return header_
+
+
 class Message(DictUpdate):
-    id: str
-    threadId: str
-    labelIds: [str]
-    snippet: str
-    historyId: str
-    internalDate: str
-    payload: 'MessagePart'
-    sizeEstimate: str
-    raw: str
-
-    automon_labels: ['Label']
-    automon_subject: Headers
-    automon_to: Headers
-    automon_from: Headers
-    automon_to_email: str
-    automon_from_email: str
-    automon_subject: Headers
-    automon_raw_decoded: str
-    automon_attachments: AutomonAttachments
-
     """
     {
       "id": string,
@@ -755,14 +804,28 @@ class Message(DictUpdate):
     A base64-encoded string.
     """
 
-    def __init__(self, id: str = None, threadId: str = None, raw: str = None):
+    def __init__(self, message: dict = None):
         super().__init__()
 
-        self.id = id
-        self.threadId = threadId
-        self.raw = raw
+        self.historyId: str = None
+        self.id: str = None
+        self.internalDate: str = None
+        self.labelIds: list[str] = []
+        self.payload: dict = None
+        self.raw: str = None
+        self.sizeEstimate: str = None
+        self.snippet: str = None
+        self.threadId: str = None
 
-        self.automon_labels = []
+        self._automon_labels: list = []
+
+        if message:
+            self.update_dict(message)
+
+    def __repr__(self):
+        if self.snippet:
+            return self.snippet
+        return self.id
 
     def __bool__(self):
         if self.id:
@@ -774,228 +837,108 @@ class Message(DictUpdate):
             return True
         return False
 
-    def enhance(self):
+    @property
+    def automon_labels(self) -> list[Label]:
+        return [Label().update_dict(x) for x in self._automon_labels]
 
-        if hasattr(self, 'payload'):
-            setattr(self, 'payload', MessagePart().update_dict(self.payload))
 
-        return self
+    @property
+    def automon_attachments(self) -> 'MessageAttachments':
+        return self.automon_payload.automon_attachments
 
-    def automon_from(self) -> Headers:
-        if hasattr(self, 'payload'):
-            if hasattr(self.payload, 'headers'):
+    @property
+    def automon_date(self) -> dateutil.parser.parse:
+        if self.automon_payload:
+            header = self.automon_payload.get_header('Date')
+            if header:
+                return dateutil.parser.parse(header.value)
 
-                for header in self.payload.headers:
+    @property
+    def automon_email_from(self) -> str:
+        email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
+        email_re = re.compile(email_re, flags=re.IGNORECASE)
+        email = email_re.search(self.automon_header_from().value).group()
+
+        return email
+
+    @property
+    def automon_email_to(self) -> str:
+        email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
+        email_re = re.compile(email_re, flags=re.IGNORECASE)
+        email = email_re.search(self.automon_header_to().value).group()
+
+        return email
+
+    def automon_header_from(self) -> Header:
+        if self.automon_payload:
+            if self.automon_payload.automon_headers:
+
+                for header in self.automon_payload.automon_headers:
                     if header.name == 'From':
                         return header
-        return Headers()
+        return Header()
 
     @property
-    def automon_from_email(self) -> str:
-        email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
-        email_re = re.compile(email_re, flags=re.IGNORECASE)
-        email = email_re.search(self.automon_from().value).group()
+    def automon_header_subject(self) -> Header:
+        if self.automon_payload:
+            if self.automon_payload.automon_headers:
 
-        return email
-
-    @property
-    def automon_subject(self):
-        if hasattr(self, 'payload'):
-            if hasattr(self.payload, 'headers'):
-
-                for header in self.payload.headers:
+                for header in self.automon_payload.automon_headers:
                     if header.name == 'Subject':
                         return header
-        return Headers()
+        return Header()
 
-    def automon_to(self):
-        if hasattr(self, 'payload'):
-            if hasattr(self.payload, 'headers'):
+    def automon_header_to(self) -> Header:
+        if self.automon_payload:
+            if self.automon_payload.automon_headers:
 
-                for header in self.payload.headers:
+                for header in self.automon_payload.automon_headers:
                     if header.name == 'To':
                         return header
-        return Headers()
+        return Header()
 
     @property
-    def automon_to_email(self) -> str:
-        email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
-        email_re = re.compile(email_re, flags=re.IGNORECASE)
-        email = email_re.search(self.automon_to().value).group()
+    def automon_payload(self) -> MessagePart | None:
+        if self.payload:
+            return MessagePart(self.payload)
 
-        return email
-
-    def automon_raw_decoded(self):
+    def automon_raw_decoded(self) -> str | None:
         if self.raw is not None:
             return base64.urlsafe_b64decode(self.raw).decode()
 
+
+class MessageAttachments(DictUpdate):
+
+    def __init__(self, attachments: list[MessagePart] = []):
+        super().__init__()
+
+        self.attachments: list[dict] = attachments
+
+    def __repr__(self):
+        return f"{len(self.attachments)} attachments"
+
+    def __bool__(self):
+        if self.attachments:
+            return True
+        return False
+
     @property
-    def automon_attachments(self) -> AutomonAttachments:
-        if hasattr(self, 'payload'):
-            if hasattr(self.payload, 'automon_attachments'):
-                return self.payload.automon_attachments()
-            else:
-                return AutomonAttachments(attachments=[self.payload])
+    def automon_attachments(self) -> list[MessagePart] | None:
+        return [MessagePart(x) for x in self.attachments]
 
-    def __repr__(self):
-        if hasattr(self, 'snippet'):
-            return self.snippet
-        return ''
+    @property
+    def automon_first_attachment(self) -> MessagePart | None:
+        for part in self.automon_attachments:
+            return part
 
+    def from_hash(self, hash_md5: str):
+        for attachment in self.automon_attachments:
+            if hash_md5 == attachment.automon_attachment.hash_md5:
+                return attachment
+        raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
 
-class MessagePartBody(DictUpdate):
-    attachmentId: str
-    size: int
-    data: str
-
-    """
-    {
-      "attachmentId": string,
-      "size": integer,
-      "data": string
-    }
-    """
-
-    def __init__(self):
-        super().__init__()
-
-        self.attachmentId = ''
-
-    def enhance(self):
-
-        if hasattr(self, 'data'):
-            setattr(self, 'automon_data_BytesIO', io.BytesIO(self.automon_data_base64decoded()))
-            setattr(self, 'automon_data_html_text', self._html_text())
-
-    def automon_data_base64decoded(self):
-        if hasattr(self, 'data'):
-            return base64.urlsafe_b64decode(self.data)
-
-    def automon_data_decoded(self):
-        if hasattr(self, 'data'):
-            try:
-                return self.automon_data_base64decoded().decode()
-            except Exception as error:
-                pass
-
-    def automon_data_hash(self):
-        if hasattr(self, 'data'):
-            try:
-                return setattr(self, 'automon_data_hash', cryptography.Hashlib.md5(self.automon_data_decoded()))
-            except Exception as error:
-                pass
-
-    def __repr__(self):
-        return f"{self.attachmentId}"
-
-    def automon_data_bs4(self):
-        if hasattr(self, 'automon_data_base64decoded'):
-            return bs4.BeautifulSoup(self.automon_data_base64decoded())
-
-    def _html_text(self):
-        try:
-            return self.automon_data_bs4().html.text
-        except:
-            return None
-
-
-class MessagePart(DictUpdate):
-    partId: str
-    mimeType: str
-    filename: str
-    headers: ['Headers']
-    body: MessagePartBody
-    parts: ['MessagePart']
-
-    """
-    A single MIME message part.
-
-    JSON representation
-
-    {
-      "partId": string,
-      "mimeType": string,
-      "filename": string,
-      "headers": [
-        {
-          object (Header)
-        }
-      ],
-      "body": {
-        object (MessagePartBody)
-      },
-      "parts": [
-        {
-          object (MessagePart)
-        }
-      ]
-    }
-
-    Fields
-    partId
-    string
-
-    The immutable ID of the message part.
-
-    mimeType
-    string
-
-    The MIME type of the message part.
-
-    filename
-    string
-
-    The filename of the attachment. Only present if this message part represents an attachment.
-
-    headers[]
-    object (Header)
-
-    List of headers on this message part. For the top-level message part, representing the entire message payload, it will contain the standard RFC 2822 email headers such as To, From, and Subject.
-
-    body
-    object (MessagePartBody)
-
-    The message part body for this part, which may be empty for container MIME message parts.
-
-    parts[]
-    object (MessagePart)
-
-    The child MIME message parts of this part. This only applies to container MIME message parts, for example multipart/*. For non- container MIME message part types, such as text/plain, this field is empty. For more information, see RFC 1521.
-    """
-
-    def __init__(self):
-        super().__init__()
-
-        self.headers = []
-
-    def enhance(self):
-
-        if hasattr(self, 'body'):
-            setattr(self, 'body', MessagePartBody().update_dict(self.body))
-
-        if hasattr(self, 'headers'):
-            setattr(self, 'headers', [Headers().update_dict(x) for x in self.headers])
-
-        if hasattr(self, 'parts'):
-            setattr(self, 'parts', [MessagePart().update_dict(x) for x in self.parts])
-
-        return self
-
-    def automon_attachments(self) -> AutomonAttachments:
-        if hasattr(self, 'parts'):
-            return AutomonAttachments(attachments=self.parts)
-        return AutomonAttachments()
-
-    def get_header(self, header: str) -> Headers:
-        for _header in self.headers:
-            if header.lower() in _header.name.lower():
-                return _header
-
-    def __repr__(self):
-        if getattr(self, 'filename') and getattr(self, 'mimeType'):
-            return f"{self.filename} :: {self.mimeType}"
-        elif getattr(self, 'mimeType'):
-            return f"{self.mimeType}"
+    def with_filename(self) -> list[MessagePart]:
+        return [x for x in self.attachments if x.filename]
 
 
 class MessageAdded:
@@ -1007,10 +950,6 @@ class MessageDeleted:
 
 
 class MessageList(DictUpdate):
-    messages: [Message]
-    resultSizeEstimate: int
-    nextPageToken: str
-
     """
     {
       "messages": [
@@ -1023,36 +962,126 @@ class MessageList(DictUpdate):
     }
     """
 
-    def __init__(self):
+    def __init__(self, messages: dict | typing.Self = None):
         super().__init__()
 
-        self.messages = []
+        self.messages: list = []
+        self.resultSizeEstimate: int
+        self.nextPageToken: str
+
+        if messages:
+            self.update_dict(messages)
 
     def __bool__(self):
-        if hasattr(self, 'messages'):
+        if self.messages:
             return True
         return False
 
-    def enhance(self):
-        if hasattr(self, 'messages'):
-            setattr(self, 'messages', [Message().update_dict(message) for message in self.messages])
-
-        return self
+    def automon_messages(self) -> list[Message] | None:
+        if self.messages:
+            return [Message(message) for message in self.messages]
 
     def __repr__(self):
-        if hasattr(self, 'messages'):
+        if self.messages:
             return f'{len(self.messages)} messages'
+        return ''
+
+
+class Draft(DictUpdate):
+    """
+    A draft email in the user's mailbox.
+
+    {
+      "message": {
+        "raw": "string"
+      }
+    }
+
+
+    JSON representation
+
+    {
+      "id": string,
+      "message": {
+        object (Message)
+      }
+    }
+    Fields
+    id
+    string
+
+    The immutable ID of the draft.
+
+    message
+    object (Message)
+
+    The message content of the draft.
+    """
+
+    def __init__(self, id: str = None, message: Message = None):
+        super().__init__()
+
+        self.id: str = id
+        self.message: Message = message
+
+    @property
+    def automon_message(self) -> Message | None:
+        if self.message:
+            return Message(self.message)
+
+    def __repr__(self):
+        try:
+            return f'{self.id} :: {self.message.automon_header_subject.value}'
+        except:
+            return f"{self.id}"
+
+
+class DraftList(DictUpdate):
+    """
+    If successful, the response body contains data with the following structure:
+
+    JSON representation
+
+    {
+      "drafts": [
+        {
+          object (Draft)
+        }
+      ],
+      "nextPageToken": string,
+      "resultSizeEstimate": integer
+    }
+    Fields
+    drafts[]	
+    object (Draft)
+
+    List of drafts. Note that the Message property in each Draft resource only contains an id and a threadId. The messages.get method can fetch additional message details.
+
+    nextPageToken	
+    string
+
+    Token to retrieve the next page of results in the list.
+
+    resultSizeEstimate	
+    integer (uint32 format)
+
+    Estimated total number of results.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.drafts: list = []
+        self.nextPageToken: str = None
+        self.resultSizeEstimate: int = None
+
+    def __repr__(self):
+        if self.drafts:
+            return f"{len(self.drafts)} drafts"
+        return str(self)
 
 
 class Thread(DictUpdate):
-    id: str
-    snippet: str
-    historyId: str
-    messages: [Message]
-
-    addLabelIds: list
-    removeLabelIds: list
-
     """
     A collection of messages representing a conversation.
 
@@ -1068,15 +1097,20 @@ class Thread(DictUpdate):
     }
     """
 
-    def __init__(self):
+    def __init__(self, thread: dict | typing.Self = None):
         super().__init__()
         self.id: str = ''
         self.historyId: str = ''
-        self.messages: [Message] = []
+        self.messages: list = []
         self.snippet: str = ''
 
         self.addLabelIds: list = []
         self.removeLabelIds: list = []
+
+        self._automon_messages: list[Message] = []
+
+        if thread:
+            self.update_dict(thread)
 
     def __repr__(self):
         if self.snippet:
@@ -1093,13 +1127,19 @@ class Thread(DictUpdate):
         return False
 
     @property
-    def automon_clean_thread(self):
+    def automon_messages(self) -> list[Message] | None:
+        if self.messages and not self._automon_messages:
+            self._automon_messages = [Message(x) for x in self.messages]
+        return self._automon_messages
+
+    @property
+    def automon_clean_thread(self) -> typing.Self:
         """Return a clean list of messages not labeled with TRASH"""
         messages = []
         labels = GmailLabels()
 
-        if self.messages:
-            for message in self.messages:
+        if self.automon_messages:
+            for message in self.automon_messages:
                 if labels.trash not in message.automon_labels:
                     messages.append(message)
 
@@ -1108,23 +1148,23 @@ class Thread(DictUpdate):
         return thread_copy
 
     @property
-    def automon_clean_thread_first(self) -> Message:
+    def automon_clean_thread_first(self) -> Message | None:
         if self.automon_clean_thread.messages:
             return self.automon_clean_thread.messages[0]
 
     @property
-    def automon_clean_thread_latest(self) -> Message:
+    def automon_clean_thread_latest(self) -> Message | None:
         if self.automon_clean_thread.messages:
             return self.automon_clean_thread.messages[-1]
 
     @property
-    def automon_full_thread(self):
+    def automon_full_thread(self) -> typing.Self:
         """Return the full thread including TRASH messages"""
         messages = []
         labels = GmailLabels()
 
-        if self.messages:
-            for message in self.messages:
+        if self.automon_messages:
+            for message in self.automon_messages:
                 if labels.draft not in message.automon_labels:
                     messages.append(message)
 
@@ -1133,41 +1173,31 @@ class Thread(DictUpdate):
         return thread_copy
 
     @property
-    def automon_full_thread_first(self) -> Message:
+    def automon_full_thread_first(self) -> Message | None:
         if self.automon_full_thread.messages:
             return self.automon_full_thread.messages[0]
 
     @property
-    def automon_full_thread_latest(self) -> Message:
+    def automon_full_thread_latest(self) -> Message | None:
         if self.automon_full_thread.messages:
             return self.automon_full_thread.messages[-1]
 
     @property
     def automon_messages_count(self):
-        return len(self.messages)
+        return len(self.automon_messages)
 
     @property
-    def automon_message_first(self) -> Message:
-        if self.messages:
-            return self.messages[0]
+    def automon_message_first(self) -> Message | None:
+        if self.automon_messages:
+            return self.automon_messages[0]
 
     @property
-    def automon_message_latest(self) -> Message:
-        if self.messages:
-            return self.messages[-1]
-
-    def enhance(self):
-        if self.messages:
-            self.messages = [Message().update_dict(x) for x in self.messages]
-
-        return self
+    def automon_message_latest(self) -> Message | None:
+        if self.automon_messages:
+            return self.automon_messages[-1]
 
 
 class ThreadList(DictUpdate):
-    threads: [Thread]
-    nextPageToken: str
-    resultSizeEstimate: int
-
     """
     {
       "threads": [
@@ -1180,30 +1210,34 @@ class ThreadList(DictUpdate):
     }
     """
 
-    def __init__(self):
+    def __init__(self, threads: dict | typing.Self = None):
         super().__init__()
 
-        self.threads: [Thread] = []
-        self.nextPageToken = ''
-        self.resultSizeEstimate = None
+        self.threads: list = []
+        self.nextPageToken: str = None
+        self.resultSizeEstimate: int = None
 
-    def __bool__(self):
-        if hasattr(self, 'threads'):
+        if threads:
+            self.update_dict(threads)
+
+    def __repr__(self):
+        return f"{len(self.threads)} threads"
+
+    def __bool__(self) -> bool:
+        if self.threads:
             return True
         return False
 
-    def enhance(self):
-        if hasattr(self, 'threads'):
-            self.threads = [Thread().update_dict(x) for x in self.threads]
-
-    def __repr__(self):
-        if hasattr(self, 'threads'):
-            return f"{len(self.threads)} threads"
+    @property
+    def automon_threads(self) -> list[Thread] | list:
+        if self.threads:
+            return [Thread(x) for x in self.threads]
+        return []
 
 
 class Type:
-    system = 'system'
-    user = 'user'
+    system: str = 'system'
+    user: str = 'user'
 
 
 class UsersThread(Users):

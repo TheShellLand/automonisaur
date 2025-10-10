@@ -1,3 +1,5 @@
+import typing
+
 from automon.integrations.google.gmail.v1 import DictUpdate
 
 
@@ -215,12 +217,14 @@ class GeminiModels:
 
 
 class Part(DictUpdate):
-    text: str
 
-    def __init__(self, text: str = None):
+    def __init__(self, part: dict | typing.Self = None, text: str = None):
         super().__init__()
 
-        self.text = text
+        self.text: str = text
+
+        if part:
+            self.update_dict(part)
 
 
 class Content(DictUpdate):
