@@ -188,6 +188,9 @@ class DictUpdate(dict):
         self.update_dict(json.loads(json_))
         return self
 
+    def to_json(self, indent: int = None):
+        return json.dumps(self.to_dict(), indent=indent)
+
     def to_dict(self):
         return self._to_dict(self)
 
@@ -841,7 +844,6 @@ class Message(DictUpdate):
     def automon_labels(self) -> list[Label]:
         return [Label().update_dict(x) for x in self._automon_labels]
 
-
     @property
     def automon_attachments(self) -> 'MessageAttachments':
         return self.automon_payload.automon_attachments
@@ -1217,6 +1219,8 @@ class ThreadList(DictUpdate):
         self.nextPageToken: str = None
         self.resultSizeEstimate: int = None
 
+        self._automon_threads = []
+
         if threads:
             self.update_dict(threads)
 
@@ -1229,10 +1233,10 @@ class ThreadList(DictUpdate):
         return False
 
     @property
-    def automon_threads(self) -> list[Thread] | list:
-        if self.threads:
-            return [Thread(x) for x in self.threads]
-        return []
+    def automon_threads(self) -> list[Thread]:
+        if self.threads and not self._automon_threads:
+            self._automon_threads = [Thread(x) for x in self.threads]
+        return self._automon_threads
 
 
 class Type:
