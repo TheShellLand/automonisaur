@@ -1,6 +1,8 @@
 import io
 import os
 import bs4
+import pandas
+import threading
 import email
 import email.encoders
 import email.mime.text
@@ -27,18 +29,6 @@ logger.setLevel(DEBUG)
 
 
 class AutomonLabels:
-    labels = {
-        'automon': 'automon',
-        'resume': 'automon/resume',
-        'analyze': 'automon/analyze',
-        "retry": 'automon/retry',
-        'relevant': 'automon/relevant',
-        "remote": 'automon/remote',
-        "welcome": 'automon/welcome',
-        "help": 'automon/help',
-        "auto_reply_enabled": 'automon/auto reply enabled',
-        "user_action_required": 'automon/user action required',
-    }
 
     def __init__(self):
         self._reset_labels = False
@@ -50,17 +40,17 @@ class AutomonLabels:
         self._color_welcome = Color(backgroundColor='#8e63ce', textColor='#ffffff')
 
         # required
-        self.automon = Label(name=self.labels.get('automon'), color=self._color_default)
+        self.automon = Label(name='automon', color=self._color_default)
 
         # welcome
-        self.welcome = Label(name=self.labels.get('welcome'), color=self._color_welcome)
-        self.help = Label(name=self.labels.get('help'), color=self._color_welcome)
+        self.welcome = Label(name='automon/welcome', color=self._color_welcome)
+        self.help = Label(name='automon/help', color=self._color_welcome)
 
         # resume
-        self.resume = Label(name=self.labels.get('resume'), color=self._color_resume)
+        self.resume = Label(name='automon/resume', color=self._color_resume)
 
         # analyze
-        self.analyze = Label(name=self.labels.get('analyze'), color=self._color_default)
+        self.analyze = Label(name='automon/analyze', color=self._color_default)
 
         # general
         self.draft = Label(name='DRAFT', id='DRAFT')
@@ -69,26 +59,26 @@ class AutomonLabels:
         self.trash = Label(name='TRASH', id='TRASH')
 
         # allow auto reply
-        self.auto_reply_enabled = Label(name=self.labels.get('auto_reply_enabled'), color=self._color_enabled)
+        self.auto_reply_enabled = Label(name='automon/auto reply enabled', color=self._color_enabled)
 
         # retry draft
-        self.retry = Label(name=self.labels.get('retry'), color=self._color_error)
+        self.retry = Label(name='automon/retry', color=self._color_error)
 
         # relevance
-        self.relevant = Label(name=self.labels.get('relevant'), color=self._color_default)
+        self.relevant = Label(name='automon/relevant', color=self._color_default)
 
         # remote
-        self.remote = Label(name=self.labels.get('remote'), color=self._color_default)
+        self.remote = Label(name='automon/remote', color=self._color_default)
 
         # need user input
-        self.user_action_required = Label(name=self.labels.get('user_action_required'), color=self._color_error)
+        self.user_action_required = Label(name='automon/user action required', color=self._color_error)
 
     @property
     def all_labels(self):
         return [
-            getattr(self, x) for x in self.labels.keys()
-            if not x.startswith("_")
-            if not x == 'automon'
+            getattr(self, k) for k, v in vars(self).items()
+            if type(v) == Label
+            if 'automon' in v.name
         ]
 
 
@@ -468,7 +458,7 @@ class GoogleGmailClient:
     def _improved_messages_list(self, messages: MessageList) -> MessageList:
         """Better messages."""
 
-        for _message in messages.messages:
+        for _message in messages.automon_messages:
             # update messages
             _get = self.messages_get_automon(id=_message.id)
             _message.update_dict(_get)
@@ -581,7 +571,12 @@ class GoogleGmailClient:
                         messages_attachments_get = self.messages_attachments_get(
                             messageId=message.id,
                             attachmentId=part.automon_body.attachmentId)
-                        part.body.update(messages_attachments_get)
+
+                        df_a = pandas.DataFrame([messages_attachments_get.to_dict()])
+                        df_b = pandas.DataFrame([part.body])
+                        df_a.update(df_b)
+
+                        part.body.update(df_a.to_dict(orient='records')[0])
 
         return message
 
@@ -647,8 +642,19 @@ class GoogleGmailClient:
     def messages_list_automon(self, *args, **kwargs) -> MessageList:
         """Enhanced `message_list`"""
         messages = self.messages_list(*args, **kwargs)
-        if messages:
-            messages = self._improved_messages_list(messages=messages)
+
+        def update_message(message):
+            message.update_dict(self.messages_get_automon(id=message.id))
+
+        threads = []
+        for message in messages.automon_messages:
+            t = threading.Thread(target=update_message, args=(message,))
+            threads.append(t)
+            t.start()
+
+        for t in threads:
+            t.join()
+
         return messages
 
     def messages_modify(self,
@@ -733,10 +739,21 @@ class GoogleGmailClient:
 
         thread = Thread(self.thread_get(id=id))
 
-        for message in thread.automon_messages:
+        def update_message(message):
             get_message = self.messages_get_automon(message.id)
             message.update_dict(get_message)
 
+        threads = []
+        for message in thread.automon_messages:
+            t = threading.Thread(target=update_message, args=(message,))
+            threads.append(t)
+            t.start()
+            print(f"[{t.native_id}]", end="")
+
+        for t in threads:
+            t.join()
+
+        logger.info(f"[GoogleGmailClient] :: thread_get :: done")
         return thread
 
     def thread_list(self,

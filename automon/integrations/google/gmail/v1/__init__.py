@@ -518,6 +518,8 @@ class Label(DictUpdate):
     def __repr__(self):
         if self.id and self.name:
             return f"{self.id} :: {self.name}"
+        if self.name:
+            return f"{self.name}"
         return str(self.id)
 
     def __eq__(self, other):
@@ -846,7 +848,8 @@ class Message(DictUpdate):
 
     @property
     def automon_attachments(self) -> 'MessageAttachments':
-        return self.automon_payload.automon_attachments
+        if self.automon_payload:
+            return self.automon_payload.automon_attachments
 
     @property
     def automon_date(self) -> dateutil.parser.parse:
@@ -856,48 +859,47 @@ class Message(DictUpdate):
                 return dateutil.parser.parse(header.value)
 
     @property
-    def automon_email_from(self) -> str:
-        email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
-        email_re = re.compile(email_re, flags=re.IGNORECASE)
-        email = email_re.search(self.automon_header_from().value).group()
+    def automon_email_from(self) -> str | None:
+        if self.automon_header_from():
+            email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
+            email_re = re.compile(email_re, flags=re.IGNORECASE)
+            email = email_re.search(self.automon_header_from().value).group()
 
-        return email
+            return email
 
     @property
-    def automon_email_to(self) -> str:
-        email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
-        email_re = re.compile(email_re, flags=re.IGNORECASE)
-        email = email_re.search(self.automon_header_to().value).group()
+    def automon_email_to(self) -> str | None:
+        if self.automon_header_to():
+            email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
+            email_re = re.compile(email_re, flags=re.IGNORECASE)
+            email = email_re.search(self.automon_header_to().value).group()
 
-        return email
+            return email
 
-    def automon_header_from(self) -> Header:
+    def automon_header_from(self) -> Header | None:
         if self.automon_payload:
             if self.automon_payload.automon_headers:
 
                 for header in self.automon_payload.automon_headers:
                     if header.name == 'From':
                         return header
-        return Header()
 
     @property
-    def automon_header_subject(self) -> Header:
+    def automon_header_subject(self) -> Header | None:
         if self.automon_payload:
             if self.automon_payload.automon_headers:
 
                 for header in self.automon_payload.automon_headers:
                     if header.name == 'Subject':
                         return header
-        return Header()
 
-    def automon_header_to(self) -> Header:
+    def automon_header_to(self) -> Header | None:
         if self.automon_payload:
             if self.automon_payload.automon_headers:
 
                 for header in self.automon_payload.automon_headers:
                     if header.name == 'To':
                         return header
-        return Header()
 
     @property
     def automon_payload(self) -> MessagePart | None:
@@ -939,8 +941,9 @@ class MessageAttachments(DictUpdate):
                 return attachment
         raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
 
-    def with_filename(self) -> list[MessagePart]:
-        return [x for x in self.attachments if x.filename]
+    @property
+    def has_filename(self) -> list[MessagePart]:
+        return [x for x in self.automon_attachments if x.filename]
 
 
 class MessageAdded:
@@ -971,22 +974,26 @@ class MessageList(DictUpdate):
         self.resultSizeEstimate: int
         self.nextPageToken: str
 
+        self._automon_messages = []
+
         if messages:
             self.update_dict(messages)
+
+    def __repr__(self):
+        if self.messages:
+            return f'{len(self.messages)} messages'
+        return ''
 
     def __bool__(self):
         if self.messages:
             return True
         return False
 
-    def automon_messages(self) -> list[Message] | None:
-        if self.messages:
-            return [Message(message) for message in self.messages]
-
-    def __repr__(self):
-        if self.messages:
-            return f'{len(self.messages)} messages'
-        return ''
+    @property
+    def automon_messages(self) -> list[Message] | list:
+        if self.messages and not self._automon_messages:
+            self._automon_messages = [Message(message) for message in self.messages]
+        return self._automon_messages
 
 
 class Draft(DictUpdate):

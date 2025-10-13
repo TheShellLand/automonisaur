@@ -46,37 +46,46 @@ gmail.config.add_scopes([
     "https://www.googleapis.com/auth/gmail.modify",
 ])
 
+import threading
+
 if gmail.is_ready():
 
     labels = gmail._automon_labels
     labels._reset_labels = True
 
-    for key, label in labels.labels.items():
-        _get_label = getattr(labels, key)
 
-        _id = _get_label.id
-        _name = _get_label.name
-        _color = _get_label.color
+    def init_automon_labels(label, reset_labels):
 
-        if _get_label.id is None:
-            _labels_get_by_name = gmail.labels_get_by_name(_name)
+        id = label.id
+        name = label.name
+        color = label.color
 
-            if _labels_get_by_name is None:
-                _get_label.update_dict(
+        if label.id is None:
+            labels_get_by_name = gmail.labels_get_by_name(name)
+
+            if labels_get_by_name is None:
+                label.update_dict(
                     gmail.labels_create(
-                        name=_name,
-                        color=_color,
+                        name=name,
+                        color=color,
                     )
                 )
             else:
-                if labels._reset_labels:
-                    gmail.labels_update(id=_labels_get_by_name.id, color=_color)
+                if reset_labels:
+                    gmail.labels_update(id=labels_get_by_name.id, color=color)
 
-                _get_label.update_dict(
-                    _labels_get_by_name
+                label.update_dict(
+                    labels_get_by_name
                 )
 
-    all_labels = labels.all_labels
+
+    _threads = []
+    for label in labels.all_labels:
+        t = threading.Thread(target=init_automon_labels, args=(label, labels._reset_labels))
+        _threads.append(t)
+        t.start()
+
+    for t in _threads: t.join()
 
 
 def run_gemini(prompts: list) -> tuple[str, GoogleGeminiClient]:
@@ -169,8 +178,8 @@ def main():
     _welcome_email = gmail.messages_list_automon(labelIds=[labels.automon,
                                                            labels.welcome])
 
-    if _welcome_email.messages:
-        gmail.messages_trash(id=_welcome_email.messages[0].id)
+    if _welcome_email.automon_messages:
+        gmail.messages_trash(id=_welcome_email.automon_messages[0].id)
 
     thread = None
     _nextPageToken = None
@@ -247,7 +256,7 @@ def main():
             # new
             if labels.sent not in _latest.automon_labels:
                 _sent = False
-                for _message in thread.messages:
+                for _message in thread.automon_messages:
                     if labels.sent in _message.automon_labels:
                         _sent = True
                     elif (labels.draft not in _message.automon_labels
@@ -256,7 +265,7 @@ def main():
                         _sent = False
 
                 if not _sent:
-                    if len(thread.messages) > 1:
+                    if len(thread.automon_messages) > 1:
                         _FOLLOW_UP = True
 
                     _FOUND = True
@@ -279,7 +288,7 @@ def main():
     try:
 
         # retry
-        for _message in thread.messages:
+        for _message in thread.automon_messages:
             _RETRY = False
             if (
                     labels.retry in _message.automon_labels
@@ -294,9 +303,9 @@ def main():
 
         global email_selected
         email_selected = thread
-        resume_selected = resume_search.messages[0]
+        resume_selected = resume_search.automon_messages[0]
 
-        resume = resume_selected.automon_attachments().attachments[0].parts[0].body.automon_data_html_text
+        resume = resume_selected.automon_attachments.automon_first_attachment.automon_parts[0].automon_body.automon_data_html_text()
 
         to = email_selected.automon_message_first.automon_header_from().get('value')
         from_ = email_selected.automon_message_first.automon_header_to().get('value')
@@ -307,7 +316,7 @@ def main():
         i = 1
         prompts_emails = []
         prompts_emails_all = []
-        for message in email_selected.messages:
+        for message in email_selected.automon_messages:
 
             if labels.draft in message.automon_labels:
                 continue
@@ -335,7 +344,7 @@ def main():
             return
 
         response = None
-        for _message in email_selected.messages:
+        for _message in email_selected.automon_messages:
             if labels.analyze in _message.automon_labels:
                 if labels.sent in email_selected.automon_message_latest.automon_labels:
                     break
@@ -359,7 +368,7 @@ def main():
                 f"Create a response. "
             )
 
-            if [x for x in email_selected.messages if labels.retry in x.automon_labels]:
+            if [x for x in email_selected.automon_messages if labels.retry in x.automon_labels]:
                 response, model = run_llm(prompts=prompts, chat=True)
             else:
                 response, model = run_llm(prompts=prompts, chat=False)
@@ -369,8 +378,8 @@ def main():
         if _FOLLOW_UP:
             resume_attachment = []
         else:
-            resume_attachment = resume_selected.automon_attachments().with_filename()[0]
-            resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.body.automon_data_base64decoded(),
+            resume_attachment = resume_selected.automon_attachments.has_filename[0]
+            resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
                                                          filename=resume_attachment.filename,
                                                          mimeType=resume_attachment.mimeType)
 
