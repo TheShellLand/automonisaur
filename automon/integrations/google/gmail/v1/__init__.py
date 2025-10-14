@@ -585,6 +585,15 @@ class MessagePartBody(DictUpdate):
 
         return ' :: '.join(repr)
 
+    def __bool__(self):
+        if self.size > 0:
+            return True
+        if self.data:
+            return True
+        if self.attachmentId:
+            return True
+        return False
+
     def automon_data_base64decoded(self) -> bytes | None:
         if self.data:
             return base64.urlsafe_b64decode(self.data)
@@ -913,7 +922,7 @@ class Message(DictUpdate):
 
 class MessageAttachments(DictUpdate):
 
-    def __init__(self, attachments: list[MessagePart] = []):
+    def __init__(self, attachments: list[dict] = []):
         super().__init__()
 
         self.attachments: list[dict] = attachments

@@ -221,9 +221,13 @@ class GoogleGmailClient:
         self.requests.get(api, headers=self.config.headers, params=params)
         return Draft().update_dict(self.requests.to_dict())
 
-    def draft_get_automon(self, *args, **kwargs):
+    def draft_get_automon(self, *args, **kwargs) -> Draft:
         draft = self.draft_get(*args, **kwargs)
-        return self._improved_draft_get(draft=draft)
+
+        if draft.automon_message:
+            draft.update_dict(self.messages_get_automon(draft.automon_message.id))
+
+        return draft
 
     def draft_list(self,
                    q: bool = '',
@@ -748,7 +752,7 @@ class GoogleGmailClient:
             t = threading.Thread(target=update_message, args=(message,))
             threads.append(t)
             t.start()
-            print(f"[{t.native_id}]", end="")
+            print(f"[{t.name}]")
 
         for t in threads:
             t.join()
