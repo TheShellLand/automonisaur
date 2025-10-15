@@ -239,13 +239,9 @@ def main():
 
             # sent
             if labels.sent in _latest.automon_labels:
-                _latest_date = dateutil.parser.parse(_latest.automon_payload.get_header('Date').value)
-                _time_delta = ((datetime.datetime.now() + _latest_date.utcoffset()).replace(
-                    tzinfo=datetime.timezone(_latest_date.utcoffset())) - _latest_date)
+                print(f'{_latest.automon_date_since_now_str} :: ', end='')
 
-                print(f'{_time_delta.days} days ago :: ', end='')
-
-                if _time_delta.days >= 4:
+                if _latest.automon_date_since_now.days >= 3:
                     _FOUND = True
                     _FOLLOW_UP = True
                     print('followup', end='')
@@ -305,7 +301,8 @@ def main():
         email_selected = thread
         resume_selected = resume_search.automon_messages[0]
 
-        resume = resume_selected.automon_attachments.automon_first_attachment.automon_parts[0].automon_body.automon_data_html_text()
+        resume = resume_selected.automon_attachments.automon_first_attachment.automon_parts[
+            0].automon_body.automon_data_html_text()
 
         to = email_selected.automon_message_first.automon_header_from().get('value')
         from_ = email_selected.automon_message_first.automon_header_to().get('value')
@@ -379,9 +376,10 @@ def main():
             resume_attachment = []
         else:
             resume_attachment = resume_selected.automon_attachments.has_filename[0]
-            resume_attachment = gmail.v1.EmailAttachment(bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
-                                                         filename=resume_attachment.filename,
-                                                         mimeType=resume_attachment.mimeType)
+            resume_attachment = gmail.v1.EmailAttachment(
+                bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
+                filename=resume_attachment.filename,
+                mimeType=resume_attachment.mimeType)
 
         # create draft
         body = response

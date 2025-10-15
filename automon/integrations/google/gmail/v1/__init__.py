@@ -873,6 +873,37 @@ class Message(DictUpdate):
                 return dateutil.parser.parse(header.value)
 
     @property
+    def automon_date_since_now(self) -> datetime.timedelta | None:
+        if self.automon_date:
+            automon_date = self.automon_date
+            time_delta = datetime.datetime.now() + automon_date.utcoffset()
+            time_delta = time_delta.replace(tzinfo=datetime.timezone(automon_date.utcoffset()))
+            time_delta = time_delta - automon_date
+
+            return time_delta
+
+    @property
+    def automon_date_since_now_str(self) -> str | None:
+        if self.automon_date_since_now:
+            time_delta = self.automon_date_since_now
+
+            days = time_delta.days
+            if days > 0:
+                return f"{days} days ago"
+
+            hours = time_delta.seconds // 3600
+            if hours > 0:
+                return f"{hours} hours ago"
+
+            minutes = time_delta.seconds // 60
+            if minutes > 0:
+                return f"{minutes} minutes ago"
+
+            seconds = time_delta.seconds % 60
+            if seconds > 0:
+                return f"{seconds} seconds ago"
+
+    @property
     def automon_email_from(self) -> str | None:
         if self.automon_header_from():
             email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
