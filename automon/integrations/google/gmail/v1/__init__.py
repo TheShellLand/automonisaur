@@ -368,6 +368,11 @@ class Header(DictUpdate):
         if self.name:
             return f"{self.name} :: {self.value}"
 
+    def __bool__(self):
+        if self.value:
+            return True
+        return False
+
     def __eq__(self, other):
         if self.name == other.name and self.value == other.value:
             return True
