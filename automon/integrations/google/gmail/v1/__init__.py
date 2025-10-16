@@ -4,9 +4,13 @@ import bs4
 import copy
 import json
 import base64
-import typing
 import datetime
 import dateutil.parser
+
+try:
+    from typing import Self
+except:
+    from typing_extensions import Self
 
 from automon.helpers import cryptography
 from automon.helpers.loggingWrapper import LoggingClient, INFO
@@ -355,7 +359,7 @@ class GmailLabels:
 
 class Header(DictUpdate):
 
-    def __init__(self, header: dict | typing.Self = None):
+    def __init__(self, header: dict | Self = None):
         super().__init__()
 
         self.name: str = ''
@@ -566,7 +570,7 @@ class MessagePartBody(DictUpdate):
     }
     """
 
-    def __init__(self, message: dict | typing.Self = None):
+    def __init__(self, message: dict | Self = None):
         super().__init__()
 
         self.attachmentId: str = None
@@ -690,7 +694,7 @@ class MessagePart(DictUpdate):
     The child MIME message parts of this part. This only applies to container MIME message parts, for example multipart/*. For non- container MIME message part types, such as text/plain, this field is empty. For more information, see RFC 1521.
     """
 
-    def __init__(self, message: dict | typing.Self = None):
+    def __init__(self, message: dict | Self = None):
         super().__init__()
 
         self.body = None
@@ -736,7 +740,7 @@ class MessagePart(DictUpdate):
             return [Header(x) for x in self.headers]
 
     @property
-    def automon_parts(self) -> list[typing.Self] | None:
+    def automon_parts(self) -> list[Self] | None:
         if self.parts:
             return [MessagePart(x) for x in self.parts]
 
@@ -1012,7 +1016,7 @@ class MessageList(DictUpdate):
     }
     """
 
-    def __init__(self, messages: dict | typing.Self = None):
+    def __init__(self, messages: dict | Self = None):
         super().__init__()
 
         self.messages: list = []
@@ -1151,7 +1155,7 @@ class Thread(DictUpdate):
     }
     """
 
-    def __init__(self, thread: dict | typing.Self = None):
+    def __init__(self, thread: dict | Self = None):
         super().__init__()
         self.id: str = ''
         self.historyId: str = ''
@@ -1187,7 +1191,7 @@ class Thread(DictUpdate):
         return self._automon_messages
 
     @property
-    def automon_clean_thread(self) -> typing.Self:
+    def automon_clean_thread(self) -> Self:
         """Return a clean list of messages not labeled with TRASH"""
         messages = []
         labels = GmailLabels()
@@ -1212,7 +1216,7 @@ class Thread(DictUpdate):
             return self.automon_clean_thread.messages[-1]
 
     @property
-    def automon_full_thread(self) -> typing.Self:
+    def automon_full_thread(self) -> Self:
         """Return the full thread including TRASH messages"""
         messages = []
         labels = GmailLabels()
@@ -1264,7 +1268,7 @@ class ThreadList(DictUpdate):
     }
     """
 
-    def __init__(self, threads: dict | typing.Self = None):
+    def __init__(self, threads: dict | Self = None):
         super().__init__()
 
         self.threads: list = []
