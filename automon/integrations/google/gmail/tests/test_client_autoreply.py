@@ -304,8 +304,8 @@ def main():
         resume = resume_selected.automon_attachments.automon_first_attachment.automon_parts[
             0].automon_body.automon_data_html_text()
 
-        to = email_selected.automon_message_first.automon_header_from().get('value')
-        from_ = email_selected.automon_message_first.automon_header_to().get('value')
+        to = email_selected.automon_message_first.automon_header_from.value
+        from_ = email_selected.automon_message_first.automon_header_to.value
 
         prompts_base = []
         prompts_resume = [f"This is a resume: <RESUME>{resume}</RESUME>\n\n", ]

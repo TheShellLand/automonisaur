@@ -909,22 +909,25 @@ class Message(DictUpdate):
 
     @property
     def automon_email_from(self) -> str | None:
-        if self.automon_header_from():
+        automon_header_from = self.automon_header_from
+        if automon_header_from:
             email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
             email_re = re.compile(email_re, flags=re.IGNORECASE)
-            email = email_re.search(self.automon_header_from().value).group()
+            email = email_re.search(automon_header_from.value).group()
 
             return email
 
     @property
     def automon_email_to(self) -> str | None:
-        if self.automon_header_to():
+        automon_header_to = self.automon_header_to
+        if automon_header_to:
             email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
             email_re = re.compile(email_re, flags=re.IGNORECASE)
-            email = email_re.search(self.automon_header_to().value).group()
+            email = email_re.search(automon_header_to.value).group()
 
             return email
 
+    @property
     def automon_header_from(self) -> Header | None:
         if self.automon_payload:
             if self.automon_payload.automon_headers:
@@ -942,6 +945,7 @@ class Message(DictUpdate):
                     if header.name == 'Subject':
                         return header
 
+    @property
     def automon_header_to(self) -> Header | None:
         if self.automon_payload:
             if self.automon_payload.automon_headers:
