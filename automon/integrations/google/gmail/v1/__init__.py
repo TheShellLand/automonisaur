@@ -13,6 +13,7 @@ except:
     from typing_extensions import Self
 
 from automon.helpers import cryptography
+from automon.helpers.dictWrapper import DictUpdate
 from automon.helpers.loggingWrapper import LoggingClient, INFO
 
 logger = LoggingClient.logging.getLogger(__name__)
@@ -154,68 +155,6 @@ class UsersMessages(Users):
     def trash(self, id: str): """post"""; return self.url + f'/messages/{id}/trash'
 
     def untrash(self, id: str): """post"""; return self.url + f'/messages/{id}/untrash'
-
-
-class DictUpdate(dict):
-
-    def __init__(self):
-        super().__init__()
-
-    def enhance(self):
-        return self
-
-    def __iter__(self):
-        return self
-
-    def __repr__(self):
-        return f"{self.to_dict()}"
-
-    def get(self, key, *args, **kwargs):
-        return self.__dict__.get(key, *args, **kwargs)
-
-    def update_dict(self, update: dict):
-        if update is None:
-            return self
-
-        if hasattr(update, '__dict__'):
-            update = update.__dict__
-
-        assert type(update) == dict, f"ERROR :: {update=}"
-
-        for key, value in update.items():
-            setattr(self, key, value)
-
-        self.enhance()
-        return self
-
-    def update_json(self, json_: str):
-        self.update_dict(json.loads(json_))
-        return self
-
-    def to_json(self, indent: int = None):
-        return json.dumps(self.to_dict(), indent=indent)
-
-    def to_dict(self):
-        return self._to_dict(self)
-
-    def _to_dict(self, obj):
-
-        if not hasattr(obj, "__dict__"):
-            return obj
-
-        result = {}
-        for key, value in obj.__dict__.items():
-            if key.startswith("_"):
-                continue
-
-            if type(value) is list:
-                value = [self._to_dict(x) for x in value]
-            else:
-                value = self._to_dict(value)
-
-            result[key] = value
-
-        return result
 
 
 class InternalDateSource:
@@ -536,21 +475,24 @@ class Label(DictUpdate):
             return True
         return False
 
-    def enhance(self):
+    def _enhance(self):
         if hasattr(self, 'color'):
             self.color = Color().update_dict(self.color)
 
 
 class LabelList(DictUpdate):
-    labels: [Label]
+    labels: list[Label]
 
-    def __init__(self):
+    def __init__(self, labels: dict = None):
         super().__init__()
-        self.labels = []
+        self.labels: list[Label] = []
 
-    def enhance(self):
-        if hasattr(self, 'labels'):
-            setattr(self, 'labels', [Label().update_dict(x) for x in self.labels])
+        if labels:
+            self.update_dict(labels)
+
+    def _enhance(self):
+        if self.labels:
+            self.labels = [Label().update_dict(x) for x in self.labels]
 
 
 class LabelAdded:
