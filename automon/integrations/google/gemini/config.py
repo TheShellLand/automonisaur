@@ -21,11 +21,11 @@ class GoogleGeminiConfig(object):
         logger.info(f'[GoogleGeminiConfig] :: headers :: done')
         return headers
 
-    def is_ready(self):
+    def is_ready(self) -> bool:
         if self.api_key:
             return True
         logger.error(f'[GoogleGeminiConfig] :: is_ready :: ERROR :: {self.api_key=}')
         return False
 
-    def random_key(self):
+    def random_api_key(self):
         return random.choice(self.api_key)

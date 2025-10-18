@@ -231,22 +231,31 @@ class Part(DictUpdate):
 
 
 class Content(DictUpdate):
-    parts: [Part]
+    parts: list[Part]
     role: str
 
-    def __init__(self, role: str = 'user'):
+    def __init__(self, content: dict = None, role: str = 'user'):
         super().__init__()
 
-        self.role = role
-        self.parts = []
+        self.role: str = role
+        self.parts: list[Part] = []
+
+        if content:
+            self.update_dict(content)
+
+    def __bool__(self):
+        if self.role and self.parts:
+            return True
+        return False
 
     def add_part(self, part: Part):
+        assert isinstance(part, Part)
         self.parts.append(part)
         return self
 
-    def enhance(self):
-        if hasattr(self, 'parts'):
-            self.parts = [Part().update_dict(x) for x in self.parts]
+    def _enhance(self):
+        if self.parts:
+            self.parts = [Part(x) for x in self.parts]
 
 
 class Candidate(DictUpdate):
@@ -254,23 +263,29 @@ class Candidate(DictUpdate):
     avgLogprobs: float
     finishReason: str
 
-    def __init__(self):
+    def __init__(self, candidate: dict = None):
         super().__init__()
 
-    def enhance(self):
-        if hasattr(self, 'content'):
-            self.content = Content().update_dict(self.content)
+        self.content: Content = Content()
+
+        if candidate:
+            self.update_dict(candidate)
+
+    def _enhance(self):
+        if self.content:
+            self.content = Content(self.content)
 
 
 class GeminiPrompt(DictUpdate):
-    contents: [Content]
+    contents: list[Content]
 
     def __init__(self):
         super().__init__()
 
-        self.contents = []
+        self.contents: list[Content] = []
 
     def add_content(self, content: Content):
+        assert isinstance(content, Content)
         self.contents.append(content)
         return self
 
@@ -280,7 +295,7 @@ class GeminiPrompt(DictUpdate):
 
 
 class GeminiResponse(DictUpdate):
-    candidates: [Candidate]
+    candidates: list[Candidate]
     usageMetadata: str
     modelVersion: str
     modelVersion: str
@@ -288,22 +303,35 @@ class GeminiResponse(DictUpdate):
     def __init__(self):
         super().__init__()
 
-    def enhance(self):
+        self.candidates: list[Candidate] = []
 
-        if hasattr(self, 'candidates'):
-            self.candidates = [Candidate().update_dict(x) for x in self.candidates]
+    def _enhance(self):
 
-    def _get_chunks(self):
+        if self.candidates:
+            self.candidates = [Candidate(x) for x in self.candidates]
+
+    @property
+    def response(self) -> Candidate | None:
+        if self.candidates:
+            return self.candidates[0]
+
+    def _chunks(self):
         for chunk in self.candidates:
-            chunk = Candidate().update_dict(chunk)
             for part in chunk.content.parts:
                 yield part.text
 
+    def _chunks_list(self):
+        chunks = []
+        for chunk in self.candidates:
+            for part in chunk.content.parts:
+                chunks.append(part.text)
+        return chunks
+
     def print_stream(self):
-        for chunk in self._get_chunks():
+        for chunk in self._chunks():
             print(f'{chunk}', end='', flush=True)
         print('\n', flush=True)
         return self
 
     def to_string(self):
-        return ''.join([x for x in self._get_chunks()])
+        return ''.join([x for x in self._chunks()])

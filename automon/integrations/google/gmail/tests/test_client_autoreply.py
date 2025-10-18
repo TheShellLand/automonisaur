@@ -90,19 +90,7 @@ if gmail.is_ready():
 
 def run_gemini(prompts: list) -> tuple[str, GoogleGeminiClient]:
     gemini = GoogleGeminiClient()
-    ollama = OllamaClient()
-
-    free_models = [
-        gemini.models.gemini_2_0_flash,
-        # gemini.models.gemini_2_0_flash_lite,
-        # gemini.models.gemini_2_0_flash_thinking_exp_01_21,
-        # gemini.models.gemini_2_0_pro_exp_02_05,
-        # gemini.models.gemini_1_5_flash,
-        # gemini.models.gemini_1_5_pro,
-    ]
-
-    import random
-    gemini.set_model(random.choice(free_models))
+    gemini.set_random_model()
 
     if gemini.is_ready():
 

@@ -69,7 +69,7 @@ class GoogleGeminiClient(object):
         return download
 
     def add_content(self, prompt: str, role: str = 'user'):
-        if type(prompt) is not str:
+        if not isinstance(prompt, str):
             return self
 
         part = Part(text=prompt)
@@ -99,7 +99,7 @@ class GoogleGeminiClient(object):
            }'
         """
 
-        url = GoogleGeminiApi().base.v1beta.models(self.model).generateContent.key(key=self.config.random_key()).url
+        url = GoogleGeminiApi().base.v1beta.models(self.model).generateContent.key(key=self.config.random_api_key()).url
         json = self._prompt.to_dict()
         chat = self._requests.post(url=url, json=json, headers=self.config.headers())
 
@@ -111,7 +111,7 @@ class GoogleGeminiClient(object):
         if print_stream:
             self._chat.print_stream()
 
-        self._prompt.add_content(self._chat.candidates[0].content)
+        self._prompt.add_content(self._chat.response.content)
         logger.info(f"[GoogleGeminiClient] :: chat :: done")
         return self
 
@@ -148,19 +148,19 @@ class GoogleGeminiClient(object):
     def chat_response(self) -> str:
         return self._chat.to_string()
 
-    def is_ready(self):
-        if self.config.is_ready():
+    def is_ready(self) -> bool:
+        if self.model and self.config.is_ready():
             return True
         logger.error(f'[GoogleGeminiClient] :: is_ready :: ERROR')
         return False
-
-    def pick_random_free_model(self):
-        return random.choice(self.free_models)
 
     def set_model(self, model: GeminiModels):
         self.model = model
         logger.debug(f"[GoogleGeminiClient] :: set_model :: {model=}")
         return self
+
+    def set_random_model(self):
+        return self.set_model(random.choice(self.free_models))
 
     def true_or_false(self, response: str) -> bool:
         if 'true' in response.lower():
