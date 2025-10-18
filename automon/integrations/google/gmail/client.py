@@ -380,8 +380,9 @@ class GoogleGmailClient:
         """Lists all labels in the user's mailbox."""
         api = UsersLabels(self._userId).list
         self.requests.get(api, headers=self.config.headers)
-        logger.info(f"[GoogleGmailClient] :: labels_list :: done")
-        return LabelList().update_dict(self.requests.to_dict())
+        labels = LabelList(self.requests.to_dict())
+        logger.debug(f"[GoogleGmailClient] :: labels_list :: {labels=}")
+        return labels
 
     def labels_patch(self, id: str):
         """Patch the specified label."""
