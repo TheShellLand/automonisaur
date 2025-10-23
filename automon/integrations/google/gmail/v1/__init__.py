@@ -373,12 +373,17 @@ class MessageListVisibility:
     hide = 'hide'
 
 
+class Type:
+    system: str = 'system'
+    user: str = 'user'
+
+
 class Label(DictUpdate):
     id: str
     name: str
     messageListVisibility: MessageListVisibility
     labelListVisibility: LabelListVisibility
-    type: 'Type'
+    type: Type
     messagesTotal: int
     messagesUnread: int
     threadsTotal: int
@@ -1239,11 +1244,6 @@ class ThreadList(DictUpdate):
         if self.threads and not self._automon_threads:
             self._automon_threads = [Thread(x) for x in self.threads]
         return self._automon_threads
-
-
-class Type:
-    system: str = 'system'
-    user: str = 'user'
 
 
 class UsersThread(Users):

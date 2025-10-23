@@ -765,7 +765,7 @@ class GoogleGmailClient:
                     q: str = '',
                     maxResults: int = 100,
                     pageToken: str = '',
-                    labelIds: list = [],
+                    labelIds: list[str] = [],
                     includeSpamTrash: bool = False) -> dict:
         """
 
