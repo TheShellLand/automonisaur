@@ -11,7 +11,7 @@ class DictUpdate(dict):
 
     def enhance(self):
         import warnings
-        warnings.warn(f"Method will be removed in a future release. Please use '_enhance' instead.")
+        warnings.warn(f"[DictUpdate] :: Method will be removed in a future release. Please use '_enhance' instead.")
         return self
 
     def __iter__(self):
@@ -20,17 +20,23 @@ class DictUpdate(dict):
     def __repr__(self):
         return f"{self.to_dict()}"
 
-    def get(self, key, *args, **kwargs):
-        return self.__dict__.get(key, *args, **kwargs)
+    def _update(self, update: dict | str | object | None):
 
-    def update_dict(self, update: dict):
         if update is None:
             return self
+
+        if isinstance(update, str):
+            return self.update_json(update)
 
         if hasattr(update, '__dict__'):
             update = update.__dict__
 
-        assert type(update) == dict, f"ERROR :: {update=}"
+        if isinstance(update, dict):
+            return self.update_dict(update)
+
+        raise Exception(f"[DictUpdate] :: _update :: ERROR :: {update=}")
+
+    def update_dict(self, update: dict):
 
         for key, value in update.items():
             setattr(self, key, value)
@@ -39,15 +45,8 @@ class DictUpdate(dict):
         self._enhance()
         return self
 
-    def update_json(self, json_: str):
-        self.update_dict(json.loads(json_))
-        return self
-
-    def to_dict(self):
-        return self._to_dict(self)
-
-    def to_json(self, indent: int = None):
-        return json.dumps(self.to_dict(), indent=indent)
+    def update_json(self, update: str):
+        return self.update_dict(json.loads(update))
 
     def _to_dict(self, obj):
 
@@ -67,3 +66,10 @@ class DictUpdate(dict):
             result[key] = value
 
         return result
+
+    def to_dict(self):
+        if self.to_json():
+            return self._to_dict(self)
+
+    def to_json(self, indent: int = None):
+        return json.dumps(self.__dict__, indent=indent)

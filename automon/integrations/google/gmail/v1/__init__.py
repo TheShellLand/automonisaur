@@ -477,7 +477,7 @@ class Label(DictUpdate):
 
     def _enhance(self):
         if hasattr(self, 'color'):
-            self.color = Color().update_dict(self.color)
+            self.color = Color()._update(self.color)
 
 
 class LabelList(DictUpdate):
