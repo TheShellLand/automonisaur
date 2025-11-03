@@ -585,75 +585,68 @@ class MessagePartBody(DictUpdate):
 
 
 class MessagePart(DictUpdate):
-    """
-    A single MIME message part.
+    partId: str
+    mimeType: str
+    filename: str
+    headers: list[str]
+    body: dict
 
-    JSON representation
+    def __init__(self, part: dict | Self = None):
+        super().__init__()
 
-    {
-      "partId": string,
-      "mimeType": string,
-      "filename": string,
-      "headers": [
-        {
-          object (Header)
-        }
-      ],
-      "body": {
-        object (MessagePartBody)
-      },
-      "parts": [
-        {
-          object (MessagePart)
-        }
-      ]
-    }
+        self.partId: str = ''
+        self.mimeType: str = ''
+        self.filename: str = ''
+        self.headers: list[str] = []
+        self.body: dict = {}
 
-    Fields
-    partId
-    string
+        if part:
+            self._update(part)
 
-    The immutable ID of the message part.
+    def __repr__(self):
+        repr = []
 
-    mimeType
-    string
+        if self.filename:
+            repr.append(self.filename)
 
-    The MIME type of the message part.
+        if self.mimeType:
+            repr.append(self.mimeType)
 
-    filename
-    string
+        return ' :: '.join(repr)
 
-    The filename of the attachment. Only present if this message part represents an attachment.
+    @property
+    def automon_body(self) -> MessagePartBody | None:
+        if self.body:
+            return MessagePartBody(self.body)
 
-    headers[]
-    object (Header)
+    @property
+    def automon_headers(self) -> list[Header] | None:
+        if self.headers:
+            return [Header(x) for x in self.headers]
 
-    List of headers on this message part. For the top-level message part, representing the entire message payload, it will contain the standard RFC 2822 email headers such as To, From, and Subject.
+    @property
+    def automon_parts(self) -> list[Self] | None:
+        if self.parts:
+            return [MessagePart(x) for x in self.parts]
 
-    body
-    object (MessagePartBody)
+    def get_header(self, header: str) -> Header | None:
+        for headers in self.automon_headers:
+            if header.lower() in headers.name.lower():
+                return headers
 
-    The message part body for this part, which may be empty for container MIME message parts.
 
-    parts[]
-    object (MessagePart)
-
-    The child MIME message parts of this part. This only applies to container MIME message parts, for example multipart/*. For non- container MIME message part types, such as text/plain, this field is empty. For more information, see RFC 1521.
-    """
+class MessagePayload(MessagePart):
+    parts: list[str]
+    size: int
 
     def __init__(self, message: dict | Self = None):
         super().__init__()
 
-        self.body = None
-        self.filename: str = None
-        self.headers: list = []
-        self.mimeType: str = None
-        self.partId: str = None
         self.parts: list = []
         self.size: int = None
 
         if message:
-            self.update_dict(message)
+            self._update(message)
 
     def __repr__(self):
         repr = []
@@ -672,34 +665,9 @@ class MessagePart(DictUpdate):
     def __bool__(self):
         if self.size is not None and self.size > 0:
             return True
-        if self.automon_attachments:
+        if self.automon_parts:
             return True
         return False
-
-    @property
-    def automon_body(self) -> MessagePartBody | None:
-        if self.body:
-            return MessagePartBody(self.body)
-
-    @property
-    def automon_headers(self) -> list[Header] | None:
-        if self.headers:
-            return [Header(x) for x in self.headers]
-
-    @property
-    def automon_parts(self) -> list[Self] | None:
-        if self.parts:
-            return [MessagePart(x) for x in self.parts]
-
-    @property
-    def automon_attachments(self) -> 'MessageAttachments':
-        if self.parts:
-            return MessageAttachments(attachments=self.parts)
-
-    def get_header(self, header: str) -> Header | None:
-        for header_ in self.automon_headers:
-            if header.lower() in header_.name.lower():
-                return header_
 
 
 class Message(DictUpdate):
@@ -812,11 +780,6 @@ class Message(DictUpdate):
         return [Label().update_dict(x) for x in self._automon_labels]
 
     @property
-    def automon_attachments(self) -> 'MessageAttachments':
-        if self.automon_payload:
-            return self.automon_payload.automon_attachments
-
-    @property
     def automon_date(self) -> dateutil.parser.parse:
         if self.automon_payload:
             header = self.automon_payload.get_header('Date')
@@ -902,9 +865,9 @@ class Message(DictUpdate):
                         return header
 
     @property
-    def automon_payload(self) -> MessagePart | None:
+    def automon_payload(self) -> MessagePayload | None:
         if self.payload:
-            return MessagePart(self.payload)
+            return MessagePayload(self.payload)
 
     def automon_raw_decoded(self) -> str | None:
         if self.raw is not None:
@@ -1154,17 +1117,17 @@ class Thread(DictUpdate):
 
         thread_copy = copy.deepcopy(self)
         thread_copy.messages = messages
-        return thread_copy
+        return messages
 
     @property
     def automon_clean_thread_first(self) -> Message | None:
-        if self.automon_clean_thread.messages:
-            return self.automon_clean_thread.messages[0]
+        if self.automon_clean_thread:
+            return self.automon_clean_thread[0]
 
     @property
     def automon_clean_thread_latest(self) -> Message | None:
-        if self.automon_clean_thread.messages:
-            return self.automon_clean_thread.messages[-1]
+        if self.automon_clean_thread:
+            return self.automon_clean_thread[-1]
 
     @property
     def automon_full_thread(self) -> Self:
@@ -1179,17 +1142,17 @@ class Thread(DictUpdate):
 
         thread_copy = copy.deepcopy(self)
         thread_copy.messages = messages
-        return thread_copy
+        return messages
 
     @property
     def automon_full_thread_first(self) -> Message | None:
-        if self.automon_full_thread.messages:
-            return self.automon_full_thread.messages[0]
+        if self.automon_full_thread:
+            return self.automon_full_thread[0]
 
     @property
     def automon_full_thread_latest(self) -> Message | None:
-        if self.automon_full_thread.messages:
-            return self.automon_full_thread.messages[-1]
+        if self.automon_full_thread:
+            return self.automon_full_thread[-1]
 
     @property
     def automon_messages_count(self):

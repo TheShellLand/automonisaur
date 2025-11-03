@@ -296,7 +296,7 @@ def main():
         from_ = email_selected.automon_message_first.automon_header_to.value
 
         prompts_base = []
-        prompts_resume = [f"This is a resume: <RESUME>{resume}</RESUME>\n\n", ]
+        prompts_resume = [f"This is your resume: <RESUME>{resume}</RESUME>\n\n", ]
 
         i = 1
         prompts_emails = []
@@ -335,7 +335,7 @@ def main():
                     break
 
                 _draft = email_selected.automon_message_latest
-                _resume = _draft.automon_attachments.attachments[0].body.automon_data_html_text
+                _resume = _draft.automon_attachments.attachments[0].automon_body.automon_data_html_text
                 prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
                 response, model = run_llm(prompts=prompts, chat=False)
                 gmail.messages_modify(id=_draft.id, removeLabelIds=[labels.analyze])

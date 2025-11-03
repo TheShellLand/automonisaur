@@ -453,9 +453,9 @@ class GoogleGmailClient:
                         if attachmentId:
                             messages_attachments_get = self.messages_attachments_get(messageId=message.id,
                                                                                      attachmentId=attachmentId)
-                            part.body.update_dict(messages_attachments_get)
+                            part.automon_body.update_dict(messages_attachments_get)
 
-                        if part.body.automon_attachments():
+                        if part.automon_body.automon_attachments():
                             setattr(part, 'automon_attachment', part.body.automon_attachment)
 
         return message
@@ -567,21 +567,21 @@ class GoogleGmailClient:
             message._automon_labels = [self.labels_get(x) for x in message.labelIds]
 
         # update attachments
+        automon_parts = []
         if message.automon_payload:
+            automon_parts = message.automon_payload.automon_parts
 
-            if message.automon_payload.automon_parts:
+        for part in automon_parts:
+            if part.automon_body.attachmentId:
+                messages_attachments_get = self.messages_attachments_get(
+                    messageId=message.id,
+                    attachmentId=part.automon_body.attachmentId)
 
-                for part in message.automon_payload.automon_parts:
-                    if part.automon_body.attachmentId:
-                        messages_attachments_get = self.messages_attachments_get(
-                            messageId=message.id,
-                            attachmentId=part.automon_body.attachmentId)
+                df_a = pandas.DataFrame([messages_attachments_get.to_dict()])
+                df_b = pandas.DataFrame([part.body])
+                df_a.update(df_b)
 
-                        df_a = pandas.DataFrame([messages_attachments_get.to_dict()])
-                        df_b = pandas.DataFrame([part.body])
-                        df_a.update(df_b)
-
-                        part.body.update(df_a.to_dict(orient='records')[0])
+                part.body.update(df_a.to_dict(orient='records')[0])
 
         return message
 
@@ -817,7 +817,7 @@ class GoogleGmailClient:
         if threads:
 
             for thread in threads.automon_threads:
-                thread.update_dict(self.thread_get_automon(id=thread.id))
+                thread._update(self.thread_get_automon(id=thread.id))
 
                 for message in thread.automon_messages:
                     get_message = self.messages_get_automon(message.id)
