@@ -591,8 +591,6 @@ class MessagePart(DictUpdate):
     headers: list[str]
     body: dict
 
-    parts: list
-
     def __init__(self, part: dict | Self = None):
         super().__init__()
 
@@ -601,8 +599,6 @@ class MessagePart(DictUpdate):
         self.filename: str = ''
         self.headers: list[str] = []
         self.body: dict = {}
-
-        self.parts: list = []
 
         if part:
             self._update(part)
@@ -628,25 +624,30 @@ class MessagePart(DictUpdate):
         if self.headers:
             return [Header(x) for x in self.headers]
 
-    @property
-    def automon_parts(self) -> list[Self] | None:
-        if self.parts:
-            return [MessagePart(x) for x in self.parts]
-
     def get_header(self, header: str) -> Header | None:
         for headers in self.automon_headers:
             if header.lower() in headers.name.lower():
                 return headers
 
 
-class MessagePayload(MessagePart):
-    parts: list[str]
+class MessagePayload(DictUpdate):
+    partId: str
+    mimeType: str
+    filename: str
+    headers: list[str]
+    body: dict
+
+    parts: list[dict]
     size: int
+
+    automon_body: MessagePartBody
+    automon_headers: list[Header]
+    automon_parts: list[MessagePart]
 
     def __init__(self, message: dict | Self = None):
         super().__init__()
 
-        self.parts: list = []
+        self.parts: list[dict] = []
         self.size: int = None
 
         if message:
@@ -672,6 +673,26 @@ class MessagePayload(MessagePart):
         if self.automon_parts:
             return True
         return False
+
+    @property
+    def automon_body(self) -> MessagePartBody | None:
+        if self.body:
+            return MessagePartBody(self.body)
+
+    @property
+    def automon_headers(self) -> list[Header] | None:
+        if self.headers:
+            return [Header(x) for x in self.headers]
+
+    @property
+    def automon_parts(self) -> list[MessagePart] | None:
+        if self.parts:
+            return [MessagePart(x) for x in self.parts]
+
+    def get_header(self, header: str) -> Header | None:
+        for headers in self.automon_headers:
+            if header.lower() in headers.name.lower():
+                return headers
 
 
 class Message(DictUpdate):
