@@ -64,7 +64,7 @@ if gmail.is_ready():
             labels_get_by_name = gmail.labels_get_by_name(name)
 
             if labels_get_by_name is None:
-                label.update_dict(
+                label._update(
                     gmail.labels_create(
                         name=name,
                         color=color,
@@ -74,7 +74,7 @@ if gmail.is_ready():
                 if reset_labels:
                     gmail.labels_update(id=labels_get_by_name.id, color=color)
 
-                label.update_dict(
+                label._update(
                     labels_get_by_name
                 )
 
@@ -163,11 +163,9 @@ def main():
     global gemini
 
     # init
-    _welcome_email = gmail.messages_list_automon(labelIds=[labels.automon,
-                                                           labels.welcome])
-
-    if _welcome_email.automon_messages:
-        gmail.messages_trash(id=_welcome_email.automon_messages[0].id)
+    # _welcome_email = gmail.messages_list_automon(labelIds=[labels.automon, labels.welcome])
+    # if _welcome_email.automon_messages:
+    #     gmail.messages_trash(id=_welcome_email.automon_messages[0].id)
 
     thread = None
     _nextPageToken = None

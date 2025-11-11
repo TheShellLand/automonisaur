@@ -2,4 +2,4 @@ from automon.helpers.loggingWrapper import *
 
 import warnings
 
-warnings.warn(f'module moving to automon.helpers.logging.Wrapper')
+warnings.warn(f'module moved to automon.helpers.loggingWrapper')

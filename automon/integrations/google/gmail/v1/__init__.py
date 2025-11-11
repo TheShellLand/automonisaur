@@ -305,7 +305,7 @@ class Header(DictUpdate):
         self.value: str = ''
 
         if header:
-            self.update_dict(header)
+            self._update(header)
 
     def __repr__(self):
         if self.name:
@@ -493,11 +493,11 @@ class LabelList(DictUpdate):
         self.labels: list[Label] = []
 
         if labels:
-            self.update_dict(labels)
+            self._update(labels)
 
     def _enhance(self):
         if self.labels:
-            self.labels = [Label().update_dict(x) for x in self.labels]
+            self.labels = [Label()._update(x) for x in self.labels]
 
 
 class LabelAdded:
@@ -525,7 +525,7 @@ class MessagePartBody(DictUpdate):
         self.data: str = None
 
         if message:
-            self.update_dict(message)
+            self._update(message)
 
     def __repr__(self):
         repr = []
@@ -591,6 +591,8 @@ class MessagePart(DictUpdate):
     headers: list[str]
     body: dict
 
+    parts: list
+
     def __init__(self, part: dict | Self = None):
         super().__init__()
 
@@ -599,6 +601,8 @@ class MessagePart(DictUpdate):
         self.filename: str = ''
         self.headers: list[str] = []
         self.body: dict = {}
+
+        self.parts: list = []
 
         if part:
             self._update(part)
@@ -671,6 +675,28 @@ class MessagePayload(MessagePart):
 
 
 class Message(DictUpdate):
+    historyId: str
+    id: str
+    internalDate: str
+    labelIds: list[str]
+    payload: dict
+    raw: str
+    sizeEstimate: str
+    snippet: str
+    threadId: str
+
+    automon_labels: list[Label] = []
+    automon_date: dateutil.parser.parse
+    automon_date_since_now: datetime.timedelta
+    automon_date_since_now_str: str
+    automon_email_from: str
+    automon_email_to: str
+    automon_header_from: Header
+    automon_header_subject: Header
+    automon_header_to: Header
+    automon_payload: MessagePayload
+    automon_raw_decoded: str
+
     """
     {
       "id": string,
@@ -755,10 +781,10 @@ class Message(DictUpdate):
         self.snippet: str = None
         self.threadId: str = None
 
-        self._automon_labels: list = []
+        self.automon_labels: list[Label] = []
 
         if message:
-            self.update_dict(message)
+            self._update(message)
 
     def __repr__(self):
         if self.snippet:
@@ -774,10 +800,6 @@ class Message(DictUpdate):
         if self.id == other.id:
             return True
         return False
-
-    @property
-    def automon_labels(self) -> list[Label]:
-        return [Label().update_dict(x) for x in self._automon_labels]
 
     @property
     def automon_date(self) -> dateutil.parser.parse:
@@ -940,7 +962,7 @@ class MessageList(DictUpdate):
         self._automon_messages = []
 
         if messages:
-            self.update_dict(messages)
+            self._update(messages)
 
     def __repr__(self):
         if self.messages:
@@ -1082,7 +1104,7 @@ class Thread(DictUpdate):
         self._automon_messages: list[Message] = []
 
         if thread:
-            self.update_dict(thread)
+            self._update(thread)
 
     def __repr__(self):
         if self.snippet:
@@ -1192,7 +1214,7 @@ class ThreadList(DictUpdate):
         self._automon_threads = []
 
         if threads:
-            self.update_dict(threads)
+            self._update(threads)
 
     def __repr__(self):
         return f"{len(self.threads)} threads"
