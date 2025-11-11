@@ -283,12 +283,10 @@ def main():
                 if labels.draft in _message.automon_labels:
                     gmail.messages_trash(id=_message.id)
 
-        global email_selected
         email_selected = thread
         resume_selected = resume_search.automon_messages[0]
 
-        resume = resume_selected.automon_attachments.automon_first_attachment.automon_parts[
-            0].automon_body.automon_data_html_text()
+        resume = resume_selected.automon_attachments_first.automon_parts[0].automon_body.automon_data_html_text()
 
         to = email_selected.automon_message_first.automon_header_from.value
         from_ = email_selected.automon_message_first.automon_header_to.value

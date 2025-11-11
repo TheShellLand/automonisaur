@@ -588,8 +588,14 @@ class MessagePart(DictUpdate):
     partId: str
     mimeType: str
     filename: str
-    headers: list[str]
+    headers: list[dict]
     body: dict
+
+    parts: list[dict]
+
+    automon_body: MessagePartBody
+    automon_headers: list[Header]
+    automon_parts: list[Self]
 
     def __init__(self, part: dict | Self = None):
         super().__init__()
@@ -599,6 +605,8 @@ class MessagePart(DictUpdate):
         self.filename: str = ''
         self.headers: list[str] = []
         self.body: dict = {}
+
+        self.parts: list[dict] = []
 
         if part:
             self._update(part)
@@ -623,6 +631,11 @@ class MessagePart(DictUpdate):
     def automon_headers(self) -> list[Header] | None:
         if self.headers:
             return [Header(x) for x in self.headers]
+
+    @property
+    def automon_parts(self) -> list[Self] | None:
+        if self.parts:
+            return [MessagePart(x) for x in self.parts]
 
     def get_header(self, header: str) -> Header | None:
         for headers in self.automon_headers:
@@ -672,6 +685,8 @@ class MessagePayload(DictUpdate):
             return True
         if self.automon_parts:
             return True
+        if self.automon_body:
+            return True
         return False
 
     @property
@@ -685,9 +700,10 @@ class MessagePayload(DictUpdate):
             return [Header(x) for x in self.headers]
 
     @property
-    def automon_parts(self) -> list[MessagePart] | None:
+    def automon_parts(self) -> list[MessagePart]:
         if self.parts:
             return [MessagePart(x) for x in self.parts]
+        return []
 
     def get_header(self, header: str) -> Header | None:
         for headers in self.automon_headers:
@@ -706,7 +722,7 @@ class Message(DictUpdate):
     snippet: str
     threadId: str
 
-    automon_labels: list[Label] = []
+    automon_attachments: list
     automon_date: dateutil.parser.parse
     automon_date_since_now: datetime.timedelta
     automon_date_since_now_str: str
@@ -715,6 +731,7 @@ class Message(DictUpdate):
     automon_header_from: Header
     automon_header_subject: Header
     automon_header_to: Header
+    automon_labels: list[Label] = []
     automon_payload: MessagePayload
     automon_raw_decoded: str
 
@@ -823,6 +840,19 @@ class Message(DictUpdate):
         return False
 
     @property
+    def automon_attachments(self) -> list[MessagePartBody | MessagePart] | None:
+        if self.automon_payload:
+            if self.automon_payload.size:
+                return [self.automon_payload.automon_body]
+            if self.automon_payload.automon_parts:
+                return self.automon_payload.automon_parts
+
+    @property
+    def automon_attachments_first(self) -> MessagePartBody | MessagePart | None:
+        if self.automon_attachments:
+            return self.automon_attachments[0]
+
+    @property
     def automon_date(self) -> dateutil.parser.parse:
         if self.automon_payload:
             header = self.automon_payload.get_header('Date')
@@ -884,28 +914,19 @@ class Message(DictUpdate):
     def automon_header_from(self) -> Header | None:
         if self.automon_payload:
             if self.automon_payload.automon_headers:
-
-                for header in self.automon_payload.automon_headers:
-                    if header.name == 'From':
-                        return header
+                return self.automon_payload.get_header('From')
 
     @property
     def automon_header_subject(self) -> Header | None:
         if self.automon_payload:
             if self.automon_payload.automon_headers:
-
-                for header in self.automon_payload.automon_headers:
-                    if header.name == 'Subject':
-                        return header
+                return self.automon_payload.get_header('Subject')
 
     @property
     def automon_header_to(self) -> Header | None:
         if self.automon_payload:
             if self.automon_payload.automon_headers:
-
-                for header in self.automon_payload.automon_headers:
-                    if header.name == 'To':
-                        return header
+                return self.automon_payload.get_header('To')
 
     @property
     def automon_payload(self) -> MessagePayload | None:
