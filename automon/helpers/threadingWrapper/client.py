@@ -9,7 +9,7 @@ log.setLevel(automon.helpers.loggingWrapper.DEBUG)
 
 
 class ThreadingClient(object):
-    global_threads_max: int = 1
+    global_threads_max: int = 10
     global_threads: list = []
 
     def __init__(self):
@@ -50,9 +50,8 @@ class ThreadingClient(object):
         while self.worker_queue.qsize() > 0 or any(t.is_alive() for t in self.global_threads):
 
             self.global_threads = [t for t in self.global_threads if t.is_alive()]
-            current_running_threads = len(self.global_threads)
 
-            if self.worker_queue.qsize() > 0 and current_running_threads < self.global_threads_max:
+            if self.worker_queue.qsize() > 0 and self.total_global_threads < self.global_threads_max:
                 function, args = self.worker_queue.get()
                 thread = threading.Thread(target=function, args=tuple(args))
                 thread.start()
