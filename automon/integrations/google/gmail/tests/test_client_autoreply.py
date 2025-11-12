@@ -176,11 +176,21 @@ def main():
 
         _FOUND = None
         _FOLLOW_UP = None
+
+        # search labels.retry first
         email_search = gmail.thread_list_automon(
             maxResults=1,
             pageToken=_nextPageToken,
-            labelIds=[labels.automon],
+            labelIds=[labels.automon, labels.retry],
         )
+
+        if not email_search:
+            email_search = gmail.thread_list_automon(
+                maxResults=1,
+                pageToken=_nextPageToken,
+                labelIds=[labels.automon],
+            )
+
         _nextPageToken = email_search.nextPageToken
 
         if not email_search.threads:
@@ -194,8 +204,9 @@ def main():
             _first = thread.automon_message_first
             _latest = thread.automon_message_latest
 
-            print(f"{thread.id} :: {_first.automon_payload.get_header('subject')} :: {_first.automon_labels} :: ",
-                  end='')
+            print(f"{_latest.automon_date_since_now_str} :: {thread.id} :: "
+                  f"{_first.automon_payload.get_header('subject')} :: "
+                  f"{_first.automon_labels} :: ", end='')
 
             # resume
             if labels.resume in _first.automon_labels:
@@ -225,7 +236,6 @@ def main():
 
             # sent
             if labels.sent in _latest.automon_labels:
-                print(f'{_latest.automon_date_since_now_str} :: ', end='')
 
                 if _latest.automon_date_since_now.days >= 3:
                     _FOUND = True
@@ -238,18 +248,8 @@ def main():
             # new
             if labels.sent not in _latest.automon_labels:
                 _sent = False
-                for _message in thread.automon_messages:
-                    if labels.sent in _message.automon_labels:
-                        _sent = True
-                    elif (labels.draft not in _message.automon_labels
-                          and labels.trash not in _message.automon_labels
-                    ):
-                        _sent = False
 
-                if not _sent:
-                    if len(thread.automon_messages) > 1:
-                        _FOLLOW_UP = True
-
+                if labels.draft not in _latest.automon_labels:
                     _FOUND = True
                     print('new', end='')
                     break
@@ -257,96 +257,83 @@ def main():
                 continue
 
         if _FOUND:
-            print(' :)')
             break
 
-        print("\n")
+        print("\n\n")
 
     resume_search = gmail.messages_list_automon(
         maxResults=1,
         labelIds=[labels.resume]
     )
 
-    try:
+    # retry
+    for _message in thread.automon_messages:
 
-        # retry
-        for _message in thread.automon_messages:
-            _RETRY = False
-            if (
-                    labels.retry in _message.automon_labels
-                    or labels.auto_reply_enabled in _message.automon_labels
-            ):
-                _RETRY = True
-                gmail.messages_modify(id=_message.id, removeLabelIds=[labels.retry])
+        # delete DRAFT
+        if labels.draft in _message.automon_labels:
+            gmail.messages_trash(id=_message.id)
 
-                # delete DRAFT
-                if labels.draft in _message.automon_labels:
-                    gmail.messages_trash(id=_message.id)
+    email_selected = thread
+    resume_selected = resume_search.automon_messages[0]
 
-        email_selected = thread
-        resume_selected = resume_search.automon_messages[0]
+    resume = resume_selected.automon_attachments_first.automon_parts[0].automon_body.automon_data_html_text()
 
-        resume = resume_selected.automon_attachments_first.automon_parts[0].automon_body.automon_data_html_text()
+    to = email_selected.automon_message_first.automon_header_from.value
+    from_ = email_selected.automon_message_first.automon_header_to.value
 
-        to = email_selected.automon_message_first.automon_header_from.value
-        from_ = email_selected.automon_message_first.automon_header_to.value
+    prompts_base = []
+    prompts_resume = [f"This is your resume: <RESUME>{resume}</RESUME>\n\n", ]
 
-        prompts_base = []
-        prompts_resume = [f"This is your resume: <RESUME>{resume}</RESUME>\n\n", ]
+    i = 1
+    prompts_emails = []
+    prompts_emails_all = []
+    for message in email_selected.automon_messages:
 
-        i = 1
-        prompts_emails = []
-        prompts_emails_all = []
-        for message in email_selected.automon_messages:
+        if labels.draft in message.automon_labels:
+            continue
 
-            if labels.draft in message.automon_labels:
-                continue
+        _message = f"{message.to_dict()}"
 
-            _message = f"{message.to_dict()}"
+        import re
 
-            import re
+        _del = re.compile(r"'data': ('[a-zA-Z0-9-_=]+')").findall(_message)
+        for _x in _del:
+            _message = _message.replace(_x, "''")
 
-            _del = re.compile(r"'data': ('[a-zA-Z0-9-_=]+')").findall(_message)
-            for _x in _del:
-                _message = _message.replace(_x, "''")
-
-            if labels.draft not in message.automon_labels:
-                prompts_emails.append(
-                    f"This is email {i} in an email chain: {_message}\n\n"
-                )
-
-            prompts_emails_all.append(
+        if labels.draft not in message.automon_labels:
+            prompts_emails.append(
                 f"This is email {i} in an email chain: {_message}\n\n"
             )
 
-            i += 1
+        prompts_emails_all.append(
+            f"This is email {i} in an email chain: {_message}\n\n"
+        )
 
-        if not prompts_emails:
-            return
+        i += 1
 
-        response = None
-        for _message in email_selected.automon_messages:
-            if labels.analyze in _message.automon_labels:
-                if labels.sent in email_selected.automon_message_latest.automon_labels:
-                    break
+    if not prompts_emails:
+        return
 
-                _draft = email_selected.automon_message_latest
-                _resume = _draft.automon_attachments.attachments[0].automon_body.automon_data_html_text
-                prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
-                response, model = run_llm(prompts=prompts, chat=False)
-                gmail.messages_modify(id=_draft.id, removeLabelIds=[labels.analyze])
-                gmail.messages_trash(id=_draft.id)
+    response = None
+    for _message in email_selected.automon_messages:
+        if labels.analyze in _message.automon_labels:
+            if labels.sent in email_selected.automon_message_latest.automon_labels:
                 break
+
+            _draft = email_selected.automon_message_latest
+            _resume = _draft.automon_attachments.attachments[0].automon_body.automon_data_html_text
+            prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
+            response, model = run_llm(prompts=prompts, chat=False)
+            gmail.messages_modify(id=_draft.id, removeLabelIds=[labels.analyze])
+            gmail.messages_trash(id=_draft.id)
+            break
+
+    while True:
 
         if response is None:
             prompts = prompts_resume + prompts_emails
             prompts.append(
                 GoogleGeminiClient.prompts.agent_machine_job_applicant,
-            )
-            prompts.append(
-                f"MUST check for a job description in the first email before continuing. \n"
-                f"\n\n"
-                f"Create a response. "
             )
 
             if [x for x in email_selected.automon_messages if labels.retry in x.automon_labels]:
@@ -354,68 +341,80 @@ def main():
             else:
                 response, model = run_llm(prompts=prompts, chat=False)
 
-        gmail.config.refresh_token()
+            double_check_prompts = []
+            double_check_prompts.append(
+                f"RULES: {GoogleGeminiClient.prompts.agent_machine_job_applicant}"
+            )
+            double_check_prompts.append(
+                f"RESPONSE: {response}"
+            )
+            double_check_prompts.append(
+                f"Respond True or False. Is the RESPONSE following all RULES?"
+            )
+            check, model = run_llm(double_check_prompts)
 
-        if _FOLLOW_UP:
-            resume_attachment = []
-        else:
-            resume_attachment = resume_selected.automon_attachments.has_filename[0]
-            resume_attachment = gmail.v1.EmailAttachment(
-                bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
-                filename=resume_attachment.filename,
-                mimeType=resume_attachment.mimeType)
+            if gemini.true_or_false(check):
+                break
+            else:
+                debug = run_llm(prompts=double_check_prompts, chat=True)
 
-        # create draft
-        body = response
-        subject = "Re: " + email_selected.automon_message_first.automon_header_subject.value
-        draft = gmail.draft_create(
-            threadId=email_selected.id,
-            draft_to=to,
-            draft_from=from_,
-            draft_subject=subject,
-            draft_body=body,
-            draft_attachments=[resume_attachment]
-        )
-        draft_get = gmail.draft_get_automon(id=draft.id)
+            raise Exception(f"response does not follow rules :: {check=}")
 
-        gmail.messages_modify(id=email_selected.id,
-                              addLabelIds=[labels.unread],
-                              removeLabelIds=[labels.retry]
-                              )
+    gmail.config.refresh_token()
 
-        if (labels.auto_reply_enabled in email_selected.automon_message_latest.automon_labels
-                and labels.sent not in email_selected.automon_message_latest.automon_labels
-        ):
-            draft_sent = gmail.draft_send(draft=draft)
-            gmail.messages_modify(id=email_selected.automon_message_first.id,
-                                  addLabelIds=[labels.unread],
-                                  )
+    if _FOLLOW_UP:
+        resume_attachment = []
+    else:
+        resume_attachment = resume_selected.automon_attachments[1]
+        assert resume_attachment.filename
 
-        prompts = [prompts_emails[0]] + prompts_resume
-        prompts.append(
-            f"Respond only true or false, is the job relevant?"
-        )
-        response, model = run_llm(prompts)
-        if gemini.true_or_false(response.lower()):
-            gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.relevant])
+        resume_attachment = gmail.v1.EmailAttachment(
+            bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
+            filename=resume_attachment.filename,
+            mimeType=resume_attachment.mimeType)
 
-        prompts = [prompts_emails[0]]
-        prompts.append(
-            f"Respond only true or false, is the job fully and completely remote, with no in-office days?"
-        )
-        response, model = run_llm(prompts)
-        if gemini.true_or_false(response.lower()):
-            gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.remote])
+    # create draft
+    body = response
+    subject = "Re: " + email_selected.automon_message_first.automon_header_subject.value
+    draft = gmail.draft_create(
+        threadId=email_selected.id,
+        draft_to=to,
+        draft_from=from_,
+        draft_subject=subject,
+        draft_body=body,
+        draft_attachments=[resume_attachment]
+    )
+    draft_get = gmail.draft_get_automon(id=draft.id)
 
-        CHAT_ONCE = 0
+    gmail.messages_modify(id=email_selected.id,
+                          addLabelIds=[labels.unread],
+                          removeLabelIds=[labels.retry]
+                          )
 
-    except Exception as error:
+    if (labels.auto_reply_enabled in email_selected.automon_message_latest.automon_labels
+            and labels.sent not in email_selected.automon_message_latest.automon_labels
+    ):
+        draft_sent = gmail.draft_send(draft=draft)
+        gmail.messages_modify(id=email_selected.automon_message_first.id,
+                              addLabelIds=[labels.unread])
 
-        gmail.config.refresh_token()
+    # prompts = [prompts_emails[0]] + prompts_resume
+    # prompts.append(
+    #     f"Respond only true or false, is the job relevant?"
+    # )
+    # response, model = run_llm(prompts)
+    # if gemini.true_or_false(response):
+    #     gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.relevant])
+    #
+    # prompts = [prompts_emails[0]]
+    # prompts.append(
+    #     f"Respond only true or false, is the job fully and completely remote, with no in-office days?"
+    # )
+    # response, model = run_llm(prompts)
+    # if gemini.true_or_false(response):
+    #     gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.remote])
 
-        import traceback
-        traceback.print_exc()
-        return
+    CHAT_ONCE = 0
 
 
 class MyTestCase(unittest.TestCase):
