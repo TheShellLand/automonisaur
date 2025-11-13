@@ -10,7 +10,7 @@ from automon.integrations.google.gemini import GoogleGeminiClient
 
 DEBUG_LEVEL = 2
 DEBUG_ = False
-INFO_ = True
+INFO_ = False
 
 LoggingClient.logging.getLogger('httpx').setLevel(ERROR)
 LoggingClient.logging.getLogger('httpcore').setLevel(ERROR)
@@ -211,8 +211,9 @@ def main():
 
             _first = thread.automon_message_first
             _latest = thread.automon_message_latest
+            _latest_clean = thread.automon_clean_thread_latest
 
-            debug(f"{_latest.automon_date_since_now_str} :: "
+            debug(f"\n{_latest.automon_date_since_now_str} :: "
                   f"{thread.automon_messages_count} messages ::"
                   f"{thread.id} :: "
                   f"{_first.automon_payload.get_header('subject')} :: "
@@ -245,9 +246,9 @@ def main():
                 break
 
             # sent
-            if labels.sent in _latest.automon_labels:
+            if labels.sent in _latest_clean.automon_labels:
 
-                if _latest.automon_date_since_now.days >= 3:
+                if _latest_clean.automon_date_since_now.days >= 3:
                     _FOUND = True
                     _FOLLOW_UP = True
                     debug('followup', end='')
@@ -268,8 +269,6 @@ def main():
 
         if _FOUND:
             break
-
-        debug("\n")
 
     resume_search = gmail.messages_list_automon(
         maxResults=1,
