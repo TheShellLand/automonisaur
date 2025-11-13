@@ -230,42 +230,20 @@ def main():
                 debug('analyze', end='')
                 break
 
-            # draft
-            if (labels.draft in _latest.automon_labels
-                    and labels.trash not in _latest.automon_labels
-            ):
-                continue
-
-            # auto
-            if ((labels.auto_reply_enabled in _first.automon_labels
-                 or labels.auto_reply_enabled in _latest.automon_labels)
-                    and (labels.sent not in _latest.automon_labels)
-            ):
-                _FOUND = True
-                debug('auto', end='')
-                break
-
             # sent
             if labels.sent in _latest_clean.automon_labels:
 
                 if _latest_clean.automon_date_since_now.days >= 3:
                     _FOUND = True
                     _FOLLOW_UP = True
-                    debug('followup', end='')
+                    debug('followup')
                     break
-
-                continue
 
             # new
-            if labels.sent not in _latest.automon_labels:
-                _sent = False
-
-                if labels.draft not in _latest.automon_labels:
-                    _FOUND = True
-                    debug('new', end='')
-                    break
-
-                continue
+            if labels.sent not in _latest_clean.automon_labels:
+                _FOUND = True
+                debug('new', end='')
+                break
 
         if _FOUND:
             break

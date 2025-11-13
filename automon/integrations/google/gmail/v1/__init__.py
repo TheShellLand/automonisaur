@@ -1174,15 +1174,14 @@ class Thread(DictUpdate):
 
     @property
     def automon_clean_thread(self) -> Self:
-        """Return a clean list of messages not labeled with TRASH or DRAFT"""
+        """Return a clean list of messages not labeled with DRAFT"""
         messages = []
         labels = GmailLabels()
 
         if self.automon_messages:
             for message in self.automon_messages:
-                if labels.trash not in message.automon_labels:
-                    if labels.draft not in message.automon_labels:
-                        messages.append(message)
+                if labels.draft not in message.automon_labels:
+                    messages.append(message)
 
         thread_copy = copy.deepcopy(self)
         thread_copy.messages = messages
