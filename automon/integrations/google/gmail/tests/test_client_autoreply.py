@@ -8,6 +8,7 @@ from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
+DEBUG_LEVEL = 2
 DEBUG_ = False
 INFO_ = True
 
@@ -30,6 +31,14 @@ if INFO_:
 if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
+
+
+def debug(log: str, level: int = 1, **kwargs):
+    global DEBUG_LEVEL
+
+    if level <= DEBUG_LEVEL:
+        print(f"{log}", **kwargs)
+
 
 USE_OLLAMA = False
 USE_GEMINI = True
@@ -88,7 +97,7 @@ if gmail.is_ready():
     for t in _threads: t.join()
 
 
-def run_gemini(prompts: list) -> tuple[str, GoogleGeminiClient]:
+def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClient]:
     gemini = GoogleGeminiClient()
     gemini.set_random_model()
 
@@ -99,10 +108,11 @@ def run_gemini(prompts: list) -> tuple[str, GoogleGeminiClient]:
         for prompt in prompts:
             gemini.add_content(prompt)
 
-        if CHAT_FOREVER:
+        if chat:
             gemini_response = gemini.chat().chat_forever().chat_response()
         else:
             gemini_response = gemini.chat().chat_response()
+
         return gemini_response, gemini
 
 
@@ -136,11 +146,9 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
 
 
 def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
-    global CHAT_FOREVER
-    CHAT_FOREVER = chat
+    debug([f"{len(x.split(' ')):,}" for x in prompts])
 
-    print([f"{len(x):,}" for x in prompts])
-
+    response = None
     while True:
         try:
             if USE_OLLAMA:
@@ -148,13 +156,13 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
                 break
 
             if USE_GEMINI:
-                response, model = run_gemini(prompts=prompts)
+                response, model = run_gemini(prompts=prompts, chat=chat)
                 break
         except Exception as error:
-            print(error)
+            debug(f"[run_llm] :: ERROR :: {error=}")
 
-    if response is None:
-        raise Exception(f"missing llm response")
+    if not response:
+        raise Exception(f"[run_llm] :: ERROR :: missing llm response")
 
     return response, model
 
@@ -194,7 +202,7 @@ def main():
         _nextPageToken = email_search.nextPageToken
 
         if not email_search.threads:
-            print('_', end='')
+            debug('_', end='')
             continue
 
         for thread in email_search.automon_threads:
@@ -204,9 +212,11 @@ def main():
             _first = thread.automon_message_first
             _latest = thread.automon_message_latest
 
-            print(f"{_latest.automon_date_since_now_str} :: {thread.id} :: "
+            debug(f"{_latest.automon_date_since_now_str} :: "
+                  f"{thread.automon_messages_count} messages ::"
+                  f"{thread.id} :: "
                   f"{_first.automon_payload.get_header('subject')} :: "
-                  f"{_first.automon_labels} :: ", end='')
+                  f"{_first.automon_labels} :: ", end='', level=2)
 
             # resume
             if labels.resume in _first.automon_labels:
@@ -216,7 +226,7 @@ def main():
             if (labels.analyze in _first.automon_labels
             ):
                 _FOUND = True
-                print('analyze', end='')
+                debug('analyze', end='')
                 break
 
             # draft
@@ -231,7 +241,7 @@ def main():
                     and (labels.sent not in _latest.automon_labels)
             ):
                 _FOUND = True
-                print('auto', end='')
+                debug('auto', end='')
                 break
 
             # sent
@@ -240,7 +250,7 @@ def main():
                 if _latest.automon_date_since_now.days >= 3:
                     _FOUND = True
                     _FOLLOW_UP = True
-                    print('followup', end='')
+                    debug('followup', end='')
                     break
 
                 continue
@@ -251,7 +261,7 @@ def main():
 
                 if labels.draft not in _latest.automon_labels:
                     _FOUND = True
-                    print('new', end='')
+                    debug('new', end='')
                     break
 
                 continue
@@ -259,7 +269,7 @@ def main():
         if _FOUND:
             break
 
-        print("\n\n")
+        debug("\n")
 
     resume_search = gmail.messages_list_automon(
         maxResults=1,
@@ -322,8 +332,10 @@ def main():
 
             _draft = email_selected.automon_message_latest
             _resume = _draft.automon_attachments.attachments[0].automon_body.automon_data_html_text
+
             prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
             response, model = run_llm(prompts=prompts, chat=False)
+
             gmail.messages_modify(id=_draft.id, removeLabelIds=[labels.analyze])
             gmail.messages_trash(id=_draft.id)
             break
@@ -341,7 +353,7 @@ def main():
             else:
                 response, model = run_llm(prompts=prompts, chat=False)
 
-            double_check_prompts = []
+            double_check_prompts = prompts_resume + prompts_emails
             double_check_prompts.append(
                 f"RULES: {GoogleGeminiClient.prompts.agent_machine_job_applicant}"
             )
@@ -356,9 +368,17 @@ def main():
             if gemini.true_or_false(check):
                 break
             else:
-                debug = run_llm(prompts=double_check_prompts, chat=True)
+                double_check_prompts.append(
+                    f"say which rule was violated"
+                )
+                double_check_prompts.append(
+                    f"write a prompt to fix what was wrong"
+                )
 
-            raise Exception(f"response does not follow rules :: {check=}")
+                test = run_llm(prompts=double_check_prompts, chat=True)
+
+                check, model = run_llm(prompts=double_check_prompts, chat=False)
+                prompts.append(check)
 
     gmail.config.refresh_token()
 
