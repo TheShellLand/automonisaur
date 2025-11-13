@@ -1169,6 +1169,10 @@ class Thread(DictUpdate):
         return self._automon_messages
 
     @property
+    def automon_messages_count(self) -> int:
+        return len(self.automon_messages)
+
+    @property
     def automon_clean_thread(self) -> Self:
         """Return a clean list of messages not labeled with TRASH"""
         messages = []
