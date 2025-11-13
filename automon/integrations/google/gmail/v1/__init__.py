@@ -1181,7 +1181,7 @@ class Thread(DictUpdate):
         if self.automon_messages:
             for message in self.automon_messages:
                 if labels.trash not in message.automon_labels:
-                    if labels.draft not in message.automon_labesl:
+                    if labels.draft not in message.automon_labels:
                         messages.append(message)
 
         thread_copy = copy.deepcopy(self)
