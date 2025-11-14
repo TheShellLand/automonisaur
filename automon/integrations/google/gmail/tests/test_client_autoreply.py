@@ -220,12 +220,15 @@ def main():
                   f"{_first.automon_labels} :: ", end='', level=2)
 
             # resume
-            if labels.resume in _first.automon_labels:
+            if labels.resume in thread.automon_messages_labels:
+                continue
+
+            # error
+            if labels.error in thread.automon_messages_labels:
                 continue
 
             # analyze
-            if (labels.analyze in _first.automon_labels
-            ):
+            if labels.analyze in thread.automon_messages_labels:
                 _FOUND = True
                 debug('analyze', end='')
                 break
@@ -356,6 +359,15 @@ def main():
 
                 check, model = run_llm(prompts=double_check_prompts, chat=False)
                 prompts.append(check)
+
+                draft_error = gmail.draft_create(
+                    threadId=email_selected.id,
+                    draft_body=check,
+                )
+                draft_get = gmail.draft_get_automon(id=draft_error.id)
+                gmail.messages_modify(id=draft_get.id, addLabelIds=[labels.error])
+
+                raise Exception(f"{check=}")
 
     gmail.config.refresh_token()
 

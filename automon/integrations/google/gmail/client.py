@@ -74,6 +74,9 @@ class AutomonLabels:
         # need user input
         self.user_action_required = Label(name='automon/user action required', color=self._color_error)
 
+        # error
+        self.error = Label(name='automon/error', color=self._color_error)
+
     @property
     def all_labels(self):
         return [

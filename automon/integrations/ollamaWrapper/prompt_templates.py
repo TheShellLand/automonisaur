@@ -23,6 +23,7 @@ class AgentTemplates:
             "RULE: Remove any greetings or acknowledgments.",
             "RULE: Ensure no apologies or justifications are present.",
             "RULE: Exclude any text other than the availability link and call to action.",
+            "RULE: Concisely include availability details and a natural closing."
         ]
 
         return '\n'.join(prompts)
