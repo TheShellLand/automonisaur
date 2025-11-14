@@ -1227,6 +1227,15 @@ class Thread(DictUpdate):
         return len(self.automon_messages)
 
     @property
+    def automon_messages_labels(self):
+        labels = []
+        for message in self.automon_messages:
+            for label in message.automon_labels:
+                if label not in labels:
+                    labels.append(label)
+        return labels
+
+    @property
     def automon_message_first(self) -> Message | None:
         if self.automon_messages:
             return self.automon_messages[0]
