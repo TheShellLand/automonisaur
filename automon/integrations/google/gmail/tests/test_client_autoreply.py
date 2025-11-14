@@ -180,6 +180,7 @@ def main():
 
     _FOUND = None
     _FOLLOW_UP = None
+    FAILED = None
     while gmail.is_ready():
 
         _FOUND = None
@@ -213,7 +214,7 @@ def main():
             _latest = thread.automon_message_latest
             _latest_clean = thread.automon_clean_thread_latest
 
-            debug(f"\n{_latest.automon_date_since_now_str} :: "
+            debug(f"{_latest.automon_date_since_now_str} :: "
                   f"{thread.automon_messages_count} messages ::"
                   f"{thread.id} :: "
                   f"{_first.automon_payload.get_header('subject')} :: "
@@ -267,9 +268,6 @@ def main():
     resume_selected = resume_search.automon_messages[0]
 
     resume = resume_selected.automon_attachments_first.automon_parts[0].automon_body.automon_data_html_text()
-
-    to = email_selected.automon_message_first.automon_header_from.value
-    from_ = email_selected.automon_message_first.automon_header_to.value
 
     prompts_base = []
     prompts_resume = [f"This is your resume: <RESUME>{resume}</RESUME>\n\n", ]
@@ -367,45 +365,61 @@ def main():
                 draft_get = gmail.draft_get_automon(id=draft_error.id)
                 gmail.messages_modify(id=draft_get.id, addLabelIds=[labels.error])
 
-                raise Exception(f"{check=}")
+                FAILED = True
+
+    def create_draft():
+
+        if _FOLLOW_UP:
+            resume_attachment = []
+        else:
+            resume_attachment = resume_selected.automon_attachments[1]
+            assert resume_attachment.filename
+
+            resume_attachment = gmail.v1.EmailAttachment(
+                bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
+                filename=resume_attachment.filename,
+                mimeType=resume_attachment.mimeType)
+
+        to = email_selected.automon_message_first.automon_header_from.value
+        from_ = email_selected.automon_message_first.automon_header_to.value
+
+        # create draft
+        body = response
+        subject = "Re: " + email_selected.automon_message_first.automon_header_subject.value
+        if thread.automon_messages_count >= 3:
+            draft = gmail.draft_create(
+                threadId=email_selected.id,
+                draft_to=to,
+                draft_from=from_,
+                draft_subject=subject,
+                draft_body=body,
+            )
+        else:
+            draft = gmail.draft_create(
+                threadId=email_selected.id,
+                draft_to=to,
+                draft_from=from_,
+                draft_subject=subject,
+                draft_body=body,
+                draft_attachments=[resume_attachment]
+            )
+        draft_get = gmail.draft_get_automon(id=draft.id)
+
+        gmail.messages_modify(id=email_selected.id,
+                              addLabelIds=[labels.unread],
+                              removeLabelIds=[labels.retry])
+
+        if (labels.auto_reply_enabled in email_selected.automon_messages_labels
+                and labels.sent not in email_selected.automon_message_latest.automon_labels
+        ):
+            draft_sent = gmail.draft_send(draft=draft)
+            gmail.messages_modify(id=email_selected.automon_message_first.id,
+                                  addLabelIds=[labels.unread])
 
     gmail.config.refresh_token()
 
-    if _FOLLOW_UP:
-        resume_attachment = []
-    else:
-        resume_attachment = resume_selected.automon_attachments[1]
-        assert resume_attachment.filename
-
-        resume_attachment = gmail.v1.EmailAttachment(
-            bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
-            filename=resume_attachment.filename,
-            mimeType=resume_attachment.mimeType)
-
-    # create draft
-    body = response
-    subject = "Re: " + email_selected.automon_message_first.automon_header_subject.value
-    draft = gmail.draft_create(
-        threadId=email_selected.id,
-        draft_to=to,
-        draft_from=from_,
-        draft_subject=subject,
-        draft_body=body,
-        draft_attachments=[resume_attachment]
-    )
-    draft_get = gmail.draft_get_automon(id=draft.id)
-
-    gmail.messages_modify(id=email_selected.id,
-                          addLabelIds=[labels.unread],
-                          removeLabelIds=[labels.retry]
-                          )
-
-    if (labels.auto_reply_enabled in email_selected.automon_message_latest.automon_labels
-            and labels.sent not in email_selected.automon_message_latest.automon_labels
-    ):
-        draft_sent = gmail.draft_send(draft=draft)
-        gmail.messages_modify(id=email_selected.automon_message_first.id,
-                              addLabelIds=[labels.unread])
+    if not FAILED:
+        create_draft()
 
     # prompts = [prompts_emails[0]] + prompts_resume
     # prompts.append(
@@ -422,8 +436,6 @@ def main():
     # response, model = run_llm(prompts)
     # if gemini.true_or_false(response):
     #     gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.remote])
-
-    CHAT_ONCE = 0
 
 
 class MyTestCase(unittest.TestCase):
