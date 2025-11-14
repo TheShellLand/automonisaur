@@ -180,7 +180,6 @@ def main():
 
     _FOUND = None
     _FOLLOW_UP = None
-    FAILED = None
     while gmail.is_ready():
 
         _FOUND = None
@@ -217,8 +216,8 @@ def main():
             debug(f"{_latest.automon_date_since_now_str} :: "
                   f"{thread.automon_messages_count} messages ::"
                   f"{thread.id} :: "
-                  f"{_first.automon_payload.get_header('subject')} :: "
-                  f"{_first.automon_labels} :: ", end='', level=2)
+                  f"{_first.automon_payload.get_header('subject')} :: ",
+                  end='', level=2)
 
             # resume
             if labels.resume in thread.automon_messages_labels:
@@ -257,7 +256,6 @@ def main():
         labelIds=[labels.resume]
     )
 
-    # retry
     for _message in thread.automon_messages:
 
         # delete DRAFT
@@ -318,54 +316,57 @@ def main():
             gmail.messages_trash(id=_draft.id)
             break
 
+    FAILED = None
     while True:
 
-        if response is None:
-            prompts = prompts_resume + prompts_emails
-            prompts.append(
-                GoogleGeminiClient.prompts.agent_machine_job_applicant,
-            )
+        prompts = prompts_resume + prompts_emails
+        prompts.append(
+            GoogleGeminiClient.prompts.agent_machine_job_applicant,
+        )
 
-            if [x for x in email_selected.automon_messages if labels.retry in x.automon_labels]:
-                response, model = run_llm(prompts=prompts, chat=True)
-            else:
-                response, model = run_llm(prompts=prompts, chat=False)
+        if [x for x in email_selected.automon_messages if labels.retry in x.automon_labels]:
+            response, model = run_llm(prompts=prompts, chat=True)
+        else:
+            response, model = run_llm(prompts=prompts, chat=False)
 
-            double_check_prompts = prompts_resume + prompts_emails
+        double_check_prompts = prompts_resume + prompts_emails
+        double_check_prompts.append(
+            f"{GoogleGeminiClient.prompts.agent_machine_job_applicant}"
+        )
+        double_check_prompts.append(
+            f"RESPONSE: {response}"
+        )
+        double_check_prompts.append(
+            f"Respond True or False. Is the RESPONSE following all RULES?"
+        )
+        check, model = run_llm(double_check_prompts)
+
+        if gemini.true_or_false(check):
+            FAILED = False
+            break
+        else:
             double_check_prompts.append(
-                f"RULES: {GoogleGeminiClient.prompts.agent_machine_job_applicant}"
+                f"say which rule was violated"
             )
             double_check_prompts.append(
-                f"RESPONSE: {response}"
+                f"write a prompt to fix what was wrong"
             )
-            double_check_prompts.append(
-                f"Respond True or False. Is the RESPONSE following all RULES?"
+
+            test = run_llm(prompts=double_check_prompts, chat=True)
+
+            check, model = run_llm(prompts=double_check_prompts, chat=False)
+            prompts.append(check)
+
+            draft_error = gmail.draft_create(
+                threadId=email_selected.id,
+                draft_body=check,
             )
-            check, model = run_llm(double_check_prompts)
+            draft_get = gmail.draft_get_automon(id=draft_error.id)
+            gmail.messages_modify(id=draft_get.id, addLabelIds=[labels.error])
 
-            if gemini.true_or_false(check):
-                break
-            else:
-                double_check_prompts.append(
-                    f"say which rule was violated"
-                )
-                double_check_prompts.append(
-                    f"write a prompt to fix what was wrong"
-                )
+            prompts.append(check)
 
-                test = run_llm(prompts=double_check_prompts, chat=True)
-
-                check, model = run_llm(prompts=double_check_prompts, chat=False)
-                prompts.append(check)
-
-                draft_error = gmail.draft_create(
-                    threadId=email_selected.id,
-                    draft_body=check,
-                )
-                draft_get = gmail.draft_get_automon(id=draft_error.id)
-                gmail.messages_modify(id=draft_get.id, addLabelIds=[labels.error])
-
-                FAILED = True
+            FAILED = True
 
     def create_draft():
 
