@@ -180,16 +180,22 @@ def main():
 
     _FOUND = None
     _FOLLOW_UP = None
+    RETRY = True
     while gmail.is_ready():
 
         _FOUND = None
         _FOLLOW_UP = None
 
         # search labels.retry first
+        if RETRY:
+            labelIds = [labels.automon, labels.retry]
+        else:
+            labelIds = [labels.automon]
+
         email_search = gmail.thread_list_automon(
             maxResults=1,
             pageToken=_nextPageToken,
-            labelIds=[labels.automon, labels.retry],
+            labelIds=labelIds,
         )
 
         if not email_search:
@@ -213,7 +219,7 @@ def main():
             _latest = thread.automon_message_latest
             _latest_clean = thread.automon_clean_thread_latest
 
-            debug(f"{_latest.automon_date_since_now_str} :: "
+            debug(f"{_latest_clean.automon_date_since_now_str} :: "
                   f"{thread.automon_messages_count} messages ::"
                   f"{thread.id} :: "
                   f"{_first.automon_payload.get_header('subject')} :: ",
@@ -227,10 +233,14 @@ def main():
             if labels.error in thread.automon_messages_labels:
                 continue
 
+            # retry
+            if labels.retry in thread.automon_messages_labels:
+                pass
+
             # analyze
             if labels.analyze in thread.automon_messages_labels:
                 _FOUND = True
-                debug('analyze', end='')
+                debug('analyze')
                 break
 
             # sent
@@ -241,11 +251,12 @@ def main():
                     _FOLLOW_UP = True
                     debug('followup')
                     break
+                continue
 
             # new
             if labels.sent not in _latest_clean.automon_labels:
                 _FOUND = True
-                debug('new', end='')
+                debug('new')
                 break
 
         if _FOUND:
@@ -352,14 +363,14 @@ def main():
                 f"write a prompt to fix what was wrong"
             )
 
-            test = run_llm(prompts=double_check_prompts, chat=True)
+            # test = run_llm(prompts=double_check_prompts, chat=True)
 
             check, model = run_llm(prompts=double_check_prompts, chat=False)
             prompts.append(check)
 
             draft_error = gmail.draft_create(
                 threadId=email_selected.id,
-                draft_body=check,
+                draft_body=response + "\n\n" + check,
             )
             draft_get = gmail.draft_get_automon(id=draft_error.id)
             gmail.messages_modify(id=draft_get.id, addLabelIds=[labels.error])
