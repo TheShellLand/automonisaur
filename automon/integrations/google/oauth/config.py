@@ -30,16 +30,16 @@ class GoogleAuthConfig(object):
             GOOGLE_CREDENTIALS_FILE: str = None,
             GOOGLE_CREDENTIALS_BASE64: str = None
     ):
-        self.serviceName = serviceName
-        self.scopes = scopes
-        self.version = version
+        self.serviceName: str = serviceName
+        self.scopes: list[str] = scopes
+        self.version: str = version
 
-        self.GOOGLE_CREDENTIALS_FILE = GOOGLE_CREDENTIALS_FILE or environ('GOOGLE_CREDENTIALS_FILE')
-        self.GOOGLE_CREDENTIALS_BASE64 = GOOGLE_CREDENTIALS_BASE64 or environ('GOOGLE_CREDENTIALS_BASE64')
+        self.GOOGLE_CREDENTIALS_FILE: str = GOOGLE_CREDENTIALS_FILE or environ('GOOGLE_CREDENTIALS_FILE')
+        self.GOOGLE_CREDENTIALS_BASE64: str = GOOGLE_CREDENTIALS_BASE64 or environ('GOOGLE_CREDENTIALS_BASE64')
 
         self.credentials: google.oauth2.credentials.Credentials = None
 
-        self.user_info: dict = None
+        self.user_info: dict = {}
         self.service = None
 
         if scopes is None:
@@ -59,7 +59,7 @@ class GoogleAuthConfig(object):
         return f'{self.__dict__}'
 
     @property
-    def access_token(self):
+    def access_token(self) -> str | None:
         if self.credentials:
             return self.credentials.token
 
@@ -437,6 +437,7 @@ class GoogleAuthConfig(object):
         return user_info
 
     @property
-    def user_info_email(self):
+    def user_info_email(self) -> str:
         if self.user_info:
             return self.user_info['email']
+        return ''
