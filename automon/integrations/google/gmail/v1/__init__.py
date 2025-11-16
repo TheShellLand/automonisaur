@@ -731,7 +731,7 @@ class Message(DictUpdate):
     automon_header_from: Header
     automon_header_subject: Header
     automon_header_to: Header
-    automon_labels: list[Label] = []
+    automon_labels: list[Label]
     automon_payload: MessagePayload
     automon_raw_decoded: str
 
@@ -825,8 +825,8 @@ class Message(DictUpdate):
             self._update(message)
 
     def __repr__(self):
-        if self.snippet and self.automon_email_from:
-            return f"{self.automon_email_from} :: {self.snippet}"
+        if self.snippet and self.automon_email_from and self.automon_date_since_now_str:
+            return f"{self.automon_date_since_now_str} :: {self.automon_email_from} :: {self.snippet}"
         if self.snippet:
             return f"{self.snippet}"
         return self.id
@@ -1120,6 +1120,27 @@ class DraftList(DictUpdate):
 
 
 class Thread(DictUpdate):
+    id: str
+    historyId: str
+    messages: list[str]
+    snippet: str
+
+    addLabelIds: list[str]
+    removeLavelIds: list[str]
+
+    automon_messages: list[Message]
+    automon_message_first: Message
+    automon_message_latest: Message
+    automon_messages_count: int
+    automon_messages_label: list[Label]
+
+    automon_clean_thread: list[Message]
+    automon_clean_thread_first: Message
+    automon_clean_thread_latest: Message
+    automon_full_thread: list[Message]
+    automon_full_thread_first: Message
+    automon_full_thread_latest: Message
+
     """
     A collection of messages representing a conversation.
 
