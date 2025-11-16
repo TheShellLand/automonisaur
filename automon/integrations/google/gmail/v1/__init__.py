@@ -825,8 +825,10 @@ class Message(DictUpdate):
             self._update(message)
 
     def __repr__(self):
+        if self.snippet and self.automon_email_from:
+            return f"{self.automon_email_from} :: {self.snippet}"
         if self.snippet:
-            return self.snippet
+            return f"{self.snippet}"
         return self.id
 
     def __bool__(self):
