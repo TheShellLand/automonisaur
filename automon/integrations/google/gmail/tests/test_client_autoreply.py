@@ -178,9 +178,11 @@ def main():
     thread = None
     _nextPageToken = None
 
+    RETRY = False
+
     _FOUND = None
     _FOLLOW_UP = None
-    RETRY = True
+
     while gmail.is_ready():
 
         _FOUND = None
@@ -213,7 +215,7 @@ def main():
 
         for thread in email_search.automon_threads:
 
-            # thread = gmail.thread_get_automon('195da1cbcaa5573b')
+            # thread = gmail.thread_get_automon('199ee480f96f3307')
 
             _first = thread.automon_message_first
             _latest = thread.automon_message_latest
