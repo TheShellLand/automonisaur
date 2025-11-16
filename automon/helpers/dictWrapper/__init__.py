@@ -1,7 +1,7 @@
 import json
 
 
-class DictUpdate(dict):
+class Dict(dict):
 
     def __init__(self):
         super().__init__()

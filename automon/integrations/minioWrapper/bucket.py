@@ -6,7 +6,7 @@ from automon.helpers.jsonWrapper import *
 from automon.helpers.dictWrapper import *
 
 
-class Bucket(DictUpdate):
+class Bucket(Dict):
     name: str
     creation_date: datetime
 

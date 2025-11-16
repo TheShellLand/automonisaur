@@ -3,7 +3,7 @@ try:
 except:
     from typing_extensions import Self
 
-from automon.integrations.google.gmail.v1 import DictUpdate
+from automon.integrations.google.gmail.v1 import Dict
 
 
 class GoogleGeminiApi(object):
@@ -219,7 +219,7 @@ class GeminiModels:
         return f'gemini-embedding-exp-03-07'
 
 
-class Part(DictUpdate):
+class Part(Dict):
 
     def __init__(self, part: dict | Self = None, text: str = None):
         super().__init__()
@@ -230,7 +230,7 @@ class Part(DictUpdate):
             self.update_dict(part)
 
 
-class Content(DictUpdate):
+class Content(Dict):
     parts: list[Part]
     role: str
 
@@ -258,7 +258,7 @@ class Content(DictUpdate):
             self.parts = [Part(x) for x in self.parts]
 
 
-class Candidate(DictUpdate):
+class Candidate(Dict):
     content: Content
     avgLogprobs: float
     finishReason: str
@@ -276,7 +276,7 @@ class Candidate(DictUpdate):
             self.content = Content(self.content)
 
 
-class GeminiPrompt(DictUpdate):
+class GeminiPrompt(Dict):
     contents: list[Content]
 
     def __init__(self):
@@ -294,7 +294,7 @@ class GeminiPrompt(DictUpdate):
         return self
 
 
-class GeminiResponse(DictUpdate):
+class GeminiResponse(Dict):
     candidates: list[Candidate]
     usageMetadata: str
     modelVersion: str

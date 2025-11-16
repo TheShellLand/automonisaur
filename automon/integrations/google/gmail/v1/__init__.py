@@ -13,7 +13,7 @@ except:
     from typing_extensions import Self
 
 from automon.helpers import cryptography
-from automon.helpers.dictWrapper import DictUpdate
+from automon.helpers.dictWrapper import Dict
 from automon.helpers.loggingWrapper import LoggingClient, INFO
 
 logger = LoggingClient.logging.getLogger(__name__)
@@ -212,7 +212,7 @@ class LabelListVisibility:
     labelShowIfUnread = 'labelShowIfUnread'
 
 
-class Color(DictUpdate):
+class Color(Dict):
     backgroundColor: str
     textColor: str
 
@@ -249,7 +249,7 @@ class Color(DictUpdate):
         return False
 
 
-class EmailAttachment(DictUpdate):
+class EmailAttachment(Dict):
 
     def __init__(self,
                  bytes_: bytes,
@@ -296,7 +296,7 @@ class GmailLabels:
         self.trash = Label(name='TRASH', id='TRASH')
 
 
-class Header(DictUpdate):
+class Header(Dict):
 
     def __init__(self, header: dict | Self = None):
         super().__init__()
@@ -325,7 +325,7 @@ class Header(DictUpdate):
         return self.name < other.name
 
 
-class HistoryType(DictUpdate):
+class HistoryType(Dict):
     """
     {
       "id": string,
@@ -378,7 +378,7 @@ class Type:
     user: str = 'user'
 
 
-class Label(DictUpdate):
+class Label(Dict):
     id: str
     name: str
     messageListVisibility: MessageListVisibility
@@ -485,7 +485,7 @@ class Label(DictUpdate):
             self.color = Color()._update(self.color)
 
 
-class LabelList(DictUpdate):
+class LabelList(Dict):
     labels: list[Label]
 
     def __init__(self, labels: dict = None):
@@ -508,7 +508,7 @@ class LabelRemoved:
     pass
 
 
-class MessagePartBody(DictUpdate):
+class MessagePartBody(Dict):
     """
     {
       "attachmentId": string,
@@ -584,7 +584,7 @@ class MessagePartBody(DictUpdate):
             return self.automon_data_bs4().html.text
 
 
-class MessagePart(DictUpdate):
+class MessagePart(Dict):
     partId: str
     mimeType: str
     filename: str
@@ -643,7 +643,7 @@ class MessagePart(DictUpdate):
                 return headers
 
 
-class MessagePayload(DictUpdate):
+class MessagePayload(Dict):
     partId: str
     mimeType: str
     filename: str
@@ -711,7 +711,7 @@ class MessagePayload(DictUpdate):
                 return headers
 
 
-class Message(DictUpdate):
+class Message(Dict):
     historyId: str
     id: str
     internalDate: str
@@ -940,7 +940,7 @@ class Message(DictUpdate):
             return base64.urlsafe_b64decode(self.raw).decode()
 
 
-class MessageAttachments(DictUpdate):
+class MessageAttachments(Dict):
 
     def __init__(self, attachments: list[dict] = []):
         super().__init__()
@@ -983,7 +983,7 @@ class MessageDeleted:
     pass
 
 
-class MessageList(DictUpdate):
+class MessageList(Dict):
     """
     {
       "messages": [
@@ -1025,7 +1025,7 @@ class MessageList(DictUpdate):
         return self._automon_messages
 
 
-class Draft(DictUpdate):
+class Draft(Dict):
     """
     A draft email in the user's mailbox.
 
@@ -1074,7 +1074,7 @@ class Draft(DictUpdate):
             return f"{self.id}"
 
 
-class DraftList(DictUpdate):
+class DraftList(Dict):
     """
     If successful, the response body contains data with the following structure:
 
@@ -1119,7 +1119,7 @@ class DraftList(DictUpdate):
         return str(self)
 
 
-class Thread(DictUpdate):
+class Thread(Dict):
     id: str
     historyId: str
     messages: list[str]
@@ -1269,7 +1269,7 @@ class Thread(DictUpdate):
             return self.automon_messages[-1]
 
 
-class ThreadList(DictUpdate):
+class ThreadList(Dict):
     """
     {
       "threads": [
