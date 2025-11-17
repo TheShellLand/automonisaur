@@ -222,7 +222,7 @@ def main():
             _latest_clean = thread.automon_clean_thread_latest
 
             debug(f"{_latest_clean.automon_date_since_now_str} :: "
-                  f"{thread.automon_messages_count} messages ::"
+                  f"{thread.automon_messages_count} messages :: "
                   f"{thread.id} :: "
                   f"{_first.automon_payload.get_header('subject')} :: ",
                   end='', level=2)
@@ -269,11 +269,11 @@ def main():
         labelIds=[labels.resume]
     )
 
-    for _message in thread.automon_messages:
+    for message in thread.automon_messages:
 
         # delete DRAFT
-        if labels.draft in _message.automon_labels:
-            gmail.messages_trash(id=_message.id)
+        if labels.draft in message.automon_labels:
+            gmail.messages_trash(id=message.id)
 
     email_selected = thread
     resume_selected = resume_search.automon_messages[0]
@@ -314,8 +314,8 @@ def main():
         return
 
     response = None
-    for _message in email_selected.automon_messages:
-        if labels.analyze in _message.automon_labels:
+    for message in email_selected.automon_messages:
+        if labels.analyze in message.automon_labels:
             if labels.sent in email_selected.automon_message_latest.automon_labels:
                 break
 
