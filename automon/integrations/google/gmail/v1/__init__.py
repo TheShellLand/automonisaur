@@ -562,6 +562,7 @@ class MessagePartBody(Dict):
         if self.data:
             return self._html_text()
 
+    @property
     def automon_data_decoded(self) -> str | None:
         if self.data:
             try:
@@ -825,11 +826,32 @@ class Message(Dict):
             self._update(message)
 
     def __repr__(self):
-        if self.snippet and self.automon_email_from and self.automon_date_since_now_str:
-            return f"{self.automon_date_since_now_str} :: {self.automon_email_from} :: {self.snippet}"
+        repr = []
+
+        if self.automon_date_since_now_str:
+            repr.append(self.automon_date_since_now_str)
+
+        labels = [
+            l.name for l in self.automon_labels
+            if l.name == 'SENT'
+               or l.name == 'DRAFT'
+        ]
+
+        if labels:
+            repr.extend(labels)
+
+        if self.automon_email_from:
+            repr.append(self.automon_email_from)
+
         if self.snippet:
-            return f"{self.snippet}"
-        return self.id
+            repr.append(self.snippet)
+
+        if self.id:
+            repr.append(self.id)
+
+        repr = ' :: '.join(repr)
+
+        return repr
 
     def __bool__(self):
         if self.id:
@@ -1289,7 +1311,7 @@ class ThreadList(Dict):
         self.nextPageToken: str = None
         self.resultSizeEstimate: int = None
 
-        self._automon_threads = []
+        self._automon_threads: list[Thread] = []
 
         if threads:
             self._update(threads)
