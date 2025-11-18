@@ -35,10 +35,17 @@ class AutomonLabels:
         self._reset_labels = False
 
         self._color_default = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
-        self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
+        self._color_debug = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
         self._color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
         self._color_enabled = Color(backgroundColor='#076239', textColor='#b9e4d0')
+        self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
         self._color_welcome = Color(backgroundColor='#8e63ce', textColor='#ffffff')
+
+        # general
+        self.draft = Label(name='DRAFT', id='DRAFT')
+        self.sent = Label(name='SENT', id='SENT')
+        self.unread = Label(name='UNREAD', id='UNREAD')
+        self.trash = Label(name='TRASH', id='TRASH')
 
         # required
         self.automon = Label(name='automon', color=self._color_default)
@@ -53,16 +60,13 @@ class AutomonLabels:
         # analyze
         self.analyze = Label(name='automon/analyze', color=self._color_default)
 
-        # general
-        self.draft = Label(name='DRAFT', id='DRAFT')
-        self.sent = Label(name='SENT', id='SENT')
-        self.unread = Label(name='UNREAD', id='UNREAD')
-        self.trash = Label(name='TRASH', id='TRASH')
+        # chat
+        self.chat = Label(name='automon/chat', color=self._color_debug)
 
-        # allow auto reply
+        # enable auto reply
         self.auto_reply_enabled = Label(name='automon/auto reply enabled', color=self._color_enabled)
 
-        # retry draft
+        # retry
         self.retry = Label(name='automon/retry', color=self._color_error)
 
         # relevance
@@ -76,6 +80,9 @@ class AutomonLabels:
 
         # error
         self.error = Label(name='automon/error', color=self._color_error)
+
+        # scheduled
+        self.scheduled = Label(name='automon/scheduled', color=self._color_default)
 
     @property
     def all_labels(self):
