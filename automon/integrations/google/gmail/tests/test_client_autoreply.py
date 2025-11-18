@@ -1,7 +1,6 @@
 import unittest
 
-import datetime
-import dateutil.parser
+import threading
 
 from automon.integrations.google.gmail import GoogleGmailClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
@@ -55,46 +54,45 @@ gmail.config.add_scopes([
     "https://www.googleapis.com/auth/gmail.modify",
 ])
 
-import threading
-
-if gmail.is_ready():
-
-    labels = gmail._automon_labels
-    labels._reset_labels = True
+labels = gmail._automon_labels
 
 
-    def init_automon_labels(label, reset_labels):
+def gmail_labels(gmail: GoogleGmailClient):
+    if gmail.is_ready():
 
-        id = label.id
-        name = label.name
-        color = label.color
+        labels._reset_labels = True
 
-        if label.id is None:
-            labels_get_by_name = gmail.labels_get_by_name(name)
+        def init_automon_labels(label, reset_labels):
 
-            if labels_get_by_name is None:
-                label._update(
-                    gmail.labels_create(
-                        name=name,
-                        color=color,
+            id = label.id
+            name = label.name
+            color = label.color
+
+            if label.id is None:
+                labels_get_by_name = gmail.labels_get_by_name(name)
+
+                if labels_get_by_name is None:
+                    label._update(
+                        gmail.labels_create(
+                            name=name,
+                            color=color,
+                        )
                     )
-                )
-            else:
-                if reset_labels:
-                    gmail.labels_update(id=labels_get_by_name.id, color=color)
+                else:
+                    if reset_labels:
+                        gmail.labels_update(id=labels_get_by_name.id, color=color)
 
-                label._update(
-                    labels_get_by_name
-                )
+                    label._update(
+                        labels_get_by_name
+                    )
 
+        _threads = []
+        for label in labels.all_labels:
+            t = threading.Thread(target=init_automon_labels, args=(label, labels._reset_labels))
+            _threads.append(t)
+            t.start()
 
-    _threads = []
-    for label in labels.all_labels:
-        t = threading.Thread(target=init_automon_labels, args=(label, labels._reset_labels))
-        _threads.append(t)
-        t.start()
-
-    for t in _threads: t.join()
+        for t in _threads: t.join()
 
 
 def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClient]:
@@ -175,10 +173,10 @@ def main():
     # if _welcome_email.automon_messages:
     #     gmail.messages_trash(id=_welcome_email.automon_messages[0].id)
 
+    gmail_labels(gmail)
+
     thread = None
     _nextPageToken = None
-
-    RETRY = False
 
     _FOUND = None
     _FOLLOW_UP = None
@@ -189,23 +187,29 @@ def main():
         _FOLLOW_UP = None
 
         # search labels.retry first
-        if RETRY:
-            labelIds = [labels.automon, labels.retry]
-        else:
-            labelIds = [labels.automon]
+        search_sequence = [
+            [labels.automon, labels.chat],
+            [labels.automon, labels.retry],
+            [labels.automon]
+        ]
 
-        email_search = gmail.thread_list_automon(
-            maxResults=1,
-            pageToken=_nextPageToken,
-            labelIds=labelIds,
-        )
+        email_search = None
+        while True:
+            email_search = None
 
-        if not email_search:
-            email_search = gmail.thread_list_automon(
-                maxResults=1,
-                pageToken=_nextPageToken,
-                labelIds=[labels.automon],
-            )
+            for _sequence in search_sequence:
+
+                email_search = gmail.thread_list_automon(
+                    maxResults=1,
+                    pageToken=_nextPageToken,
+                    labelIds=_sequence,
+                )
+
+                if email_search:
+                    break
+
+            if email_search:
+                break
 
         _nextPageToken = email_search.nextPageToken
 
@@ -238,6 +242,12 @@ def main():
             # retry
             if labels.retry in thread.automon_messages_labels:
                 pass
+
+            # chat
+            if labels.chat in thread.automon_messages_labels:
+                _FOUND = True
+                CHAT = True
+                break
 
             # analyze
             if labels.analyze in thread.automon_messages_labels:
