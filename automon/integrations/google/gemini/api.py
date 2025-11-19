@@ -52,6 +52,12 @@ class Part(Dict):
             self.automon_update(part)
             logger.debug(f"[Part] :: {Tokens(self.text).count_pretty} tokens")
 
+    def __repr__(self):
+        return f"{len(self)} tokens"
+
+    def __len__(self) -> int:
+        return Tokens(self.text).count
+
 
 class Content(Dict):
     parts: list[dict]
@@ -67,6 +73,12 @@ class Content(Dict):
 
         if content:
             self.automon_update(content)
+
+    def __repr__(self):
+        return f"{len(self)} tokens"
+
+    def __len__(self):
+        return sum(self.automon_parts)
 
     def __bool__(self):
         if self.role and self.parts:

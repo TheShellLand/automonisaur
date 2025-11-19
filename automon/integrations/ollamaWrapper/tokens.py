@@ -12,6 +12,9 @@ class Tokens(Dict):
     def __init__(self, string: str = '', ratio: int = 4):
         super().__init__()
 
+        if not string:
+            string = ''
+
         self.string: str = string
         self._ratio: int = ratio
 

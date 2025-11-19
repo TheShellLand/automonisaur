@@ -66,7 +66,6 @@ class GoogleGeminiClient(object):
         self._prompt.add_content(content=content)
 
         content_len = Tokens(string=prompt).count
-
         logger.debug(f"[GoogleGeminiClient] :: add_content :: {content_len:,} tokens")
         return self
 
