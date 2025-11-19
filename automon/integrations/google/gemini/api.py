@@ -76,7 +76,7 @@ class GeminiModels:
         Audio, images, videos, and text
         Text	Adaptive thinking, cost efficiency
         """
-        return f'gemini-2.5-flash-preview-05-20'
+        raise Exception(f"model gemini-2.5-flash-preview-05-20 depreciated")
 
     @property
     def gemini_2_5_flash_preview_native_audio_dialog(self):
