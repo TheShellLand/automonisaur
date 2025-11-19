@@ -9,6 +9,7 @@ from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
 
 from .api import *
+from .models import *
 from .config import GoogleGeminiConfig
 
 logger = LoggingClient.logging.getLogger(__name__)
@@ -16,10 +17,10 @@ logger.setLevel(DEBUG)
 
 
 class GoogleGeminiClient(object):
-    models = GeminiModels()
+    models = GoogleGeminiModels()
     prompts = automon.integrations.ollamaWrapper.prompt_templates.AgentTemplates()
 
-    def __init__(self, config: GoogleGeminiConfig = None, model: GeminiModels = None):
+    def __init__(self, config: GoogleGeminiConfig = None, model: GoogleGeminiModels = None):
         self.config = config or GoogleGeminiConfig()
         self.model = model or self.models.gemini_2_0_flash
 
@@ -28,20 +29,7 @@ class GoogleGeminiClient(object):
         self._prompt = GeminiPrompt()
         self._chat: GeminiResponse = None
 
-        self.free_models = [
-            self.models.gemini_2_5_flash_preview_05_20,
-            # self.models.gemini_2_5_flash_preview_tts,
-            # self.models.gemini_2_5_flash_exp_native_audio_thinking_dialog,
-            # self.models.gemini_2_5_pro_preview_05_06,
-            # self.models.gemini_2_5_pro_preview_tts,
-            # self.models.gemini_2_5_pro_exp_03_25,
-            self.models.gemini_2_0_flash,
-            # self.models.gemini_2_0_flash_lite,
-            # self.models.gemini_2_0_flash_thinking_exp_01_21,
-            # self.models.gemini_2_0_pro_exp_02_05,
-            # self.models.gemini_1_5_flash,
-            # self.models.gemini_1_5_pro,
-        ]
+        self.models_in_use = self.models.FREE_TIER
 
     def __repr__(self):
         return f"[GoogleGeminiClient] :: {self.config=}"
@@ -104,7 +92,7 @@ class GoogleGeminiClient(object):
         chat = self._requests.post(url=url, json=json, headers=self.config.headers())
 
         if not chat:
-            raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self._requests.content}')
+            raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.content}')
 
         self._chat = GeminiResponse(self._requests.content)
 
@@ -154,15 +142,15 @@ class GoogleGeminiClient(object):
         logger.error(f'[GoogleGeminiClient] :: is_ready :: ERROR')
         return False
 
-    def set_model(self, model: GeminiModels):
+    def set_model(self, model: GoogleGeminiModels):
         self.model = model
         logger.debug(f"[GoogleGeminiClient] :: set_model :: {model=}")
         return self
 
     def set_random_model(self):
-        return self.set_model(random.choice(self.free_models))
+        return self.set_model(random.choice(self.models_in_use))
 
-    def true_or_false(self, response: str) -> bool:
+    def true_or_false(self, response: str) -> bool | None:
         if 'true' in response.lower():
             return True
         if 'false' in response.lower():
