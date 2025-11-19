@@ -20,23 +20,23 @@ class Dict(dict):
     def __repr__(self):
         return f"{self.to_dict()}"
 
-    def _update(self, update: dict | str | object | None):
+    def automon_update(self, update: dict | str | object | None):
 
         if update is None:
             return self
 
         if isinstance(update, str):
-            return self.update_json(update)
+            return self._update_json(update)
 
         if hasattr(update, '__dict__'):
             update = update.__dict__
 
         if isinstance(update, dict):
-            return self.update_dict(update)
+            return self._update_dict(update)
 
         raise Exception(f"[DictUpdate] :: _update :: ERROR :: {update=}")
 
-    def update_dict(self, update: dict):
+    def _update_dict(self, update: dict):
 
         for key, value in update.items():
             setattr(self, key, value)
@@ -45,8 +45,8 @@ class Dict(dict):
         self._enhance()
         return self
 
-    def update_json(self, update: str):
-        return self.update_dict(json.loads(update))
+    def _update_json(self, update: str):
+        return self._update_dict(json.loads(update))
 
     def _to_dict(self, obj):
 

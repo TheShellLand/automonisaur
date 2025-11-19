@@ -305,7 +305,7 @@ class Header(Dict):
         self.value: str = ''
 
         if header:
-            self._update(header)
+            self.automon_update(header)
 
     def __repr__(self):
         if self.name:
@@ -482,7 +482,7 @@ class Label(Dict):
 
     def _enhance(self):
         if hasattr(self, 'color'):
-            self.color = Color()._update(self.color)
+            self.color = Color().automon_update(self.color)
 
 
 class LabelList(Dict):
@@ -493,11 +493,11 @@ class LabelList(Dict):
         self.labels: list[Label] = []
 
         if labels:
-            self._update(labels)
+            self.automon_update(labels)
 
     def _enhance(self):
         if self.labels:
-            self.labels = [Label()._update(x) for x in self.labels]
+            self.labels = [Label().automon_update(x) for x in self.labels]
 
 
 class LabelAdded:
@@ -525,7 +525,7 @@ class MessagePartBody(Dict):
         self.data: str = None
 
         if message:
-            self._update(message)
+            self.automon_update(message)
 
     def __repr__(self):
         repr = []
@@ -610,7 +610,7 @@ class MessagePart(Dict):
         self.parts: list[dict] = []
 
         if part:
-            self._update(part)
+            self.automon_update(part)
 
     def __repr__(self):
         repr = []
@@ -665,7 +665,7 @@ class MessagePayload(Dict):
         self.size: int = None
 
         if message:
-            self._update(message)
+            self.automon_update(message)
 
     def __repr__(self):
         repr = []
@@ -823,7 +823,7 @@ class Message(Dict):
         self.automon_labels: list[Label] = []
 
         if message:
-            self._update(message)
+            self.automon_update(message)
 
     def __repr__(self):
         repr = []
@@ -1028,7 +1028,7 @@ class MessageList(Dict):
         self._automon_messages = []
 
         if messages:
-            self._update(messages)
+            self.automon_update(messages)
 
     def __repr__(self):
         if self.messages:
@@ -1191,7 +1191,7 @@ class Thread(Dict):
         self._automon_messages: list[Message] = []
 
         if thread:
-            self._update(thread)
+            self.automon_update(thread)
 
     def __repr__(self):
         if self.snippet:
@@ -1314,7 +1314,7 @@ class ThreadList(Dict):
         self._automon_threads: list[Thread] = []
 
         if threads:
-            self._update(threads)
+            self.automon_update(threads)
 
     def __repr__(self):
         return f"{len(self.threads)} threads"

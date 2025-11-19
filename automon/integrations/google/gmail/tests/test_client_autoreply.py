@@ -72,7 +72,7 @@ def gmail_labels(gmail: GoogleGmailClient):
                 labels_get_by_name = gmail.labels_get_by_name(name)
 
                 if labels_get_by_name is None:
-                    label._update(
+                    label.automon_update(
                         gmail.labels_create(
                             name=name,
                             color=color,
@@ -82,7 +82,7 @@ def gmail_labels(gmail: GoogleGmailClient):
                     if reset_labels:
                         gmail.labels_update(id=labels_get_by_name.id, color=color)
 
-                    label._update(
+                    label.automon_update(
                         labels_get_by_name
                     )
 

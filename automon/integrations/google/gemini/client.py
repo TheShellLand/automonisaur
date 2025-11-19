@@ -106,7 +106,7 @@ class GoogleGeminiClient(object):
         if not chat:
             raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self._requests.content}')
 
-        self._chat = GeminiResponse().update_json(self._requests.content)
+        self._chat = GeminiResponse(self._requests.content)
 
         if print_stream:
             self._chat.print_stream()

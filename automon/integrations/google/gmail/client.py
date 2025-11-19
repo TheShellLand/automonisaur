@@ -210,7 +210,7 @@ class GoogleGmailClient:
         message = Message({'raw': raw, 'threadId': threadId})
         data = Draft(message=message).to_dict()
         self.requests.post(api, headers=self.config.headers, json=data)
-        return Draft()._update(self.requests.to_dict())
+        return Draft().automon_update(self.requests.to_dict())
 
     def draft_delete(self, id: str):
         """Immediately and permanently deletes the specified draft."""
@@ -230,13 +230,13 @@ class GoogleGmailClient:
             format=format,
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        return Draft()._update(self.requests.to_dict())
+        return Draft().automon_update(self.requests.to_dict())
 
     def draft_get_automon(self, *args, **kwargs) -> Draft:
         draft = self.draft_get(*args, **kwargs)
 
         if draft.automon_message:
-            draft._update(self.messages_get_automon(draft.automon_message.id))
+            draft.automon_update(self.messages_get_automon(draft.automon_message.id))
 
         return draft
 
@@ -280,7 +280,7 @@ class GoogleGmailClient:
         )
         self.requests.get(api, headers=self.config.headers, params=params)
         logger.info(f"[GoogleGmailClient] :: draft_list :: done")
-        return DraftList()._update(self.requests.to_dict())
+        return DraftList().automon_update(self.requests.to_dict())
 
     def draft_list_automon(self, *args, **kwargs):
         """Enhanced `message_get`"""
@@ -301,7 +301,7 @@ class GoogleGmailClient:
         api = UsersDrafts(self._userId).update(id)
         data = Draft().to_dict()
         self.requests.put(api, headers=self.config.headers, json=data)
-        return Draft()._update(self.requests.to_dict())
+        return Draft().automon_update(self.requests.to_dict())
 
     def history_list(self,
                      startHistoryId: str,
@@ -347,7 +347,7 @@ class GoogleGmailClient:
         json = Label(name=name, color=color).to_dict()
         self.requests.post(api, headers=self.config.headers, json=json)
         logger.info(f"[GoogleGmailClient] :: labels_create :: done")
-        return Label()._update(self.requests.to_dict())
+        return Label().automon_update(self.requests.to_dict())
 
     def labels_delete(self, id: str) -> bool:
         """Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to."""
@@ -372,7 +372,7 @@ class GoogleGmailClient:
         logger.debug(f"[GoogleGmailClient] :: labels_get :: {id=}")
         api = UsersLabels(self._userId).get(id)
         self.requests.get(api, headers=self.config.headers)
-        label = Label()._update(self.requests.to_dict())
+        label = Label().automon_update(self.requests.to_dict())
         self._cache_labels.append(label)
 
         logger.debug(f"[GoogleGmailClient] :: labels_get :: {label.name}")
@@ -385,7 +385,7 @@ class GoogleGmailClient:
         for label in labels.labels:
             if label.name == name:
                 logger.info(f"[GoogleGmailClient] :: labels_get_by_name :: done")
-                return Label()._update(label)
+                return Label().automon_update(label)
 
     def labels_list(self):
         """Lists all labels in the user's mailbox."""
@@ -417,7 +417,7 @@ class GoogleGmailClient:
         data = Label(id=id, color=color).to_dict()
         self.requests.put(api, headers=self.config.headers, json=data)
         logger.info(f"[GoogleGmailClient] :: labels_update :: done")
-        return Label()._update(self.requests.to_dict())
+        return Label().automon_update(self.requests.to_dict())
 
     def _improved_draft_list(self, drafts: DraftList) -> DraftList:
         """Better drafts."""
@@ -428,7 +428,7 @@ class GoogleGmailClient:
 
             _drafts = drafts.drafts
             for _draft in _drafts:
-                _draft = Draft()._update(_draft)
+                _draft = Draft().automon_update(_draft)
                 _draft.message = Message(_draft.message)
                 _draft.message = self.messages_get_automon(_draft.message.id)
 
@@ -442,7 +442,7 @@ class GoogleGmailClient:
         """Better draft."""
 
         if draft.automon_message:
-            draft._update(self.messages_get_automon(draft.automon_message.id))
+            draft.automon_update(self.messages_get_automon(draft.automon_message.id))
 
         return draft
 
@@ -464,7 +464,7 @@ class GoogleGmailClient:
                         if attachmentId:
                             messages_attachments_get = self.messages_attachments_get(messageId=message.id,
                                                                                      attachmentId=attachmentId)
-                            part.automon_body._update(messages_attachments_get)
+                            part.automon_body.automon_update(messages_attachments_get)
 
                         if part.automon_body.automon_attachments:
                             setattr(part, 'automon_attachment', part.body.automon_attachment)
@@ -477,7 +477,7 @@ class GoogleGmailClient:
         for _message in messages.automon_messages:
             # update messages
             _get = self.messages_get_automon(id=_message.id)
-            _message._update(_get)
+            _message.automon_update(_get)
 
         return messages
 
@@ -660,7 +660,7 @@ class GoogleGmailClient:
         messages = self.messages_list(*args, **kwargs)
 
         def update_message(message):
-            message._update(self.messages_get_automon(id=message.id))
+            message.automon_update(self.messages_get_automon(id=message.id))
             return message
 
         threads = automon.helpers.threadingWrapper.ThreadingClient()
@@ -756,7 +756,7 @@ class GoogleGmailClient:
 
         def update_message(message):
             get_message = self.messages_get_automon(message.id)
-            message._update(get_message)
+            message.automon_update(get_message)
 
         threads = automon.helpers.threadingWrapper.ThreadingClient()
 
@@ -823,11 +823,11 @@ class GoogleGmailClient:
         if threads:
 
             for thread in threads.automon_threads:
-                thread._update(self.thread_get_automon(id=thread.id))
+                thread.automon_update(self.thread_get_automon(id=thread.id))
 
                 for message in thread.automon_messages:
                     get_message = self.messages_get_automon(message.id)
-                    message._update(get_message)
+                    message.automon_update(get_message)
 
         logger.info(f"[GoogleGmailClient] :: thread_list_automon :: done")
         return threads

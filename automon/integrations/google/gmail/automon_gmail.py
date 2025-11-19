@@ -115,7 +115,7 @@ class AutomonGmailClient(GoogleGmailClient):
                 _labels_get_by_name = self.labels_get_by_name(_name)
 
                 if _labels_get_by_name.id is None:
-                    _get_label.update_dict(
+                    _get_label._update_dict(
                         self.labels_create(
                             name=_name,
                             color=_color,
@@ -125,7 +125,7 @@ class AutomonGmailClient(GoogleGmailClient):
                     if labels.reset_labels:
                         self.labels_update(id=_labels_get_by_name.id, color=_color)
 
-                    _get_label.update_dict(
+                    _get_label._update_dict(
                         _labels_get_by_name
                     )
 

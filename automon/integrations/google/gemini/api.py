@@ -227,7 +227,7 @@ class Part(Dict):
         self.text: str = text
 
         if part:
-            self.update_dict(part)
+            self.automon_update(part)
 
 
 class Content(Dict):
@@ -241,7 +241,7 @@ class Content(Dict):
         self.parts: list[Part] = []
 
         if content:
-            self.update_dict(content)
+            self.automon_update(content)
 
     def __bool__(self):
         if self.role and self.parts:
@@ -269,7 +269,7 @@ class Candidate(Dict):
         self.content: Content = Content()
 
         if candidate:
-            self.update_dict(candidate)
+            self.automon_update(candidate)
 
     def _enhance(self):
         if self.content:
@@ -300,10 +300,13 @@ class GeminiResponse(Dict):
     modelVersion: str
     modelVersion: str
 
-    def __init__(self):
+    def __init__(self, response: dict = None):
         super().__init__()
 
         self.candidates: list[Candidate] = []
+
+        if response:
+            self.automon_update(response)
 
     def _enhance(self):
 
