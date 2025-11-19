@@ -279,7 +279,6 @@ class GoogleGmailClient:
             includeSpamTrash=includeSpamTrash,
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        logger.info(f"[GoogleGmailClient] :: draft_list :: done")
         return DraftList().automon_update(self.requests.to_dict())
 
     def draft_list_automon(self, *args, **kwargs):
@@ -376,7 +375,6 @@ class GoogleGmailClient:
         self._cache_labels.append(label)
 
         logger.debug(f"[GoogleGmailClient] :: labels_get :: {label.name}")
-        logger.info(f"[GoogleGmailClient] :: labels_get :: done")
         return label
 
     def labels_get_by_name(self, name: str) -> Label | None:
@@ -384,7 +382,6 @@ class GoogleGmailClient:
         labels = self.labels_list()
         for label in labels.labels:
             if label.name == name:
-                logger.info(f"[GoogleGmailClient] :: labels_get_by_name :: done")
                 return Label().automon_update(label)
 
     def labels_list(self):
@@ -517,7 +514,6 @@ class GoogleGmailClient:
         else:
             raise Exception(f"[GoogleGmailClient] :: messages_attachments_get :: error :: {self.requests}")
 
-        logger.info(f"[GoogleGmailClient] :: messages_attachments_get :: done")
         return attachments
 
     def messages_batchDelete(self, ids: list):
@@ -567,7 +563,6 @@ class GoogleGmailClient:
             metadataHeaders=metadataHeaders
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        logger.info(f"[GoogleGmailClient] :: messages_get :: done")
         return self.requests.to_dict()
 
     def messages_get_automon(self, *args, **kwargs) -> Message:
@@ -652,7 +647,6 @@ class GoogleGmailClient:
         )
         self.requests.get(api, headers=self.config.headers, params=params)
 
-        logger.info(f"[GoogleGmailClient] :: message_list :: done")
         return MessageList(self.requests.to_dict())
 
     def messages_list_automon(self, *args, **kwargs) -> MessageList:
@@ -747,7 +741,6 @@ class GoogleGmailClient:
             metadataHeaders=metadataHeaders
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        logger.info(f"[GoogleGmailClient] :: thread_get :: done")
         return self.requests.to_dict()
 
     def thread_get_automon(self, id: str = None) -> Thread:
@@ -765,7 +758,6 @@ class GoogleGmailClient:
 
         threads.start()
 
-        logger.info(f"[GoogleGmailClient] :: thread_get :: done")
         return thread
 
     def thread_list(self,
@@ -811,7 +803,6 @@ class GoogleGmailClient:
             includeSpamTrash=includeSpamTrash
         )
         self.requests.get(api, headers=self.config.headers, params=params)
-        logger.info(f"[GoogleGmailClient] :: thread_list :: done")
         return self.requests.to_dict()
 
     def thread_list_automon(self, *args, **kwargs) -> ThreadList:
@@ -829,7 +820,6 @@ class GoogleGmailClient:
                     get_message = self.messages_get_automon(message.id)
                     message.automon_update(get_message)
 
-        logger.info(f"[GoogleGmailClient] :: thread_list_automon :: done")
         return threads
 
     def thread_modify(self, id: str) -> Thread:
