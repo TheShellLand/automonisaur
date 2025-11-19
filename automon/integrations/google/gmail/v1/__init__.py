@@ -854,6 +854,11 @@ class Message(Dict):
 
         return repr
 
+    def __lt__(self, other):
+        if self.automon_date_since_now < other.automon_date_since_now:
+            return True
+        return False
+
     def __bool__(self):
         if self.id:
             return True
@@ -1211,7 +1216,7 @@ class Thread(Dict):
     @property
     def automon_messages(self) -> list[Message] | None:
         if self.messages and not self._automon_messages:
-            self._automon_messages = [Message(x) for x in self.messages]
+            self._automon_messages = sorted([Message(x) for x in self.messages], reverse=True)
         return self._automon_messages
 
     @property
