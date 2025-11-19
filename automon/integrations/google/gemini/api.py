@@ -50,7 +50,7 @@ class Part(Dict):
 
         if part:
             self.automon_update(part)
-            logger.debug(f"[Part] :: {Tokens().count(self.text)} tokens")
+            logger.debug(f"[Part] :: {Tokens(self.text).count_pretty} tokens")
 
 
 class Content(Dict):
