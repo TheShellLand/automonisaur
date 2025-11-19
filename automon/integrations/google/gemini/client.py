@@ -92,9 +92,9 @@ class GoogleGeminiClient(object):
         chat = self._requests.post(url=url, json=json, headers=self.config.headers())
 
         if not chat:
-            raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.content}')
+            raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.to_dict()}')
 
-        self._chat = GeminiResponse(self._requests.content)
+        self._chat = GeminiResponse(self._requests.to_dict())
 
         if print_stream:
             self._chat.print_stream()
