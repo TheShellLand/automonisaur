@@ -144,8 +144,6 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
 
 
 def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
-    debug([f"{len(x.split(' ')):,}" for x in prompts])
-
     response = None
     while True:
         try:
@@ -247,6 +245,7 @@ def main():
             if labels.chat in thread.automon_messages_labels:
                 _FOUND = True
                 CHAT = True
+                debug('chat')
                 break
 
             # analyze
@@ -347,7 +346,8 @@ def main():
             GoogleGeminiClient.prompts.agent_machine_job_applicant,
         )
 
-        if labels.retry in email_selected.automon_messages_labels:
+        if (labels.retry in email_selected.automon_messages_labels
+                or labels.chat in email_selected.automon_messages_labels):
             response, model = run_llm(prompts=prompts, chat=True)
         else:
             response, model = run_llm(prompts=prompts, chat=False)
