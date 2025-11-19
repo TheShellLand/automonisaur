@@ -104,14 +104,25 @@ class GoogleGeminiClient(object):
     def chat_forever(self):
 
         while True:
-
             prompt = ''
-            try:
-                prompt += input(f"\n$> ")
+            lines = []
+
+            while True:
+
+                try:
+                    line = input(f"INPUT (send empty line to end input): ")
+                    if not line:
+                        break
+
+                    lines.append(line)
+
+                except KeyboardInterrupt:
+                    logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
+                    return self
+
+            if lines:
+                prompt = prompt.join(lines)
                 prompt = prompt.strip()
-            except KeyboardInterrupt:
-                logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
-                return self
 
             if not prompt:
                 continue

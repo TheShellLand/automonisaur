@@ -347,7 +347,7 @@ def main():
             GoogleGeminiClient.prompts.agent_machine_job_applicant,
         )
 
-        if [x for x in email_selected.automon_messages if labels.retry in x.automon_labels]:
+        if labels.retry in email_selected.automon_messages_labels:
             response, model = run_llm(prompts=prompts, chat=True)
         else:
             response, model = run_llm(prompts=prompts, chat=False)
