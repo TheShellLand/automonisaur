@@ -54,14 +54,16 @@ class Part(Dict):
 
 
 class Content(Dict):
-    parts: list[Part]
+    parts: list[dict]
     role: str
+
+    automon_parts: list[Part]
 
     def __init__(self, content: dict = None, role: str = 'user'):
         super().__init__()
 
         self.role: str = role
-        self.parts: list[Part] = []
+        self.parts: list[dict] = []
 
         if content:
             self.automon_update(content)
@@ -71,32 +73,34 @@ class Content(Dict):
             return True
         return False
 
+    @property
+    def automon_parts(self):
+        return [Part(x) for x in self.parts]
+
     def add_part(self, part: Part):
         assert isinstance(part, Part)
-        self.parts.append(part)
+        self.parts.append(part.to_dict())
         return self
-
-    def _enhance(self):
-        if self.parts:
-            self.parts = [Part(x) for x in self.parts]
 
 
 class Candidate(Dict):
-    content: Content
+    content: dict
     avgLogprobs: float
     finishReason: str
+
+    automon_content: Content
 
     def __init__(self, candidate: dict = None):
         super().__init__()
 
-        self.content: Content = Content()
+        self.content: dict = {}
 
         if candidate:
             self.automon_update(candidate)
 
-    def _enhance(self):
-        if self.content:
-            self.content = Content(self.content)
+    @property
+    def automon_content(self) -> Content:
+        return Content(self.content)
 
 
 class GeminiPrompt(Dict):
@@ -118,38 +122,39 @@ class GeminiPrompt(Dict):
 
 
 class GeminiResponse(Dict):
-    candidates: list[Candidate]
+    candidates: list[dict]
     usageMetadata: str
     modelVersion: str
     modelVersion: str
 
+    automon_candidate: list[Candidate]
+
     def __init__(self, response: dict = None):
         super().__init__()
 
-        self.candidates: list[Candidate] = []
+        self.candidates: list[dict] = []
 
         if response:
             self.automon_update(response)
 
-    def _enhance(self):
-
-        if self.candidates:
-            self.candidates = [Candidate(x) for x in self.candidates]
+    @property
+    def automon_candidate(self) -> list[Candidate]:
+        return [Candidate(x) for x in self.candidates]
 
     @property
     def response(self) -> Candidate | None:
-        if self.candidates:
-            return self.candidates[0]
+        if self.automon_candidate:
+            return self.automon_candidate[0]
 
     def _chunks(self):
-        for chunk in self.candidates:
-            for part in chunk.content.parts:
+        for chunk in self.automon_candidate:
+            for part in chunk.automon_content.automon_parts:
                 yield part.text
 
     def _chunks_list(self):
         chunks = []
-        for chunk in self.candidates:
-            for part in chunk.content.parts:
+        for chunk in self.automon_candidate:
+            for part in chunk.automon_content.automon_parts:
                 chunks.append(part.text)
         return chunks
 
