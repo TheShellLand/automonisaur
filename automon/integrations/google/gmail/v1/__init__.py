@@ -835,6 +835,7 @@ class Message(Dict):
             l.name for l in self.automon_labels
             if l.name == 'SENT'
                or l.name == 'DRAFT'
+               or l.name == 'TRASH'
         ]
 
         if labels:
