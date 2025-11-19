@@ -831,6 +831,9 @@ class Message(Dict):
         if self.automon_date_since_now_str:
             repr.append(self.automon_date_since_now_str)
 
+        if self.automon_date_since_now:
+            repr.append(f"{self.automon_date_since_now}")
+
         labels = [
             l.name for l in self.automon_labels
             if l.name == 'SENT'
@@ -1298,6 +1301,12 @@ class Thread(Dict):
 
 
 class ThreadList(Dict):
+    threads: list
+    nextPageToken: str
+    resultSizeEstimate: int
+
+    _automon_threads: list[Thread]
+
     """
     {
       "threads": [
