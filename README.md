@@ -51,6 +51,7 @@ Github issues and feature requests welcomed.
 | LLMs            | ollama<br/>deepseek<br/>gemini                                               |
 | Logging         | sentryio<br/>opentelemetry                                                   |
 | MacOS           | airport<br/>macchanger<br/>wdutil                                            |
+| MCP             | anthropic                                                                    |
 | Python          | logging<br/>requests                                                         |
 | SOAR            | swimlane<br/>splunk soar<br/>xsoar                                           |
 | Recon           | nmap                                                                         |

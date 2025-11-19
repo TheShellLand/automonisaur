@@ -43,6 +43,10 @@ requests
 # minio
 minio>=7.1.0
 
+# mcp
+mcp
+#mcp[cli]
+
 # neo4j
 neo4j>=4.4.9
 
