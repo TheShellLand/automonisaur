@@ -1,9 +1,8 @@
 import ollama
 
 from automon.helpers.loggingWrapper import LoggingClient
-from automon.integrations.ollamaWrapper import Tokens
 
-from .utils import chr_to_tokens
+from .tokens import Tokens
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(LoggingClient.ERROR)
