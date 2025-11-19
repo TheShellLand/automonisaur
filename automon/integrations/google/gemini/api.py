@@ -5,6 +5,7 @@ except:
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.google.gmail.v1 import Dict
+from automon.integrations.ollamaWrapper import Tokens
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
@@ -49,6 +50,7 @@ class Part(Dict):
 
         if part:
             self.automon_update(part)
+            logger.debug(f"[Part] :: {Tokens().count(self.text)} tokens")
 
 
 class Content(Dict):

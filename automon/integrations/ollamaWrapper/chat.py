@@ -1,6 +1,7 @@
 import ollama
 
 from automon.helpers.loggingWrapper import LoggingClient
+from automon.integrations.ollamaWrapper import Tokens
 
 from .utils import chr_to_tokens
 
@@ -23,7 +24,7 @@ class OllamaChat(object):
 
     def _chunk_content(self, chunk):
         content = self._chunk_message(chunk=chunk)['content']
-        logger.debug(f'[OllamaChat] :: _chunk_content :: {chr_to_tokens(content)} tokens')
+        logger.debug(f'[OllamaChat] :: _chunk_content :: {Tokens(content).count} tokens')
         return content
 
     def _chunk_message(self, chunk):
@@ -58,5 +59,5 @@ class OllamaChat(object):
             self._get_chunks()
 
         string = ''.join(self.content())
-        logger.debug(f'[OllamaChat] :: to_string :: {chr_to_tokens(string)} tokens')
+        logger.debug(f'[OllamaChat] :: to_string :: {Tokens(string).count_pretty} tokens')
         return string

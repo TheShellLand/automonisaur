@@ -7,6 +7,7 @@ import automon.integrations.ollamaWrapper.prompt_templates
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
+from automon.integrations.ollamaWrapper import Tokens
 
 from .api import *
 from .models import *
@@ -64,9 +65,7 @@ class GoogleGeminiClient(object):
         content = Content(role=role).add_part(part=part)
         self._prompt.add_content(content=content)
 
-        import automon.integrations.ollamaWrapper
-
-        content_len = automon.integrations.ollamaWrapper.chr_to_tokens(string=prompt)
+        content_len = Tokens(string=prompt).count
 
         logger.debug(f"[GoogleGeminiClient] :: add_content :: {content_len:,} tokens")
         return self

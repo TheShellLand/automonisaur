@@ -18,6 +18,7 @@ from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
 from .chat import OllamaChat
 from .utils import chr_to_tokens, sum_tokens
+from .tokens import Tokens
 from .prompt_templates import *
 
 LoggingClient.logging.getLogger('httpcore.http11').setLevel(ERROR)
@@ -79,18 +80,18 @@ class OllamaClient(object):
             f'[OllamaClient] :: '
             f'add_message :: '
             f'{role=} :: '
-            f'{chr_to_tokens(content):,} tokens :: '
+            f'{Tokens(content).count_pretty} tokens :: '
             f'{len(content)} chars :: >>>>')
 
         max_tokens = 128000
         if self.model == 'deepseek-r1:14b':
             max_tokens = 128000
-            if chr_to_tokens(content) > max_tokens:
+            if Tokens(content).count > max_tokens:
                 logger.warning(
                     f'[OllamaClient] :: '
                     f'add_message :: '
                     f'too many tokens :: '
-                    f'{chr_to_tokens(content):,} > 128k')
+                    f'{Tokens(content).count_pretty} > 128k')
 
         message = {
             "role": role,
@@ -391,7 +392,7 @@ class OllamaClient(object):
         print(f":: SYSTEM :: proceeding with no primary directive. ::")
 
     def _agent_token(self):
-        print(f":: SYSTEM :: message has {chr_to_tokens(self._full_chat_log):,} total tokens ::")
+        print(f":: SYSTEM :: message has {Tokens(self._full_chat_log).count_pretty} total tokens ::")
 
     def get_context_window(self):
         return self._num_ctx
