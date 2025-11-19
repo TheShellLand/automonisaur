@@ -11,7 +11,7 @@ class Dict(dict):
 
     def enhance(self):
         import warnings
-        warnings.warn(f"[DictUpdate] :: Method will be removed in a future release. Please use '_enhance' instead.")
+        warnings.warn(f"[Dict] :: Method will be removed in a future release. Please use '_enhance' instead.")
         return self
 
     def __iter__(self):
@@ -34,7 +34,7 @@ class Dict(dict):
         if isinstance(update, dict):
             return self._update_dict(update)
 
-        raise Exception(f"[DictUpdate] :: _update :: ERROR :: {update=}")
+        raise Exception(f"[Dict] :: automon_update :: ERROR :: {update=}")
 
     def _update_dict(self, update: dict):
 
