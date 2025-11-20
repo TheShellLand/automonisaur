@@ -831,8 +831,8 @@ class Message(Dict):
         if self.automon_date_since_now_str:
             repr.append(self.automon_date_since_now_str)
 
-        if self.automon_date_since_now:
-            repr.append(f"{self.automon_date_since_now}")
+        if self.automon_date:
+            repr.append(f"{self.automon_date}")
 
         labels = [
             l.name for l in self.automon_labels
@@ -858,8 +858,9 @@ class Message(Dict):
         return repr
 
     def __lt__(self, other):
-        if self.automon_date_since_now < other.automon_date_since_now:
-            return True
+        if self.automon_date and other.automon_date:
+            if self.automon_date < other.automon_date:
+                return True
         return False
 
     def __bool__(self):
@@ -1211,6 +1212,13 @@ class Thread(Dict):
 
         return f'{self}'
 
+    def __lt__(self, other):
+        if self.automon_clean_thread_latest and other.automon_clean_thread_latest:
+            if self.automon_clean_thread_latest.automon_date and other.automon_clean_thread_latest.automon_date:
+                if self.automon_clean_thread_latest.automon_date < other.automon_clean_thread_latest.automon_date:
+                    return True
+        return False
+
     def __bool__(self):
         if self.messages:
             return True
@@ -1219,8 +1227,8 @@ class Thread(Dict):
     @property
     def automon_messages(self) -> list[Message] | None:
         if self.messages and not self._automon_messages:
-            self._automon_messages = sorted([Message(x) for x in self.messages], reverse=True)
-        return self._automon_messages
+            self._automon_messages = [Message(x) for x in self.messages]
+        return sorted(self._automon_messages)
 
     @property
     def automon_messages_count(self) -> int:
@@ -1228,7 +1236,7 @@ class Thread(Dict):
 
     @property
     def automon_clean_thread(self) -> Self:
-        """Return a clean list of messages not labeled with DRAFT"""
+        """All messages excluding DRAFT"""
         messages = []
         labels = GmailLabels()
 
@@ -1253,7 +1261,7 @@ class Thread(Dict):
 
     @property
     def automon_full_thread(self) -> Self:
-        """Return the full thread including TRASH messages"""
+        """All messages including TRASH messages, excluding DRAFT"""
         messages = []
         labels = GmailLabels()
 
@@ -1342,7 +1350,7 @@ class ThreadList(Dict):
     @property
     def automon_threads(self) -> list[Thread]:
         if self.threads and not self._automon_threads:
-            self._automon_threads = [Thread(x) for x in self.threads]
+            self._automon_threads = sorted([Thread(x) for x in self.threads])
         return self._automon_threads
 
 
