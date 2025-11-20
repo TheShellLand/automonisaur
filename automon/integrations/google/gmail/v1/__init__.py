@@ -240,8 +240,8 @@ class Color(Dict):
 
     def __init__(self, backgroundColor: str = None, textColor: str = None):
         super().__init__()
-        self.backgroundColor = backgroundColor
-        self.textColor = textColor
+        self.backgroundColor = str(backgroundColor).lower()
+        self.textColor = str(textColor).lower()
 
     def __bool__(self):
         if self.backgroundColor and self.textColor:
