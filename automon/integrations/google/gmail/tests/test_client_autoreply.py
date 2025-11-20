@@ -8,7 +8,7 @@ from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
 DEBUG_LEVEL = 2
-DEBUG_ = False
+DEBUG_ = True
 INFO_ = False
 
 LoggingClient.logging.getLogger('httpx').setLevel(ERROR)
@@ -184,15 +184,16 @@ def main():
         _FOUND = None
         _FOLLOW_UP = None
 
-        # search labels.retry first
         search_sequence = [
+            [labels.automon, labels.processing],
             [labels.automon, labels.chat],
-            [labels.automon, labels.retry],
-            [labels.automon]
+            [labels.automon],
+            [labels.automon, labels.waiting],
         ]
 
         email_search = None
         while True:
+
             email_search = None
 
             for _sequence in search_sequence:
@@ -229,17 +230,17 @@ def main():
                   f"{_first.automon_payload.get_header('subject')} :: ",
                   end='', level=2)
 
+            gmail.messages_modify(id=_first.id, addLabelIds=[labels.processing])
+
             # resume
             if labels.resume in thread.automon_messages_labels:
+                gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
                 continue
 
             # error
             if labels.error in thread.automon_messages_labels:
+                gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
                 continue
-
-            # retry
-            if labels.retry in thread.automon_messages_labels:
-                pass
 
             # chat
             if labels.chat in thread.automon_messages_labels:
@@ -262,6 +263,8 @@ def main():
                     _FOLLOW_UP = True
                     debug('followup')
                     break
+
+                gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
                 continue
 
             # new
@@ -269,6 +272,8 @@ def main():
                 _FOUND = True
                 debug('new')
                 break
+
+            gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
 
         if _FOUND:
             break
@@ -346,8 +351,8 @@ def main():
             GoogleGeminiClient.prompts.agent_machine_job_applicant,
         )
 
-        if (labels.retry in email_selected.automon_messages_labels
-                or labels.chat in email_selected.automon_messages_labels):
+        if (labels.chat in email_selected.automon_messages_labels
+                or labels.error in email_selected.automon_messages_labels):
             response, model = run_llm(prompts=prompts, chat=True)
         else:
             response, model = run_llm(prompts=prompts, chat=False)
@@ -430,15 +435,18 @@ def main():
         draft_get = gmail.draft_get_automon(id=draft.id)
 
         gmail.messages_modify(id=email_selected.id,
-                              addLabelIds=[labels.unread],
-                              removeLabelIds=[labels.retry])
+                              addLabelIds=[labels.unread])
 
         if (labels.auto_reply_enabled in email_selected.automon_messages_labels
                 and labels.sent not in email_selected.automon_message_latest.automon_labels
         ):
             draft_sent = gmail.draft_send(draft=draft)
             gmail.messages_modify(id=email_selected.automon_message_first.id,
-                                  addLabelIds=[labels.unread])
+                                  addLabelIds=[labels.unread,
+                                               labels.waiting])
+
+        gmail.messages_modify(id=email_selected.automon_message_first.id,
+                              removeLabelIds=[labels.processing])
 
     gmail.config.refresh_token()
 
