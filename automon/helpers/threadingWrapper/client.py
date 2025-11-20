@@ -15,7 +15,7 @@ class Thread(threading.Thread):
         self.public_args = args
         self.public_kwargs = kwargs
 
-        log.debug(f"[Thread] :: {target} :: {args=} :: {kwargs=}")
+        log.debug(f"[Thread] :: {target=} :: {args=} :: {kwargs=}")
 
 
 class ThreadingClient(object):
@@ -32,7 +32,7 @@ class ThreadingClient(object):
         assert type(args) is tuple
 
         self.worker_queue.put((target, args))
-        log.debug(f'[ThreadingClient] :: add_worker :: {target=} -> {args=}')
+        log.debug(f'[ThreadingClient] :: add_worker :: {target=} :: {args=}')
         return self
 
     def increase_global_threads_max(self):
@@ -67,7 +67,7 @@ class ThreadingClient(object):
                 thread.start()
                 self.global_threads.append(thread)
                 log.debug(f'[ThreadingClient] :: start :: {thread.name} :: running: '
-                          f'{len(self.global_threads)}/{self.global_threads_max}')
+                          f'{len(self.global_threads)} threads ({self.global_threads_max} max)')
 
             else:
                 time.sleep(0.1)
