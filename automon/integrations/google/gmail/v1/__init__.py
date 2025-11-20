@@ -1260,31 +1260,6 @@ class Thread(Dict):
             return self.automon_clean_thread[-1]
 
     @property
-    def automon_full_thread(self) -> Self:
-        """All messages including TRASH messages, excluding DRAFT"""
-        messages = []
-        labels = GmailLabels()
-
-        if self.automon_messages:
-            for message in self.automon_messages:
-                if labels.draft not in message.automon_labels:
-                    messages.append(message)
-
-        thread_copy = copy.deepcopy(self)
-        thread_copy.messages = messages
-        return messages
-
-    @property
-    def automon_full_thread_first(self) -> Message | None:
-        if self.automon_full_thread:
-            return self.automon_full_thread[0]
-
-    @property
-    def automon_full_thread_latest(self) -> Message | None:
-        if self.automon_full_thread:
-            return self.automon_full_thread[-1]
-
-    @property
     def automon_messages_count(self):
         return len(self.automon_messages)
 
