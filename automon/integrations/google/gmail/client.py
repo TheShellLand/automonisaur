@@ -40,6 +40,7 @@ class AutomonLabels:
         self._color_enabled = Color(backgroundColor='#076239', textColor='#b9e4d0')
         self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
         self._color_welcome = Color(backgroundColor='#8e63ce', textColor='#ffffff')
+        self._color_processing = Color(backgroundColor='#ffbc6b', textColor='#fef1d1')
 
         # general
         self.draft = Label(name='DRAFT', id='DRAFT')
@@ -66,15 +67,6 @@ class AutomonLabels:
         # enable auto reply
         self.auto_reply_enabled = Label(name='automon/auto reply enabled', color=self._color_enabled)
 
-        # retry
-        self.retry = Label(name='automon/retry', color=self._color_error)
-
-        # relevance
-        self.relevant = Label(name='automon/relevant', color=self._color_default)
-
-        # remote
-        self.remote = Label(name='automon/remote', color=self._color_default)
-
         # need user input
         self.user_action_required = Label(name='automon/user action required', color=self._color_error)
 
@@ -83,6 +75,12 @@ class AutomonLabels:
 
         # scheduled
         self.scheduled = Label(name='automon/scheduled', color=self._color_default)
+
+        # waiting
+        self.waiting = Label(name='automon/waiting', color=self._color_default)
+
+        # processing
+        self.processing = Label(name='automon/processing', color=self._color_processing)
 
     @property
     def all_labels(self):
@@ -106,7 +104,6 @@ class GoogleGmailClient:
     """
 
     def __init__(self, config: GoogleGmailConfig = None):
-        logger.debug(f"[GoogleGmailClient] :: init :: >>>>")
         self.config = config or GoogleGmailConfig()
         self.endpoint = self.config.GOOGLE_GMAIL_ENDPOINT
 
@@ -341,11 +338,11 @@ class GoogleGmailClient:
 
         Max labels 10,000
         """
-        logger.debug(f"[GoogleGmailClient] :: labels_create :: {name=} :: >>>>")
         api = UsersLabels(userId=self._userId).create
         json = Label(name=name, color=color).to_dict()
-        self.requests.post(api, headers=self.config.headers, json=json)
-        logger.info(f"[GoogleGmailClient] :: labels_create :: done")
+        if not self.requests.post(api, headers=self.config.headers, json=json):
+            raise Exception(f"{self.requests.errors}")
+        logger.info(f"[GoogleGmailClient] :: labels_create :: {name=}")
         return Label().automon_update(self.requests.to_dict())
 
     def labels_delete(self, id: str) -> bool:
@@ -374,7 +371,7 @@ class GoogleGmailClient:
         label = Label().automon_update(self.requests.to_dict())
         self._cache_labels.append(label)
 
-        logger.debug(f"[GoogleGmailClient] :: labels_get :: {label.name}")
+        logger.debug(f"[GoogleGmailClient] :: labels_get :: {label.name=}")
         return label
 
     def labels_get_by_name(self, name: str) -> Label | None:
@@ -413,7 +410,7 @@ class GoogleGmailClient:
         api = UsersLabels(self._userId).update(id)
         data = Label(id=id, color=color).to_dict()
         self.requests.put(api, headers=self.config.headers, json=data)
-        logger.info(f"[GoogleGmailClient] :: labels_update :: done")
+        logger.info(f"[GoogleGmailClient] :: labels_update :: {id=}")
         return Label().automon_update(self.requests.to_dict())
 
     def _improved_draft_list(self, drafts: DraftList) -> DraftList:
