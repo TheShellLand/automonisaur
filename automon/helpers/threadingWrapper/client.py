@@ -8,6 +8,16 @@ log = automon.helpers.loggingWrapper.logging.getLogger(__name__)
 log.setLevel(automon.helpers.loggingWrapper.DEBUG)
 
 
+class Thread(threading.Thread):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+        super().__init__(group, target, name, args, kwargs)
+        # Store arguments as public attributes
+        self.public_args = args
+        self.public_kwargs = kwargs
+
+        log.debug(f"[Thread] :: {target} :: {args=} :: {kwargs=}")
+
+
 class ThreadingClient(object):
     global_threads_max: int = 10
     global_threads: list = []
@@ -53,10 +63,10 @@ class ThreadingClient(object):
 
             if self.worker_queue.qsize() > 0 and self.total_global_threads < self.global_threads_max:
                 function, args = self.worker_queue.get()
-                thread = threading.Thread(target=function, args=tuple(args))
+                thread = Thread(target=function, args=tuple(args))
                 thread.start()
                 self.global_threads.append(thread)
-                log.debug(f'[ThreadingClient] :: start :: running: '
+                log.debug(f'[ThreadingClient] :: start :: {thread.name} :: running: '
                           f'{len(self.global_threads)}/{self.global_threads_max}')
 
             else:
