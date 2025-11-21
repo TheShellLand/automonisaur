@@ -280,7 +280,7 @@ def main():
 
     resume_search = gmail.messages_list_automon(
         maxResults=1,
-        labelIds=[labels.resume]
+        labelIds=[labels.automon, labels.resume]
     )
 
     for message in thread.automon_messages:
