@@ -725,6 +725,7 @@ class Message(Dict):
 
     automon_attachments: list
     automon_date: dateutil.parser.parse
+    automon_date_str: str
     automon_date_since_now: datetime.timedelta
     automon_date_since_now_str: str
     automon_email_from: str
@@ -892,6 +893,11 @@ class Message(Dict):
             header = self.automon_payload.get_header('Date')
             if header:
                 return dateutil.parser.parse(header.value)
+
+    @property
+    def automon_date_str(self) -> str | None:
+        if self.automon_date:
+            return str(self.automon_date)
 
     @property
     def automon_date_since_now(self) -> datetime.timedelta | None:
