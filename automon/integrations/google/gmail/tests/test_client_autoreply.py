@@ -218,7 +218,7 @@ def main():
 
         for thread in email_search.automon_threads:
 
-            # thread = gmail.thread_get_automon('199ee480f96f3307')
+            # thread = gmail.thread_get_automon(thread.id)
 
             _first = thread.automon_message_first
             _latest = thread.automon_message_latest

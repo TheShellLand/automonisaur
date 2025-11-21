@@ -747,13 +747,15 @@ class GoogleGmailClient:
         def update_message(message):
             get_message = self.messages_get_automon(message.id)
             message.automon_update(get_message)
+            return message
 
         threads = automon.helpers.threadingWrapper.ThreadingClient()
 
         for message in thread.automon_messages:
             threads.add_worker(target=update_message, args=(message,))
+            # update_message(message)
 
-        threads.start()
+        threads.start(max_threads=15)
 
         return thread
 
