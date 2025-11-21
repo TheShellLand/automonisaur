@@ -26,6 +26,8 @@ class ThreadingClient(object):
     def __init__(self):
         self.worker_queue: queue.Queue = queue.Queue()
         self.completed_queue: queue.Queue = queue.Queue()
+        self.error_queue: queue.Queue = queue.Queue()
+
         self.threads_list: list[Thread] = []
 
         self.exit_event = threading.Event()
@@ -44,6 +46,8 @@ class ThreadingClient(object):
             except Exception as error:
                 log.error(f"[ThreadingClient] :: ERROR :: {error=}")
                 current_thread.exception = error
+                self.error_queue.put(current_thread)
+                raise Exception(f"[ThreadingClient] :: ERROR :: {error=}")
 
             if not self.retry:
                 break
