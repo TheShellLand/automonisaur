@@ -567,7 +567,7 @@ class GoogleGmailClient:
         message = Message(self.messages_get(*args, **kwargs))
 
         if message.labelIds:
-            message.automon_labels = [self.labels_get(x) for x in message.labelIds]
+            message.labelIds = [self.labels_get(x).to_dict() for x in message.labelIds]
 
         # update attachments
         automon_parts = []
@@ -654,13 +654,14 @@ class GoogleGmailClient:
             message.automon_update(self.messages_get_automon(id=message.id))
             return message
 
-        threads = automon.helpers.threadingWrapper.ThreadingClient()
+        threading = automon.helpers.threadingWrapper.ThreadingClient()
 
         for message in messages.automon_messages:
-            threads.add_worker(target=update_message, args=(message,))
+            threading.add_worker(target=update_message, args=(message,))
 
-        threads.start()
+        threading.start()
 
+        messages.message = list(threading.completed_queue.queue)
         return messages
 
     def messages_modify(self,
@@ -749,14 +750,23 @@ class GoogleGmailClient:
             message.automon_update(get_message)
             return message
 
-        threads = automon.helpers.threadingWrapper.ThreadingClient()
+        threading = automon.helpers.threadingWrapper.ThreadingClient()
 
         for message in thread.automon_messages:
-            threads.add_worker(target=update_message, args=(message,))
+            threading.add_worker(target=update_message, args=(message,))
             # update_message(message)
 
-        threads.start(max_threads=15)
+        threading.start(max_threads=15)
 
+        messages = []
+        for message in thread.automon_messages:
+            for message_updated in list(threading.completed_queue.queue):
+                if message == message_updated:
+                    message.automon_update(message_updated)
+                    if message not in messages:
+                        messages.append(message)
+
+        thread.messages = [x.to_dict() for x in messages]
         return thread
 
     def thread_list(self,
@@ -814,10 +824,6 @@ class GoogleGmailClient:
 
             for thread in threads.automon_threads:
                 thread.automon_update(self.thread_get_automon(id=thread.id))
-
-                for message in thread.automon_messages:
-                    get_message = self.messages_get_automon(message.id)
-                    message.automon_update(get_message)
 
         return threads
 

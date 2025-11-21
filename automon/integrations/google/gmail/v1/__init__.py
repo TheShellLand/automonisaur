@@ -470,13 +470,18 @@ class Label(Dict):
 
     def __repr__(self):
         if self.id and self.name:
-            return f"{self.id} :: {self.name}"
+            return f"{self.name} :: {self.id}"
         if self.name:
             return f"{self.name}"
         return str(self.id)
 
     def __eq__(self, other):
         if self.id == other.id and self.name == other.name:
+            return True
+        return False
+
+    def __lt__(self, other):
+        if self.name < other.name:
             return True
         return False
 
@@ -821,8 +826,6 @@ class Message(Dict):
         self.snippet: str = None
         self.threadId: str = None
 
-        self.automon_labels: list[Label] = []
-
         if message:
             self.automon_update(message)
 
@@ -832,8 +835,8 @@ class Message(Dict):
         if self.automon_date_since_now_str:
             repr.append(self.automon_date_since_now_str)
 
-        if self.automon_date:
-            repr.append(f"{self.automon_date}")
+        if self.automon_date_utc:
+            repr.append(f"{self.automon_date_utc}")
 
         labels = [
             l.name for l in self.automon_labels
@@ -848,19 +851,19 @@ class Message(Dict):
         if self.automon_email_from:
             repr.append(self.automon_email_from)
 
-        if self.snippet:
-            repr.append(self.snippet)
-
         if self.id:
             repr.append(self.id)
+
+        if self.snippet:
+            repr.append(self.snippet[:125])
 
         repr = ' :: '.join(repr)
 
         return repr
 
     def __lt__(self, other):
-        if self.automon_date and other.automon_date:
-            if self.automon_date < other.automon_date:
+        if self.automon_date_epoch_s and other.automon_date_epoch_s:
+            if self.automon_date_epoch_s < other.automon_date_epoch_s:
                 return True
         return False
 
@@ -888,23 +891,35 @@ class Message(Dict):
             return self.automon_attachments[0]
 
     @property
-    def automon_date(self) -> dateutil.parser.parse:
-        if self.automon_payload:
-            header = self.automon_payload.get_header('Date')
-            if header:
-                return dateutil.parser.parse(header.value)
+    def automon_date_epoch_s(self) -> float | None:
+        if self.internalDate:
+            epoch_ms = int(self.internalDate)
+            epoch_s = epoch_ms / 1000.0
+            return epoch_s
+
+    @property
+    def automon_date_local(self):
+        if self.automon_date_epoch_s:
+            date_local = datetime.datetime.fromtimestamp(self.automon_date_epoch_s)
+            return date_local
+
+    @property
+    def automon_date_utc(self):
+        if self.automon_date_epoch_s:
+            date_utc = datetime.datetime.fromtimestamp(self.automon_date_epoch_s, tz=datetime.timezone.utc)
+            return date_utc
 
     @property
     def automon_date_str(self) -> str | None:
-        if self.automon_date:
-            return str(self.automon_date)
+        if self.automon_date_local:
+            return str(self.automon_date_local)
 
     @property
     def automon_date_since_now(self) -> datetime.timedelta | None:
-        if self.automon_date:
-            automon_date = self.automon_date
-            time_delta = datetime.datetime.now() + automon_date.utcoffset()
-            time_delta = time_delta.replace(tzinfo=datetime.timezone(automon_date.utcoffset()))
+        if self.automon_date_local:
+            automon_date = self.automon_date_local
+            time_delta = datetime.datetime.now()
+            # time_delta = time_delta.replace(tzinfo=datetime.timezone(automon_date.utcoffset()))
             time_delta = time_delta - automon_date
 
             return time_delta
@@ -967,6 +982,12 @@ class Message(Dict):
         if self.automon_payload:
             if self.automon_payload.automon_headers:
                 return self.automon_payload.get_header('To')
+
+    @property
+    def automon_labels(self) -> list[Label]:
+        if self.labelIds:
+            return sorted([Label().automon_update(l) for l in self.labelIds if type(l) == dict])
+        return []
 
     @property
     def automon_payload(self) -> MessagePayload | None:
@@ -1041,8 +1062,6 @@ class MessageList(Dict):
         self.resultSizeEstimate: int
         self.nextPageToken: str
 
-        self._automon_messages = []
-
         if messages:
             self.automon_update(messages)
 
@@ -1058,9 +1077,9 @@ class MessageList(Dict):
 
     @property
     def automon_messages(self) -> list[Message] | list:
-        if self.messages and not self._automon_messages:
-            self._automon_messages = [Message(message) for message in self.messages]
-        return self._automon_messages
+        if self.messages:
+            return sorted([Message(m) for m in self.messages])
+        return []
 
 
 class Draft(Dict):
@@ -1204,8 +1223,6 @@ class Thread(Dict):
         self.addLabelIds: list = []
         self.removeLabelIds: list = []
 
-        self._automon_messages: list[Message] = []
-
         if thread:
             self.automon_update(thread)
 
@@ -1220,8 +1237,8 @@ class Thread(Dict):
 
     def __lt__(self, other):
         if self.automon_clean_thread_latest and other.automon_clean_thread_latest:
-            if self.automon_clean_thread_latest.automon_date and other.automon_clean_thread_latest.automon_date:
-                if self.automon_clean_thread_latest.automon_date < other.automon_clean_thread_latest.automon_date:
+            if self.automon_clean_thread_latest.automon_date_utc and other.automon_clean_thread_latest.automon_date_utc:
+                if self.automon_clean_thread_latest.automon_date_utc < other.automon_clean_thread_latest.automon_date_utc:
                     return True
         return False
 
@@ -1232,9 +1249,9 @@ class Thread(Dict):
 
     @property
     def automon_messages(self) -> list[Message] | None:
-        if self.messages and not self._automon_messages:
-            self._automon_messages = [Message(x) for x in self.messages]
-        return sorted(self._automon_messages)
+        if self.messages:
+            return sorted([Message(x) for x in self.messages])
+        return []
 
     @property
     def automon_messages_count(self) -> int:
@@ -1276,7 +1293,7 @@ class Thread(Dict):
             for label in message.automon_labels:
                 if label not in labels:
                     labels.append(label)
-        return labels
+        return sorted(labels)
 
     @property
     def automon_message_first(self) -> Message | None:
