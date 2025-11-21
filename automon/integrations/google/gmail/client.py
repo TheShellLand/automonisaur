@@ -661,7 +661,7 @@ class GoogleGmailClient:
 
         threading.start()
 
-        messages.message = list(threading.completed_queue.queue)
+        messages.messages = list(threading.completed_queue.queue)
         return messages
 
     def messages_modify(self,
