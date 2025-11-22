@@ -12,6 +12,7 @@ try:
 except:
     from typing_extensions import Self
 
+from automon.helpers import Regex
 from automon.helpers import cryptography
 from automon.helpers.dictWrapper import Dict
 from automon.helpers.loggingWrapper import LoggingClient, INFO
@@ -949,9 +950,8 @@ class Message(Dict):
     def automon_email_from(self) -> str | None:
         automon_header_from = self.automon_header_from
         if automon_header_from:
-            email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
-            email_re = re.compile(email_re, flags=re.IGNORECASE)
-            email = email_re.search(automon_header_from.value).group()
+            email = automon_header_from.value
+            email = Regex().config_ignorecase().re_email().search(email).group()
 
             return email
 
@@ -959,9 +959,8 @@ class Message(Dict):
     def automon_email_to(self) -> str | None:
         automon_header_to = self.automon_header_to
         if automon_header_to:
-            email_re = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
-            email_re = re.compile(email_re, flags=re.IGNORECASE)
-            email = email_re.search(automon_header_to.value).group()
+            email = automon_header_to.value
+            email = Regex().config_ignorecase().re_email().search(email).group()
 
             return email
 
