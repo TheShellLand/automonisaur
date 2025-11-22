@@ -41,10 +41,12 @@ class ThreadingClient(object):
                 log.debug(f"[ThreadingClient] :: {current_thread.name} :: wrapper started")
                 result = target(*args)
                 current_thread.result = result
+                current_thread.exception = None
                 self.completed_queue.put(result)
                 break
             except Exception as error:
                 log.error(f"[ThreadingClient] :: ERROR :: {error=}")
+                current_thread.result = None
                 current_thread.exception = error
                 self.error_queue.put(current_thread)
                 raise Exception(f"[ThreadingClient] :: ERROR :: {error=}")
