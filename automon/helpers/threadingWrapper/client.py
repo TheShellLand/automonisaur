@@ -31,28 +31,22 @@ class ThreadingClient(object):
         self.threads_list: list[Thread] = []
 
         self.exit_event = threading.Event()
-        self.retry: bool = False
 
     def _thread_wrapper(self, target, args):
         current_thread = threading.current_thread()
 
-        while True:
-            try:
-                log.debug(f"[ThreadingClient] :: {current_thread.name} :: wrapper started")
-                result = target(*args)
-                current_thread.result = result
-                current_thread.exception = None
-                self.completed_queue.put(result)
-                break
-            except Exception as error:
-                log.error(f"[ThreadingClient] :: ERROR :: {error=}")
-                current_thread.result = None
-                current_thread.exception = error
-                self.error_queue.put(current_thread)
-                raise Exception(f"[ThreadingClient] :: ERROR :: {error=}")
-
-            if not self.retry:
-                break
+        try:
+            log.debug(f"[ThreadingClient] :: {current_thread.name} :: wrapper started")
+            result = target(*args)
+            current_thread.result = result
+            current_thread.exception = None
+            self.completed_queue.put(current_thread)
+        except Exception as error:
+            log.error(f"[ThreadingClient] :: ERROR :: {error=}")
+            current_thread.result = None
+            current_thread.exception = error
+            self.error_queue.put(current_thread)
+            raise Exception(f"[ThreadingClient] :: ERROR :: {error=}")
 
     def add_worker(self, target: object, args: tuple):
         assert type(args) is tuple
@@ -100,14 +94,11 @@ class ThreadingClient(object):
             log.debug(f'[ThreadingClient] :: results :: {result}')
             yield result
 
-    def start(self, max_threads: int = None, retry: bool = False):
+    def start(self, max_threads: int = None):
 
         if max_threads:
             with ThreadingClient._global_threads_max_lock:
                 ThreadingClient._global_threads_max = max_threads
-
-        if retry:
-            self.retry = retry
 
         while not self.is_done():
 
