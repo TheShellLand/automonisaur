@@ -261,7 +261,7 @@ class EmailAttachment(Dict):
         super().__init__()
 
         if type(bytes_) is not bytes:
-            raise Exception(f"Not bytes")
+            raise Exception(f"Not bytes {type(bytes_)=}")
 
         self.bytes_: bytes = bytes_
         self.filename: str = filename
@@ -299,7 +299,7 @@ class GmailLabels:
 
 class Header(Dict):
 
-    def __init__(self, header: dict | Self = None):
+    def __init__(self, header: dict = None):
         super().__init__()
 
         self.name: str = ''
@@ -515,6 +515,10 @@ class LabelRemoved:
 
 
 class MessagePartBody(Dict):
+    attachmentId: str
+    size: int
+    data: str
+
     """
     {
       "attachmentId": string,
@@ -548,8 +552,9 @@ class MessagePartBody(Dict):
         return ' :: '.join(repr)
 
     def __bool__(self):
-        if self.size > 0:
-            return True
+        if self.size:
+            if self.size > 0:
+                return True
         if self.data:
             return True
         if self.attachmentId:
@@ -564,6 +569,7 @@ class MessagePartBody(Dict):
         if self.data:
             return io.BytesIO(self.automon_data_base64decoded())
 
+    @property
     def automon_data_html_text(self) -> str | None:
         if self.data:
             return self._html_text()
@@ -571,10 +577,7 @@ class MessagePartBody(Dict):
     @property
     def automon_data_decoded(self) -> str | None:
         if self.data:
-            try:
-                return self.automon_data_base64decoded().decode()
-            except Exception as error:
-                pass
+            return self.automon_data_base64decoded().decode()
 
     @property
     def automon_data_hash(self):
@@ -618,6 +621,9 @@ class MessagePart(Dict):
         if part:
             self.automon_update(part)
 
+        self.automon_body = MessagePartBody(self.body)
+        self.automon_parts = [MessagePart(x) for x in self.parts]
+
     def __repr__(self):
         repr = []
 
@@ -630,19 +636,10 @@ class MessagePart(Dict):
         return ' :: '.join(repr)
 
     @property
-    def automon_body(self) -> MessagePartBody | None:
-        if self.body:
-            return MessagePartBody(self.body)
-
-    @property
-    def automon_headers(self) -> list[Header] | None:
+    def automon_headers(self) -> list[Header]:
         if self.headers:
             return [Header(x) for x in self.headers]
-
-    @property
-    def automon_parts(self) -> list[Self] | None:
-        if self.parts:
-            return [MessagePart(x) for x in self.parts]
+        return []
 
     def get_header(self, header: str) -> Header | None:
         for headers in self.automon_headers:
@@ -667,11 +664,15 @@ class MessagePayload(Dict):
     def __init__(self, message: dict | Self = None):
         super().__init__()
 
+        self.body: dict = {}
         self.parts: list[dict] = []
         self.size: int = None
 
         if message:
             self.automon_update(message)
+
+        self.automon_body: MessagePartBody = MessagePartBody(self.body)
+        self.automon_parts: list[MessagePart] = [MessagePart(x) for x in self.parts]
 
     def __repr__(self):
         repr = []
@@ -697,20 +698,9 @@ class MessagePayload(Dict):
         return False
 
     @property
-    def automon_body(self) -> MessagePartBody | None:
-        if self.body:
-            return MessagePartBody(self.body)
-
-    @property
     def automon_headers(self) -> list[Header] | None:
         if self.headers:
             return [Header(x) for x in self.headers]
-
-    @property
-    def automon_parts(self) -> list[MessagePart]:
-        if self.parts:
-            return [MessagePart(x) for x in self.parts]
-        return []
 
     def get_header(self, header: str) -> Header | None:
         for headers in self.automon_headers:
@@ -830,6 +820,10 @@ class Message(Dict):
         if message:
             self.automon_update(message)
 
+        self.automon_labels: list[Label] = sorted(
+            [Label().automon_update(x) for x in self.labelIds if isinstance(x, dict)])
+        self.automon_payload: MessagePayload = MessagePayload(self.payload)
+
     def __repr__(self):
         repr = []
 
@@ -878,18 +872,19 @@ class Message(Dict):
             return True
         return False
 
-    @property
-    def automon_attachments(self) -> list[MessagePartBody | MessagePart] | None:
+    def automon_attachments(self) -> MessagePartBody | MessagePart | None:
         if self.automon_payload:
             if self.automon_payload.size:
-                return [self.automon_payload.automon_body]
+                yield self.automon_payload.automon_body
             if self.automon_payload.automon_parts:
-                return self.automon_payload.automon_parts
+                for parts in self.automon_payload.automon_parts:
+                    yield parts
+        yield None
 
     @property
     def automon_attachments_first(self) -> MessagePartBody | MessagePart | None:
-        if self.automon_attachments:
-            return self.automon_attachments[0]
+        if list(self.automon_attachments):
+            return list(self.automon_attachments)[0]
 
     @property
     def automon_date_epoch_s(self) -> float | None:
@@ -905,14 +900,19 @@ class Message(Dict):
             return date_local
 
     @property
+    def automon_date_local_str(self) -> str | None:
+        if self.automon_date_local:
+            return str(self.automon_date_local)
+
+    @property
     def automon_date_utc(self):
         if self.automon_date_epoch_s:
             date_utc = datetime.datetime.fromtimestamp(self.automon_date_epoch_s, tz=datetime.timezone.utc)
             return date_utc
 
     @property
-    def automon_date_str(self) -> str | None:
-        if self.automon_date_local:
+    def automon_date_utc_str(self) -> str | None:
+        if self.automon_date_utc:
             return str(self.automon_date_local)
 
     @property
@@ -981,17 +981,6 @@ class Message(Dict):
         if self.automon_payload:
             if self.automon_payload.automon_headers:
                 return self.automon_payload.get_header('To')
-
-    @property
-    def automon_labels(self) -> list[Label]:
-        if self.labelIds:
-            return sorted([Label().automon_update(l) for l in self.labelIds if type(l) == dict])
-        return []
-
-    @property
-    def automon_payload(self) -> MessagePayload | None:
-        if self.payload:
-            return MessagePayload(self.payload)
 
     def automon_raw_decoded(self) -> str | None:
         if self.raw is not None:
@@ -1064,6 +1053,8 @@ class MessageList(Dict):
         if messages:
             self.automon_update(messages)
 
+        self.automon_messages: list[Message] = sorted([Message(m) for m in self.messages])
+
     def __repr__(self):
         if self.messages:
             return f'{len(self.messages)} messages'
@@ -1073,12 +1064,6 @@ class MessageList(Dict):
         if self.messages:
             return True
         return False
-
-    @property
-    def automon_messages(self) -> list[Message] | list:
-        if self.messages:
-            return sorted([Message(m) for m in self.messages])
-        return []
 
 
 class Draft(Dict):
@@ -1225,6 +1210,8 @@ class Thread(Dict):
         if thread:
             self.automon_update(thread)
 
+        self.automon_messages: list[Message] = sorted([Message(x) for x in self.messages])
+
     def __repr__(self):
         if self.snippet:
             return self.snippet
@@ -1247,28 +1234,19 @@ class Thread(Dict):
         return False
 
     @property
-    def automon_messages(self) -> list[Message] | None:
-        if self.messages:
-            return sorted([Message(x) for x in self.messages])
-        return []
-
-    @property
     def automon_messages_count(self) -> int:
         return len(self.automon_messages)
 
     @property
-    def automon_clean_thread(self) -> Self:
+    def automon_clean_thread(self) -> list[Message]:
         """All messages excluding DRAFT"""
         messages = []
         labels = GmailLabels()
 
-        if self.automon_messages:
-            for message in self.automon_messages:
-                if labels.draft not in message.automon_labels:
-                    messages.append(message)
+        for message in self.automon_messages:
+            if labels.draft not in message.automon_labels:
+                messages.append(message)
 
-        thread_copy = copy.deepcopy(self)
-        thread_copy.messages = messages
         return messages
 
     @property
@@ -1280,6 +1258,17 @@ class Thread(Dict):
     def automon_clean_thread_latest(self) -> Message | None:
         if self.automon_clean_thread:
             return self.automon_clean_thread[-1]
+
+    @property
+    def automon_messages_duplicates(self) -> list[Message]:
+        messages = []
+        duplicates = []
+        for message in self.automon_messages:
+            if message not in messages:
+                messages.append(message)
+            else:
+                duplicates.append(message)
+        return duplicates
 
     @property
     def automon_messages_count(self):
@@ -1331,10 +1320,10 @@ class ThreadList(Dict):
         self.nextPageToken: str = None
         self.resultSizeEstimate: int = None
 
-        self._automon_threads: list[Thread] = []
-
         if threads:
             self.automon_update(threads)
+
+        self.automon_threads: list[Thread] = sorted([Thread(x) for x in self.threads])
 
     def __repr__(self):
         return f"{len(self.threads)} threads"
@@ -1343,12 +1332,6 @@ class ThreadList(Dict):
         if self.threads:
             return True
         return False
-
-    @property
-    def automon_threads(self) -> list[Thread]:
-        if self.threads and not self._automon_threads:
-            self._automon_threads = sorted([Thread(x) for x in self.threads])
-        return self._automon_threads
 
 
 class UsersThread(Users):

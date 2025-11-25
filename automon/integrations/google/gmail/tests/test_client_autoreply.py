@@ -1,6 +1,7 @@
 import unittest
 
 import threading
+from idlelib.rpc import response_queue
 
 from automon.integrations.google.gmail import GoogleGmailClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
@@ -292,7 +293,8 @@ def main():
     email_selected = thread
     resume_selected = resume_search.automon_messages[0]
 
-    resume = resume_selected.automon_attachments_first.automon_parts[0].automon_body.automon_data_html_text()
+    resume = resume_selected.automon_attachments().__next__()
+    resume = resume.automon_parts[0].automon_body.automon_data_html_text
 
     prompts_base = []
     prompts_resume = [f"This is your resume: <RESUME>{resume}</RESUME>\n\n", ]
@@ -367,9 +369,9 @@ def main():
         double_check_prompts.append(
             f"Respond True or False. Is the RESPONSE following all RULES?"
         )
-        check, model = run_llm(double_check_prompts)
+        response_check, model = run_llm(double_check_prompts)
 
-        if gemini.true_or_false(check):
+        if gemini.true_or_false(response_check):
             FAILED = False
             break
         else:
@@ -382,17 +384,17 @@ def main():
 
             # test = run_llm(prompts=double_check_prompts, chat=True)
 
-            check, model = run_llm(prompts=double_check_prompts, chat=False)
-            prompts.append(check)
+            response_check, model = run_llm(prompts=double_check_prompts, chat=False)
+            prompts.append(response_check)
 
             draft_error = gmail.draft_create(
                 threadId=email_selected.id,
-                draft_body=response + "\n\n" + check,
+                draft_body=response + "\n\n" + response_check,
             )
             draft_get = gmail.draft_get_automon(id=draft_error.id)
             gmail.messages_modify(id=draft_get.id, addLabelIds=[labels.error])
 
-            prompts.append(check)
+            prompts.append(response_check)
 
             FAILED = True
 
@@ -401,7 +403,7 @@ def main():
         if _FOLLOW_UP:
             resume_attachment = []
         else:
-            resume_attachment = resume_selected.automon_attachments[1]
+            resume_attachment = resume_selected.automon_payload.automon_parts[1]
             assert resume_attachment.filename
 
             resume_attachment = gmail.v1.EmailAttachment(

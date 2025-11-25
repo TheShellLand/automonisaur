@@ -432,49 +432,6 @@ class GoogleGmailClient:
 
         return drafts
 
-    def _improved_draft_get(self, draft: Draft) -> Draft:
-        """Better draft."""
-
-        if draft.automon_message:
-            draft.automon_update(self.messages_get_automon(draft.automon_message.id))
-
-        return draft
-
-    def _improved_messages_get(self, message: Message) -> Message:
-        """Better messages."""
-
-        if message.labelIds:
-            message.automon_labels = [self.labels_get(x) for x in message.labelIds]
-
-        # update attachments
-        if message.automon_payload:
-
-            if message.automon_payload.automon_parts:
-
-                for part in message.automon_payload.automon_parts:
-                    if part.automon_body.attachmentId:
-                        attachmentId = part.automon_body.attachmentId
-
-                        if attachmentId:
-                            messages_attachments_get = self.messages_attachments_get(messageId=message.id,
-                                                                                     attachmentId=attachmentId)
-                            part.automon_body.automon_update(messages_attachments_get)
-
-                        if part.automon_body.automon_attachments:
-                            setattr(part, 'automon_attachment', part.body.automon_attachment)
-
-        return message
-
-    def _improved_messages_list(self, messages: MessageList) -> MessageList:
-        """Better messages."""
-
-        for _message in messages.automon_messages:
-            # update messages
-            _get = self.messages_get_automon(id=_message.id)
-            _message.automon_update(_get)
-
-        return messages
-
     def messages_attachments_get(
             self,
             messageId: str,
@@ -567,7 +524,7 @@ class GoogleGmailClient:
         message = Message(self.messages_get(*args, **kwargs))
 
         if message.labelIds:
-            message.labelIds = [self.labels_get(x).to_dict() for x in message.labelIds]
+            message.automon_labels = [self.labels_get(x) for x in message.labelIds]
 
         # update attachments
         automon_parts = []
@@ -584,7 +541,7 @@ class GoogleGmailClient:
                 df_b = pandas.DataFrame([part.body])
                 df_a.update(df_b)
 
-                part.body.update(df_a.to_dict(orient='records')[0])
+                part.automon_body.automon_update(df_a.to_dict(orient='records')[0])
 
         return message
 
@@ -658,10 +615,10 @@ class GoogleGmailClient:
 
         for message in messages.automon_messages:
             threading.add_worker(target=update_message, args=(message,))
+            # update_message(message)
 
         threading.start()
 
-        messages.messages = list(threading.completed_queue.queue)
         return messages
 
     def messages_modify(self,
@@ -745,7 +702,7 @@ class GoogleGmailClient:
 
         thread = Thread(self.thread_get(id=id))
 
-        def update_message(message):
+        def update_message(message: Message):
             get_message = self.messages_get_automon(message.id)
             message.automon_update(get_message)
             return message
@@ -754,19 +711,27 @@ class GoogleGmailClient:
 
         for message in thread.automon_messages:
             threading.add_worker(target=update_message, args=(message,))
-            # update_message(message)
+            get_message = self.messages_get_automon(message.id)
+            message.automon_update(get_message)
 
-        threading.start(max_threads=15)
+        threading.start(max_threads=3)
 
+        duplicates = []
         messages = []
-        for message in thread.automon_messages:
-            for message_updated in list(threading.completed_queue.queue):
-                if message == message_updated:
-                    message.automon_update(message_updated)
+        for thread_ in list(threading.completed_queue.queue):
+            exception = thread_.exception
+            result_message = thread_.result
+
+            if exception:
+                raise Exception(f"[GoogleGmailClient] :: ERROR :: {thread_.exception=}]")
+            for message in thread.automon_messages:
+                if result_message == message:
+                    message.automon_update(result_message)
                     if message not in messages:
                         messages.append(message)
+                    else:
+                        duplicates.append(message)
 
-        thread.messages = [x.to_dict() for x in messages]
         return thread
 
     def thread_list(self,

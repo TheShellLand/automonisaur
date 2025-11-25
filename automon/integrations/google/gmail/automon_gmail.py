@@ -176,8 +176,8 @@ class AutomonGmailClient(GoogleGmailClient):
 
         resume_selected = self.get_resume_message()
 
-        resume_attachments = resume_selected.automon_parts.automon_attachments
-        resume = resume_attachments[0].parts[0].body.automon_data_html_text
+        resume_attachments = next(resume_selected.automon_parts.automon_attachments())
+        resume = resume_attachments.automon_parts[0].body.automon_data_html_text
 
         if resume:
             return resume
