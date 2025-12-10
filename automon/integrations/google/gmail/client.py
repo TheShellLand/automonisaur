@@ -704,7 +704,7 @@ class GoogleGmailClient:
         )
         return RequestsClient().get_self(api, headers=self.config.headers, params=params).to_dict()
 
-    def thread_get_automon(self, id: str = None) -> Thread:
+    def thread_get_automon(self, id: str = None, multithread: bool = False) -> Thread:
 
         thread = Thread(self.thread_get(id=id))
 
@@ -716,23 +716,30 @@ class GoogleGmailClient:
         threading = automon.helpers.threadingWrapper.ThreadingClient()
 
         for message in thread.automon_messages:
-            threading.add_worker(target=update_message, args=(message,))
-            get_message = self.messages_get_automon(message.id)
-            message.automon_update(get_message)
+
+            if multithread:
+                import warnings
+                warnings.warn(
+                    f"[GoogleGmailClient] :: thread_get_automon :: multithreading returns duplicate results from gmail api")
+                threading.add_worker(target=update_message, args=(message,))
+            else:
+                get_message = self.messages_get_automon(message.id)
+                message.automon_update(get_message)
 
         threading.start(max_threads=3)
 
-        duplicates = []
         messages = []
-        for thread_ in list(threading.completed_queue.queue):
-            exception = thread_.exception
-            result_message = thread_.result
+        duplicates = []
 
-            if exception:
-                raise Exception(f"[GoogleGmailClient] :: ERROR :: {thread_.exception=}]")
+        while threading.completed_queue.qsize() > 0:
+            t_ = threading.completed_queue.get()
+            exception = t_.exception
+            result_message = t_.result
+
             for message in thread.automon_messages:
-                if result_message == message:
+                if message == result_message:
                     message.automon_update(result_message)
+
                     if message not in messages:
                         messages.append(message)
                     else:
