@@ -173,6 +173,10 @@ class RequestsClient(object):
             raise Exception(f'RequestsClient :: DELETE :: ERROR :: {error=}')
         return False
 
+    def delete_self(self, *args, **kwargs):
+        self.delete(*args, **kwargs)
+        return self
+
     def get(
             self,
             url: str = None,
@@ -202,6 +206,10 @@ class RequestsClient(object):
             self.errors = error
             raise Exception(f'RequestsClient :: GET :: ERROR :: {error=}')
         return False
+
+    def get_self(self, *args, **kwargs):
+        self.get(*args, **kwargs)
+        return self
 
     def patch(
             self,
@@ -233,6 +241,10 @@ class RequestsClient(object):
             raise Exception(f'RequestsClient :: PATCH :: ERROR :: {error=}')
         return False
 
+    def patch_self(self, *args, **kwargs):
+        self.patch(*args, **kwargs)
+        return self
+
     def post(
             self,
             url: str = None,
@@ -263,6 +275,10 @@ class RequestsClient(object):
             raise Exception(f'RequestsClient :: POST :: ERROR :: {error=}')
         return False
 
+    def post_self(self, *args, **kwargs):
+        self.post(*args, **kwargs)
+        return self
+
     def put(
             self,
             url: str = None,
@@ -292,6 +308,10 @@ class RequestsClient(object):
             self.errors = error
             raise Exception(f'RequestsClient :: PUT :: ERROR :: {error=}')
         return False
+
+    def put_self(self, *args, **kwargs):
+        self.put(*args, **kwargs)
+        return self
 
     @property
     def reason(self):
