@@ -827,11 +827,11 @@ class Message(Dict):
     def __repr__(self):
         repr = []
 
-        if self.automon_date_since_now_str:
-            repr.append(self.automon_date_since_now_str)
+        if self.hash_md5:
+            repr.append(self.hash_md5[-5:].upper())
 
-        if self.automon_date_utc:
-            repr.append(f"{self.automon_date_utc}")
+        # if self.id:
+        #     repr.append(self.id)
 
         labels = [
             l.name for l in self.automon_labels
@@ -839,15 +839,17 @@ class Message(Dict):
                or l.name == 'DRAFT'
                or l.name == 'TRASH'
         ]
-
         if labels:
             repr.extend(labels)
+
+        if self.automon_date_since_now_str:
+            repr.append(self.automon_date_since_now_str)
 
         if self.automon_email_from:
             repr.append(self.automon_email_from)
 
-        if self.id:
-            repr.append(self.id)
+        if self.automon_date_utc:
+            repr.append(f"{self.automon_date_utc}")
 
         if self.snippet:
             repr.append(self.snippet[:125])
@@ -965,6 +967,10 @@ class Message(Dict):
             return email
 
     @property
+    def hash_md5(self):
+        return cryptography.Hashlib.md5(self.id)
+
+    @property
     def automon_header_from(self) -> Header | None:
         if self.automon_payload:
             if self.automon_payload.automon_headers:
@@ -985,6 +991,27 @@ class Message(Dict):
     def automon_raw_decoded(self) -> str | None:
         if self.raw is not None:
             return base64.urlsafe_b64decode(self.raw).decode()
+
+    def to_prompt(self) -> dict:
+        email = {}
+        email['from'] = self.automon_email_from
+        email['to'] = self.automon_email_to
+        email['subject'] = self.automon_header_subject
+        email['date'] = self.automon_date_local_str
+        email['date_epoch'] = self.automon_date_epoch_s
+
+        if self.automon_payload:
+            body = self.automon_payload.automon_body
+            if body:
+                text = body.automon_data_html_text
+                if text:
+                    email['body'] = text
+            if self.automon_payload.automon_parts:
+                parts = self.automon_payload.automon_parts
+                for part in parts:
+                    raise
+
+        return email
 
 
 class MessageAttachments(Dict):
@@ -1011,11 +1038,11 @@ class MessageAttachments(Dict):
         for part in self.automon_attachments:
             return part
 
-    def from_hash(self, hash_md5: str):
-        for attachment in self.automon_attachments:
-            if hash_md5 == attachment.automon_attachment.hash_md5:
-                return attachment
-        raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
+    # def from_hash(self, hash_md5: str):
+    #     for attachment in self.automon_attachments:
+    #         if hash_md5 == attachment.automon_attachment.hash_md5:
+    #             return attachment
+    #     raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
 
     @property
     def has_filename(self) -> list[MessagePart]:
@@ -1210,7 +1237,16 @@ class Thread(Dict):
         if thread:
             self.automon_update(thread)
 
-        self.automon_messages: list[Message] = sorted([Message(x) for x in self.messages])
+        messages = []
+        duplicates = []
+        for m in self.messages:
+            m = Message(m)
+            if m not in messages:
+                messages.append(m)
+            else:
+                duplicates.append(m)
+
+        self.automon_messages: list[Message] = sorted(messages)
 
     def __repr__(self):
         if self.snippet:
