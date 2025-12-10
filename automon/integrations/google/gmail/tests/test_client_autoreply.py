@@ -188,8 +188,8 @@ def main():
         search_sequence = [
             [labels.automon, labels.processing],
             [labels.automon, labels.chat],
+            [labels.automon, labels.analyze],
             [labels.automon],
-            [labels.automon, labels.waiting],
         ]
 
         email_search = None
@@ -256,6 +256,11 @@ def main():
                 debug('analyze')
                 break
 
+            # scheduled
+            if labels.scheduled in thread.automon_messages_labels:
+                debug('scheduled')
+                continue
+
             # sent
             if labels.sent in _latest_clean.automon_labels:
 
@@ -307,13 +312,13 @@ def main():
         if labels.draft in message.automon_labels:
             continue
 
-        _message = f"{message.to_dict()}"
+        _message = f"{message.to_prompt()}"
 
         import re
 
-        _del = re.compile(r"'data': ('[a-zA-Z0-9-_=]+')").findall(_message)
-        for _x in _del:
-            _message = _message.replace(_x, "''")
+        # _del = re.compile(r"'data': ('[a-zA-Z0-9-_=]+')").findall(_message)
+        # for _x in _del:
+        #     _message = _message.replace(_x, "''")
 
         if labels.draft not in message.automon_labels:
             prompts_emails.append(
@@ -348,54 +353,56 @@ def main():
     FAILED = None
     while True:
 
-        prompts = prompts_resume + prompts_emails
-        prompts.append(
-            GoogleGeminiClient.prompts.agent_machine_job_applicant,
-        )
+        def get_response(*args, **kwargs):
+            prompts = prompts_resume + prompts_emails
+            prompts.append(
+                GoogleGeminiClient.prompts.agent_machine_job_applicant,
+            )
 
-        if (labels.chat in email_selected.automon_messages_labels
-                or labels.error in email_selected.automon_messages_labels):
-            response, model = run_llm(prompts=prompts, chat=True)
-        else:
-            response, model = run_llm(prompts=prompts, chat=False)
+            if (labels.chat in email_selected.automon_messages_labels):
+                response, model = run_llm(prompts=prompts, chat=True)
+            else:
+                response, model = run_llm(prompts=prompts, chat=False)
 
-        double_check_prompts = prompts_resume + prompts_emails
-        double_check_prompts.append(
-            f"{GoogleGeminiClient.prompts.agent_machine_job_applicant}"
-        )
-        double_check_prompts.append(
-            f"RESPONSE: {response}"
-        )
-        double_check_prompts.append(
-            f"Respond True or False. Is the RESPONSE following all RULES?"
-        )
-        response_check, model = run_llm(double_check_prompts)
+            return response, model
+
+        def check_response(response):
+            double_check_prompts = prompts_resume + prompts_emails
+            double_check_prompts.append(
+                f"{GoogleGeminiClient.prompts.agent_machine_job_applicant}"
+            )
+            double_check_prompts.append(
+                f"RESPONSE: {response}"
+            )
+            double_check_prompts.append(
+                f"Respond True or False. Is the RESPONSE following all RULES?"
+            )
+            double_check, model = run_llm(double_check_prompts)
+
+            if not gemini.true_or_false(response):
+                ask = prompts_resume + prompts_emails
+                ask.append(
+                    f"RESPONSE: {response}"
+                )
+                ask.append(
+                    f"say which rule was violated"
+                )
+                double_check_prompts.append(
+                    f"write a prompt to fix what was wrong using the format: \n"
+                    f"RULE: reason goes here"
+                )
+                run_llm(prompts=double_check_prompts, chat=True)
+
+            return double_check, model
+
+        response, model = get_response(thread)
+
+        response_check, model = check_response(response)
 
         if gemini.true_or_false(response_check):
             FAILED = False
             break
         else:
-            double_check_prompts.append(
-                f"say which rule was violated"
-            )
-            double_check_prompts.append(
-                f"write a prompt to fix what was wrong"
-            )
-
-            # test = run_llm(prompts=double_check_prompts, chat=True)
-
-            response_check, model = run_llm(prompts=double_check_prompts, chat=False)
-            prompts.append(response_check)
-
-            draft_error = gmail.draft_create(
-                threadId=email_selected.id,
-                draft_body=response + "\n\n" + response_check,
-            )
-            draft_get = gmail.draft_get_automon(id=draft_error.id)
-            gmail.messages_modify(id=draft_get.id, addLabelIds=[labels.error])
-
-            prompts.append(response_check)
-
             FAILED = True
 
     def create_draft():
