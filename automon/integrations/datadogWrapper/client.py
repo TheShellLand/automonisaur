@@ -41,7 +41,7 @@ class DatadogClientRest(object):
     def validate(self):
         url = V1(self.config.host).api.validate.endpoint
 
-        self.requests.session.headers.update(self.config.headers())
+        self.requests.update_headers(self.config.headers())
         response = self.requests.get(url=url)
         response_validate = self.requests.to_dict()
 

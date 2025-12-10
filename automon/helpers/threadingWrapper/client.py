@@ -36,7 +36,7 @@ class ThreadingClient(object):
         current_thread = threading.current_thread()
 
         try:
-            log.debug(f"[ThreadingClient] :: {current_thread.name} :: wrapper started")
+            log.debug(f"[ThreadingClient] :: wrapper :: {current_thread.name} :: {target=} :: {args=}")
             result = target(*args)
             current_thread.result = result
             current_thread.exception = None

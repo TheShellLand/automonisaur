@@ -56,7 +56,7 @@ class SwimlaneClientRest(object):
         apiKey = dict(json.loads(self.requests.content)).get('token')
         self.config.apiKey = apiKey
 
-        self.requests.session.headers.update(self.config.headers)
+        self.requests.update_headers(self.config.headers)
 
         self.config.userName_model = await self.requests.to_dict()
 
@@ -66,7 +66,7 @@ class SwimlaneClientRest(object):
         """Login with username and password"""
         url = f'{self.host}/{User.authorize}'
 
-        self.requests.session.headers.update(self.config.headers_jwt_token)
+        self.requests.update_headers(self.config.headers_jwt_token)
 
         response = await self.requests.get(
             url=url,

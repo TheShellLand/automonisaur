@@ -1,5 +1,6 @@
 import bs4
 import json
+import threading
 import requests
 import requests.adapters
 
@@ -19,14 +20,16 @@ class RequestsClient(object):
 
         self.config = config or RequestsConfig()
 
+        self._thread_local = threading.local()
+
         self.url: str = url
         self.data: any = data
         self.errors: bytes = b''
-        self.headers: dict = headers
         self.response = None
         self.requests = requests
-        self.session = self.requests.Session()
         self.proxies = self.config.get_proxy()
+
+        self.headers = headers or {}
 
         self._bs4 = bs4.BeautifulSoup
 
@@ -36,6 +39,19 @@ class RequestsClient(object):
     def __len__(self):
         if self.content:
             len(self.content)
+
+    def _get_session(self) -> requests.Session:
+        """Gets the current thread's dedicated requests.Session."""
+        if not hasattr(self._thread_local, "session"):
+            session = requests.Session()
+            session.headers.update(self.headers)
+            # Create a brand new session object only if this thread doesn't have one yet
+            self._thread_local.session = session
+        return self._thread_local.session
+
+    @property
+    def session(self):
+        return self._get_session()
 
     def _log_result(self):
         if self.status_code == 200:
@@ -94,17 +110,19 @@ class RequestsClient(object):
     def _set_retry(self, max_retries: int = None, **kwargs):
 
         if max_retries is None:
-            retries = requests.adapters.Retry(total=max_retries,
-                                              backoff_factor=0.1,
-                                              **kwargs)
+            retries = self.requests.adapters.Retry(total=max_retries,
+                                                   backoff_factor=0.1,
+                                                   **kwargs)
         else:
-            retries = requests.adapters.Retry(total=max_retries,
-                                              backoff_factor=0.1,
-                                              status_forcelist=[500, 502, 503, 504],
-                                              **kwargs)
+            retries = self.requests.adapters.Retry(total=max_retries,
+                                                   backoff_factor=0.1,
+                                                   status_forcelist=[500, 502, 503, 504],
+                                                   **kwargs)
 
-        self.session.mount('http://', requests.adapters.HTTPAdapter(max_retries=retries))
-        self.session.mount('https://', requests.adapters.HTTPAdapter(max_retries=retries))
+        adapter = requests.adapters.HTTPAdapter(max_retries=retries)
+
+        self.session.mount('http://', adapter)
+        self.session.mount('https://', adapter)
 
         return self
 
@@ -308,7 +326,7 @@ class RequestsClient(object):
         return ''
 
     def update_headers(self, headers: dict):
-        return self.session.headers.update(headers)
+        return self.headers.update(headers)
 
 
 class Requests(RequestsClient):
