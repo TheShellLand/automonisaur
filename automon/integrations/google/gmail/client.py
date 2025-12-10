@@ -37,10 +37,10 @@ class AutomonLabels:
         self._color_default = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
         self._color_debug = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
         self._color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
-        self._color_enabled = Color(backgroundColor='#076239', textColor='#b9e4d0')
-        self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
-        self._color_welcome = Color(backgroundColor='#8e63ce', textColor='#ffffff')
-        self._color_processing = Color(backgroundColor='#ffbc6b', textColor='#fef1d1')
+        self._color_green = Color(backgroundColor='#076239', textColor='#b9e4d0')
+        self._color_light = Color(backgroundColor='#8e63ce', textColor='#ffffff')
+        self._color_pink = Color(backgroundColor='#b65775', textColor='#ffffff')
+        self._color_yellow = Color(backgroundColor='#ffbc6b', textColor='#fef1d1')
 
         # general
         self.draft = Label(name='DRAFT', id='DRAFT')
@@ -52,20 +52,20 @@ class AutomonLabels:
         self.automon = Label(name='automon', color=self._color_default)
 
         # welcome
-        self.welcome = Label(name='automon/welcome', color=self._color_welcome)
-        self.help = Label(name='automon/help', color=self._color_welcome)
+        # self.welcome = Label(name='automon/welcome', color=self._color_default)
+        # self.help = Label(name='automon/help', color=self._color_light)
 
         # resume
-        self.resume = Label(name='automon/resume', color=self._color_resume)
+        self.resume = Label(name='automon/resume', color=self._color_light)
 
         # analyze
         self.analyze = Label(name='automon/analyze', color=self._color_default)
 
         # chat
-        self.chat = Label(name='automon/chat', color=self._color_debug)
+        self.chat = Label(name='automon/chat', color=self._color_light)
 
         # enable auto reply
-        self.auto_reply_enabled = Label(name='automon/auto reply enabled', color=self._color_enabled)
+        self.auto_reply_enabled = Label(name='automon/auto reply enabled', color=self._color_default)
 
         # need user input
         self.user_action_required = Label(name='automon/user action required', color=self._color_error)
@@ -76,11 +76,11 @@ class AutomonLabels:
         # scheduled
         self.scheduled = Label(name='automon/scheduled', color=self._color_default)
 
-        # waiting
-        self.waiting = Label(name='automon/waiting', color=self._color_default)
+        # waiting for interview
+        self.waiting_for_interview = Label(name='automon/waiting for interview', color=self._color_default)
 
         # processing
-        self.processing = Label(name='automon/processing', color=self._color_processing)
+        self.processing = Label(name='automon/processing', color=self._color_yellow)
 
     @property
     def all_labels(self):
