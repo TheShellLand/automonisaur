@@ -24,6 +24,7 @@ from automon.integrations.requestsWrapper import RequestsClient
 from .config import GoogleGmailConfig
 from .v1 import *
 from ..gmail import v1
+from .exceptions import *
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)

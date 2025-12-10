@@ -1,0 +1,2 @@
+class ExceptionGmailNotAuthorized(Exception):
+    pass
