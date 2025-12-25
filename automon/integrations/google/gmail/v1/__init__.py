@@ -996,7 +996,7 @@ class Message(Dict):
         email = {}
         email['from'] = self.automon_email_from
         email['to'] = self.automon_email_to
-        email['subject'] = self.automon_header_subject
+        email['subject'] = self.automon_header_subject.value
         email['date'] = self.automon_date_local_str
         email['date_epoch'] = self.automon_date_epoch_s
 
@@ -1009,7 +1009,8 @@ class Message(Dict):
             if self.automon_payload.automon_parts:
                 parts = self.automon_payload.automon_parts
                 for part in parts:
-                    raise
+                    if part.mimeType == 'text/plain':
+                        email['body'] == part.automon_body.automon_data_html_text
 
         return email
 
