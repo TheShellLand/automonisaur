@@ -885,8 +885,8 @@ class Message(Dict):
 
     @property
     def automon_attachments_first(self) -> MessagePartBody | MessagePart | None:
-        if list(self.automon_attachments):
-            return list(self.automon_attachments)[0]
+        if list(self.automon_attachments()):
+            return list(self.automon_attachments())[0]
 
     @property
     def automon_date_epoch_s(self) -> float | None:
