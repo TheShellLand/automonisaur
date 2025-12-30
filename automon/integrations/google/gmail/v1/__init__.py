@@ -1010,7 +1010,14 @@ class Message(Dict):
                 parts = self.automon_payload.automon_parts
                 for part in parts:
                     if part.mimeType == 'text/plain':
-                        email['body'] == part.automon_body.automon_data_html_text
+                        email['body'] = part.automon_body.automon_data_html_text
+                        break
+
+                    more_parts = part.automon_parts
+                    for more_part in more_parts:
+                        if more_part.mimeType == 'text/plain':
+                            email['body'] = more_part.automon_body.automon_data_html_text
+                            break
 
         return email
 
