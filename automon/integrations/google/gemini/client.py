@@ -106,12 +106,12 @@ class GoogleGeminiClient(object):
             prompt = ''
             lines = []
 
-            print(f"INPUT (type /done to send prompt): ")
+            print(f"INPUT (end prompt with /send): ")
             while True:
 
                 try:
                     line = input()
-                    if line.strip() == '/done':
+                    if line.strip() == '/send':
                         break
                     if line.strip() == '/exit':
                         return self
