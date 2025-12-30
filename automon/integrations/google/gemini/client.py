@@ -111,8 +111,10 @@ class GoogleGeminiClient(object):
 
                 try:
                     line = input()
-                    if line.strip() == '/done' or '/exit':
+                    if line.strip() == '/done':
                         break
+                    if line.strip() == '/exit':
+                        return self
 
                     lines.append(line)
 
