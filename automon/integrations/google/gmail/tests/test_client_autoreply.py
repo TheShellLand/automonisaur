@@ -379,7 +379,7 @@ def main():
             )
             double_check, model = run_llm(double_check_prompts)
 
-            if not gemini.true_or_false(response):
+            if gemini.response_is_false(response):
                 ask = prompts_resume + prompts_emails
                 ask.append(
                     f"RESPONSE: {response}"
@@ -399,7 +399,7 @@ def main():
 
         response_check, model = check_response(response)
 
-        if gemini.true_or_false(response_check):
+        if gemini.reponse_is_true(response_check):
             FAILED = False
             break
         else:

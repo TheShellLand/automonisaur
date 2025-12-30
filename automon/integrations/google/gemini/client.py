@@ -161,10 +161,16 @@ class GoogleGeminiClient(object):
     def set_random_model(self):
         return self.set_model(random.choice(self.models_in_use))
 
-    def true_or_false(self, response: str) -> bool | None:
+    def reponse_is_true(self, response: str) -> bool | None:
         if 'true' in response.lower():
             return True
         if 'false' in response.lower():
             return False
+        logger.error(f"[GoogleGeminiClient] :: reponse_is_true :: neither true or false")
 
-        logger.error(f"[GoogleGeminiClient] :: true_or_false :: neither true or false")
+    def response_is_false(self, response: str) -> bool | None:
+        if 'false' in response.lower():
+            return True
+        if 'true' in response.lower():
+            return False
+        logger.error(f"[GoogleGeminiClient] :: response_is_false :: neither true or false")
