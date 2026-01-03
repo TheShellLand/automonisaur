@@ -186,7 +186,7 @@ class OllamaClient(object):
 
         logger.debug(f'[OllamaClient] :: chat_forever :: {safe_word=}')
         print(
-            f":: SYSTEM :: Remember to say your safe word and the chat experience will end. \n\n"
+            f":: INFO :: Remember to say your safe word and the chat experience will end. \n\n"
             f"Your safe word is: {safe_word}\n")
 
         while True:
