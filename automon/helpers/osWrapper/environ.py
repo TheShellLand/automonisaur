@@ -1,7 +1,7 @@
 import os
 
 
-def environ(env_var: str, default: any = None) -> bool or str or None:
+def environ(env_var: str, default = None) -> bool | str | None:
     """Get environment variable, else return default"""
     env = os.getenv(env_var)
     if env:

@@ -1,3 +1,6 @@
+# Airtable
+AIRTABLE_TOKEN=
+
 # Codecov
 CODECOV_TOKEN=
 
@@ -134,7 +137,6 @@ SPLUNK_HOST=splunkcloud.com
 SPLUNK_PORT=8089
 SPLUNK_USERNAME=
 SPLUNK_PASSWORD=
-
 
 # Swift buckets
 SWIFT_SOURCE_BUCKET=

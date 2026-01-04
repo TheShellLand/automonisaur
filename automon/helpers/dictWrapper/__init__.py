@@ -72,4 +72,4 @@ class Dict(dict):
             return self._to_dict(self)
 
     def to_json(self, indent: int = None):
-        return json.dumps(self.__dict__, indent=indent)
+        return json.dumps(self._to_dict(self), indent=indent)

@@ -50,13 +50,13 @@ class RequestsClient(object):
         return self._thread_local.session
 
     @property
-    def session(self):
+    def session(self) -> requests.Session:
         return self._get_session()
 
     def _log_result(self):
         if self.status_code == 200:
             msg = [
-                'RequestsClient',
+                '[RequestsClient]',
                 self.response.request.method,
                 f'{self.status_code}',
                 f'{self.response.url}',
@@ -67,7 +67,7 @@ class RequestsClient(object):
             return logger.debug(msg)
 
         msg = [
-            'RequestsClient',
+            '[RequestsClient]',
             self.response.request.method,
             f'{self.status_code}',
             f'{self.response.url}',
@@ -126,6 +126,9 @@ class RequestsClient(object):
 
         return self
 
+    def set_global_retry(self, max_retries: int, **kwargs):
+        return self._set_retry(max_retries=max_retries, **kwargs)
+
     def set_user_agent(self, user_agent: str):
         self.update_headers({'User-Agent': user_agent})
         return self
@@ -142,7 +145,7 @@ class RequestsClient(object):
             else:
                 self.proxies = self.config.get_proxy()
 
-        logger.debug(f'RequestsClient :: SET PROXY :: {self.proxies}')
+        logger.debug(f'[RequestsClient] :: SET PROXY :: {self.proxies}')
         return self
 
     def delete(
@@ -159,7 +162,7 @@ class RequestsClient(object):
         self._set_retry(max_retries=max_retries)
         self._set_proxy()
 
-        logger.debug(f'RequestsClient :: DELETE :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
+        logger.debug(f'[RequestsClient] :: DELETE :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
         try:
             self.response = self.session.delete(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
@@ -170,7 +173,7 @@ class RequestsClient(object):
 
         except Exception as error:
             self.errors = error
-            raise Exception(f'RequestsClient :: DELETE :: ERROR :: {error=}')
+            raise Exception(f'[RequestsClient] :: DELETE :: ERROR :: {error=}')
         return False
 
     def delete_self(self, *args, **kwargs):
@@ -191,7 +194,7 @@ class RequestsClient(object):
         self._set_retry(max_retries=max_retries)
         self._set_proxy()
 
-        logger.debug(f'RequestsClient :: GET :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
+        logger.debug(f'[RequestsClient] :: GET :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
         try:
             self.response = self.session.get(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
@@ -204,7 +207,7 @@ class RequestsClient(object):
 
         except Exception as error:
             self.errors = error
-            raise Exception(f'RequestsClient :: GET :: ERROR :: {error=}')
+            raise Exception(f'[RequestsClient] :: GET :: ERROR :: {error=}')
         return False
 
     def get_self(self, *args, **kwargs):
@@ -225,7 +228,7 @@ class RequestsClient(object):
         self._set_retry(max_retries=max_retries)
         self._set_proxy()
 
-        logger.debug(f'RequestsClient :: PATCH :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
+        logger.debug(f'[RequestsClient] :: PATCH :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
         try:
             self.response = self.session.patch(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
@@ -238,7 +241,7 @@ class RequestsClient(object):
 
         except Exception as error:
             self.errors = error
-            raise Exception(f'RequestsClient :: PATCH :: ERROR :: {error=}')
+            raise Exception(f'[RequestsClient] :: PATCH :: ERROR :: {error=}')
         return False
 
     def patch_self(self, *args, **kwargs):
@@ -259,7 +262,7 @@ class RequestsClient(object):
         self._set_retry(max_retries=max_retries)
         self._set_proxy()
 
-        logger.debug(f'RequestsClient :: POST :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
+        logger.debug(f'[RequestsClient] :: POST :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
         try:
             self.response = self.session.post(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
@@ -272,7 +275,7 @@ class RequestsClient(object):
 
         except Exception as error:
             self.errors = error
-            raise Exception(f'RequestsClient :: POST :: ERROR :: {error=}')
+            raise Exception(f'[RequestsClient] :: POST :: ERROR :: {error=}')
         return False
 
     def post_self(self, *args, **kwargs):
@@ -293,7 +296,7 @@ class RequestsClient(object):
         self._set_retry(max_retries=max_retries)
         self._set_proxy()
 
-        logger.debug(f'RequestsClient :: PUT :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
+        logger.debug(f'[RequestsClient] :: PUT :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
         try:
             self.response = self.session.put(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
@@ -306,7 +309,7 @@ class RequestsClient(object):
 
         except Exception as error:
             self.errors = error
-            raise Exception(f'RequestsClient :: PUT :: ERROR :: {error=}')
+            raise Exception(f'[RequestsClient] :: PUT :: ERROR :: {error=}')
         return False
 
     def put_self(self, *args, **kwargs):
@@ -329,12 +332,16 @@ class RequestsClient(object):
             return self.response.text
         return ''
 
+    @property
+    def _to_dict(self):
+        return self.to_dict()
+
     def to_dict(self) -> dict:
         if self.response is not None:
             try:
                 return json.loads(self.content)
             except Exception as error:
-                raise Exception(f'RequestsClient :: TO DICT :: ERROR :: {error=}')
+                raise Exception(f'[RequestsClient] :: TO DICT :: ERROR :: {error=}')
         return {}
 
     def to_json(self) -> str:
@@ -342,7 +349,7 @@ class RequestsClient(object):
             try:
                 return json.dumps(json.loads(self.content))
             except Exception as error:
-                raise Exception(f'RequestsClient :: TO JSON :: ERROR :: {error=}')
+                raise Exception(f'[RequestsClient] :: TO JSON :: ERROR :: {error=}')
         return ''
 
     def update_headers(self, headers: dict):
