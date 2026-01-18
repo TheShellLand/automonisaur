@@ -38,6 +38,8 @@ class SeleniumBrowser(object):
     config: SeleniumConfig
     webdriver: selenium.webdriver
     status: int
+    logs: dict
+    cache: dict
 
     def __init__(self, config: SeleniumConfig = None):
         """A selenium wrapper"""

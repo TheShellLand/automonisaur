@@ -4,7 +4,7 @@ logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(INFO)
 
 
-def set_window_size(width: int = 1920, height: int = 1080, device_type: str = None) -> (int, int):
+def set_window_size(width: int = 1920, height: int = 1080, device_type: str = None) -> tuple[int, int]:
     """set browser resolution"""
 
     if device_type == 'pixel3':

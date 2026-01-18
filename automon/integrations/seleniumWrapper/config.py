@@ -10,9 +10,19 @@ logger.setLevel(DEBUG)
 
 
 class SeleniumConfig(object):
+    webdriver: selenium.webdriver
+    webdriver_wrapper: None
+
+    cookies_autosave: bool
+    cookies_base64: str
+    cookies_file: str
+
+    proxies: list
+    use_random_proxy: bool
+
     def __init__(self):
         self._webdriver = None
-        self.webdriver_wrapper = None
+        self.webdriver_wrapper: object = None
 
         self.cookies_autosave: bool = environ('SELENIUM_COOKIES_AUTOSAVE', False)
         self._cookies_base64 = environ('SELENIUM_COOKIES_BASE64')

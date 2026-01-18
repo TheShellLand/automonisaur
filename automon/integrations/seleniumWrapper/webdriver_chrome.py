@@ -2,6 +2,7 @@ import os
 import sys
 import selenium
 import selenium.webdriver
+
 import automon.helpers.subprocessWrapper
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
@@ -15,15 +16,22 @@ logger.setLevel(DEBUG)
 
 
 class ChromeWrapper(object):
+    webdriver: selenium.webdriver
+    chrome_options = selenium.webdriver.ChromeOptions
+    chromedriver_path: list
+    ChromeService: selenium.webdriver.ChromeService
+    window_size: tuple[int, int]
+    enable_antibot_detection: bool
+    service_args: list
 
     def __init__(self):
-        self._webdriver = None
-        self._chrome_options = selenium.webdriver.ChromeOptions()
-        self._chromedriver_path = environ_list('SELENIUM_CHROMEDRIVER_PATH')
-        self._ChromeService = None
-        self._window_size = set_window_size()
-        self._enable_antibot_detection = None
-        self._service_args = []
+        self._webdriver: selenium.webdriver = None
+        self._chrome_options: selenium.webdriver.ChromeOptions = selenium.webdriver.ChromeOptions()
+        self._chromedriver_path: list = environ_list('SELENIUM_CHROMEDRIVER_PATH')
+        self._ChromeService: selenium.webdriver.ChromeService = None
+        self._window_size: tuple[int, int] = set_window_size()
+        self._enable_antibot_detection: bool = None
+        self._service_args: list = []
 
     def __repr__(self):
         if self._webdriver:
