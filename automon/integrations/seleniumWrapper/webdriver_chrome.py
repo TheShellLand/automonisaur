@@ -122,23 +122,31 @@ class ChromeWrapper(object):
 
         """
         logger.debug(f'[ChromeWrapper] :: add_argument :: --disable-blink-features=AutomationControlled')
-        self.chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        arg = f"--disable-blink-features=AutomationControlled"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def disable_certificate_verification(self):
         logger.debug(f'[ChromeWrapper] :: add_argument :: --ignore-certificate-errors')
         logger.warning(f'[ChromeWrapper] :: disable_certificate_verification :: Certificates are not verified')
-        self.chrome_options.add_argument('--ignore-certificate-errors')
+        arg = f"--ignore-certificate-errors"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def disable_extensions(self):
         logger.debug(f'[ChromeWrapper] :: add_argument :: --disable-extensions')
-        self.chrome_options.add_argument("--disable-extensions")
+        arg = f"--disable-extensions"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def disable_infobars(self):
         logger.debug(f'[ChromeWrapper] :: add_argument :: --disable-infobars')
-        self.chrome_options.add_argument("--disable-infobars")
+        arg = f"--disable-infobars"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def disable_javascript_webdriver_prop(self):
@@ -166,13 +174,17 @@ class ChromeWrapper(object):
 
     def disable_sandbox(self):
         logger.debug(f'[ChromeWrapper] :: add_argument :: --no-sandbox')
-        self.chrome_options.add_argument('--no-sandbox')
+        arg = f"--no-sandbox"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def disable_shm(self):
         logger.warning('[ChromeWrapper] :: disable_shm :: Disabled shm will use disk I/O, and will be slow')
         logger.debug(f'[ChromeWrapper] :: add_argument :: --disable-dev-shm-usage')
-        self.chrome_options.add_argument('--disable-dev-shm-usage')
+        arg = f"--disable-dev-shm-usage"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def disable_userAutomationExtension(self):
@@ -220,12 +232,16 @@ class ChromeWrapper(object):
 
     def enable_fullscreen(self):
         logger.debug(f'[ChromeWrapper] :: add_argument :: --start-fullscreen')
-        self.chrome_options.add_argument("--start-fullscreen")
+        arg = f"--start-fullscreen"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def enable_headless(self):
         logger.debug(f'[ChromeWrapper] :: add_argument :: headless')
-        self.chrome_options.add_argument('headless')
+        arg = f"headless"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def enable_logging(self):
@@ -250,12 +266,16 @@ class ChromeWrapper(object):
 
     def enable_maximized(self):
         logger.debug(f'[ChromeWrapper] :: add_argument :: --start-maximized')
-        self.chrome_options.add_argument('--start-maximized')
+        arg = '--start-maximized'
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def enable_proxy(self, proxy: str):
         logger.debug(f'[ChromeWrapper] :: add_argument :: --proxy-server={proxy}')
-        self.chrome_options.add_argument(f"--proxy-server={proxy}")
+        arg = f"--proxy-server={proxy}"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def enable_translate(self, native_language: str = 'en'):
@@ -470,7 +490,9 @@ class ChromeWrapper(object):
 
     def set_locale(self, locale: str = 'en'):
         logger.debug(f'[ChromeWrapper] :: add_argument :: "--lang={locale}"')
-        self.chrome_options.add_argument(f"--lang={locale}")
+        arg = f"--lang={locale}"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def set_locale_experimental(self, locale: str = 'en-US'):
@@ -489,7 +511,9 @@ class ChromeWrapper(object):
 
     def set_user_agent(self, user_agent: str):
         logger.debug(f'[ChromeWrapper] :: add_argument :: f"user-agent={user_agent}"')
-        self.chrome_options.add_argument(f"user-agent={user_agent}")
+        arg = f"user-agent={user_agent}"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def set_user_data_dir(self, user_data_dir: str = None):
@@ -497,7 +521,9 @@ class ChromeWrapper(object):
             user_data_dir = automon.Tempfile.mkdtemp()
 
         logger.debug(f'[ChromeWrapper] :: add_argument :: f"user-data-dir={user_data_dir}"')
-        self.chrome_options.add_argument(f"user-data-dir={user_data_dir}")
+        arg = f"user-data-dir={user_data_dir}"
+        if arg not in self.chrome_options._arguments:
+            self.chrome_options.add_argument(arg)
         return self
 
     def set_window_size(self, *args, **kwargs):
