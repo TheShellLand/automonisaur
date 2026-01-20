@@ -447,21 +447,19 @@ class ChromeWrapper(object):
 
         logger.debug(f'[ChromeWrapper] :: run :: {self.ChromeService=}')
 
-        try:
-            self._webdriver = selenium.webdriver.Chrome(
-                service=self.ChromeService,
-                options=self.chrome_options
-            )
+        self._webdriver = selenium.webdriver.Chrome(
+            service=self.ChromeService,
+            options=self.chrome_options
+        )
 
-            if self._enable_antibot_detection:
-                self.disable_javascript_webdriver_prop()
+        if self._enable_antibot_detection:
+            self.disable_javascript_webdriver_prop()
 
-            logger.debug(f'[ChromeWrapper] :: run :: {self=}')
-            logger.info(f'[ChromeWrapper] :: run :: done')
+        logger.debug(f'[ChromeWrapper] :: run :: {self=}')
+
+        if self._webdriver:
             return True
-
-        except Exception as error:
-            raise Exception(f'[ChromeWrapper] :: run :: failed :: {error=}')
+        return False
 
     @property
     def service_args(self):

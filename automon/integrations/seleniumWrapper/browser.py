@@ -1077,30 +1077,17 @@ class SeleniumBrowser(object):
         """refresh the page"""
         logger.debug(f'[SeleniumBrowser] :: refresh :: {self.current_url=}')
         refresh = self.webdriver.refresh()
-        logger.info(f'[SeleniumBrowser] :: refresh :: done')
         return refresh or True
 
     def run(self) -> bool:
         """run webdriver"""
-        logger.debug(f'[SeleniumBrowser] :: run')
-
-        try:
-            run = self.config.run()
-            logger.info(f'[SeleniumBrowser] :: run :: done')
-            return run
-        except Exception as error:
-            traceback.print_exc()
-            raise Exception(f'[SeleniumBrowser] :: run :: failed :: {error=}')
+        return self.config.run()
 
     def save_cookies_for_current_url(self) -> bool:
         """save cookies for current url"""
-        logger.debug(f'[SeleniumBrowser] :: save_cookies_for_current_url :: ')
-
         filename = self._url_filename(url=self.url)
         save_cookies_for_current_url = self.save_cookies_to_file(file=filename)
         logger.debug(f'[SeleniumBrowser] :: save_cookies_for_current_url :: {self.current_url} :: {filename}')
-
-        logger.info(f'[SeleniumBrowser] :: save_cookies_for_current_url :: done')
         return save_cookies_for_current_url
 
     def save_cookies_to_file(self, file: str) -> bool:

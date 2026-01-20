@@ -102,7 +102,6 @@ class SeleniumConfig(object):
         run = self.webdriver_wrapper.run()
         self._webdriver = self.webdriver_wrapper.webdriver
         logger.debug(f'SeleniumConfig :: run :: {self.webdriver=}')
-        logger.info(f'SeleniumConfig :: run :: DONE')
         return run
 
     def start(self):
