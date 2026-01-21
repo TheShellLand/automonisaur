@@ -41,8 +41,8 @@ class RequestsClient(object):
             len(self.content)
 
     def __bool__(self):
-        if self.response:
-            if self.response.status_code == 200:
+        if self.status_code:
+            if self.status_code == 200:
                 return True
         return False
 
