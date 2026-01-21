@@ -5,7 +5,7 @@ import functools
 from typing import Optional
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
-from automon.integrations.requestsWrapper import Requests
+from automon.integrations.requestsWrapper import RequestsClient
 
 from .action_run import ActionRun
 from .artifact import Artifact
@@ -42,7 +42,7 @@ class SplunkSoarClient:
         """Splunk SOAR Client"""
 
         self.config = config or SplunkSoarConfig(host=host, user=user, password=password)
-        self.client = Requests(headers=self.config.headers)
+        self.client = RequestsClient(headers=self.config.headers)
 
         self.action_run = None
         self.app = None

@@ -40,6 +40,12 @@ class RequestsClient(object):
         if self.content:
             len(self.content)
 
+    def __bool__(self):
+        if self.response:
+            if self.response.status_code == 200:
+                return True
+        return False
+
     def _get_session(self) -> requests.Session:
         """Gets the current thread's dedicated requests.Session."""
         if not hasattr(self._thread_local, "session"):
@@ -354,7 +360,3 @@ class RequestsClient(object):
 
     def update_headers(self, headers: dict):
         return self.headers.update(headers)
-
-
-class Requests(RequestsClient):
-    pass
