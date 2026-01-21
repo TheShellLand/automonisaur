@@ -8,13 +8,9 @@ browser.config.webdriver_wrapper.enable_defaults().enable_headless()
 
 
 class SeleniumClientTest(unittest.TestCase):
-    try:
-        if browser.run():
-            def test(self):
-                self.assertTrue(browser.quit())
-
-    except:
-        pass
+    if browser.is_ready():
+        def test(self):
+            self.assertTrue(browser.quit())
 
 
 if __name__ == '__main__':

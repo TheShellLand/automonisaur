@@ -1018,6 +1018,14 @@ class SeleniumBrowser(object):
         logger.info(f'[SeleniumBrowser] :: get_screenshot_as_png :: done')
         return get_screenshot_as_png
 
+    def is_ready(self):
+        try:
+            self.run()
+            return True
+        except:
+            pass
+        return False
+
     def is_running(self) -> bool:
         """webdriver is running"""
 

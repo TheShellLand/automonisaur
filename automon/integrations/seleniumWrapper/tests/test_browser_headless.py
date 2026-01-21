@@ -8,21 +8,17 @@ browser.config.webdriver_wrapper.enable_defaults().enable_headless()
 
 
 class SeleniumClientTest(unittest.TestCase):
-    try:
-        if browser.run():
+    if browser.is_ready():
 
-            def test(self):
+        def test(self):
 
-                if browser.get('http://1.1.1.1'):
+            if browser.get('http://1.1.1.1'):
 
-                    if browser.check_page_load_finished():
-                        self.assertTrue(browser.save_screenshot())
-                        self.assertTrue(browser.save_screenshot(folder='./'))
+                if browser.check_page_load_finished():
+                    self.assertTrue(browser.save_screenshot())
+                    self.assertTrue(browser.save_screenshot(folder='./'))
 
-                        browser.quit()
-
-    except:
-        pass
+                    browser.quit()
 
 
 if __name__ == '__main__':

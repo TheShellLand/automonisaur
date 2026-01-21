@@ -8,17 +8,13 @@ browser.config.webdriver_wrapper.enable_defaults().enable_headless()
 
 
 class Test(unittest.TestCase):
-    try:
-        if browser.run():
+    if browser.is_ready():
 
-            def test_autosave(self):
-                if browser.get('http://bing.com'):
-                    self.assertTrue(browser.autosaving_cookies())
+        def test_autosave(self):
+            if browser.get('http://bing.com'):
+                self.assertTrue(browser.autosaving_cookies())
 
-                    browser.quit()
-
-    except:
-        pass
+                browser.quit()
 
 
 if __name__ == '__main__':

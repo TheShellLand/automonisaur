@@ -9,7 +9,7 @@ browser.set_webdriver_wrapper(
 
 
 class SeleniumClientTest(unittest.TestCase):
-    if browser.run():
+    if browser.is_ready():
 
         def test_fake_page(self):
             try:
@@ -280,7 +280,7 @@ class SeleniumClientTest(unittest.TestCase):
             NotImplemented
 
         def tset_run(self):
-            self.assertTrue(browser.run())
+            self.assertTrue(browser.is_ready())
 
         def tset_save_cookies_for_current_url(self):
             if browser.get('https://1.1.1.1'):
