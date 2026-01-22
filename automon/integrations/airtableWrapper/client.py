@@ -46,16 +46,11 @@ class AirtableClient(object):
             max_rate = AirtableClient._global_rate
 
         with AirtableClient._last_request_time_lock:
-            if AirtableClient._last_request_time:
-                time_since_last_request = time.time() - AirtableClient._last_request_time
-            else:
-                time_since_last_request = 0
+            time_since_last_request = time.time() - AirtableClient._last_request_time
 
         if time_since_last_request and max_rate > time_since_last_request:
-            logger.debug(f'[AirtableClient] :: _is_rate_limited :: True :: {time_since_last_request=}')
+            logger.debug(f'[AirtableClient] :: _is_rate_limited :: {time_since_last_request=}')
             return True
-
-        logger.debug(f'[AirtableClient] :: _is_rate_limited :: False :: {time_since_last_request=}')
         return False
 
     def _update_last_request(self):
