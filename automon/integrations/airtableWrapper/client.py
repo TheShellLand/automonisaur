@@ -61,8 +61,10 @@ class AirtableClient(object):
             self,
             url: str,
             **kwargs) -> RequestsClient:
+        self._wait_for_rate_limit()
 
         response = self.requests.get_self(url=url, **kwargs)
+
         self._update_last_request()
         return response
 
@@ -87,7 +89,6 @@ class AirtableClient(object):
         return response
 
     def user_info(self) -> dict:
-        self._wait_for_rate_limit()
 
         url = self._api.users.info()
         response = self._requests_get(url=url).to_dict()
@@ -96,7 +97,6 @@ class AirtableClient(object):
         return response
 
     def bases_list(self) -> BasesResponse:
-        self._wait_for_rate_limit()
 
         url = self._api.bases.list()
         response = self._requests_get(url=url).to_dict()
@@ -106,11 +106,21 @@ class AirtableClient(object):
         return response
 
     def bases_get(self, base_name: str) -> Base | None:
-        self._wait_for_rate_limit()
         return self.bases_list().get_base(base_name=base_name)
 
+    def records_list(
+            self,
+            baseId: str,
+            tableId: str = None,
+            tableName: str = None) -> RecordsResponse:
+
+        url = self._api.records.list(baseId=baseId, tableId=tableId, tableName=tableName)
+        response = self._requests_get(url).to_dict()
+        response = RecordsResponse().automon_update(response)
+
+        return response
+
     def tables_list(self, baseId: str) -> TablesResponse:
-        self._wait_for_rate_limit()
 
         url = self._api.tables.list(baseId=baseId)
         response = self._requests_get(url=url).to_dict()

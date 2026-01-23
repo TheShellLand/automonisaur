@@ -229,9 +229,98 @@ class TablesApi(V0):
         return f'{self.api}/meta/bases/{baseId}/tables'
 
 
+class RecordField(Dict):
+
+    def __init__(self):
+        super().__init__()
+
+
+class Record(Dict):
+    createdTime: str
+    fields: dict
+    id: str
+
+    def __init__(self):
+        super().__init__()
+        self.fields = {}
+
+    def _enhance(self):
+        self.fields = RecordField().automon_update(self.fields)
+
+
+class RecordsResponse(Dict):
+    records: list[Record]
+
+    def __init__(self):
+        super().__init__()
+        self.records = []
+
+    def __bool__(self):
+        if self.records:
+            return True
+        return False
+
+    def _enhance(self):
+        self.records = [Record().automon_update(x) for x in self.records]
+
+
+class RecordsApi(V0):
+
+    def create(self, baseId: str, tableId: str = None, tableName: str = None):
+        """requests.post"""
+        if tableId:
+            tableIdOrName = tableId
+
+        if tableName:
+            tableIdOrName = tableName
+
+        return f'{self.api}/{baseId}/{tableIdOrName}'
+
+    def delete(self, baseId: str, recordId: str, tableId: str = None, tableName: str = None):
+        """requests.delete"""
+        if tableId:
+            tableIdOrName = tableId
+
+        if tableName:
+            tableIdOrName = tableName
+
+        return f'{self.api}/{baseId}/{tableIdOrName}/{recordId}'
+
+    def get(self, baseId: str, recordId: str, tableId: str = None, tableName: str = None):
+        """requests.get"""
+        if tableId:
+            tableIdOrName = tableId
+
+        if tableName:
+            tableIdOrName = tableName
+
+        return f'{self.api}/{baseId}/{tableIdOrName}/{recordId}'
+
+    def list(self, baseId: str, tableId: str = None, tableName: str = None):
+        """requests.get"""
+        if tableId:
+            tableIdOrName = tableId
+
+        if tableName:
+            tableIdOrName = tableName
+
+        return f'{self.api}/{baseId}/{tableIdOrName}'
+
+    def update(self, baseId: str, recordId: str, tableId: str = None, tableName: str = None):
+        """requests.put requests.patch"""
+        if tableId:
+            tableIdOrName = tableId
+
+        if tableName:
+            tableIdOrName = tableName
+
+        return f'{self.api}/{baseId}/{tableIdOrName}/{recordId}'
+
+
 class AirtableApi:
     bases = BasesApi()
     tables = TablesApi()
     users = UsersApi()
+    records = RecordsApi()
 
     table_field = TableField
