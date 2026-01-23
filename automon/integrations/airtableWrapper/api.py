@@ -67,54 +67,53 @@ class BasesApi(V0):
         return f'{self.api}/meta/bases/{baseId}/tables'
 
 
-class TableOptions(Enum):
+class TableOptions(object):
     color: str
     icon: str
+    number = {'precision': 8}
 
 
-class TableType(Enum):
-    """
-    AI Text
-    Attachment
-    Auto number
-    Barcode
-    Button
-    Checkbox
-    Collaborator
-    Count
-    Created by
-    Created time
-    Currency
-    Date
-    Date and time
-    Duration
-    Email
-    Formula
-    Last modified by
-    Last modified time
-    Link to another record
-    Long text
-    Lookup
-    Multiple collaborator
-    Multiple select
-    Number
-    Percent
-    Phone
-    Rating
-    Rich text
-    Rollup
-    Single line text
-    Single select
-    Sync source
-    Url
+class TableFieldType(object):
+    """"""
 
-    ref: https://airtable.com/developers/web/api/field-model
-    """
-    TYPE = ('singleLineText', 'checkbox')
+    singleLineText = 'singleLineText'
+    checkbox = 'checkbox'
+    email = 'email'
+    url = 'url'
+    multilineText = 'multilineText'
+    number = 'number'
+    percent = 'percent'
+    currency = 'currency'
+    singleSelect = 'singleSelect'
+    multipleSelects = 'multipleSelects'
+    singleCollaborator = 'singleCollaborator'
+    multipleCollaborators = 'multipleCollaborators'
+    multipleRecordLinks = 'multipleRecordLinks'
+    date = 'date'
+    dateTime = 'dateTime'
+    phoneNumber = 'phoneNumber'
+    multipleAttachments = 'multipleAttachments'
+    formula = 'formula'
+    createdTime = 'createdTime'
+    rollup = 'rollup'
+    count = 'count'
+    lookup = 'lookup'
+    multipleLookupValues = 'multipleLookupValues'
+    autoNumber = 'autoNumber'
+    barcode = 'barcode'
+    rating = 'rating'
+    richText = 'richText'
+    duration = 'duration'
+    lastModifiedTime = 'lastModifiedTime'
+    button = 'button'
+    createdBy = 'createdBy'
+    lastModifiedBy = 'lastModifiedBy'
+    externalSyncSource = 'externalSyncSource'
+    aiText = 'aiText'
 
-
-class TableFieldType(Enum):
-    TYPE = ('singleLineText', 'checkbox')
+    str = singleLineText
+    int = number
+    float = number
 
 
 class TableField(Dict):
@@ -127,7 +126,7 @@ class TableField(Dict):
             self,
             name: str = 'field',
             description: str = '',
-            type: TableType = 'singleLineText',
+            type: TableFieldType = TableFieldType.singleLineText,
             options: list[TableOptions] = [],
     ):
         super().__init__()
@@ -231,18 +230,34 @@ class TablesApi(V0):
 
 class RecordField(Dict):
 
-    def __init__(self):
+    def __init__(self, field: dict = None):
         super().__init__()
+
+        if field:
+            self.automon_update(field)
+
+    def __len__(self):
+        return self.__dict__.keys().__len__()
 
 
 class Record(Dict):
     createdTime: str
-    fields: dict
+    fields: dict[str, RecordField]
     id: str
 
-    def __init__(self):
+    def __init__(self, fields: dict | RecordField = None):
         super().__init__()
-        self.fields = {}
+        self.fields = fields
+
+        if isinstance(fields, dict):
+            self.fields = RecordField(fields)
+
+    def __repr__(self):
+        return f'{self.fields.__len__()} fields'
+
+    def __eq__(self, other):
+        if isinstance(other, Record):
+            return self.fields == other.fields or self.id == other.id
 
     def _enhance(self):
         self.fields = RecordField().automon_update(self.fields)
@@ -254,6 +269,9 @@ class RecordsResponse(Dict):
     def __init__(self):
         super().__init__()
         self.records = []
+
+    def __repr__(self):
+        return f'{self.records.__len__()} records'
 
     def __bool__(self):
         if self.records:
@@ -323,4 +341,8 @@ class AirtableApi:
     users = UsersApi()
     records = RecordsApi()
 
-    table_field = TableField
+    TableField = TableField
+    TableFieldType = TableFieldType
+    TableOptions = TableOptions
+    Record = Record
+    RecordField = RecordField

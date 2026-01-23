@@ -57,34 +57,71 @@ class AirtableClient(object):
         with AirtableClient._last_request_time_lock:
             AirtableClient._last_request_time = time.time()
 
-    def _requests_get(
+    def _requests_delete(
             self,
             url: str,
             **kwargs) -> RequestsClient:
-        self._wait_for_rate_limit()
 
-        response = self.requests.get_self(url=url, **kwargs)
+        self._wait_for_rate_limit()
+        response = self.requests.delete_self(url=url, **kwargs)
+        if not response:
+            raise
 
         self._update_last_request()
         return response
 
-    def _requests_delete(
+    def _requests_get(
             self,
             url: str,
-            data: dict,
             **kwargs) -> RequestsClient:
 
-        response = self.requests.delete_self(url=url, data=data, **kwargs)
+        self._wait_for_rate_limit()
+        response = self.requests.get_self(url=url, **kwargs)
+        if not response:
+            raise
+
         self._update_last_request()
         return response
 
     def _requests_post(
             self,
             url: str,
+            data: str,
+            **kwargs) -> RequestsClient:
+
+        self._wait_for_rate_limit()
+        response = self.requests.post_self(url=url, data=data, **kwargs)
+        if not response:
+            raise Exception(response.errors, data)
+
+        self._update_last_request()
+        return response
+
+    def _requests_patch(
+            self,
+            url: str,
             data: dict,
             **kwargs) -> RequestsClient:
 
-        response = self.requests.post_self(url=url, data=data, **kwargs)
+        self._wait_for_rate_limit()
+        response = self.requests.patch_self(url=url, data=data, **kwargs)
+        if not response:
+            raise
+
+        self._update_last_request()
+        return response
+
+    def _requests_put(
+            self,
+            url: str,
+            data: dict,
+            **kwargs) -> RequestsClient:
+
+        self._wait_for_rate_limit()
+        response = self.requests.put_self(url=url, data=data, **kwargs)
+        if not response:
+            raise
+
         self._update_last_request()
         return response
 
@@ -108,6 +145,69 @@ class AirtableClient(object):
     def bases_get(self, base_name: str) -> Base | None:
         return self.bases_list().get_base(base_name=base_name)
 
+    def records_create(
+            self,
+            baseId: str,
+            records: list[Record],
+            tableId: str = None,
+            tableName: str = None,
+            deduplicate: bool = True) -> RecordsResponse:
+
+        if deduplicate:
+            new_records = []
+            dupilcated_records = []
+            check_records = self.records_list(baseId=baseId, tableId=tableId, tableName=tableName).records
+            for record in records:
+                if record in check_records:
+                    dupilcated_records.append(record)
+                else:
+                    new_records.append(record)
+
+            logger.debug(
+                f'[AirtableClient] :: records_create :: {new_records.__len__()} new :: {dupilcated_records.__len__()} duplicates')
+
+            records = new_records
+
+            if not records:
+                return RecordsResponse().automon_update(
+                    {'new_records': new_records, 'dupilcated_records': dupilcated_records})
+
+        data = json.dumps(dict(
+            records=[x.to_dict() for x in records]
+        ))
+
+        url = self._api.records.list(baseId=baseId, tableId=tableId, tableName=tableName)
+        response = self._requests_post(url=url, data=data).to_dict()
+        response = RecordsResponse().automon_update(response)
+
+        return response
+
+    def records_delete(
+            self,
+            baseId: str,
+            recordId: str,
+            tableId: str = None,
+            tableName: str = None) -> RecordsResponse:
+
+        url = self._api.records.list(baseId=baseId, recordId=recordId, tableId=tableId, tableName=tableName)
+        response = self._requests_delete(url).to_dict()
+        response = RecordsResponse().automon_update(response)
+
+        return response
+
+    def records_get(
+            self,
+            baseId: str,
+            recordId: str,
+            tableId: str = None,
+            tableName: str = None) -> RecordsResponse:
+
+        url = self._api.records.list(baseId=baseId, recordId=recordId, tableId=tableId, tableName=tableName)
+        response = self._requests_get(url).to_dict()
+        response = RecordsResponse().automon_update(response)
+
+        return response
+
     def records_list(
             self,
             baseId: str,
@@ -116,6 +216,23 @@ class AirtableClient(object):
 
         url = self._api.records.list(baseId=baseId, tableId=tableId, tableName=tableName)
         response = self._requests_get(url).to_dict()
+        response = RecordsResponse().automon_update(response)
+
+        return response
+
+    def records_update(
+            self,
+            baseId: str,
+            recordId: str,
+            tableId: str = None,
+            tableName: str = None,
+            overwrite: bool = False) -> RecordsResponse:
+
+        url = self._api.records.list(baseId=baseId, recordId=recordId, tableId=tableId, tableName=tableName)
+        if overwrite:
+            response = self._requests_patch(url).to_dict()
+        else:
+            response = self._requests_put(url).to_dict()
         response = RecordsResponse().automon_update(response)
 
         return response
