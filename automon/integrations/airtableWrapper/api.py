@@ -70,7 +70,7 @@ class BasesApi(V0):
 class TableOptions(object):
     color: str
     icon: str
-    number = {'precision': 8}
+    number = {'precision': 3} # 0-8
 
 
 class TableFieldType(object):
@@ -239,6 +239,9 @@ class RecordField(Dict):
     def __len__(self):
         return self.__dict__.keys().__len__()
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
 
 class Record(Dict):
     createdTime: str
@@ -257,7 +260,7 @@ class Record(Dict):
 
     def __eq__(self, other):
         if isinstance(other, Record):
-            return self.fields == other.fields or self.id == other.id
+            return self.fields == other.fields
 
     def _enhance(self):
         self.fields = RecordField().automon_update(self.fields)

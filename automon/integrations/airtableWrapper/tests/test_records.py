@@ -16,15 +16,48 @@ class MyTestCase(unittest.TestCase):
             agencies = open('automon/integrations/airtableWrapper/tests/records.json', 'r').read()
             agencies = json.loads(agencies)
 
-            df = pandas.DataFrame(agencies['agencies'])
-            df['services'] = df['services'].apply(lambda x: json.dumps(x))
-            cols = df.columns.to_list()
+            cols = {
+                'name': str,
+                'location': str,
+                'rating': float,
+                'reviews_count': float,
+                'pricing_min': str,
+                'hourly_rate': str,
+                'company_size': str,
+                'company_size_min': str,
+                'company_size_max': str,
+                'services': str,
+                'verification': str,
+                'budget_min': str,
+                'hourly_rate_min': float,
+                'hourly_rate_max': float,
+                'employees': str,
+                'employees_min': float,
+                'employees_max': float,
+                'employee_count': str,
+                'min_project_size': str,
+
+            }
+
+            df = pandas.DataFrame(agencies)
+
+            for col, col_type in cols.items():
+                if col_type == str:
+                    df[col] = df[col].apply(lambda x: str(x) if x else None)
+                    continue
+
+                if col_type == float:
+                    df[col] = df[col].apply(lambda x: float(x) if x else None)
+                    continue
+
+                pass
 
             new_table = 'clutch.co'
 
             table_fields = []
-            for col in cols:
-                col_type = type(df[col][0])
+            for col, col_type in cols.items():
+                if col not in df.columns.to_list():
+                    raise
 
                 type_str = test._api.TableFieldType.str
                 type_int = test._api.TableFieldType.int
@@ -36,15 +69,9 @@ class MyTestCase(unittest.TestCase):
                     table_fields.append(test._api.TableField(name=col, type=type_str))
                     continue
 
-                if col_type == numpy.float64:
-                    table_fields.append(test._api.TableField(name=col, type=type_float, options=options_number))
-                    continue
-
-                if col_type == numpy.int64:
+                if col_type == int or col_type == float:
                     table_fields.append(test._api.TableField(name=col, type=type_int, options=options_number))
                     continue
-
-                table_fields.append(test._api.TableField(name=col))
 
                 pass
 
@@ -56,12 +83,14 @@ class MyTestCase(unittest.TestCase):
 
             records = []
             for index, series in df.iterrows():
+                series = series.dropna()
                 records.append(
                     test._api.Record(series.to_dict())
                 )
 
-            for record in records:
-                test.records_create(baseId=base.id, records=[record], tableName=new_table)
+            for i in range(0, len(records), 10):
+                chunk = records[i:i + 10]
+                test.records_create(baseId=base.id, records=chunk, tableName=new_table)
 
             if __name__ == '__main__':
                 unittest.main()
