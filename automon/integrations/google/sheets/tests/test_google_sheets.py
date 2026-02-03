@@ -98,7 +98,7 @@ def merge_urls():
         range=f'{SHEET_NAME}!A:BB'
     )
 
-    sheet_values = sheets_client.values
+    sheet_values = sheets_client.sheet_values
     sheet_columns = sheet_values[0]
     sheet_data = sheet_values[1:]
 
@@ -292,7 +292,7 @@ def expensive_state_keeping():
         range=f'{SHEET_NAME}!A:BB'
     )
 
-    sheet_values = sheets_client.values
+    sheet_values = sheets_client.sheet_values
     try:
         sheet_columns = sheet_values[0]
     except:
@@ -336,7 +336,7 @@ def expensive_state_keeping():
     sheets_client.get_values(
         range=f'{SHEET_NAME_INGEST}!A:BB'
     )
-    ingest_sheet_values = sheets_client.values
+    ingest_sheet_values = sheets_client.sheet_values
     if ingest_sheet_values:
         ingest_sheet_values = [x[0] if x else [] for x in ingest_sheet_values]
         ingest_sheet_values = [facebook_group_client.url_cleaner(x) for x in ingest_sheet_values]
