@@ -20,7 +20,7 @@ class GoogleAuthClient(object):
             self,
             config: GoogleAuthConfig = None,
             serviceName: str = None,
-            scopes: list = None,
+            scopes: list = [],
             version: str = None,
             **kwargs,
     ):
@@ -32,35 +32,38 @@ class GoogleAuthClient(object):
             **kwargs
         )
 
+        self.user_info: dict = {}
+
+        if not scopes:
+            self.scopes = [
+                'openid',
+                'https://www.googleapis.com/auth/userinfo.email',
+                'https://www.googleapis.com/auth/userinfo.profile',
+            ]
+
     def __repr__(self):
         return f'{self.__dict__}'
 
-    @classmethod
-    def execute(cls, func):
-        return func.execute()
+    # @classmethod
+    # def execute(cls, func):
+    #     return func.execute()
 
-    def _is_connected(func):
-        @functools.wraps(func)
-        def wrapped(self, *args, **kwargs):
-            if self.authenticate():
-                return func(self, *args, **kwargs)
-
-        return wrapped
+    # def _is_connected(func):
+    #     @functools.wraps(func)
+    #     def wrapped(self, *args, **kwargs):
+    #         if self.authenticate():
+    #             return func(self, *args, **kwargs)
+    #
+    #     return wrapped
 
     def authenticate(self) -> bool:
         """authenticate with credentials"""
 
-        try:
-            if self.authenticate_oauth():
-                return self.authenticate_oauth()
-        except Exception as error:
-            raise error
+        if self.authenticate_oauth():
+            return True
 
-        try:
-            if self.authenticate_service_account():
-                return self.authenticate_service_account()
-        except Exception as error:
-            raise error
+        if self.authenticate_service_account():
+            return True
 
         return False
 
@@ -71,19 +74,11 @@ class GoogleAuthClient(object):
         Request = google.auth.transport.requests.Request()
 
         if hasattr(creds, 'refresh_token'):
-            try:
-                creds.refresh(Request)
-                logger.info(f'[google] :: auth :: oauth :: token refresh :: {getattr(creds, "refresh_token")}')
-                logger.info(f'[google] :: auth :: oauth :: token refresh :: done')
-                return True
-            except Exception as error:
-                logger.error(msg=f'[google] :: auth :: oauth :: error :: token refresh failed: {error}')
-
-        else:
-            logger.warning(f'[google] :: auth :: TODO: add google flow() authentication')
-            logger.info(f'[google] :: auth :: oauth :: done')
+            creds.refresh(Request)
+            logger.info(f'[google] :: auth :: oauth :: token refresh :: {getattr(creds, "refresh_token")}')
             return True
 
+        # TODO: add google flow() authentication
         return False
 
     def authenticate_service_account(self) -> bool:
@@ -95,9 +90,11 @@ class GoogleAuthClient(object):
     def is_ready(self) -> bool:
         """Check if authenticated to make requests"""
         try:
-            return self.authenticate()
-        except Exception as error:
-            logger.error(f'[google] :: is_connected :: ERROR :: {error=}')
+            if self.authenticate():
+                return True
+        except:
+            pass
+        return False
 
     def service(
             self,
@@ -138,3 +135,21 @@ class GoogleAuthClient(object):
             always_use_jwt_access=always_use_jwt_access,
             **kwargs,
         )
+
+    def get_user_info(self) -> dict:
+        """return user account"""
+        service = self.service(
+            serviceName='oauth2',
+            version='v2',
+            credentials=self.config.credentials,
+            num_retries=30)
+
+        user_info = service.userinfo().get().execute()
+        self.user_info = user_info
+        return user_info
+
+    @property
+    def user_info_email(self) -> str:
+        if self.user_info:
+            return self.user_info['email']
+        return ''

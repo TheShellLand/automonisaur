@@ -20,6 +20,7 @@ import automon.helpers.threadingWrapper
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
+from automon.integrations.google.oauth import GoogleAuthClient
 
 from .config import GoogleGmailConfig
 from .v1 import *
@@ -92,7 +93,7 @@ class AutomonLabels:
         ]
 
 
-class GoogleGmailClient:
+class GoogleGmailClient(GoogleAuthClient):
     v1 = v1
     _temp = automon.helpers.tempfileWrapper.Tempfile
     _sleep = automon.helpers.Sleeper
@@ -105,6 +106,8 @@ class GoogleGmailClient:
     """
 
     def __init__(self, config: GoogleGmailConfig = None):
+        super().__init__()
+
         self.config = config or GoogleGmailConfig()
         self.endpoint = self.config.GOOGLE_GMAIL_ENDPOINT
 
@@ -114,8 +117,8 @@ class GoogleGmailClient:
 
     @property
     def _userId(self):
-        if self.config.user_info_email:
-            return self.config.user_info_email
+        if self.user_info_email:
+            return self.user_info_email
 
     def draft_create(self,
                      threadId: str = None,
@@ -326,8 +329,8 @@ class GoogleGmailClient:
         if self.config.is_ready():
             if self.config.Credentials():
                 if self.config.refresh_token():
-                    self.config.credentials_pickle_save()
-                    if self.config.userinfo():
+                    self.config._credentials_pickle_save()
+                    if self.get_user_info():
                         return True
         logger.error(f"[GoogleGmailClient] :: is_ready :: ERROR :: not ready")
         return False

@@ -9,7 +9,6 @@ class MyTestCase(unittest.TestCase):
 
         if test.is_ready():
             test.Credentials()
-            test.userinfo()
             test.refresh_token()
 
         pass

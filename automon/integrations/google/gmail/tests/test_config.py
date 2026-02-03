@@ -12,9 +12,6 @@ class MyTestCase(unittest.TestCase):
 
         if conf.is_ready():
             conf.Credentials()
-            conf.userinfo()
-            conf.refresh_token()
-            conf.build_service()
 
         pass
 

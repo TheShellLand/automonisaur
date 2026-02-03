@@ -34,9 +34,11 @@ class GoogleSheetsClient(GoogleAuthClient):
     ):
         super().__init__()
         self.config = config or GoogleSheetsConfig(
-            spreadsheetId=spreadsheetId,
+            GOOGLE_SHEET_ID=spreadsheetId,
             **kwargs
         )
+
+        self.spreadsheetId = self.config.GOOGLE_SHEET_ID
 
         self.worksheet = worksheet
         self.range = range
@@ -63,7 +65,7 @@ class GoogleSheetsClient(GoogleAuthClient):
 
             spreadsheets = self.spreadsheets()
             result = spreadsheets.values().clear(
-                spreadsheetId=spreadsheetId or self.config.spreadsheetId,
+                spreadsheetId=spreadsheetId or self.config.GOOGLE_SHEET_ID,
                 range=range or self.range,
                 **kwargs,
             ).execute()
@@ -91,13 +93,13 @@ class GoogleSheetsClient(GoogleAuthClient):
         try:
             spreadsheets = self.spreadsheets()
             self.response = spreadsheets.get(
-                spreadsheetId=spreadsheetId or self.config.spreadsheetId,
+                spreadsheetId=spreadsheetId or self.config.GOOGLE_SHEET_ID,
                 ranges=ranges or self.range,
                 includeGridData=includeGridData,
                 fields=fields,
                 **kwargs,
             ).execute()
-            logger.info(f'[google] :: sheets :: get :: {self.worksheet}!{self.range} ({self.config.spreadsheetId=})')
+            logger.info(f'[google] :: sheets :: get :: {self.worksheet}!{self.range} ({self.config.GOOGLE_SHEET_ID=})')
         except Exception as error:
             raise Exception(f'[google] :: sheets :: get :: error {error=}')
 
@@ -113,7 +115,7 @@ class GoogleSheetsClient(GoogleAuthClient):
         try:
             spreadsheets = self.spreadsheets()
             self.response = spreadsheets.values().get(
-                spreadsheetId=spreadsheetId or self.config.spreadsheetId,
+                spreadsheetId=spreadsheetId or self.config.GOOGLE_SHEET_ID,
                 range=range or f'{self.worksheet}!{self.range}',
                 **kwargs,
             ).execute()
@@ -124,7 +126,7 @@ class GoogleSheetsClient(GoogleAuthClient):
                 f'get values :: '
                 f'{self.worksheet=} :: '
                 f'{self.range=} :: '
-                f'{self.config.spreadsheetId=}')
+                f'{self.config.GOOGLE_SHEET_ID=}')
         except Exception as error:
             logger.error(f'[google] :: sheets :: get values :: {error=}')
 
@@ -132,8 +134,7 @@ class GoogleSheetsClient(GoogleAuthClient):
 
     def list(self):
         # list(pageSize=1).execute()
-        logger.warning(f'[google] :: sheets :: list :: {NotImplemented}')
-        return
+        raise Exception(f'[google] :: sheets :: list :: {NotImplemented}')
 
     def update(
             self,
@@ -155,7 +156,7 @@ class GoogleSheetsClient(GoogleAuthClient):
 
             spreadsheets = self.spreadsheets()
             result = spreadsheets.values().update(
-                spreadsheetId=spreadsheetId or self.config.spreadsheetId,
+                spreadsheetId=spreadsheetId or self.config.GOOGLE_SHEET_ID,
                 range=range or self.range,
                 valueInputOption=valueInputOption,
                 body=body

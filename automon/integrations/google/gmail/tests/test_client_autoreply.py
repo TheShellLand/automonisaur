@@ -451,8 +451,7 @@ def main():
         ):
             draft_sent = gmail.draft_send(draft=draft)
             gmail.messages_modify(id=email_selected.automon_message_first.id,
-                                  addLabelIds=[labels.unread,
-                                               labels.waiting])
+                                  addLabelIds=[labels.unread])
 
         gmail.messages_modify(id=email_selected.automon_message_first.id,
                               removeLabelIds=[labels.processing])
