@@ -22,8 +22,7 @@ class GoogleAuthClient(object):
             serviceName: str = None,
             scopes: list = [],
             version: str = None,
-            **kwargs,
-    ):
+            **kwargs):
 
         self.config = config or GoogleAuthConfig(
             serviceName=serviceName,
@@ -34,12 +33,6 @@ class GoogleAuthClient(object):
 
         self.user_info: dict = {}
 
-        if not scopes:
-            self.scopes = [
-                'openid',
-                'https://www.googleapis.com/auth/userinfo.email',
-                'https://www.googleapis.com/auth/userinfo.profile',
-            ]
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -75,7 +68,7 @@ class GoogleAuthClient(object):
 
         if hasattr(creds, 'refresh_token'):
             creds.refresh(Request)
-            logger.info(f'[google] :: auth :: oauth :: token refresh :: {getattr(creds, "refresh_token")}')
+            logger.info(f'[GoogleAuthClient] :: auth :: oauth :: token refresh :: {getattr(creds, "refresh_token")}')
             return True
 
         # TODO: add google flow() authentication
@@ -105,7 +98,7 @@ class GoogleAuthClient(object):
             developerKey=None,
             model=None,
             requestBuilder=None,
-            credentials=None,
+            credentials: dict = None,
             cache_discovery=True,
             cache=None,
             client_options=None,

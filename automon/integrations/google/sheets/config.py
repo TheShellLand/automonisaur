@@ -17,7 +17,7 @@ class GoogleSheetsConfig(GoogleAuthConfig):
         super().__init__(**kwargs)
 
         self.serviceName = 'sheets'
-        self.scopes = [
+        self.scopes += [
             'https://www.googleapis.com/auth/drive',
             'https://www.googleapis.com/auth/drive.file',
             'https://www.googleapis.com/auth/drive.readonly',

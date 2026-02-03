@@ -41,6 +41,15 @@ class GoogleAuthConfig(object):
 
         self.credentials: google.oauth2.credentials.Credentials | None = None
 
+        if not self.scopes:
+            self.scopes += [
+                'openid',
+                'https://www.googleapis.com/auth/userinfo.email',
+                'https://www.googleapis.com/auth/userinfo.profile',
+            ]
+
+        pass
+
     def __repr__(self):
         return f'{self.__dict__}'
 
@@ -54,13 +63,9 @@ class GoogleAuthConfig(object):
         return self.scopes
 
     @property
-    def access_token(self) -> str | None:
+    def credentials_access_token(self) -> str | None:
         if self.credentials:
             return self.credentials.token
-
-    def _base64_to_dict(self, base64_str: str) -> dict:
-        """convert credential json to dict"""
-        return json.loads(base64.b64decode(base64_str))
 
     @property
     def credentials_file(self):
@@ -69,6 +74,37 @@ class GoogleAuthConfig(object):
 
         if self.GOOGLE_CREDENTIALS_BASE64:
             return self._base64_to_dict(self.GOOGLE_CREDENTIALS_BASE64)
+
+    @property
+    def credentials_file_has_refresh_token(self) -> bool:
+        if self.credentials_file_type_oauth2:
+            if 'refresh_token' and 'access_token' in self.credentials_file:
+                return True
+        return False
+
+    @property
+    def credentials_file_type(self):
+        if self.credentials_file:
+
+            if 'type' in self.credentials_file:
+                return self.credentials_file['type']
+
+            if 'installed' in self.credentials_file:
+                return 'oauth2'
+
+        raise
+
+    @property
+    def credentials_file_type_oauth2(self) -> bool:
+        if self.credentials_file_type == 'oauth2':
+            return True
+        return False
+
+    @property
+    def credentials_file_type_service_account(self) -> bool:
+        if self.credentials_file_type == 'service_account':
+            return True
+        return False
 
     @property
     def credentials_file_client_id(self):
@@ -115,86 +151,37 @@ class GoogleAuthConfig(object):
     def Credentials(self, reauth: bool = False) -> google.oauth2.credentials.Credentials:
         """return Google Credentials object"""
 
-        self._credentials_pickle_load()
+        # self._credentials_pickle_load()
 
-        try:
-            self.refresh_token()
-        except:
-            pass
-
-        if self.credentials and not self.credentials.expired and not reauth:
-            return self.credentials
+        # if self.credentials and not self.credentials.expired and not reauth:
+        #     return self.credentials
 
         scopes = self.scopes
+        credentials_file = self.credentials_file
+
         credentials = None
-        errors = []
-        while True:
+        if self.credentials_file_type_service_account:
+            credentials = self.CredentialsServiceAccountInfo(
+                info=credentials_file,
+                scopes=scopes)
 
-            if self.GOOGLE_CREDENTIALS_FILE:
-                filename = self.GOOGLE_CREDENTIALS_FILE
+        if self.credentials_file_type_oauth2:
+            if self.credentials_file_has_refresh_token:
+                credentials = self.CredentialsInfo(
+                    info=credentials_file,
+                    scopes=scopes)
+                self.refresh_token()
 
-                try:
-                    credentials = self.CredentialsFile(
-                        filename=filename,
-                        scopes=scopes)
-                    if credentials:
-                        break
-                except Exception as error:
-                    errors.append(error)
-
-                try:
-                    credentials = self.CredentialsServiceAccountFile(
-                        filename=filename)
-                    if credentials:
-                        break
-                except Exception as error:
-                    errors.append(error)
-
-                try:
-                    credentials = self.CredentialsInstalledAppFlow(
-                        filename=filename,
-                        scopes=scopes)
-                    if credentials:
-                        break
-                except Exception as error:
-                    errors.append(error)
-
-            elif self.GOOGLE_CREDENTIALS_BASE64:
-                info = self._base64_to_dict(self.GOOGLE_CREDENTIALS_BASE64)
-
-                try:
-                    credentials = self.CredentialsInfo(
-                        info=info,
-                        scopes=scopes)
-                    if credentials:
-                        break
-                except Exception as error:
-                    errors.append(error)
-
-                try:
-                    credentials = self.CredentialsServiceAccountInfo(
-                        info=info)
-                    if credentials:
-                        break
-                except Exception as error:
-                    errors.append(error)
-
-                try:
-                    credentials = self.CredentialsInstalledAppFlowConfig(
-                        client_config=info,
-                        scopes=scopes)
-                    if credentials:
-                        break
-                except Exception as error:
-                    errors.append(error)
-
-            break
+            else:
+                credentials = self.CredentialsInstalledAppFlowConfig(
+                    client_config=credentials_file,
+                    scopes=scopes)
 
         if not credentials:
-            raise Exception(f"[GoogleAuthConfig] :: Credentials :: ERROR :: {errors=}")
+            raise Exception(f"[GoogleAuthConfig] :: Credentials :: ERROR :: not authenticated")
 
         self.credentials = credentials
-        self._credentials_pickle_save()
+        # self._credentials_pickle_save()
         logger.debug(f"[GoogleAuthConfig] :: Credentials :: {credentials=}")
         return credentials
 
@@ -210,7 +197,7 @@ class GoogleAuthConfig(object):
         return credentials
 
     def CredentialsInfo(self, info: dict, scopes: list) -> google.oauth2.credentials.Credentials:
-        """return Credentials object for web auth from dict"""
+        """use this for token refresh"""
 
         credentials = google.oauth2.credentials.Credentials.from_authorized_user_info(
             info=info,
@@ -263,15 +250,20 @@ class GoogleAuthConfig(object):
         logger.debug(f"[GoogleAuthConfig] :: CredentialsServiceAccountFile :: {credentials=}")
         return credentials
 
-    def CredentialsServiceAccountInfo(self, info: dict) -> google.oauth2.service_account.Credentials:
+    def CredentialsServiceAccountInfo(self, info: dict, scopes: list) -> google.oauth2.service_account.Credentials:
         """return Credentials object for service account from dict"""
 
         credentials = google.oauth2.service_account.Credentials.from_service_account_info(
-            info=info
+            info=info,
+            scopes=scopes
         )
 
         logger.debug(f"[GoogleAuthConfig] :: CredentialsServiceAccountInfo :: {credentials=}")
         return credentials
+
+    def _base64_to_dict(self, base64_str: str) -> dict:
+        """convert credential json to dict"""
+        return json.loads(base64.b64decode(base64_str))
 
     def _dict_to_base64(self, input_dict: dict):
         """convert dict to base64"""
@@ -307,7 +299,7 @@ class GoogleAuthConfig(object):
     def headers(self) -> dict:
         """authentication headers"""
         return {
-            "Authorization": f"Bearer {self.access_token}"
+            "Authorization": f"Bearer {self.credentials_access_token}"
         }
 
     def is_ready(self) -> bool:
