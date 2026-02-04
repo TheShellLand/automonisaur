@@ -1,0 +1,7 @@
+requests
+pandas
+pyyaml
+automonisaur
+beautifulsoup4
+demisto-sdk
+selenium
