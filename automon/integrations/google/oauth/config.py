@@ -41,6 +41,10 @@ class GoogleAuthConfig(object):
 
         self.credentials: google.oauth2.credentials.Credentials | None = None
 
+        if self.GOOGLE_CREDENTIALS_FILE:
+            if not os.path.exists(self.GOOGLE_CREDENTIALS_FILE):
+                raise FileNotFoundError(f'{self.GOOGLE_CREDENTIALS_FILE} does not exist')
+
         if not self.scopes:
             self.scopes += [
                 'openid',
@@ -304,7 +308,7 @@ class GoogleAuthConfig(object):
 
     def is_ready(self) -> bool:
         """return True if credentials are ready to use"""
-        return bool(os.path.exists(self.GOOGLE_CREDENTIALS_FILE) or self.GOOGLE_CREDENTIALS_BASE64)
+        return bool(self.GOOGLE_CREDENTIALS_FILE or self.GOOGLE_CREDENTIALS_BASE64)
 
     def refresh_token(self) -> bool:
         """refresh token
