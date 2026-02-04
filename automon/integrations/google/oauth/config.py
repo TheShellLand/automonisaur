@@ -216,13 +216,10 @@ class GoogleAuthConfig(object):
             scopes: list) -> google.oauth2.credentials.Credentials:
         """return Credentials object for web auth from file"""
 
-        try:
-            flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-                client_secrets_file=filename,
-                scopes=scopes)
-            credentials = flow.run_local_server(port=0)
-        except Exception as error:
-            raise Exception(f"[GoogleAuthConfig] :: CredentialsInstalledAppFlow :: ERROR :: {error=}")
+        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+            client_secrets_file=filename,
+            scopes=scopes)
+        credentials = flow.run_local_server(port=0)
 
         logger.debug(f"[GoogleAuthConfig] :: CredentialsInstalledAppFlow :: {flow=} :: {credentials=}")
         return credentials
@@ -233,13 +230,10 @@ class GoogleAuthConfig(object):
             scopes: list) -> google.oauth2.credentials.Credentials:
         """return Credentials object for web auth from file"""
 
-        try:
-            flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_config(
-                client_config=client_config,
-                scopes=scopes)
-            credentials = flow.run_local_server(port=0)
-        except Exception as error:
-            raise Exception(f"[GoogleAuthConfig] :: CredentialsInstalledAppFlowConfig :: ERROR :: {error=}")
+        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_config(
+            client_config=client_config,
+            scopes=scopes)
+        credentials = flow.run_local_server(port=0)
 
         logger.debug(f"[GoogleAuthConfig] :: CredentialsInstalledAppFlowConfig :: {flow=} :: {credentials=}")
         return credentials
