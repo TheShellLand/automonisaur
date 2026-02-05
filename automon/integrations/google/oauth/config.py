@@ -152,10 +152,11 @@ class GoogleAuthConfig(object):
 
         return False
 
-    def Credentials(self, reauth: bool = False) -> google.oauth2.credentials.Credentials:
+    def Credentials(self, save_creds: bool = False, reauth: bool = False) -> google.oauth2.credentials.Credentials:
         """return Google Credentials object"""
 
-        # self._credentials_pickle_load()
+        if save_creds:
+            self._credentials_pickle_load()
 
         if self.credentials and not self.credentials.expired and not reauth:
             return self.credentials
@@ -184,8 +185,12 @@ class GoogleAuthConfig(object):
         if not credentials:
             raise Exception(f"[GoogleAuthConfig] :: Credentials :: ERROR :: not authenticated")
 
+        if save_creds:
+            self.refresh_token()
+            self._credentials_pickle_save()
+
         self.credentials = credentials
-        # self._credentials_pickle_save()
+
         logger.debug(f"[GoogleAuthConfig] :: Credentials :: {credentials=}")
         return credentials
 
