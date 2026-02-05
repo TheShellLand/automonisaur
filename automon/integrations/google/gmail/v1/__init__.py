@@ -874,19 +874,24 @@ class Message(Dict):
             return True
         return False
 
+    @property
     def automon_attachments(self) -> MessagePartBody | MessagePart | None:
+        payloads = []
         if self.automon_payload:
             if self.automon_payload.size:
-                yield self.automon_payload.automon_body
+                # yield self.automon_payload.automon_body
+                payloads.append(self.automon_payload.automon_body)
             if self.automon_payload.automon_parts:
                 for parts in self.automon_payload.automon_parts:
-                    yield parts
-        yield None
+                    # yield parts
+                    payloads.append(parts)
+        # yield None
+        return payloads
 
     @property
     def automon_attachments_first(self) -> MessagePartBody | MessagePart | None:
-        if list(self.automon_attachments()):
-            return list(self.automon_attachments())[0]
+        if self.automon_attachments:
+            return self.automon_attachments[0]
 
     @property
     def automon_date_epoch_s(self) -> float | None:

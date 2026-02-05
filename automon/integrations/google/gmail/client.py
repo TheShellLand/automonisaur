@@ -325,13 +325,11 @@ class GoogleGmailClient(GoogleAuthClient):
         )
         return RequestsClient().get_self(api, headers=self.config.headers, params=params).to_dict()
 
-    def is_ready(self):
+    def is_ready(self, save_creds = True):
         if self.config.is_ready():
-            if self.config.Credentials():
-                if self.config.refresh_token():
-                    self.config._credentials_pickle_save()
-                    if self.get_user_info():
-                        return True
+            if self.config.Credentials(save_creds=save_creds):
+                if self.get_user_info():
+                    return True
         logger.error(f"[GoogleGmailClient] :: is_ready :: ERROR :: not ready")
         return False
 

@@ -166,11 +166,11 @@ class GoogleGeminiClient(object):
             return True
         if 'false' in response.lower():
             return False
-        logger.error(f"[GoogleGeminiClient] :: reponse_is_true :: neither true or false")
+        raise Exception(f"[GoogleGeminiClient] :: reponse_is_true :: neither true or false")
 
     def response_is_false(self, response: str) -> bool | None:
         if 'false' in response.lower():
             return True
         if 'true' in response.lower():
             return False
-        logger.error(f"[GoogleGeminiClient] :: response_is_false :: neither true or false")
+        raise Exception(f"[GoogleGeminiClient] :: response_is_false :: neither true or false")

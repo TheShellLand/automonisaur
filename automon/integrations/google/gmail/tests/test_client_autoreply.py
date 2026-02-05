@@ -298,7 +298,7 @@ def main():
     email_selected = thread
     resume_selected = resume_search.automon_messages[0]
 
-    resume = resume_selected.automon_attachments().__next__()
+    resume = resume_selected.automon_attachments_first
     resume = resume.automon_parts[0].automon_body.automon_data_html_text
 
     prompts_base = []
@@ -341,7 +341,7 @@ def main():
                 break
 
             _draft = email_selected.automon_message_latest
-            _resume = _draft.automon_attachments.attachments[0].automon_body.automon_data_html_text
+            _resume = _draft.automon_attachments_first.automon_body.automon_data_html_text
 
             prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
             response, model = run_llm(prompts=prompts, chat=False)
@@ -350,8 +350,8 @@ def main():
             gmail.messages_trash(id=_draft.id)
             break
 
-    FAILED = None
-    while True:
+    response_check = False
+    while not response_check:
 
         def get_response(*args, **kwargs):
             prompts = prompts_resume + prompts_emails
@@ -379,7 +379,7 @@ def main():
             )
             double_check, model = run_llm(double_check_prompts)
 
-            if gemini.response_is_false(response):
+            if gemini.response_is_false(double_check):
                 ask = prompts_resume + prompts_emails
                 ask.append(
                     f"RESPONSE: {response}"
@@ -398,12 +398,6 @@ def main():
         response, model = get_response(thread)
 
         response_check, model = check_response(response)
-
-        if gemini.reponse_is_true(response_check):
-            FAILED = False
-            break
-        else:
-            FAILED = True
 
     def create_draft():
 
@@ -458,24 +452,7 @@ def main():
 
     gmail.config.refresh_token()
 
-    if not FAILED:
-        create_draft()
-
-    # prompts = [prompts_emails[0]] + prompts_resume
-    # prompts.append(
-    #     f"Respond only true or false, is the job relevant?"
-    # )
-    # response, model = run_llm(prompts)
-    # if gemini.true_or_false(response):
-    #     gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.relevant])
-    #
-    # prompts = [prompts_emails[0]]
-    # prompts.append(
-    #     f"Respond only true or false, is the job fully and completely remote, with no in-office days?"
-    # )
-    # response, model = run_llm(prompts)
-    # if gemini.true_or_false(response):
-    #     gmail.messages_modify(id=email_selected.id, addLabelIds=[labels.remote])
+    create_draft()
 
 
 class MyTestCase(unittest.TestCase):
