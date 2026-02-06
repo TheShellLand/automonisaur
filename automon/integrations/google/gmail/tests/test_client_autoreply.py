@@ -147,16 +147,13 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
 def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
     response = None
     while True:
-        try:
-            if USE_OLLAMA:
-                response, model = run_ollama(prompts=prompts)
-                break
+        if USE_OLLAMA:
+            response, model = run_ollama(prompts=prompts)
+            break
 
-            if USE_GEMINI:
-                response, model = run_gemini(prompts=prompts, chat=chat)
-                break
-        except Exception as error:
-            debug(f"[run_llm] :: ERROR :: {error=}")
+        if USE_GEMINI:
+            response, model = run_gemini(prompts=prompts, chat=chat)
+            break
 
     if not response:
         raise Exception(f"[run_llm] :: ERROR :: missing llm response")
