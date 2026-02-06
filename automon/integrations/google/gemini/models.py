@@ -16,51 +16,60 @@ class GoogleGeminiModels(object):
 
     def __init__(self):
         self.FREE_TIER = [
+            self.gemini_3_pro,
+            self.gemini_3_pro_image,
+            self.gemini_3_flash,
             self.gemini_2_5_flash_preview_09_2025,
             self.gemini_2_5_pro,
-            self.gemini_2_5_flash_lite,
             self.gemini_2_5_flash,
+            self.gemini_2_5_flash_lite,
+            self.gemini_2_5_flash_live,
             self.gemini_2_0_flash,
-            # self.gemini_1_5_flash,
+            self.gemini_2_0_flash_live,
         ]
 
         self.PRO_TIER = [
-            self.gemini_3_pro_preview,
+            self.gemini_3_pro,
+            self.gemini_3_pro_image,
             self.gemini_2_5_pro,
             self.gemini_2_5_pro_preview_tts,
             self.gemini_2_5_pro_exp_03_25,
             self.gemini_2_5_pro_preview_05_06,
             self.gemini_2_0_pro_exp_02_05,
-            self.gemini_1_5_pro,
+        ]
+
+        self.GEMINI_3 = [
+            self.gemini_3_pro,
+            self.gemini_3_pro_image,
+            self.gemini_3_flash,
         ]
 
         self.GEMINI_2_5 = [
             self.gemini_2_5_pro,
-            self.gemini_2_5_flash,
             self.gemini_2_5_pro_exp_03_25,
-            self.gemini_2_5_flash_preview_tts,
-            # self.gemini_2_5_flash_preview_05_20,
-            self.gemini_2_5_flash_preview_09_2025,
-            self.gemini_2_5_flash_preview_native_audio_dialog,
-            self.gemini_2_5_flash_exp_native_audio_thinking_dialog,
             self.gemini_2_5_pro_preview_tts,
             self.gemini_2_5_pro_preview_05_06,
-            self.gemini_2_5_pro,
-            self.gemini_2_5_flash_lite,
+            self.gemini_2_5_flash_preview_09_2025,
             self.gemini_2_5_flash,
+            self.gemini_2_5_flash_lite,
+            self.gemini_2_5_flash_live,
+            self.gemini_2_5_flash_preview_tts,
+            self.gemini_2_5_flash_preview_native_audio_dialog,
+            self.gemini_2_5_flash_exp_native_audio_thinking_dialog,
         ]
 
         self.GEMINI_2_0 = [
-            self.gemini_2_0_flash,
-            self.gemini_2_0_flash_thinking_exp_01_21,
             self.gemini_2_0_pro_exp_02_05,
+            self.gemini_2_0_flash,
+            self.gemini_2_0_flash_live,
+            self.gemini_2_0_flash_thinking_exp_01_21,
         ]
 
         self.GEMINI_1_5 = [
-            # self.gemini_1_5_flash,
-            self.gemini_1_5_flash_8b,
             self.gemini_1_5_pro,
             self.learnlm_1_5_pro_experimental,
+            # self.gemini_1_5_flash,
+            self.gemini_1_5_flash_8b,
         ]
 
         self.EMBEDDING = [
@@ -74,13 +83,16 @@ class GoogleGeminiModels(object):
         self.GEMINI_ALL = []
 
     @property
-    def gemini_3_pro_preview(self):
-        """
-        Model ID    Context Window (In / Out)	Knowledge Cutoff	Pricing (Input / Output)*
-        gemini-3-pro-preview	1M / 64k	Jan 2025	$2 / $12 (<200k tokens)
-                                                        $4 / $18 (>200k tokens)
-        """
-        return f'gemini-3-pro-preview'
+    def gemini_3_pro(self):
+        return f'gemini-3-pro'
+
+    @property
+    def gemini_3_pro_image(self):
+        return f'gemini-3-pro-image'
+
+    @property
+    def gemini_3_flash(self):
+        return f'gemini-3-flash'
 
     @property
     def gemini_2_5_pro_exp_03_25(self):
@@ -160,6 +172,12 @@ class GoogleGeminiModels(object):
         return f'gemini-2.5-flash-lite'
 
     @property
+    def gemini_2_5_flash_live(self):
+        """
+        """
+        return f'gemini-2.5-flash-live'
+
+    @property
     def gemini_2_5_flash(self):
         """
         """
@@ -184,6 +202,16 @@ class GoogleGeminiModels(object):
         output: Text
         """
         return f'gemini-2.0-flash-lite'
+
+    @property
+    def gemini_2_0_flash_live(self):
+        """
+        Next generation features, speed, and multimodal generation for a diverse variety of tasks
+
+        input: Audio, images, videos, and text
+        output: Text, images (coming soon), and audio (coming soon)
+        """
+        return f'gemini-2.0-flash-live'
 
     @property
     def gemini_2_0_flash_thinking_exp_01_21(self):

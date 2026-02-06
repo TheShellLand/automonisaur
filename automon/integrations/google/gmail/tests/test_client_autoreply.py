@@ -1,5 +1,6 @@
 import unittest
 
+import time
 import threading
 from idlelib.rpc import response_queue
 
@@ -11,18 +12,19 @@ from automon.integrations.google.gemini import GoogleGeminiClient
 DEBUG_LEVEL = 2
 DEBUG_ = True
 INFO_ = False
+DEFAULT_LEVEL = ERROR
 
-LoggingClient.logging.getLogger('httpx').setLevel(ERROR)
-LoggingClient.logging.getLogger('httpcore').setLevel(ERROR)
+LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.client').setLevel(DEBUG)
-LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.utils').setLevel(ERROR)
-LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(ERROR)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.utils').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
-LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(ERROR)
-LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(ERROR)
-LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(ERROR)
-LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(ERROR)
-LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)
+LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(DEFAULT_LEVEL)
 
 if INFO_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
@@ -147,13 +149,16 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
 def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
     response = None
     while True:
-        if USE_OLLAMA:
-            response, model = run_ollama(prompts=prompts)
-            break
+        try:
+            if USE_OLLAMA:
+                response, model = run_ollama(prompts=prompts)
+                break
 
-        if USE_GEMINI:
-            response, model = run_gemini(prompts=prompts, chat=chat)
-            break
+            if USE_GEMINI:
+                response, model = run_gemini(prompts=prompts, chat=chat)
+                break
+        except:
+            pass
 
     if not response:
         raise Exception(f"[run_llm] :: ERROR :: missing llm response")

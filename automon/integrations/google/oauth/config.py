@@ -238,8 +238,12 @@ class GoogleAuthConfig(object):
         flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_config(
             client_config=client_config,
             scopes=scopes)
+
+        auth_url, state = flow.authorization_url()
+
         credentials = flow.run_local_server(port=0)
 
+        logger.debug(f"[GoogleAuthConfig] :: CredentialsInstalledAppFlowConfig :: {auth_url=}")
         logger.debug(f"[GoogleAuthConfig] :: CredentialsInstalledAppFlowConfig :: {flow=} :: {credentials=}")
         return credentials
 
