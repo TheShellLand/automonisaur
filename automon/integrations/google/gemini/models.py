@@ -26,6 +26,8 @@ class GoogleGeminiModels(object):
             self.gemini_2_5_pro,
             self.gemini_2_5_pro_preview_05_06,
             self.gemini_2_0_flash,
+            self.gemini_2_0_flash_exp,
+            self.gemini_2_0_flash_lite,
             self.gemini_2_0_flash_live,
             self.gemma_3_27b,
         ]
@@ -68,7 +70,9 @@ class GoogleGeminiModels(object):
 
         self.GEMINI_2_0 = [
             self.gemini_2_0_flash,
+            self.gemini_2_0_flash_lite,
             self.gemini_2_0_flash_live,
+            self.gemini_2_0_flash_exp,
             self.gemini_2_0_flash_thinking_exp_01_21,
             self.gemini_2_0_pro_exp_02_05,
         ]
@@ -92,15 +96,15 @@ class GoogleGeminiModels(object):
 
     @property
     def gemma_3_27b(self):
-        return f'gemma-3-27b'
+        return f'gemma-3-27b-it'
 
     @property
     def gemma_3_12b(self):
-        return f'gemma-3-12b'
+        return f'gemma-3-12b-it'
 
     @property
     def gemma_3_7b(self):
-        return f'gemma-3-27b'
+        return f'gemma-3-7b-it'
 
     @property
     def gemini_3_flash(self):
@@ -228,6 +232,10 @@ class GoogleGeminiModels(object):
         output: Text
         """
         return f'gemini-2.0-flash-lite'
+
+    @property
+    def gemini_2_0_flash_exp(self):
+        return f'gemini-2.0-flash-exp'
 
     @property
     def gemini_2_0_flash_live(self):

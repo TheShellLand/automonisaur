@@ -85,7 +85,8 @@ class GoogleGeminiClient(object):
            }'
         """
 
-        url = GoogleGeminiApi().base.v1alpha.models(self.model).generateContent.key(key=self.config.random_api_key()).url
+        url = GoogleGeminiApi().base.api_v_lookup(self.model).models(self.model).generateContent.key(
+            key=self.config.random_api_key()).url
         json = self._prompt.to_dict()
         chat = self._requests.post(url=url, json=json, headers=self.config.headers())
 

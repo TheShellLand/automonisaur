@@ -10,6 +10,13 @@ from automon.integrations.ollamaWrapper import Tokens
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
+_API_VERSION_LOOKUP = {
+    'gemini-1.5-flash': 'v1beta',
+    'gemini-2.0-flash-exp': 'v1beta',
+    'gemini-2.0-flash-live': 'v1alpha',
+    'gemini-3-flash': 'v1alpha',
+}
+
 
 class GoogleGeminiApi(object):
 
@@ -19,6 +26,11 @@ class GoogleGeminiApi(object):
     @property
     def base(self):
         self.url = 'https://generativelanguage.googleapis.com'
+        return self
+
+    def api_v_lookup(self, model: str) -> Self:
+        version = _API_VERSION_LOOKUP.get(model, self.v1beta)
+        self.url += version
         return self
 
     @property
