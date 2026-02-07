@@ -22,6 +22,11 @@ class GoogleGeminiApi(object):
         return self
 
     @property
+    def v1alpha(self):
+        self.url += f'/v1alpha'
+        return self
+
+    @property
     def v1beta(self):
         self.url += f'/v1beta'
         return self
