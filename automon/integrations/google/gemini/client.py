@@ -91,7 +91,8 @@ class GoogleGeminiClient(object):
 
         if not chat:
             logger.error(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.to_dict()}')
-            raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.to_dict()}')
+            raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.to_dict()}',
+                            self.model)
 
         self._chat = GeminiResponse(self._requests.to_dict())
 
