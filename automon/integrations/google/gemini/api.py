@@ -28,17 +28,18 @@ class GoogleGeminiApi(object):
         self.url = 'https://generativelanguage.googleapis.com'
         return self
 
-    def api_v_lookup(self, model: str) -> Self:
-        version = _API_VERSION_LOOKUP.get(model, self.v1beta)
-        self.url += version
+    def api_v_lookup(self, model: str):
+        version = _API_VERSION_LOOKUP.get(model)
+        if version:
+            self.url += f'/{version}'
+        else:
+            return self.v1beta()
         return self
 
-    @property
     def v1alpha(self):
         self.url += f'/v1alpha'
         return self
 
-    @property
     def v1beta(self):
         self.url += f'/v1beta'
         return self
