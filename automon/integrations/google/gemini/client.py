@@ -1,3 +1,4 @@
+import sys
 import json
 import random
 import readline
@@ -15,6 +16,32 @@ from .config import GoogleGeminiConfig
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
+
+
+# Platform-specific setup
+try:
+    import msvcrt
+    def get_keypress():
+        if msvcrt.kbhit():
+            return msvcrt.getch()
+        return None
+    # Windows usually maps SHIFT-ENTER to standard carriage return in basic buffers,
+    # but some terminals send \x0d.
+    SHIFT_ENTER = b'\x0d'
+
+except ImportError:
+    import termios
+    import tty
+    def get_keypress():
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setcbreak(fd)
+            return sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    # Unix SHIFT-ENTER escape sequence (varies by terminal, \n is common)
+    SHIFT_ENTER = '\n'
 
 
 class GoogleGeminiClient(object):
@@ -110,16 +137,12 @@ class GoogleGeminiClient(object):
             prompt = ''
             lines = []
 
-            print(f"INPUT (end prompt with /send): ")
-            while True:
-
+            print(f"INPUT (send with SHIFT-ENTER): ")
+            key = None
+            while key != SHIFT_ENTER:
                 try:
                     line = input()
-                    if line.strip() == '/send':
-                        break
-                    if line.strip() == '/exit':
-                        return self
-
+                    key = get_keypress()
                     lines.append(line)
 
                 except KeyboardInterrupt:
