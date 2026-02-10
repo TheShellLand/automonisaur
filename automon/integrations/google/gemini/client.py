@@ -35,8 +35,10 @@ class GoogleGeminiClient(object):
     def __repr__(self):
         return f"[GoogleGeminiClient] :: {self.config=}"
 
+    def __len__(self) -> int:
+        return sum(self._prompt)
+
     def _agent_download(self, message: str) -> str:
-        logger.debug(f'[GoogleGeminiClient] :: _agent_download :: >>>>')
 
         download = message[len('/download'):].strip()
         url = download
@@ -54,7 +56,6 @@ class GoogleGeminiClient(object):
         # download = browser.get_page_source_beautifulsoup().html.text
         browser.quit()
 
-        logger.info(f'[GoogleGeminiClient] :: _download :: done')
         return download
 
     def add_content(self, prompt: str, role: str = 'user'):
@@ -66,7 +67,7 @@ class GoogleGeminiClient(object):
         self._prompt.add_content(content=content)
 
         content_len = Tokens(string=prompt).count
-        logger.debug(f"[GoogleGeminiClient] :: add_content :: {content_len:,} tokens")
+        logger.debug(f"[GoogleGeminiClient] :: add_content :: {content_len:,} tokens ({len(self)} total)")
         return self
 
     @property

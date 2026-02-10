@@ -17,14 +17,12 @@ class GoogleGeminiModels(object):
     def __init__(self):
         self.FREE_TIER = [
             self.gemini_3_flash,
-            self.gemini_3_pro,
-            self.gemini_3_pro_image,
             self.gemini_2_5_flash,
+            self.gemini_2_5_flash_exp,
             self.gemini_2_5_flash_lite,
             self.gemini_2_5_flash_live,
             self.gemini_2_5_flash_preview_09_2025,
             self.gemini_2_5_pro,
-            self.gemini_2_5_pro_preview_05_06,
             self.gemini_2_5_pro_1p_freebie,
             self.gemini_2_0_flash,
             self.gemini_2_0_flash_exp,
@@ -39,7 +37,6 @@ class GoogleGeminiModels(object):
             self.gemini_2_5_pro,
             self.gemini_2_5_pro_preview_tts,
             self.gemini_2_5_pro_exp_03_25,
-            self.gemini_2_5_pro_preview_05_06,
             self.gemini_2_0_pro_exp_02_05,
         ]
 
@@ -60,12 +57,13 @@ class GoogleGeminiModels(object):
             self.gemini_2_5_flash_lite,
             self.gemini_2_5_flash_live,
             self.gemini_2_5_flash_preview_tts,
+            self.gemini_2_5_flash_exp,
             self.gemini_2_5_flash_preview_native_audio_dialog,
             self.gemini_2_5_flash_exp_native_audio_thinking_dialog,
             self.gemini_2_5_pro,
+            self.gemini_2_5_pro_1p_freebie,
             self.gemini_2_5_pro_exp_03_25,
             self.gemini_2_5_pro_preview_tts,
-            self.gemini_2_5_pro_preview_05_06,
             self.gemini_2_5_flash_preview_09_2025,
         ]
 
@@ -112,6 +110,10 @@ class GoogleGeminiModels(object):
         return f'gemini-3-flash'
 
     @property
+    def gemini_3_flash_preview(self):
+        return f'gemini-3-flash-preview'
+
+    @property
     def gemini_3_pro(self):
         return f'gemini-3-pro'
 
@@ -148,6 +150,10 @@ class GoogleGeminiModels(object):
         Text and audio, interleaved	High quality, natural conversational audio outputs, with or without thinking
         """
         return f'gemini-2.5-flash-preview-native-audio-dialog'
+
+    @property
+    def gemini_2_5_flash_exp(self):
+        return f'gemini-2.5-flash-exp'
 
     @property
     def gemini_2_5_flash_exp_native_audio_thinking_dialog(self):
@@ -187,14 +193,6 @@ class GoogleGeminiModels(object):
         Text	Enhanced thinking and reasoning, multimodal understanding, advanced coding, and more
         """
         return f'gemini-2.5-pro-preview-tts'
-
-    @property
-    def gemini_2_5_pro_preview_05_06(self):
-        """
-        Audio, images, videos, and text
-        Text	Enhanced thinking and reasoning, multimodal understanding, advanced coding, and more
-        """
-        return f'gemini-2.5-pro-preview-05-06'
 
     @property
     def gemini_2_5_flash(self):

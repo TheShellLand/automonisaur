@@ -11,10 +11,15 @@ logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
 _API_VERSION_LOOKUP = {
-    'gemini-1.5-flash': 'v1beta',
+    'gemini-1.5-flash': 'v1',
     'gemini-2.0-flash-exp': 'v1beta',
-    'gemini-2.0-flash-live': 'v1alpha',
+    # 'gemini-2.0-flash-lite': 'v1beta',
+    # 'gemini-2.0-flash-live': 'v1beta',
+    'gemini-2.5-flash-exp': 'v1',
+    'gemini-2.5-flash-live': 'v1alpha',
     'gemini-3-flash': 'v1alpha',
+    # 'gemini-3-flash-preview': 'v1beta',
+    # 'gemma-3-27b': 'v1beta',
 }
 
 
@@ -74,7 +79,7 @@ class Part(Dict):
         return f"{len(self)} tokens"
 
     def __len__(self) -> int:
-        return Tokens(self.text).count
+        return Tokens(self.text).__len__()
 
 
 class Content(Dict):
@@ -140,6 +145,9 @@ class GeminiPrompt(Dict):
         super().__init__()
 
         self.contents: list[Content] = []
+
+    def __len__(self) -> int:
+        return sum(self.contents)
 
     def add_content(self, content: Content):
         assert isinstance(content, Content)

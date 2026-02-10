@@ -26,8 +26,9 @@ class AgentTemplates:
             "RULE: Remove any greetings or acknowledgments from the email.",
             "RULE: Ensure no apologies or justifications are present in the email.",
             "RULE: For inquiries about availability or scheduling, provide the 'AVAILABILITY' link from the resume.",
-            "RULE: Encourage the recipient to use the provided 'AVAILABILITY' link to book a convenient time.",
+            "RULE: Use the provided 'AVAILABILITY' link to book a convenient time.",
             "RULE: Prioritize the use of the 'AVAILABILITY' link over any other method of communicating availability.",
+            "RULE: The response must also be refactored to remove extraneous conversational text such as 'Let me know what time works best for a discussion.'",
         ]
 
         return '\n'.join(prompts)

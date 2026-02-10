@@ -408,7 +408,7 @@ def main():
                     f"RESPONSE: {response}"
                 )
                 ask.append(
-                    f"say which rule was violated"
+                    f"say which rule was violated and the snippet of the response"
                 )
                 double_check_prompts.append(
                     f"write a prompt to fix what was wrong using the format: \n"
