@@ -17,14 +17,17 @@ from .config import GoogleGeminiConfig
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
-
 # Platform-specific setup
 try:
     import msvcrt
+
+
     def get_keypress():
         if msvcrt.kbhit():
             return msvcrt.getch()
         return None
+
+
     # Windows usually maps SHIFT-ENTER to standard carriage return in basic buffers,
     # but some terminals send \x0d.
     SHIFT_ENTER = b'\x0d'
@@ -32,6 +35,8 @@ try:
 except ImportError:
     import termios
     import tty
+
+
     def get_keypress():
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
@@ -40,6 +45,8 @@ except ImportError:
             return sys.stdin.read(1)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
     # Unix SHIFT-ENTER escape sequence (varies by terminal, \n is common)
     SHIFT_ENTER = '\n'
 
@@ -60,10 +67,10 @@ class GoogleGeminiClient(object):
         self.models_in_use = self.models.FREE_TIER
 
     def __repr__(self):
-        return f"[GoogleGeminiClient] :: {self.config=}"
+        return f"[GoogleGeminiClient] :: {len(self)} tokens"
 
     def __len__(self) -> int:
-        return sum(self._prompt)
+        return len(self._prompt)
 
     def _agent_download(self, message: str) -> str:
 
@@ -137,17 +144,11 @@ class GoogleGeminiClient(object):
             prompt = ''
             lines = []
 
-            print(f"INPUT (send with SHIFT-ENTER): ")
+            print(f"INPUT (end with /send): ")
             key = None
-            while key != SHIFT_ENTER:
-                try:
-                    line = input()
-                    key = get_keypress()
-                    lines.append(line)
-
-                except KeyboardInterrupt:
-                    logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
-                    return self
+            while key != '/send':
+                line = input()
+                lines.append(line)
 
             if lines:
                 prompt = prompt.join(lines)

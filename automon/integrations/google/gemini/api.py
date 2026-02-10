@@ -79,7 +79,11 @@ class Part(Dict):
         return f"{len(self)} tokens"
 
     def __len__(self) -> int:
-        return Tokens(self.text).__len__()
+        return len(self.tokens)
+
+    @property
+    def tokens(self):
+        return Tokens(self.text)
 
 
 class Content(Dict):
@@ -101,7 +105,7 @@ class Content(Dict):
         return f"{len(self)} tokens"
 
     def __len__(self):
-        return sum(self.automon_parts)
+        return sum(len(x) for x in self.automon_parts)
 
     def __bool__(self):
         if self.role and self.parts:
@@ -146,8 +150,11 @@ class GeminiPrompt(Dict):
 
         self.contents: list[Content] = []
 
+    def __repr__(self):
+        return f"{len(self)} tokens"
+
     def __len__(self) -> int:
-        return sum(self.contents)
+        return sum(len(x) for x in self.contents)
 
     def add_content(self, content: Content):
         assert isinstance(content, Content)

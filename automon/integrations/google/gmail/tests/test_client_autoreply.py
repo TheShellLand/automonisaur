@@ -163,23 +163,23 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
                 response, model = run_gemini(prompts=prompts, chat=chat)
                 break
         except Exception as error:
-            model = error.args[1]
-            MODEL_ERRORS[model] = MODEL_ERRORS.get(model, 0) + 1
+            if len(error.args) > 1:
+                model = error.args[1]
+                MODEL_ERRORS[model] = MODEL_ERRORS.get(model, 0) + 1
 
-            flipped = []
-            for model, count in MODEL_ERRORS.items():
-                flipped.append((count, model))
+                flipped = []
+                for model, count in MODEL_ERRORS.items():
+                    flipped.append((count, model))
 
-            # 2. Sort it (Python sorts by the first item, which is the count)
-            flipped.sort()
+                # 2. Sort it (Python sorts by the first item, which is the count)
+                flipped.sort()
 
-            # 3. Flip it back into a dict: {'ollama': 2, 'gemini': 5}
-            MODEL_ERRORS = {}
-            for count, model in flipped:
-                MODEL_ERRORS[model] = count
+                # 3. Flip it back into a dict: {'ollama': 2, 'gemini': 5}
+                MODEL_ERRORS = {}
+                for count, model in flipped:
+                    MODEL_ERRORS[model] = count
 
-            debug(f"[run_llm] :: ERROR :: {MODEL_ERRORS}")
-            pass
+                debug(f"[run_llm] :: ERROR :: {MODEL_ERRORS}")
 
     if not response:
         raise Exception(f"[run_llm] :: ERROR :: missing llm response")
@@ -408,7 +408,7 @@ def main():
                     f"RESPONSE: {response}"
                 )
                 ask.append(
-                    f"say which rule was violated and the snippet of the response"
+                    f"say what portion of the response was wrong"
                 )
                 double_check_prompts.append(
                     f"write a prompt to fix what was wrong using the format: \n"
