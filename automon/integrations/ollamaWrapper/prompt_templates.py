@@ -29,6 +29,7 @@ class AgentTemplates:
             "RULE: Use the provided 'AVAILABILITY' link to book a convenient time.",
             "RULE: Prioritize the use of the 'AVAILABILITY' link over any other method of communicating availability.",
             "RULE: The response must also be refactored to remove extraneous conversational text such as 'Let me know what time works best for a discussion.'",
+            'RULE: Remove any conversational closing statements such as "I look forward to connecting and discussing how my skills in cloud technologies and security can benefit your firm," as these are considered extraneous conversational text.',
         ]
 
         return '\n'.join(prompts)

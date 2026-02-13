@@ -14,9 +14,9 @@ _API_VERSION_LOOKUP = {
     'gemini-1.5-flash': 'v1',
     'gemini-2.0-flash-exp': 'v1beta',
     # 'gemini-2.0-flash-lite': 'v1beta',
-    # 'gemini-2.0-flash-live': 'v1beta',
+    'gemini-2.0-flash-live': 'v1alpha',
     'gemini-2.5-flash-exp': 'v1',
-    'gemini-2.5-flash-live': 'v1alpha',
+    # 'gemini-2.5-flash-live': 'v1alpha',
     'gemini-3-flash': 'v1alpha',
     # 'gemini-3-flash-preview': 'v1beta',
     # 'gemma-3-27b': 'v1beta',
@@ -66,20 +66,24 @@ class GoogleGeminiApi(object):
 class Part(Dict):
     text: str
 
-    def __init__(self, part: dict | Self = None, text: str = None):
+    def __init__(self, part: dict | Self = None, text: str = ''):
         super().__init__()
 
         self.text: str = text
 
         if part:
             self.automon_update(part)
-            logger.debug(f"[Part] :: {Tokens(self.text).count_pretty} tokens")
+            logger.debug(f"[Part] :: {self.bytes[:50]} :: {Tokens(self.text).count_pretty} tokens")
 
     def __repr__(self):
         return f"{len(self)} tokens"
 
     def __len__(self) -> int:
         return len(self.tokens)
+
+    @property
+    def bytes(self):
+        return self.text.encode()
 
     @property
     def tokens(self):

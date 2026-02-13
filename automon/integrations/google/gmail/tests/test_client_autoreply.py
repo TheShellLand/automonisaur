@@ -209,6 +209,7 @@ def main():
         _FOLLOW_UP = None
 
         search_sequence = [
+            [labels.automon, labels.error],
             [labels.automon, labels.processing],
             [labels.automon, labels.chat],
             [labels.automon, labels.analyze],
@@ -264,7 +265,8 @@ def main():
             # error
             if labels.error in thread.automon_messages_labels:
                 gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
-                continue
+                debug('error')
+                break
 
             # chat
             if labels.chat in thread.automon_messages_labels:
@@ -382,8 +384,12 @@ def main():
                 GoogleGeminiClient.prompts.agent_machine_job_applicant,
             )
 
-            if (labels.chat in email_selected.automon_messages_labels):
+            if labels.error in email_selected.automon_messages_labels:
                 response, model = run_llm(prompts=prompts, chat=True)
+
+            elif labels.chat in email_selected.automon_messages_labels:
+                response, model = run_llm(prompts=prompts, chat=True)
+
             else:
                 response, model = run_llm(prompts=prompts, chat=False)
 
@@ -408,10 +414,10 @@ def main():
                     f"RESPONSE: {response}"
                 )
                 ask.append(
-                    f"say what portion of the response was wrong"
+                    f"first say what portion of the response was wrong"
                 )
                 double_check_prompts.append(
-                    f"write a prompt to fix what was wrong using the format: \n"
+                    f"then write a prompt to fix what was wrong using the format: \n"
                     f"RULE: reason goes here"
                 )
                 run_llm(prompts=double_check_prompts, chat=True)

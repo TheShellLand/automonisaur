@@ -74,8 +74,7 @@ class GoogleGeminiClient(object):
 
     def _agent_download(self, message: str) -> str:
 
-        download = message[len('/download'):].strip()
-        url = download
+        url = message[len('/download'):].strip()
 
         print(f":: SYSTEM :: downloading {url} ::")
 
@@ -144,24 +143,29 @@ class GoogleGeminiClient(object):
             prompt = ''
             lines = []
 
-            print(f"INPUT (end with /send): ")
-            key = None
-            while key != '/send':
-                line = input()
-                lines.append(line)
+            print(f"INPUT (send with CTRL+C) or /SEND: ")
+            while True:
+                try:
+                    line = input()
+
+                    if line.strip().lower() == '/send':
+                        break
+
+                    if prompt.strip().lower() == '/exit':
+                        logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
+                        return self
+
+                    lines.append(line)
+                except KeyboardInterrupt:
+                    break
 
             if lines:
                 prompt = prompt.join(lines)
-                prompt = prompt.strip()
 
             if not prompt:
                 continue
 
-            if prompt == '/exit':
-                logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
-                return self
-
-            if prompt == '/clear':
+            if prompt.strip().lower() == '/clear':
                 self._prompt.clear_history()
                 continue
 
