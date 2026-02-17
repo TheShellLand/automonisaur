@@ -198,7 +198,6 @@ def main():
     gmail_labels(gmail)
 
     thread = None
-    _nextPageToken = None
 
     _FOUND = None
     _FOLLOW_UP = None
@@ -217,7 +216,8 @@ def main():
         ]
 
         email_search = None
-        while True:
+        _nextPageToken = None
+        while not email_search:
 
             email_search = None
 
@@ -230,9 +230,78 @@ def main():
                 )
 
                 if email_search:
-                    break
+                    for thread in email_search.automon_threads:
 
-            if email_search:
+                        # thread = gmail.thread_get_automon(thread.id)
+
+                        _first = thread.automon_message_first
+                        _latest = thread.automon_message_latest
+                        _latest_clean = thread.automon_clean_thread_latest
+
+                        debug(f"{_latest_clean.automon_date_since_now_str} :: "
+                              f"{thread.automon_messages_count} messages :: "
+                              f"{thread.id} :: "
+                              f"{_first.automon_payload.get_header('subject')} :: ",
+                              end='', level=2)
+
+                        gmail.messages_modify(id=_first.id, addLabelIds=[labels.processing])
+
+                        # resume
+                        if labels.resume in thread.automon_messages_labels:
+                            gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
+                            continue
+
+                        # skipped
+                        if labels.skipped in thread.automon_messages_labels:
+                            gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
+                            debug('skipped')
+                            continue
+
+                        # error
+                        if labels.error in thread.automon_messages_labels:
+                            _FOUND = True
+                            debug('error')
+                            break
+
+                        # chat
+                        if labels.chat in thread.automon_messages_labels:
+                            _FOUND = True
+                            debug('chat')
+                            break
+
+                        # analyze
+                        if labels.analyze in thread.automon_messages_labels:
+                            _FOUND = True
+                            debug('analyze')
+                            break
+
+                            # scheduled
+                        if labels.scheduled in thread.automon_messages_labels:
+                            gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
+                            debug('scheduled')
+                            continue
+
+                        # sent
+                        if labels.sent in _latest_clean.automon_labels:
+
+                            if _latest_clean.automon_date_since_now.days >= 3:
+                                _FOUND = True
+                                _FOLLOW_UP = True
+                                debug('followup')
+                                break
+
+                            gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
+                            continue
+
+                        # new
+                        if labels.sent not in _latest_clean.automon_labels:
+                            _FOUND = True
+                            debug('new')
+                            break
+
+                        gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
+
+            if _FOUND:
                 break
 
         _nextPageToken = email_search.nextPageToken
@@ -240,79 +309,6 @@ def main():
         if not email_search.threads:
             debug('_', end='')
             continue
-
-        for thread in email_search.automon_threads:
-
-            # thread = gmail.thread_get_automon(thread.id)
-
-            _first = thread.automon_message_first
-            _latest = thread.automon_message_latest
-            _latest_clean = thread.automon_clean_thread_latest
-
-            debug(f"{_latest_clean.automon_date_since_now_str} :: "
-                  f"{thread.automon_messages_count} messages :: "
-                  f"{thread.id} :: "
-                  f"{_first.automon_payload.get_header('subject')} :: ",
-                  end='', level=2)
-
-            gmail.messages_modify(id=_first.id, addLabelIds=[labels.processing])
-
-            # resume
-            if labels.resume in thread.automon_messages_labels:
-                gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
-                continue
-
-            # error
-            if labels.error in thread.automon_messages_labels:
-                gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
-                _FOUND = True
-                debug('error')
-                break
-
-            # chat
-            if labels.chat in thread.automon_messages_labels:
-                _FOUND = True
-                debug('chat')
-                break
-
-            # analyze
-            if labels.analyze in thread.automon_messages_labels:
-                _FOUND = True
-                debug('analyze')
-                break
-
-            # skipped
-            if labels.skipped in thread.automon_messages_labels:
-                debug('skipped')
-                continue
-
-                # scheduled
-            if labels.scheduled in thread.automon_messages_labels:
-                debug('scheduled')
-                continue
-
-            # sent
-            if labels.sent in _latest_clean.automon_labels:
-
-                if _latest_clean.automon_date_since_now.days >= 3:
-                    _FOUND = True
-                    _FOLLOW_UP = True
-                    debug('followup')
-                    break
-
-                gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
-                continue
-
-            # new
-            if labels.sent not in _latest_clean.automon_labels:
-                _FOUND = True
-                debug('new')
-                break
-
-            gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
-
-        if _FOUND:
-            break
 
     resume_search = gmail.messages_list_automon(
         maxResults=1,
@@ -440,7 +436,7 @@ def main():
             response, model = get_response(prompts)
             response_check, model = check_response(response)
         else:
-            gmail.thread_modify(id=thread.id, addLabelIds=[labels.skipped])
+            gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
             skipped = True
 
     def create_draft():
