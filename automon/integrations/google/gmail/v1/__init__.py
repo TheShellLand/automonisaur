@@ -547,7 +547,7 @@ class MessagePartBody(Dict):
             repr.append(self.automon_data_hash)
 
         if self.size:
-            repr.append(f'{self.size / 1024:,} KB')
+            repr.append(f'{round(self.size / 1024):,} KB')
 
         return ' :: '.join(repr)
 
