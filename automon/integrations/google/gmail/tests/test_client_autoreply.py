@@ -301,8 +301,8 @@ def main():
 
                         gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
 
-            if _FOUND:
-                break
+                if _FOUND:
+                    break
 
         _nextPageToken = email_search.nextPageToken
 
