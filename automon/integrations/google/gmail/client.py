@@ -84,6 +84,9 @@ class AutomonLabels:
         # processing
         self.processing = Label(name='automon/processing', color=self._color_yellow)
 
+        # skipped
+        self.skipped = Label(name='automon/skipped', color=self._color_error)
+
     @property
     def all_labels(self):
         return [
@@ -325,7 +328,7 @@ class GoogleGmailClient(GoogleAuthClient):
         )
         return RequestsClient().get_self(api, headers=self.config.headers, params=params).to_dict()
 
-    def is_ready(self, save_creds = True):
+    def is_ready(self, save_creds=True):
         if self.config.is_ready():
             if self.config.Credentials(save_creds=save_creds):
                 if self.get_user_info():
@@ -637,14 +640,16 @@ class GoogleGmailClient(GoogleAuthClient):
 
         api = UsersMessages(self._userId).modify(id)
 
-        for addLabelId in addLabelIds:
-            if type(addLabelId) is Label:
-                addLabelIds = [addLabelId.id for addLabelId in addLabelIds]
-                break
-        for removeLabelId in removeLabelIds:
-            if type(removeLabelId) is Label:
-                removeLabelIds = [removeLabelId.id for removeLabelId in removeLabelIds]
-                break
+        if addLabelIds:
+            for addLabelId in addLabelIds:
+                if type(addLabelId) is Label:
+                    addLabelIds = [addLabelId.id for addLabelId in addLabelIds]
+                    break
+        if removeLabelIds:
+            for removeLabelId in removeLabelIds:
+                if type(removeLabelId) is Label:
+                    removeLabelIds = [removeLabelId.id for removeLabelId in removeLabelIds]
+                    break
 
         data = {
             "addLabelIds": addLabelIds,
@@ -805,10 +810,37 @@ class GoogleGmailClient(GoogleAuthClient):
 
         return threads
 
-    def thread_modify(self, id: str) -> Thread:
+    def thread_modify(
+            self,
+            id: str,
+            addLabelIds: list = [],
+            removeLabelIds: list = []
+    ) -> Thread:
+
+        if len(addLabelIds) > 100 or len(removeLabelIds) > 100:
+            raise Exception(
+                f"[GoogleGmailClient] :: messages_modify :: ERROR :: {len(addLabelIds)=} {len(addLabelIds)=} > 100")
+
         api = UsersThread(self._userId).modify(id=id)
+
+        if addLabelIds:
+            for addLabelId in addLabelIds:
+                if type(addLabelId) is Label:
+                    addLabelIds = [addLabelId.id for addLabelId in addLabelIds]
+                    break
+        if removeLabelIds:
+            for removeLabelId in removeLabelIds:
+                if type(removeLabelId) is Label:
+                    removeLabelIds = [removeLabelId.id for removeLabelId in removeLabelIds]
+                    break
+
+        data = {
+            "addLabelIds": addLabelIds,
+            "removeLabelIds": removeLabelIds
+        }
+
         return Thread(
-            RequestsClient().post_self(api, headers=self.config.headers).to_dict()
+            RequestsClient().post_self(api, headers=self.config.headers, json=data).to_dict()
         )
 
     def thread_trash(self, id: str) -> Thread:

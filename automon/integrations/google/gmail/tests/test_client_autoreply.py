@@ -265,13 +265,13 @@ def main():
             # error
             if labels.error in thread.automon_messages_labels:
                 gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
+                _FOUND = True
                 debug('error')
                 break
 
             # chat
             if labels.chat in thread.automon_messages_labels:
                 _FOUND = True
-                CHAT = True
                 debug('chat')
                 break
 
@@ -281,7 +281,12 @@ def main():
                 debug('analyze')
                 break
 
-            # scheduled
+            # skipped
+            if labels.skipped in thread.automon_messages_labels:
+                debug('skipped')
+                continue
+
+                # scheduled
             if labels.scheduled in thread.automon_messages_labels:
                 debug('scheduled')
                 continue
@@ -376,10 +381,15 @@ def main():
             break
 
     response_check = False
+    skipped = False
     while not response_check:
 
-        def get_response(*args, **kwargs):
-            prompts = prompts_resume + prompts_emails
+        def is_human(prompts: list) -> bool:
+            prompts.append(f"Respond only True or False, is the first email from a human?")
+            response, model = run_llm(prompts=prompts, chat=False)
+            return gemini.reponse_is_true(response)
+
+        def get_response(prompts: list) -> tuple[str, any]:
             prompts.append(
                 GoogleGeminiClient.prompts.agent_machine_job_applicant,
             )
@@ -395,7 +405,7 @@ def main():
 
             return response, model
 
-        def check_response(response):
+        def check_response(response) -> tuple[str, any]:
             double_check_prompts = prompts_resume + prompts_emails
             double_check_prompts.append(
                 f"{GoogleGeminiClient.prompts.agent_machine_job_applicant}"
@@ -424,9 +434,14 @@ def main():
 
             return double_check, model
 
-        response, model = get_response(thread)
+        prompts = prompts_resume + prompts_emails
 
-        response_check, model = check_response(response)
+        if is_human(prompts):
+            response, model = get_response(prompts)
+            response_check, model = check_response(response)
+        else:
+            gmail.thread_modify(id=thread.id, addLabelIds=[labels.skipped])
+            skipped = True
 
     def create_draft():
 
@@ -481,7 +496,8 @@ def main():
 
     gmail.config.refresh_token()
 
-    create_draft()
+    if not skipped:
+        create_draft()
 
 
 class MyTestCase(unittest.TestCase):
