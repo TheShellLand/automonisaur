@@ -151,7 +151,7 @@ class GoogleGeminiClient(object):
                     if line.strip().lower() == '/send':
                         break
 
-                    if prompt.strip().lower() == '/exit':
+                    if line.strip().lower() == '/exit':
                         logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
                         return self
 
