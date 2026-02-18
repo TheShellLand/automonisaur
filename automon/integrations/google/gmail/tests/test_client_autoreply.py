@@ -249,6 +249,7 @@ def main():
                         # resume
                         if labels.resume in thread.automon_messages_labels:
                             gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
+                            debug('resume')
                             continue
 
                         # skipped
@@ -309,6 +310,8 @@ def main():
         if not email_search.threads:
             debug('_', end='')
             continue
+        else:
+            break
 
     resume_search = gmail.messages_list_automon(
         maxResults=1,
@@ -435,6 +438,11 @@ def main():
         if is_human(prompts):
             response, model = get_response(prompts)
             response_check, model = check_response(response)
+
+            while gemini.response_is_false(response_check):
+                response, model = get_response(prompts)
+                response_check, model = check_response(response)
+
         else:
             gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
             skipped = True

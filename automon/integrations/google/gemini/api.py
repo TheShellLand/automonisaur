@@ -12,7 +12,7 @@ logger.setLevel(DEBUG)
 
 _API_VERSION_LOOKUP = {
     'gemini-1.5-flash': 'v1',
-    'gemini-2.0-flash-exp': 'v1beta',
+    # 'gemini-2.0-flash-exp': 'v1beta',
     # 'gemini-2.0-flash-lite': 'v1beta',
     'gemini-2.0-flash-live': 'v1alpha',
     'gemini-2.5-flash-exp': 'v1',
