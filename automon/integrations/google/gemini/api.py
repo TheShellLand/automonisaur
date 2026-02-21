@@ -16,10 +16,11 @@ _API_VERSION_LOOKUP = {
     # 'gemini-2.0-flash-lite': 'v1beta',
     'gemini-2.0-flash-live': 'v1alpha',
     'gemini-2.5-flash-exp': 'v1',
+    'gemini-2.5-flash-live': 'v1alpha',
     # 'gemini-2.5-flash-live': 'v1alpha',
     'gemini-3-flash': 'v1alpha',
     # 'gemini-3-flash-preview': 'v1beta',
-    # 'gemma-3-27b': 'v1beta',
+    'gemma-3-27b': 'v1',
 }
 
 

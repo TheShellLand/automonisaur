@@ -2,7 +2,7 @@ import unittest
 
 import time
 import threading
-from idlelib.rpc import response_queue
+# from idlelib.rpc import response_queue
 
 from automon.integrations.google.gmail import GoogleGmailClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
@@ -10,8 +10,7 @@ from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
 DEBUG_LEVEL = 2
-DEBUG_ = True
-INFO_ = False
+DEBUG_ = False
 DEFAULT_LEVEL = ERROR
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
@@ -24,15 +23,15 @@ LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setL
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(DEFAULT_LEVEL)
-
-if INFO_:
-    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
-    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(INFO)
 
 if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
+else:
+    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
+    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(INFO)
 
 
 def debug(log: str, level: int = 1, **kwargs):
@@ -198,16 +197,13 @@ def main():
     gmail_labels(gmail)
 
     thread = None
+    thread_selected = None
 
-    _FOUND = None
     _FOLLOW_UP = None
 
     while gmail.is_ready():
 
-        _FOUND = None
-        _FOLLOW_UP = None
-
-        search_sequence = [
+        query_sequence = [
             [labels.automon, labels.error],
             [labels.automon, labels.processing],
             [labels.automon, labels.chat],
@@ -215,103 +211,146 @@ def main():
             [labels.automon],
         ]
 
-        email_search = None
+        def is_resume(thread):
+            if labels.resume in thread.automon_messages_labels:
+                debug('resume')
+                return True
+            return False
+
+        def is_skipped(thread):
+            if labels.skipped in thread.automon_messages_labels:
+                debug('skipped')
+                return True
+            return False
+
+        def is_error(thread):
+            if labels.error in thread.automon_messages_labels:
+                debug('error')
+                return True
+            return False
+
+        def is_chat(thread):
+            if labels.chat in thread.automon_messages_labels:
+                debug('chat')
+                return True
+            return False
+
+        def is_analyze(thread):
+            if labels.analyze in thread.automon_messages_labels:
+                debug('analyze')
+                return True
+            return False
+
+        def is_scheduled(thread):
+            if labels.scheduled in thread.automon_messages_labels:
+                debug('scheduled')
+                return True
+            return False
+
+        def is_sent(thread):
+            if labels.sent in thread.automon_clean_thread_latest.automon_labels:
+                return True
+            return False
+
+        def is_old(thread):
+            if thread.automon_clean_thread_latest.automon_date_since_now.days >= 3:
+                debug('followup')
+                return True
+            return False
+
+        def is_new(thread):
+            if labels.sent not in thread.automon_clean_thread_latest.automon_labels:
+                debug('new')
+                return True
+            return False
+
+        def is_follow_up(thread):
+            if labels.auto_reply_enabled in thread.automon_messages_labels:
+                if labels.sent not in thread.automon_message_latest.automon_labels:
+                    return True
+            return False
+
+        def search_email(query, pageToken):
+            return gmail.thread_list_automon(
+                maxResults=1,
+                pageToken=pageToken,
+                labelIds=query,
+            )
+
+        def email_found(thread):
+
+            # thread = gmail.thread_get_automon(thread.id)
+
+            first = thread.automon_message_first
+            latest_clean = thread.automon_clean_thread_latest
+
+            debug(f"{latest_clean.automon_date_since_now_str} :: "
+                  f"{thread.automon_messages_count} messages :: "
+                  f"{thread.id} :: "
+                  f"{first.automon_payload.get_header('subject')} :: ",
+                  end='', level=2)
+
+            # resume
+            if is_resume(thread):
+                return False
+
+                # skipped
+            if is_skipped(thread):
+                return False
+
+            # error
+            if is_error(thread):
+                return True
+
+            # chat
+            if is_chat(thread):
+                return True
+
+            # analyze
+            if is_analyze(thread):
+                return True
+
+            # scheduled
+            if is_scheduled(thread):
+                return False
+
+            # sent
+            if is_sent(thread):
+                if is_old(thread):
+                    return True
+                debug('sent')
+
+            # new
+            if is_new(thread):
+                return True
+
+            return False
+
+        _thread_search = None
         _nextPageToken = None
-        while not email_search:
+        while not thread_selected:
 
-            email_search = None
+            for _query in query_sequence:
+                _thread_search = search_email(_query, _nextPageToken)
 
-            for _sequence in search_sequence:
+                if _thread_search:
+                    for thread in _thread_search.automon_threads:
 
-                email_search = gmail.thread_list_automon(
-                    maxResults=1,
-                    pageToken=_nextPageToken,
-                    labelIds=_sequence,
-                )
+                        gmail.thread_modify(id=thread.id, addLabelIds=[labels.processing])
 
-                if email_search:
-                    for thread in email_search.automon_threads:
-
-                        # thread = gmail.thread_get_automon(thread.id)
-
-                        _first = thread.automon_message_first
-                        _latest = thread.automon_message_latest
-                        _latest_clean = thread.automon_clean_thread_latest
-
-                        debug(f"{_latest_clean.automon_date_since_now_str} :: "
-                              f"{thread.automon_messages_count} messages :: "
-                              f"{thread.id} :: "
-                              f"{_first.automon_payload.get_header('subject')} :: ",
-                              end='', level=2)
-
-                        gmail.messages_modify(id=_first.id, addLabelIds=[labels.processing])
-
-                        # resume
-                        if labels.resume in thread.automon_messages_labels:
-                            gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
-                            debug('resume')
-                            continue
-
-                        # skipped
-                        if labels.skipped in thread.automon_messages_labels:
-                            gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
-                            debug('skipped')
-                            continue
-
-                        # error
-                        if labels.error in thread.automon_messages_labels:
-                            _FOUND = True
-                            debug('error')
+                        if email_found(thread):
+                            thread_selected = thread
                             break
 
-                        # chat
-                        if labels.chat in thread.automon_messages_labels:
-                            _FOUND = True
-                            debug('chat')
-                            break
+                        gmail.thread_modify(id=thread.id, removeLabelIds=[labels.processing])
 
-                        # analyze
-                        if labels.analyze in thread.automon_messages_labels:
-                            _FOUND = True
-                            debug('analyze')
-                            break
+                    if thread_selected: break
 
-                            # scheduled
-                        if labels.scheduled in thread.automon_messages_labels:
-                            gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
-                            debug('scheduled')
-                            continue
+                if thread_selected: break
 
-                        # sent
-                        if labels.sent in _latest_clean.automon_labels:
+            _nextPageToken = _thread_search.nextPageToken
 
-                            if _latest_clean.automon_date_since_now.days >= 3:
-                                _FOUND = True
-                                _FOLLOW_UP = True
-                                debug('followup')
-                                break
-
-                            gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
-                            continue
-
-                        # new
-                        if labels.sent not in _latest_clean.automon_labels:
-                            _FOUND = True
-                            debug('new')
-                            break
-
-                        gmail.messages_modify(id=_first.id, removeLabelIds=[labels.processing])
-
-                if _FOUND:
-                    break
-
-        _nextPageToken = email_search.nextPageToken
-
-        if not email_search.threads:
-            debug('_', end='')
-            continue
-        else:
-            break
+        if thread_selected: break
 
     resume_search = gmail.messages_list_automon(
         maxResults=1,
@@ -324,7 +363,6 @@ def main():
         if labels.draft in message.automon_labels:
             gmail.messages_trash(id=message.id)
 
-    email_selected = thread
     resume_selected = resume_search.automon_messages[0]
 
     resume = resume_selected.automon_attachments_first
@@ -336,7 +374,7 @@ def main():
     i = 1
     prompts_emails = []
     prompts_emails_all = []
-    for message in email_selected.automon_messages:
+    for message in thread_selected.automon_messages:
 
         if labels.draft in message.automon_labels:
             continue
@@ -364,12 +402,12 @@ def main():
         return
 
     response = None
-    for message in email_selected.automon_messages:
+    for message in thread_selected.automon_messages:
         if labels.analyze in message.automon_labels:
-            if labels.sent in email_selected.automon_message_latest.automon_labels:
+            if labels.sent in thread_selected.automon_message_latest.automon_labels:
                 break
 
-            _draft = email_selected.automon_message_latest
+            _draft = thread_selected.automon_message_latest
             _resume = _draft.automon_attachments_first.automon_body.automon_data_html_text
 
             prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
@@ -384,52 +422,42 @@ def main():
     while not response_check:
 
         def is_human(prompts: list) -> bool:
-            prompts.append(f"Respond only True or False, is the first email from a human?")
-            response, model = run_llm(prompts=prompts, chat=False)
+            prompts_check = prompts + [f"Respond only True or False, is the first email from a human"]
+            response, model = run_llm(prompts=prompts_check, chat=False)
             return gemini.reponse_is_true(response)
 
         def get_response(prompts: list) -> tuple[str, any]:
-            prompts.append(
-                GoogleGeminiClient.prompts.agent_machine_job_applicant,
-            )
+            prompts_get = prompts + [GoogleGeminiClient.prompts.agent_machine_job_applicant]
 
-            if labels.error in email_selected.automon_messages_labels:
-                response, model = run_llm(prompts=prompts, chat=True)
+            if labels.error in thread_selected.automon_messages_labels:
+                response, model = run_llm(prompts=prompts_get, chat=True)
 
-            elif labels.chat in email_selected.automon_messages_labels:
-                response, model = run_llm(prompts=prompts, chat=True)
+            elif labels.chat in thread_selected.automon_messages_labels:
+                response, model = run_llm(prompts=prompts_get, chat=True)
 
             else:
-                response, model = run_llm(prompts=prompts, chat=False)
+                response, model = run_llm(prompts=prompts_get, chat=False)
 
             return response, model
 
-        def check_response(response) -> tuple[str, any]:
-            double_check_prompts = prompts_resume + prompts_emails
-            double_check_prompts.append(
-                f"{GoogleGeminiClient.prompts.agent_machine_job_applicant}"
-            )
-            double_check_prompts.append(
-                f"RESPONSE: {response}"
-            )
-            double_check_prompts.append(
-                f"Respond True or False. Is the RESPONSE following all RULES?"
-            )
-            double_check, model = run_llm(double_check_prompts)
+        def check_response(prompts, response) -> tuple[str, any]:
+            prompts_double_check = prompts + [(
+                f"{GoogleGeminiClient.prompts.agent_machine_job_applicant}\n"
+                f"RESPONSE: {response}\n"
+                f"Respond True or False. Is the RESPONSE following all RULES?\n"
+            )]
+
+            double_check, model = run_llm(prompts_double_check)
 
             if gemini.response_is_false(double_check):
-                ask = prompts_resume + prompts_emails
-                ask.append(
-                    f"RESPONSE: {response}"
-                )
-                ask.append(
-                    f"first say what portion of the response was wrong"
-                )
-                double_check_prompts.append(
+                ask = prompts + [(
+                    f"RESPONSE: {response} \n"
+                    f"first say what portion of the response was wrong \n"
                     f"then write a prompt to fix what was wrong using the format: \n"
                     f"RULE: reason goes here"
-                )
-                run_llm(prompts=double_check_prompts, chat=True)
+                )]
+
+                run_llm(prompts=ask, chat=True)
 
             return double_check, model
 
@@ -437,19 +465,19 @@ def main():
 
         if is_human(prompts):
             response, model = get_response(prompts)
-            response_check, model = check_response(response)
+            response_check, model = check_response(prompts=prompts, response=response)
 
             while gemini.response_is_false(response_check):
                 response, model = get_response(prompts)
-                response_check, model = check_response(response)
+                response_check, model = check_response(prompts=prompts, response=response)
 
         else:
             gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
             skipped = True
 
-    def create_draft():
+    def create_draft(thread):
 
-        if _FOLLOW_UP:
+        if is_follow_up(thread):
             resume_attachment = []
         else:
             resume_attachment = resume_selected.automon_payload.automon_parts[1]
@@ -460,15 +488,15 @@ def main():
                 filename=resume_attachment.filename,
                 mimeType=resume_attachment.mimeType)
 
-        to = email_selected.automon_message_first.automon_header_from.value
-        from_ = email_selected.automon_message_first.automon_header_to.value
+        to = thread.automon_message_first.automon_header_from.value
+        from_ = thread.automon_message_first.automon_header_to.value
 
         # create draft
         body = response
-        subject = "Re: " + email_selected.automon_message_first.automon_header_subject.value
+        subject = "Re: " + thread_selected.automon_message_first.automon_header_subject.value
         if thread.automon_messages_count >= 3:
             draft = gmail.draft_create(
-                threadId=email_selected.id,
+                threadId=thread_selected.id,
                 draft_to=to,
                 draft_from=from_,
                 draft_subject=subject,
@@ -476,7 +504,7 @@ def main():
             )
         else:
             draft = gmail.draft_create(
-                threadId=email_selected.id,
+                threadId=thread_selected.id,
                 draft_to=to,
                 draft_from=from_,
                 draft_subject=subject,
@@ -485,23 +513,24 @@ def main():
             )
         draft_get = gmail.draft_get_automon(id=draft.id)
 
-        gmail.messages_modify(id=email_selected.id,
-                              addLabelIds=[labels.unread])
+        gmail.messages_modify(
+            id=thread_selected.id,
+            addLabelIds=[labels.unread])
 
-        if (labels.auto_reply_enabled in email_selected.automon_messages_labels
-                and labels.sent not in email_selected.automon_message_latest.automon_labels
-        ):
+        if is_follow_up(thread_selected):
             draft_sent = gmail.draft_send(draft=draft)
-            gmail.messages_modify(id=email_selected.automon_message_first.id,
-                                  addLabelIds=[labels.unread])
+            gmail.messages_modify(
+                id=thread_selected.automon_message_first.id,
+                addLabelIds=[labels.unread])
 
-        gmail.messages_modify(id=email_selected.automon_message_first.id,
-                              removeLabelIds=[labels.processing])
+        gmail.messages_modify(
+            id=thread_selected.automon_message_first.id,
+            removeLabelIds=[labels.processing])
 
     gmail.config.refresh_token()
 
     if not skipped:
-        create_draft()
+        create_draft(thread_selected)
 
 
 class MyTestCase(unittest.TestCase):
