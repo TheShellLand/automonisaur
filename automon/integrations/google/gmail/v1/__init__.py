@@ -591,7 +591,8 @@ class MessagePartBody(Dict):
 
     def _html_text(self) -> str | None:
         if self.automon_data_bs4():
-            return self.automon_data_bs4().html.text
+            if self.automon_data_bs4().html:
+                return self.automon_data_bs4().html.text
 
 
 class MessagePart(Dict):

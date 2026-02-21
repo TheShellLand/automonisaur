@@ -10,12 +10,12 @@ from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
 DEBUG_LEVEL = 2
-DEBUG_ = False
+DEBUG_ = True
 DEFAULT_LEVEL = ERROR
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.client').setLevel(DEBUG)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.utils').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
@@ -368,7 +368,6 @@ def main():
     resume = resume_selected.automon_attachments_first
     resume = resume.automon_parts[0].automon_body.automon_data_html_text
 
-    prompts_base = []
     prompts_resume = [f"This is your resume: <RESUME>{resume}</RESUME>\n\n", ]
 
     i = 1
