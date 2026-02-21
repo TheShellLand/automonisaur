@@ -15,6 +15,7 @@ import selenium
 import selenium.webdriver
 import selenium.webdriver.common.by
 import selenium.webdriver.remote.webelement
+import selenium.webdriver.common.action_chains
 
 from selenium.webdriver.common.keys import Keys
 
