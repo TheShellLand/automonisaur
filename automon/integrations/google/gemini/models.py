@@ -16,6 +16,7 @@ class GoogleGeminiModels(object):
 
     def __init__(self):
         self.FREE_TIER = [
+            self.gemini_flash_latest,
             # self.gemini_3_flash,
             # self.gemini_2_5_flash,
             # self.gemini_2_5_flash_exp,
@@ -96,6 +97,10 @@ class GoogleGeminiModels(object):
     @property
     def gemma_3_27b(self):
         return f'gemma-3-27b'
+
+    @property
+    def gemini_flash_latest(self):
+        return f'gemini-flash-latest'
 
     @property
     def gemma_3_27b_it(self):

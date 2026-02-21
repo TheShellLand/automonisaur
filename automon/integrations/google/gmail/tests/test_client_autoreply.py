@@ -266,7 +266,7 @@ def main():
 
         def is_follow_up(thread):
             if labels.auto_reply_enabled in thread.automon_messages_labels:
-                if labels.sent not in thread.automon_message_latest.automon_labels:
+                if labels.sent not in thread.automon_clean_thread_latest.automon_labels:
                     return True
             return False
 
