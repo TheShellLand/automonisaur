@@ -25,10 +25,10 @@ class GoogleGeminiModels(object):
             # self.gemini_2_5_flash_preview_09_2025,
             # self.gemini_2_5_pro,
             # self.gemini_2_5_pro_1p_freebie,
-            # self.gemini_2_0_flash,
+            self.gemini_2_0_flash,
             # self.gemini_2_0_flash_exp,
-            # self.gemini_2_0_flash_lite,
-            # self.gemini_2_0_flash_live,
+            self.gemini_2_0_flash_lite,
+            self.gemini_2_0_flash_live,
             self.gemma_3_27b_it,
         ]
 

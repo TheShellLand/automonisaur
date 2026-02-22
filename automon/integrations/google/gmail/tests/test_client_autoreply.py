@@ -20,6 +20,7 @@ LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.utils').setL
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
 LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.google.gemini.api').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEFAULT_LEVEL)
@@ -266,8 +267,9 @@ def main():
 
         def is_follow_up(thread):
             if labels.auto_reply_enabled in thread.automon_messages_labels:
-                if labels.sent not in thread.automon_clean_thread_latest.automon_labels:
-                    return True
+                if labels.sent in thread.automon_messages_labels:
+                    if thread.automon_full_thread_first.automon_email_from == thread.automon_clean_thread_latest.automon_header_from:
+                        return True
             return False
 
         def search_email(query, pageToken):
@@ -294,16 +296,16 @@ def main():
             if is_resume(thread):
                 return False
 
-                # skipped
+            # chat
+            if is_chat(thread):
+                return True
+
+            # skipped
             if is_skipped(thread):
                 return False
 
             # error
             if is_error(thread):
-                return True
-
-            # chat
-            if is_chat(thread):
                 return True
 
             # analyze
