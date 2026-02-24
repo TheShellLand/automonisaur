@@ -218,6 +218,12 @@ def main():
                 return True
             return False
 
+        def has_resume(thread: GoogleGmailClient.v1.Thread):
+            """check if a resume has been sent before"""
+            messages = thread.automon_messages
+            sent = [x for x in messages if labels.sent in x.automon_labels]
+            raise
+
         def is_skipped(thread):
             if labels.skipped in thread.automon_messages_labels:
                 debug('skipped')
@@ -427,6 +433,11 @@ def main():
             response, model = run_llm(prompts=prompts_check, chat=False)
             return gemini.reponse_is_true(response)
 
+        def is_rejected_email(prompts: list) -> bool:
+            prompts_check = prompts + [f"Respond only True or False, Check if any of the emails is from mailer-daemon or the body contains recipient address rejected."]
+            response, model = run_llm(prompts=prompts_check, chat=False)
+            return gemini.reponse_is_true(response)
+
         def get_response(prompts: list) -> tuple[str, any]:
             prompts_get = prompts + [GoogleGeminiClient.prompts.agent_machine_job_applicant]
 
@@ -465,12 +476,13 @@ def main():
         prompts = prompts_resume + prompts_emails
 
         if is_human(prompts):
-            response, model = get_response(prompts)
-            response_check, model = check_response(prompts=prompts, response=response)
-
-            while gemini.response_is_false(response_check):
+            if not is_rejected_email(prompts):
                 response, model = get_response(prompts)
                 response_check, model = check_response(prompts=prompts, response=response)
+
+                while gemini.response_is_false(response_check):
+                    response, model = get_response(prompts)
+                    response_check, model = check_response(prompts=prompts, response=response)
 
         else:
             gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
@@ -480,7 +492,8 @@ def main():
 
         if is_follow_up(thread):
             resume_attachment = []
-        else:
+
+        if not has_resume(thread):
             resume_attachment = resume_selected.automon_payload.automon_parts[1]
             assert resume_attachment.filename
 

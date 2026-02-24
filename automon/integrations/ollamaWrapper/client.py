@@ -59,7 +59,6 @@ class OllamaClient(object):
         )
 
     def add_chain(self, content: str, delimiters: str = 'CHAT', **kwargs):
-        logger.debug(f'[OllamaClient] :: add_chain >>>>')
 
         new_question = f'{content}'
 
@@ -81,7 +80,7 @@ class OllamaClient(object):
             f'add_message :: '
             f'{role=} :: '
             f'{Tokens(content).count_pretty} tokens :: '
-            f'{len(content)} chars :: >>>>')
+            f'{len(content)} chars')
 
         max_tokens = 128000
         if self.model == 'deepseek-r1:14b':
@@ -113,10 +112,8 @@ class OllamaClient(object):
         return self
 
     def add_message_followup(self, **kwargs):
-        logger.debug(f'[OllamaClient] :: add_message_followup >>>>')
         self.messages = []
         self.add_message(**kwargs)
-        logger.info(f'[OllamaClient] :: add_message_followup :: done')
 
         return self
 
@@ -135,7 +132,7 @@ class OllamaClient(object):
         if not options:
             options = self._ollama_options
 
-        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.messages):,} total tokens >>>>')
+        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.messages):,} total tokens')
 
         chat = ollama.chat(
             model=self.model,
@@ -173,7 +170,6 @@ class OllamaClient(object):
 
     def chat_forever(self, safe_word: str = None, system_content: str = None):
         """Chat forever until you use your safe word. :) """
-        logger.debug(f'[OllamaClient] :: chat_forever :: >>>>')
 
         self.pickle_load()
 
@@ -278,7 +274,6 @@ class OllamaClient(object):
         print(f":: SYSTEM :: context window is at {self._num_ctx:,.0f} tokens ::")
 
     def _agent_download(self, message: str) -> tuple:
-        logger.debug(f'[OllamaClient] :: _agent_download :: >>>>')
 
         download = message[len('/download'):].strip()
         url = download
@@ -409,7 +404,6 @@ class OllamaClient(object):
         return False
 
     def is_ready(self):
-        logger.debug(f'[OllamaClient] :: is_ready :: >>>>')
 
         try:
             if not self.start_local_server():
@@ -425,7 +419,6 @@ class OllamaClient(object):
         return False
 
     def list(self):
-        logger.debug(f'[OllamaClient] :: list :: >>>>')
 
         list = self.ollama.list()
         models = list['models']
@@ -501,16 +494,12 @@ class OllamaClient(object):
         logger.info(f'[OllamaClient] :: pickle_save :: done')
 
     def pull(self, model: str = 'deepseek-r1:14b'):
-        logger.debug(f'[OllamaClient] :: pull :: {model=} :: >>>>')
-
         pull = self.ollama.pull(model=model)
 
         logger.debug(f'[OllamaClient] :: pull :: {pull=}')
-        logger.info(f'[OllamaClient] :: pull :: done')
         return self
 
     def print_response(self):
-        logger.debug(f'[OllamaClient] :: print_response :: >>>>')
 
         if not self._ollama_chat.content():
             return self
@@ -519,24 +508,21 @@ class OllamaClient(object):
             # logger.debug(f'[OllamaClient] :: print_response :: {content=}')
             print(content, end='', flush=True)
 
-        logger.info(f'[OllamaClient] :: print_response :: done')
         return self
 
     def set_context_window(self, tokens: int):
         tokens = round(tokens)
-        logger.debug(f'[OllamaClient] :: set_context_window :: {tokens=} :: >>>>')
+        logger.debug(f'[OllamaClient] :: set_context_window :: {tokens=}')
         self._num_ctx = tokens
         return self
 
     def set_model(self, model: str):
-        logger.debug(f'[OllamaClient] :: set_model :: {model=} >>>>')
+        logger.debug(f'[OllamaClient] :: set_model :: {model=}')
         self.model = model
-        logger.info(f'[OllamaClient] :: set_model :: done')
         return self
 
     @staticmethod
     def start_local_server() -> bool:
-        logger.debug(f'[OllamaClient] :: start_local_server >>>>')
 
         try:
             ollama = automon.helpers.subprocessWrapper.Run('ollama list')

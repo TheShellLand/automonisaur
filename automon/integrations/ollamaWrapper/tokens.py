@@ -2,7 +2,7 @@ from automon.helpers.loggingWrapper import LoggingClient
 from automon.helpers import Dict
 
 logger = LoggingClient.logging.getLogger(__name__)
-logger.setLevel(LoggingClient.ERROR)
+logger.setLevel(LoggingClient.DEBUG)
 
 
 class Tokens(Dict):
@@ -17,6 +17,8 @@ class Tokens(Dict):
 
         self.string: str = string
         self._ratio: int = ratio
+
+        logger.debug(f"[Tokens] :: {string[:50]}")
 
     def __repr__(self):
         return f"{self.count} tokens"

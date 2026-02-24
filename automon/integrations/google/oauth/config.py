@@ -61,7 +61,7 @@ class GoogleAuthConfig(object):
         return bool(self.credentials)
 
     def add_scopes(self, scopes: list) -> list:
-        logger.debug(f"[GoogleAuthConfig] :: add_scopes :: {scopes=} :: >>>>")
+        logger.debug(f"[GoogleAuthConfig] :: add_scopes :: {scopes=}")
         self.scopes += scopes
 
         return self.scopes

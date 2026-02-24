@@ -45,5 +45,5 @@ class GoogleGmailConfig(GoogleAuthConfig):
                 "https://www.googleapis.com/auth/gmail.settings.sharing",
                 "https://mail.google.com/"
             ]
-        logger.debug(f"[GoogleGmailConfig] :: add_gmail_scopes :: {len(scopes)} scopes :: >>>>")
+        logger.debug(f"[GoogleGmailConfig] :: add_gmail_scopes :: {len(scopes)} scopes")
         return self.add_scopes(scopes=scopes)
