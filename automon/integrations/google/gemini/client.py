@@ -1,3 +1,4 @@
+import sys
 import json
 import random
 import readline
@@ -16,6 +17,39 @@ from .config import GoogleGeminiConfig
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
+# Platform-specific setup
+try:
+    import msvcrt
+
+
+    def get_keypress():
+        if msvcrt.kbhit():
+            return msvcrt.getch()
+        return None
+
+
+    # Windows usually maps SHIFT-ENTER to standard carriage return in basic buffers,
+    # but some terminals send \x0d.
+    SHIFT_ENTER = b'\x0d'
+
+except ImportError:
+    import termios
+    import tty
+
+
+    def get_keypress():
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setcbreak(fd)
+            return sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
+    # Unix SHIFT-ENTER escape sequence (varies by terminal, \n is common)
+    SHIFT_ENTER = '\n'
+
 
 class GoogleGeminiClient(object):
     models = GoogleGeminiModels()
@@ -33,13 +67,14 @@ class GoogleGeminiClient(object):
         self.models_in_use = self.models.FREE_TIER
 
     def __repr__(self):
-        return f"[GoogleGeminiClient] :: {self.config=}"
+        return f"[GoogleGeminiClient] :: {len(self)} tokens"
+
+    def __len__(self) -> int:
+        return len(self._prompt)
 
     def _agent_download(self, message: str) -> str:
-        logger.debug(f'[GoogleGeminiClient] :: _agent_download :: >>>>')
 
-        download = message[len('/download'):].strip()
-        url = download
+        url = message[len('/download'):].strip()
 
         print(f":: SYSTEM :: downloading {url} ::")
 
@@ -54,7 +89,6 @@ class GoogleGeminiClient(object):
         # download = browser.get_page_source_beautifulsoup().html.text
         browser.quit()
 
-        logger.info(f'[GoogleGeminiClient] :: _download :: done')
         return download
 
     def add_content(self, prompt: str, role: str = 'user'):
@@ -66,7 +100,7 @@ class GoogleGeminiClient(object):
         self._prompt.add_content(content=content)
 
         content_len = Tokens(string=prompt).count
-        logger.debug(f"[GoogleGeminiClient] :: add_content :: {content_len:,} tokens")
+        logger.debug(f"[GoogleGeminiClient] :: add_content :: {content_len:,} tokens ({len(self)} total)")
         return self
 
     @property
@@ -85,12 +119,15 @@ class GoogleGeminiClient(object):
            }'
         """
 
-        url = GoogleGeminiApi().base.v1beta.models(self.model).generateContent.key(key=self.config.random_api_key()).url
+        url = GoogleGeminiApi().base.api_v_lookup(self.model).models(self.model).generateContent.key(
+            key=self.config.random_api_key()).url
         json = self._prompt.to_dict()
         chat = self._requests.post(url=url, json=json, headers=self.config.headers())
 
         if not chat:
-            raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.to_dict()}')
+            logger.error(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.to_dict()}')
+            raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.to_dict()}',
+                            self.model)
 
         self._chat = GeminiResponse(self._requests.to_dict())
 
@@ -106,34 +143,29 @@ class GoogleGeminiClient(object):
             prompt = ''
             lines = []
 
-            print(f"INPUT (end prompt with /send): ")
+            print(f"INPUT (send with CTRL+C) or /SEND: ")
             while True:
-
                 try:
                     line = input()
-                    if line.strip() == '/send':
+
+                    if line.strip().lower() == '/send':
                         break
-                    if line.strip() == '/exit':
+
+                    if line.strip().lower() == '/exit':
+                        logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
                         return self
 
                     lines.append(line)
-
                 except KeyboardInterrupt:
-                    logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
-                    return self
+                    break
 
             if lines:
                 prompt = prompt.join(lines)
-                prompt = prompt.strip()
 
             if not prompt:
                 continue
 
-            if prompt == '/exit':
-                logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
-                return self
-
-            if prompt == '/clear':
+            if prompt.strip().lower() == '/clear':
                 self._prompt.clear_history()
                 continue
 
@@ -166,11 +198,11 @@ class GoogleGeminiClient(object):
             return True
         if 'false' in response.lower():
             return False
-        logger.error(f"[GoogleGeminiClient] :: reponse_is_true :: neither true or false")
+        raise Exception(f"[GoogleGeminiClient] :: reponse_is_true :: neither true or false")
 
     def response_is_false(self, response: str) -> bool | None:
         if 'false' in response.lower():
             return True
         if 'true' in response.lower():
             return False
-        logger.error(f"[GoogleGeminiClient] :: response_is_false :: neither true or false")
+        raise Exception(f"[GoogleGeminiClient] :: response_is_false :: neither true or false")

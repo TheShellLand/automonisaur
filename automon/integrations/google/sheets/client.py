@@ -30,13 +30,14 @@ class GoogleSheetsClient(GoogleAuthClient):
             worksheet: str = '',
             range: str = 'A:Z',
             config: GoogleSheetsConfig = None,
-            **kwargs
-    ):
+            **kwargs):
         super().__init__()
         self.config = config or GoogleSheetsConfig(
-            spreadsheetId=spreadsheetId,
+            GOOGLE_SHEET_ID=spreadsheetId,
             **kwargs
         )
+
+        self.spreadsheetId = self.config.GOOGLE_SHEET_ID
 
         self.worksheet = worksheet
         self.range = range
@@ -44,7 +45,7 @@ class GoogleSheetsClient(GoogleAuthClient):
         self.response = None
 
     @property
-    def values(self):
+    def sheet_values(self):
         """row values"""
         if self.response:
             try:
@@ -56,23 +57,19 @@ class GoogleSheetsClient(GoogleAuthClient):
             self,
             range: str,
             spreadsheetId: str = None,
+            **kwargs):
+        """clear rows in spreadsheet"""
+
+        spreadsheets = self.spreadsheets()
+        result = spreadsheets.values().clear(
+            spreadsheetId=spreadsheetId or self.config.GOOGLE_SHEET_ID,
+            range=range or self.range,
             **kwargs,
-    ):
-        """clear rows"""
-        try:
+        ).execute()
 
-            spreadsheets = self.spreadsheets()
-            result = spreadsheets.values().clear(
-                spreadsheetId=spreadsheetId or self.config.spreadsheetId,
-                range=range or self.range,
-                **kwargs,
-            ).execute()
-
-            logger.info(f'[google] :: sheets :: clear :: {result=}')
-            logger.info(f"[google] :: sheets :: clear :: {result.get('clearedRange')} cells cleared.")
-            return result
-        except Exception as error:
-            raise Exception(f'[google] :: sheets :: clear :: error :: {error}')
+        logger.info(f'[GoogleSheetsClient] :: clear :: {result=}')
+        logger.info(f"[GoogleSheetsClient] :: clear :: {result.get('clearedRange')} cells cleared.")
+        return result
 
     def spreadsheets(self):
         """spreadsheet service"""
@@ -85,21 +82,21 @@ class GoogleSheetsClient(GoogleAuthClient):
             ranges: str = None,
             includeGridData: bool = False,
             fields: Fields or str = None,
+            **kwargs):
+        """get rows in spreadsheet"""
+
+        spreadsheets = self.spreadsheets()
+        self.response = spreadsheets.get(
+            spreadsheetId=spreadsheetId or self.config.GOOGLE_SHEET_ID,
+            ranges=ranges or self.range,
+            includeGridData=includeGridData,
+            fields=fields,
             **kwargs,
-    ):
-        """get rows"""
-        try:
-            spreadsheets = self.spreadsheets()
-            self.response = spreadsheets.get(
-                spreadsheetId=spreadsheetId or self.config.spreadsheetId,
-                ranges=ranges or self.range,
-                includeGridData=includeGridData,
-                fields=fields,
-                **kwargs,
-            ).execute()
-            logger.info(f'[google] :: sheets :: get :: {self.worksheet}!{self.range} ({self.config.spreadsheetId=})')
-        except Exception as error:
-            raise Exception(f'[google] :: sheets :: get :: error {error=}')
+        ).execute()
+        logger.info(
+            f'[GoogleSheetsClient] :: '
+            f'get :: '
+            f'{self.worksheet}!{self.range} ({self.config.GOOGLE_SHEET_ID=})')
 
         return self
 
@@ -107,63 +104,53 @@ class GoogleSheetsClient(GoogleAuthClient):
             self,
             spreadsheetId: str = None,
             range: str = None,
-            **kwargs,
-    ):
-        """get values"""
-        try:
-            spreadsheets = self.spreadsheets()
-            self.response = spreadsheets.values().get(
-                spreadsheetId=spreadsheetId or self.config.spreadsheetId,
-                range=range or f'{self.worksheet}!{self.range}',
-                **kwargs,
-            ).execute()
+            **kwargs, ):
+        """get values from spreadsheet"""
 
-            logger.info(
-                f'[google] :: '
-                f'sheets :: '
-                f'get values :: '
-                f'{self.worksheet=} :: '
-                f'{self.range=} :: '
-                f'{self.config.spreadsheetId=}')
-        except Exception as error:
-            logger.error(f'[google] :: sheets :: get values :: {error=}')
+        spreadsheets = self.spreadsheets()
+        self.response = spreadsheets.values().get(
+            spreadsheetId=spreadsheetId or self.config.GOOGLE_SHEET_ID,
+            range=range or f'{self.worksheet}!{self.range}',
+            **kwargs,
+        ).execute()
+
+        logger.info(
+            f'[GoogleSheetsClient] :: '
+            f'get values :: '
+            f'{self.worksheet=} :: '
+            f'{self.range=} :: '
+            f'{self.config.GOOGLE_SHEET_ID=}')
 
         return self
 
     def list(self):
         # list(pageSize=1).execute()
-        logger.warning(f'[google] :: sheets :: list :: {NotImplemented}')
-        return
+        raise Exception(f'[GoogleSheetsClient] :: list :: {NotImplemented}')
 
     def update(
             self,
             spreadsheetId: str = None,
             range: str = None,
             valueInputOption: ValueInputOption = ValueInputOption.USER_ENTERED,
-            values: list = None,
-    ):
-        """update rows
+            values: list = None):
+        """update rows in spreadsheet"""
 
-        """
-        try:
+        body = {
+            'values': values
+        }
 
-            body = {
-                'values': values
-            }
+        logger.debug(f'[GoogleSheetsClient] :: update :: {body=}')
 
-            logger.debug(f'[google] :: sheets :: update :: {body=}')
+        spreadsheets = self.spreadsheets()
+        result = spreadsheets.values().update(
+            spreadsheetId=spreadsheetId or self.config.GOOGLE_SHEET_ID,
+            range=range or self.range,
+            valueInputOption=valueInputOption,
+            body=body
+        ).execute()
 
-            spreadsheets = self.spreadsheets()
-            result = spreadsheets.values().update(
-                spreadsheetId=spreadsheetId or self.config.spreadsheetId,
-                range=range or self.range,
-                valueInputOption=valueInputOption,
-                body=body
-            ).execute()
-
-            logger.info(f'[google] :: sheets :: update :: {result.get("updatedCells")} cells updated :: {result=}')
-            return result
-        except Exception as error:
-            import traceback
-            traceback.print_exc()
-            raise Exception(f'[google] :: sheets :: update :: error :: {error}')
+        logger.info(
+            f'[GoogleSheetsClient] :: '
+            f'update :: '
+            f'{result.get("updatedCells")} cells updated :: {result=}')
+        return result

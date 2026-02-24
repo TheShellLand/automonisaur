@@ -22,7 +22,7 @@ class MyTestCase(unittest.TestCase):
             range=f'{SHEET_NAME}!A:Z'
         )
 
-        sheet_values = sheets_client.values
+        sheet_values = sheets_client.sheet_values
         sheet_columns = sheet_values[0]
         sheet_data = sheet_values[1:]
 

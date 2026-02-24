@@ -11,12 +11,13 @@ class GoogleSheetsConfig(GoogleAuthConfig):
 
     def __init__(
             self,
-            spreadsheetId: str = None,
+            GOOGLE_SHEET_ID: str = None,
+            **kwargs
     ):
-        super().__init__()
+        super().__init__(**kwargs)
 
         self.serviceName = 'sheets'
-        self.scopes = [
+        self.scopes += [
             'https://www.googleapis.com/auth/drive',
             'https://www.googleapis.com/auth/drive.file',
             'https://www.googleapis.com/auth/drive.readonly',
@@ -25,6 +26,5 @@ class GoogleSheetsConfig(GoogleAuthConfig):
         ]
         self.version = 'v4'
 
-        self.spreadsheetId = spreadsheetId or environ('GOOGLE_SHEET_ID')
+        self.GOOGLE_SHEET_ID = GOOGLE_SHEET_ID or environ('GOOGLE_SHEET_ID')
 
-        logger.info(f'{self}')

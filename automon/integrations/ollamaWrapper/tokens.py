@@ -21,8 +21,11 @@ class Tokens(Dict):
     def __repr__(self):
         return f"{self.count} tokens"
 
+    def __len__(self):
+        return self.count
+
     @property
-    def count(self):
+    def count(self) -> int:
         string = self.string
         ratio = self._ratio
 

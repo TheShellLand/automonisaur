@@ -21,8 +21,7 @@ class MyTestCase(unittest.TestCase):
 
         if gmail.is_ready():
             gmail.config.Credentials()
-            gmail.config.userinfo()
-            gmail.config.build_service()
+            gmail.get_user_info()
             gmail.labels_list()
             gmail.draft_list()
             d = gmail.draft_list_automon()

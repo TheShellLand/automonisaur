@@ -14,7 +14,7 @@ class GoogleGmailConfig(GoogleAuthConfig):
             GOOGLE_GMAIL_ENDPOINT: str = None,
             serviceName: str = Api._serviceName,
             version: str = Api._version,
-            scopes: list = None,
+            scopes: list = [],
             **kwargs
     ):
         """Gmail config"""

@@ -14,7 +14,7 @@ class MyTestCase(unittest.TestCase):
             base = test.bases_get('Vendor Data')
 
             fields = [
-                test._api.table_field(
+                test._api.TableField(
                     name="Name",
                 )
             ]

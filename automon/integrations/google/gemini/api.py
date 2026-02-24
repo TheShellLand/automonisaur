@@ -10,6 +10,19 @@ from automon.integrations.ollamaWrapper import Tokens
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
+_API_VERSION_LOOKUP = {
+    'gemini-1.5-flash': 'v1',
+    # 'gemini-2.0-flash-exp': 'v1beta',
+    # 'gemini-2.0-flash-lite': 'v1beta',
+    'gemini-2.0-flash-live': 'v1alpha',
+    'gemini-2.5-flash-exp': 'v1',
+    # 'gemini-2.5-flash-live': 'v1alpha',
+    # 'gemini-2.5-flash-lite': 'v1alpha',
+    'gemini-3-flash': 'v1alpha',
+    # 'gemini-3-flash-preview': 'v1beta',
+    'gemma-3-27b': 'v1',
+}
+
 
 class GoogleGeminiApi(object):
 
@@ -21,7 +34,18 @@ class GoogleGeminiApi(object):
         self.url = 'https://generativelanguage.googleapis.com'
         return self
 
-    @property
+    def api_v_lookup(self, model: str):
+        version = _API_VERSION_LOOKUP.get(model)
+        if version:
+            self.url += f'/{version}'
+        else:
+            return self.v1beta()
+        return self
+
+    def v1alpha(self):
+        self.url += f'/v1alpha'
+        return self
+
     def v1beta(self):
         self.url += f'/v1beta'
         return self
@@ -43,20 +67,28 @@ class GoogleGeminiApi(object):
 class Part(Dict):
     text: str
 
-    def __init__(self, part: dict | Self = None, text: str = None):
+    def __init__(self, part: dict | Self = None, text: str = ''):
         super().__init__()
 
         self.text: str = text
 
         if part:
             self.automon_update(part)
-            logger.debug(f"[Part] :: {Tokens(self.text).count_pretty} tokens")
+            logger.debug(f"[Part] :: {self.bytes[:50]} :: {Tokens(self.text).count_pretty} tokens")
 
     def __repr__(self):
         return f"{len(self)} tokens"
 
     def __len__(self) -> int:
-        return Tokens(self.text).count
+        return len(self.tokens)
+
+    @property
+    def bytes(self):
+        return self.text.encode()
+
+    @property
+    def tokens(self):
+        return Tokens(self.text)
 
 
 class Content(Dict):
@@ -78,7 +110,7 @@ class Content(Dict):
         return f"{len(self)} tokens"
 
     def __len__(self):
-        return sum(self.automon_parts)
+        return sum(len(x) for x in self.automon_parts)
 
     def __bool__(self):
         if self.role and self.parts:
@@ -122,6 +154,12 @@ class GeminiPrompt(Dict):
         super().__init__()
 
         self.contents: list[Content] = []
+
+    def __repr__(self):
+        return f"{len(self)} tokens"
+
+    def __len__(self) -> int:
+        return sum(len(x) for x in self.contents)
 
     def add_content(self, content: Content):
         assert isinstance(content, Content)
