@@ -21,7 +21,7 @@ class AgentTemplates:
             "RULE: Eliminate the subject line from the response.",
             "RULE: Remove any greetings or acknowledgments.",
             "RULE: Ensure no apologies or justifications are present.",
-            "RULE: Concisely include availability details and a natural closing.",
+            "RULE: Provide the AVAILABILITY link only when the user explicitly asks for a meeting or a call.",
             "RULE: Eliminate the subject line from the email response.",
             "RULE: Remove any greetings or acknowledgments from the email.",
             "RULE: Ensure no apologies or justifications are present in the email.",
