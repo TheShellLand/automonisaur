@@ -1290,13 +1290,12 @@ class SeleniumBrowser(object):
         return True
 
     def upload_file(self, element: selenium.webdriver.remote.webelement.WebElement, file_path: str = None):
-        logger.debug(f'[SeleniumBrowser] :: upload_file :: {file_path=} :: {element=} :: >>>>')
+        logger.debug(f'[SeleniumBrowser] :: upload_file :: {file_path=} :: {element=}')
 
         # driver.find_element(By.CSS_SELECTOR, "input[type='file']")
         upload = element.send_keys(file_path)
         # driver.find_element(By.ID, "file-submit").click()
         logger.debug(f'[SeleniumBrowser] :: upload_file :: {upload=}')
-        logger.info(f'[SeleniumBrowser] :: upload_file :: done')
 
         return upload
 
