@@ -182,7 +182,7 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
                 debug(f"[run_llm] :: ERROR :: {MODEL_ERRORS}")
 
     if not response:
-        raise Exception(f"[run_llm] :: ERROR :: missing llm response")
+        raise Exception(f"[run_llm] :: ERROR :: missing llm response :: {response=}")
 
     return response, model
 
@@ -220,8 +220,12 @@ def main():
 
         def has_resume(thread: GoogleGmailClient.v1.Thread):
             """check if a resume has been sent before"""
-            messages = thread.automon_messages
+            messages = thread.automon_clean_thread
             sent = [x for x in messages if labels.sent in x.automon_labels]
+
+            if not sent:
+                return False
+
             raise
 
         def is_skipped(thread):
@@ -425,7 +429,6 @@ def main():
             break
 
     response_check = False
-    skipped = False
     while not response_check:
 
         def is_human(prompts: list) -> bool:
@@ -434,7 +437,8 @@ def main():
             return gemini.reponse_is_true(response)
 
         def is_rejected_email(prompts: list) -> bool:
-            prompts_check = prompts + [f"Respond only True or False, Check if any of the emails is from mailer-daemon or the body contains recipient address rejected."]
+            prompts_check = prompts + [
+                f"Respond only True or False, Check if any of the emails is from mailer-daemon or the body contains recipient address rejected."]
             response, model = run_llm(prompts=prompts_check, chat=False)
             return gemini.reponse_is_true(response)
 
@@ -486,7 +490,6 @@ def main():
 
         else:
             gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-            skipped = True
 
     def create_draft(thread):
 
@@ -543,7 +546,7 @@ def main():
 
     gmail.config.refresh_token()
 
-    if not skipped:
+    if gmail._automon_labels.skipped not in thread_selected.automon_messages_labels:
         create_draft(thread_selected)
 
 

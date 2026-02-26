@@ -1217,7 +1217,7 @@ class Thread(Dict):
     automon_message_first: Message
     automon_message_latest: Message
     automon_messages_count: int
-    automon_messages_label: list[Label]
+    automon_messages_labels: list[Label]
 
     automon_clean_thread: list[Message]
     automon_clean_thread_first: Message
