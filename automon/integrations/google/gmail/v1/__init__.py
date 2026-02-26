@@ -501,6 +501,9 @@ class LabelList(Dict):
         if labels:
             self.automon_update(labels)
 
+    def __len__(self):
+        return len(self.labels)
+
     def _enhance(self):
         if self.labels:
             self.labels = [Label().automon_update(x) for x in self.labels]

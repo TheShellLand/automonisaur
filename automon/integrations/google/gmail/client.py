@@ -396,7 +396,7 @@ class GoogleGmailClient(GoogleAuthClient):
         labels = LabelList(
             self.requests.get_self(api, headers=self.config.headers).to_dict()
         )
-        logger.debug(f"[GoogleGmailClient] :: labels_list :: {labels=}")
+        logger.debug(f"[GoogleGmailClient] :: labels_list :: {len(labels)} labels")
         return labels
 
     def labels_patch(self, id: str):
