@@ -1222,9 +1222,6 @@ class Thread(Dict):
     automon_clean_thread: list[Message]
     automon_clean_thread_first: Message
     automon_clean_thread_latest: Message
-    automon_full_thread: list[Message]
-    automon_full_thread_first: Message
-    automon_full_thread_latest: Message
 
     """
     A collection of messages representing a conversation.

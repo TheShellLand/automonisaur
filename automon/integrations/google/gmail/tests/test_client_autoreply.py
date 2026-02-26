@@ -226,7 +226,13 @@ def main():
             if not sent:
                 return False
 
-            raise
+            for message in sent:
+                attachments = message.automon_attachments
+                for attachment in attachments:
+                    if attachment.mimeType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                        return True
+
+            return False
 
         def is_skipped(thread):
             if labels.skipped in thread.automon_messages_labels:
@@ -278,7 +284,7 @@ def main():
         def is_follow_up(thread):
             if labels.auto_reply_enabled in thread.automon_messages_labels:
                 if labels.sent in thread.automon_messages_labels:
-                    if thread.automon_full_thread_first.automon_email_from == thread.automon_clean_thread_latest.automon_header_from:
+                    if thread.automon_message_first.automon_email_from == thread.automon_clean_thread_latest.automon_email_from:
                         return True
             return False
 
@@ -497,7 +503,7 @@ def main():
             resume_attachment = []
 
         if not has_resume(thread):
-            resume_attachment = resume_selected.automon_payload.automon_parts[1]
+            resume_attachment = resume_selected.automon_attachments[1]
             assert resume_attachment.filename
 
             resume_attachment = gmail.v1.EmailAttachment(
@@ -511,23 +517,14 @@ def main():
         # create draft
         body = response
         subject = "Re: " + thread_selected.automon_message_first.automon_header_subject.value
-        if thread.automon_messages_count >= 3:
-            draft = gmail.draft_create(
-                threadId=thread_selected.id,
-                draft_to=to,
-                draft_from=from_,
-                draft_subject=subject,
-                draft_body=body,
-            )
-        else:
-            draft = gmail.draft_create(
-                threadId=thread_selected.id,
-                draft_to=to,
-                draft_from=from_,
-                draft_subject=subject,
-                draft_body=body,
-                draft_attachments=[resume_attachment]
-            )
+        draft = gmail.draft_create(
+            threadId=thread_selected.id,
+            draft_to=to,
+            draft_from=from_,
+            draft_subject=subject,
+            draft_body=body,
+            draft_attachments=[resume_attachment]
+        )
         draft_get = gmail.draft_get_automon(id=draft.id)
 
         gmail.messages_modify(
