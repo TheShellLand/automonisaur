@@ -1,3 +1,6 @@
+from automon.helpers.dictWrapper import Dict
+
+
 class GoogleGeminiModels(object):
     """
     Current rate limits
@@ -16,20 +19,21 @@ class GoogleGeminiModels(object):
 
     def __init__(self):
         self.FREE_TIER = [
-            self.gemini_flash_latest,
+            # self.gemini_flash_latest,
             # self.gemini_3_flash,
             # self.gemini_2_5_flash,
             # self.gemini_2_5_flash_exp,
-            self.gemini_2_5_flash_lite,
-            self.gemini_2_5_flash_live,
+            # self.gemini_2_5_flash_lite,
+            # self.gemini_2_5_flash_live,
             # self.gemini_2_5_flash_preview_09_2025,
             # self.gemini_2_5_pro,
             # self.gemini_2_5_pro_1p_freebie,
-            self.gemini_2_0_flash,
+            # self.gemini_2_0_flash,
             # self.gemini_2_0_flash_exp,
-            self.gemini_2_0_flash_lite,
-            self.gemini_2_0_flash_live,
-            self.gemma_3_27b_it,
+            # self.gemini_2_0_flash_lite,
+            # self.gemini_2_0_flash_live,
+            self.gemini_2_5_flash_live_native_audio,
+            # self.gemma_3_27b_it,
         ]
 
         self.PRO_TIER = [
@@ -222,6 +226,12 @@ class GoogleGeminiModels(object):
         return f'gemini-2.5-flash-live'
 
     @property
+    def gemini_2_5_flash_live_native_audio(self):
+        """
+        """
+        return f'gemini-live-2.5-flash-native-audio'
+
+    @property
     def gemini_2_0_flash(self):
         """
         Next generation features, speed, and multimodal generation for a diverse variety of tasks
@@ -342,3 +352,21 @@ class GoogleGeminiModels(object):
         March 7, 2025
         """
         return f'gemini-embedding-exp-03-07'
+
+
+class Model(Dict):
+
+    def __init__(self, model: dict = None):
+        super().__init__()
+
+        self.name = None
+        self.displayName = None
+        self.inputTokenLimit = None
+        self.outputTokenLimit = None
+        self.description = None
+
+        if model:
+            self.automon_update(model)
+
+    def __repr__(self):
+        return f"{self.name} :: {self.description} :: {self.inputTokenLimit} :: {self.outputTokenLimit}"

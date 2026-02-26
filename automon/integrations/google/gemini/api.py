@@ -10,19 +10,6 @@ from automon.integrations.ollamaWrapper import Tokens
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
-_API_VERSION_LOOKUP = {
-    'gemini-1.5-flash': 'v1',
-    # 'gemini-2.0-flash-exp': 'v1beta',
-    # 'gemini-2.0-flash-lite': 'v1beta',
-    'gemini-2.0-flash-live': 'v1alpha',
-    'gemini-2.5-flash-exp': 'v1',
-    # 'gemini-2.5-flash-live': 'v1alpha',
-    # 'gemini-2.5-flash-lite': 'v1alpha',
-    'gemini-3-flash': 'v1alpha',
-    # 'gemini-3-flash-preview': 'v1beta',
-    'gemma-3-27b': 'v1',
-}
-
 
 class GoogleGeminiApi(object):
 
@@ -34,24 +21,40 @@ class GoogleGeminiApi(object):
         self.url = 'https://generativelanguage.googleapis.com'
         return self
 
-    def api_v_lookup(self, model: str):
-        version = _API_VERSION_LOOKUP.get(model)
-        if version:
-            self.url += f'/{version}'
-        else:
-            return self.v1beta()
+    def version(self, version: str):
+        self.url += f'/{version}'
         return self
+
+    def v1(self):
+        return self.version('v1')
 
     def v1alpha(self):
-        self.url += f'/v1alpha'
-        return self
+        return self.version('v1alpha')
 
     def v1beta(self):
-        self.url += f'/v1beta'
-        return self
+        return self.version('v1beta')
 
     def models(self, model: str):
-        self.url += f'/models/{model}'
+        if 'models/' not in model:
+            self.url += f'/models'
+
+        if model:
+            self.url += f'/{model}'
+
+        return self
+
+    def models_v1(self, model: str):
+        pass
+
+    def models_v1alpha(self, model: str):
+        pass
+
+    def models_v1beta(self, model: str):
+        pass
+
+    def list_models(self):
+        """list all model modes"""
+        self.url += ''
         return self
 
     @property
@@ -89,6 +92,10 @@ class Part(Dict):
     @property
     def tokens(self):
         return Tokens(self.text)
+
+    @property
+    def preview(self):
+        return f"{self.text}".encode()[:50]
 
 
 class Content(Dict):

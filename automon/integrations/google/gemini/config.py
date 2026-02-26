@@ -16,10 +16,7 @@ class GoogleGeminiConfig(object):
         return f"[GoogleGeminiConfig] :: {self.api_key=}"
 
     def headers(self):
-        headers = {'Content-Type': 'application/json'}
-        logger.debug(f'[GoogleGeminiConfig] :: headers :: {headers=}')
-        logger.info(f'[GoogleGeminiConfig] :: headers :: done')
-        return headers
+        return {'Content-Type': 'application/json'}
 
     def is_ready(self) -> bool:
         if self.api_key:

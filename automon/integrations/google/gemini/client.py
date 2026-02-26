@@ -53,11 +53,20 @@ except ImportError:
 
 class GoogleGeminiClient(object):
     models = GoogleGeminiModels()
-    prompts = automon.integrations.ollamaWrapper.prompt_templates.AgentTemplates()
+    models_search = {}
 
-    def __init__(self, config: GoogleGeminiConfig = None, model: GoogleGeminiModels = None):
+    prompts = automon.integrations.ollamaWrapper.prompt_templates.AgentTemplates()
+    api = GoogleGeminiApi()
+
+    def __init__(
+            self,
+            config: GoogleGeminiConfig = None,
+            model: str = None,
+            api_version: str = None
+    ):
         self.config = config or GoogleGeminiConfig()
         self.model = model or self.models.gemini_2_0_flash
+        self.api_version = api_version or 'v1beta'
 
         self._requests = RequestsClient()
 
@@ -65,6 +74,9 @@ class GoogleGeminiClient(object):
         self._chat: GeminiResponse = None
 
         self.models_in_use = self.models.FREE_TIER
+
+        if self.model and self.api_version:
+            self._check_model()
 
     def __repr__(self):
         return f"[GoogleGeminiClient] :: {len(self)} tokens"
@@ -91,6 +103,54 @@ class GoogleGeminiClient(object):
 
         return download
 
+    def _list_models(self, version: str = 'v1beta'):
+        if version not in self.models_search:
+            key = self.config.random_api_key()
+            url = self.api.base.version(version).models('').key(key=key).url
+            models = self._requests.get_self(url=url).to_dict()
+            self.models_search[version] = [Model(x) for x in models['models']]
+        return self
+
+    def _list_models_v1(self):
+        return self._list_models(version='v1')
+
+    def _list_models_v1alpha(self):
+        return self._list_models(version='v1alpha')
+
+    def _list_models_v1beta(self):
+        return self._list_models(version='v1beta')
+
+    def _find_model_all(self, model: str = None) -> dict:
+        self._list_models_v1()
+        self._list_models_v1alpha()
+        self._list_models_v1beta()
+
+        models = {}
+        for api, models_ in self.models_search.items():
+            if model:
+                models[api] = [x for x in models_ if model in x.name]
+            else:
+                models[api] = models_
+
+        return models
+
+    def _check_model(self, api: str = None, model: str = None) -> bool:
+        if not api:
+            api = self.api_version
+
+        if not model:
+            model = self.model
+
+        model = model.split('/')[-1]
+
+        assert api and model
+
+        self._list_models(version=api)
+        for model_ in self.models_search[api]:
+            if model == model_.name.split('/')[-1]:
+                return True
+        raise Exception(f"[GoogleGeminiClient] :: ERROR :: Model {model} not found in {api}")
+
     def add_content(self, prompt: str, role: str = 'user'):
         if not isinstance(prompt, str):
             return self
@@ -99,8 +159,11 @@ class GoogleGeminiClient(object):
         content = Content(role=role).add_part(part=part)
         self._prompt.add_content(content=content)
 
-        content_len = Tokens(string=prompt).count
-        logger.debug(f"[GoogleGeminiClient] :: add_content :: {content_len:,} tokens ({len(self)} total)")
+        content_len = len(Tokens(string=prompt))
+        logger.debug(f"[GoogleGeminiClient] :: "
+                     f"add_content :: "
+                     f"{part.preview} :: "
+                     f"{content_len:,} tokens ({len(self)} total)")
         return self
 
     @property
@@ -118,8 +181,9 @@ class GoogleGeminiClient(object):
             }]
            }'
         """
+        self._check_model()
 
-        url = GoogleGeminiApi().base.api_v_lookup(self.model).models(self.model).generateContent.key(
+        url = self.api.base.version(self.api_version).models(self.model).generateContent.key(
             key=self.config.random_api_key()).url
         json = self._prompt.to_dict()
         chat = self._requests.post(url=url, json=json, headers=self.config.headers())
@@ -191,7 +255,18 @@ class GoogleGeminiClient(object):
         return self
 
     def set_random_model(self):
-        return self.set_model(random.choice(self.models_in_use))
+        if not self.models_search:
+            self._find_model_all()
+
+        models = []
+        for api, models_ in self.models_search.items():
+            for model in models_:
+                models.append((api, model))
+
+        api, model = random.choice(models)
+        self.api_version = api
+        self.model = model.name
+        return self
 
     def reponse_is_true(self, response: str) -> bool | None:
         if 'true' in response.lower():
