@@ -23,7 +23,7 @@ class OllamaChat(object):
 
     def _chunk_content(self, chunk):
         content = self._chunk_message(chunk=chunk)['content']
-        logger.debug(f'[OllamaChat] :: _chunk_content :: {Tokens(content).count} tokens')
+        logger.debug(f'[OllamaChat] :: _chunk_content :: {len(Tokens(content))} tokens')
         return content
 
     def _chunk_message(self, chunk):

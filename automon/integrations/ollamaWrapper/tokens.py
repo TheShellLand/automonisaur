@@ -18,15 +18,12 @@ class Tokens(Dict):
         self.string: str = string
         self._ratio: int = ratio
 
-        logger.debug(f"[Tokens] :: {string[:50]}")
-
     def __repr__(self):
-        return f"{self.count} tokens"
+        return f"{len(self)} tokens"
 
     def __len__(self):
-        return self.count
+        return self.count()
 
-    @property
     def count(self) -> int:
         string = self.string
         ratio = self._ratio
@@ -34,15 +31,17 @@ class Tokens(Dict):
         tokens = len(string) / ratio
         tokens = round(tokens)
 
-        logger.debug(f'[Tokens] :: {tokens=} :: {ratio=}')
         return tokens
 
     @property
     def count_pretty(self):
-        return f"{self.count:,}"
+        return f"{self.count():,}"
 
     def sum_tokens(self, strings: list, **kwargs):
-        count = sum(Tokens(s["content"]).count for s in strings)
+        count = sum(len(Tokens(s["content"])) for s in strings)
 
         logger.debug(f'[Tokens] :: {count=} :: ')
         return count
+
+    def preview(self):
+        return f"{self.string}".encode()[:50]

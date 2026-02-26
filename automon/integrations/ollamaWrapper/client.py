@@ -85,7 +85,7 @@ class OllamaClient(object):
         max_tokens = 128000
         if self.model == 'deepseek-r1:14b':
             max_tokens = 128000
-            if Tokens(content).count > max_tokens:
+            if len(Tokens(content)) > max_tokens:
                 logger.warning(
                     f'[OllamaClient] :: '
                     f'add_message :: '
