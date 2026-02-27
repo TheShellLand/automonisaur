@@ -52,6 +52,7 @@ except ImportError:
 
 from automon.integrations.ollamaWrapper import prompt_templates
 
+
 class GoogleGeminiClient(object):
     models = GoogleGeminiModels()
     models_search = {}
@@ -250,9 +251,10 @@ class GoogleGeminiClient(object):
         logger.error(f'[GoogleGeminiClient] :: is_ready :: ERROR')
         return False
 
-    def set_model(self, model: GoogleGeminiModels):
-        self.model = model
-        logger.debug(f"[GoogleGeminiClient] :: set_model :: {model=}")
+    def set_model(self, model: Model, api_version: str):
+        self.model = model.name
+        self.api_version = api_version
+        logger.debug(f"[GoogleGeminiClient] :: set_model:: {api_version} :: {model.name}")
         return self
 
     def set_random_model(self):
@@ -265,9 +267,7 @@ class GoogleGeminiClient(object):
                 models.append((api, model))
 
         api, model = random.choice(models)
-        self.api_version = api
-        self.model = model.name
-        return self
+        return self.set_model(model=model, api_version=api)
 
     def reponse_is_true(self, response: str) -> bool | None:
         if 'true' in response.lower():
