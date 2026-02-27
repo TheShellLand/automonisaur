@@ -22,9 +22,11 @@ from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
 from automon.integrations.google.oauth import GoogleAuthClient
 
+import automon.integrations.google.gmail.common
+
+from .api.v1 import *
 from .config import GoogleGmailConfig
-from .v1 import *
-from ..gmail import v1
+from .common import *
 from .exceptions import *
 
 logger = LoggingClient.logging.getLogger(__name__)
@@ -97,7 +99,8 @@ class AutomonLabels:
 
 
 class GoogleGmailClient(GoogleAuthClient):
-    v1 = v1
+    _api = Api
+    _common = automon.integrations.google.gmail.common
     _temp = automon.helpers.tempfileWrapper.Tempfile
     _sleep = automon.helpers.Sleeper
     _bs4 = bs4

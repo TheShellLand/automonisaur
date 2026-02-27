@@ -218,7 +218,7 @@ def main():
                 return True
             return False
 
-        def has_resume(thread: GoogleGmailClient.v1.Thread):
+        def has_resume(thread: GoogleGmailClient._common.Thread):
             """check if a resume has been sent before"""
             messages = thread.automon_clean_thread
             sent = [x for x in messages if labels.sent in x.automon_labels]
@@ -497,7 +497,7 @@ def main():
         else:
             gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
 
-    def create_draft(thread):
+    def draft_create(thread):
 
         if is_follow_up(thread):
             resume_attachment = []
@@ -506,7 +506,7 @@ def main():
             resume_attachment = resume_selected.automon_attachments[1]
             assert resume_attachment.filename
 
-            resume_attachment = gmail.v1.EmailAttachment(
+            resume_attachment = gmail._common.EmailAttachment(
                 bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
                 filename=resume_attachment.filename,
                 mimeType=resume_attachment.mimeType)

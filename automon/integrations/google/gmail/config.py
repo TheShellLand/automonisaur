@@ -2,7 +2,7 @@ from automon.helpers.osWrapper import environ
 from automon.integrations.google.oauth import GoogleAuthConfig
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
-from .v1 import *
+from .api.v1 import *
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)

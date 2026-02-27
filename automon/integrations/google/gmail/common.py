@@ -1,8 +1,5 @@
 import io
-import re
 import bs4
-import copy
-import json
 import base64
 import datetime
 import dateutil.parser
@@ -15,164 +12,16 @@ except:
 from automon.helpers import Regex
 from automon.helpers import cryptography
 from automon.helpers.dictWrapper import Dict
+
 from automon.helpers.loggingWrapper import LoggingClient, INFO
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(INFO)
 
 
-class Api:
-    _serviceName = 'gmail'
-    _version = 'v1'
-    _service_endpoint = 'https://gmail.googleapis.com'
-
-    def __init__(self, service_endpoint: str = None, version: str = None):
-        """https://gmail.googleapis.com/gmail/v1"""
-
-        self.url = ''
-        if service_endpoint:
-            self.url += service_endpoint
-        else:
-            self.service_endpoint()
-
-        self.gmail()
-
-        if version:
-            self.url += version
-        else:
-            self.version()
-
-    def service_endpoint(self):
-        self.url += self._service_endpoint
-        return self
-
-    def gmail(self):
-        self.url += f'/{self._serviceName}'
-        return self
-
-    def version(self):
-        self.url += f'/{self._version}'
-        return self
-
-
-class Users(Api):
-
-    def __init__(self, userId: str):
-        super().__init__()
-        self.userId = userId
-        self.users()
-
-    def users(self): self.url += f'/users/{self.userId}'; return self
-
-    @property
-    def getProfile(self): """requests.get"""; return self.url + f'/profile'
-
-    @property
-    def stop(self): """"requests.post"""; return self.url + f'/stop'
-
-    @property
-    def watch(self): """requests.post"""; return self.url + f'/watch'
-
-
-class UsersDrafts(Users):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    @property
-    def create(self): """requests.post"""; return self.url + f'/drafts'
-
-    def delete(self, id: str): """requests.delete"""; return self.url + f'/drafts/{id}'
-
-    def get(self, id: str): """requests.get"""; return self.url + f'/drafts/{id}'
-
-    @property
-    def list(self): """requests.get"""; return self.url + f'/drafts'
-
-    @property
-    def send(self): """requests.post"""; return self.url + f'/drafts/send'
-
-    def update(self, id: str): """requests.put"""; return self.url + f'/drafts/{id}'
-
-
-class UsersHistory(Users):
-
-    def __init__(self, userId: str):
-        super().__init__(userId=userId)
-
-    @property
-    def list(self): """request.get"""; return self.url + f'/history'
-
-
-class UsersLabels(Users):
-
-    def __init__(self, userId: str):
-        super().__init__(userId=userId)
-
-    @property
-    def create(self): """requests.post"""; return self.url + f'/labels'
-
-    @property
-    def list(self): """requests.get"""; return self.url + f'/labels'
-
-    def delete(self, id: str): """requests.delete"""; return self.url + f'/labels/{id}'
-
-    def get(self, id: str): """requests.get"""; return self.url + f'/labels/{id}'
-
-    def patch(self, id: str): """requests.get"""; return self.url + f'/labels/{id}'
-
-    def update(self, id: str): """requests.get"""; return self.url + f'/labels/{id}'
-
-
-class UsersMessages(Users):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    @property
-    def batchDelete(self): """post"""; return self.url + f'/messages/batchDelete'
-
-    @property
-    def batchModify(self): """post"""; return self.url + f'/messages/batchModify'
-
-    def delete(self, id: str): """delete"""; return self.url + f'/messages/{id}'
-
-    def get(self, id: str): """get"""; return self.url + f'/messages/{id}'
-
-    @property
-    def import_(self): """post"""; return self.url + f'/messages/import'
-
-    @property
-    def insert(self): """post"""; return self.url + f'/messages'
-
-    @property
-    def list(self): """get"""; return self.url + f'/messages'
-
-    def modify(self, id: str): """post"""; return self.url + f'/messages/{id}/modify'
-
-    @property
-    def send(self): """post"""; return self.url + f'/messages/send'
-
-    def trash(self, id: str): """post"""; return self.url + f'/messages/{id}/trash'
-
-    def untrash(self, id: str): """post"""; return self.url + f'/messages/{id}/untrash'
-
-
 class InternalDateSource:
     receivedTime = 'receivedTime'
     dateHeader = 'dateHeader'
-
-
-class UsersMessagesAttachments(Users):
-    """
-    GET https://gmail.googleapis.com/gmail/v1/users/{userId}/messages/{messageId}/attachments/{id}
-    """
-
-    def __init__(self, userId: str):
-        super().__init__(userId=userId)
-
-    def get(self, messageId: str,
-            id: str): """request.get"""; return self.url + f'/messages/{messageId}/attachments/{id}'
 
 
 class UsersSettings:
@@ -219,22 +68,22 @@ class Color(Dict):
 
     """
     JSON representation
-    
+
     {
       "textColor": string,
       "backgroundColor": string
     }
-    
+
     Fields
     textColor	
     string
-    
+
     The text color of the label, represented as hex string. This field is required in order to set the color of a label. Only the following predefined set of color values are allowed:
     #000000, #434343, #666666, #999999, #cccccc, #efefef, #f3f3f3, #ffffff, #fb4c2f, #ffad47, #fad165, #16a766, #43d692, #4a86e8, #a479e2, #f691b3, #f6c5be, #ffe6c7, #fef1d1, #b9e4d0, #c6f3de, #c9daf8, #e4d7f5, #fcdee8, #efa093, #ffd6a2, #fce8b3, #89d3b2, #a0eac9, #a4c2f4, #d0bcf1, #fbc8d9, #e66550, #ffbc6b, #fcda83, #44b984, #68dfa9, #6d9eeb, #b694e8, #f7a7c0, #cc3a21, #eaa041, #f2c960, #149e60, #3dc789, #3c78d8, #8e63ce, #e07798, #ac2b16, #cf8933, #d5ae49, #0b804b, #2a9c68, #285bac, #653e9b, #b65775, #822111, #a46a21, #aa8831, #076239, #1a764d, #1c4587, #41236d, #83334c #464646, #e7e7e7, #0d3472, #b6cff5, #0d3b44, #98d7e4, #3d188e, #e3d7ff, #711a36, #fbd3e0, #8a1c0a, #f2b2a8, #7a2e0b, #ffc8af, #7a4706, #ffdeb5, #594c05, #fbe983, #684e07, #fdedc1, #0b4f30, #b3efd3, #04502e, #a2dcc1, #c2c2c2, #4986e7, #2da2bb, #b99aff, #994a64, #f691b2, #ff7537, #ffad46, #662e37, #ebdbde, #cca6ac, #094228, #42d692, #16a765
-    
+
     backgroundColor	
     string
-    
+
     The background color represented as hex string #RRGGBB (ex #000000). This field is required in order to set the color of a label. Only the following predefined set of color values are allowed:
     #000000, #434343, #666666, #999999, #cccccc, #efefef, #f3f3f3, #ffffff, #fb4c2f, #ffad47, #fad165, #16a766, #43d692, #4a86e8, #a479e2, #f691b3, #f6c5be, #ffe6c7, #fef1d1, #b9e4d0, #c6f3de, #c9daf8, #e4d7f5, #fcdee8, #efa093, #ffd6a2, #fce8b3, #89d3b2, #a0eac9, #a4c2f4, #d0bcf1, #fbc8d9, #e66550, #ffbc6b, #fcda83, #44b984, #68dfa9, #6d9eeb, #b694e8, #f7a7c0, #cc3a21, #eaa041, #f2c960, #149e60, #3dc789, #3c78d8, #8e63ce, #e07798, #ac2b16, #cf8933, #d5ae49, #0b804b, #2a9c68, #285bac, #653e9b, #b65775, #822111, #a46a21, #aa8831, #076239, #1a764d, #1c4587, #41236d, #83334c #464646, #e7e7e7, #0d3472, #b6cff5, #0d3b44, #98d7e4, #3d188e, #e3d7ff, #711a36, #fbd3e0, #8a1c0a, #f2b2a8, #7a2e0b, #ffc8af, #7a4706, #ffdeb5, #594c05, #fbe983, #684e07, #fdedc1, #0b4f30, #b3efd3, #04502e, #a2dcc1, #c2c2c2, #4986e7, #2da2bb, #b99aff, #994a64, #f691b2, #ff7537, #ffad46, #662e37, #ebdbde, #cca6ac, #094228, #42d692, #16a765
     """
@@ -252,12 +101,13 @@ class Color(Dict):
 
 class EmailAttachment(Dict):
 
-    def __init__(self,
-                 bytes_: bytes,
-                 filename: str = '',
-                 mimeType: str = None,
-                 content_type: str = None,
-                 encoding: str = None):
+    def __init__(
+            self,
+            bytes_: bytes,
+            filename: str = '',
+            mimeType: str = None,
+            content_type: str = None,
+            encoding: str = None):
         super().__init__()
 
         if type(bytes_) is not bytes:
@@ -266,8 +116,8 @@ class EmailAttachment(Dict):
         self.bytes_: bytes = bytes_
         self.filename: str = filename
         self.mimeType: str = mimeType
-        self.content_type: str = None
-        self.encoding: str = None
+        self.content_type: str = content_type
+        self.encoding: str = encoding
 
         if mimeType:
             self.content_type, self.encoding = mimeType.split('/', 1)
@@ -1175,17 +1025,17 @@ class DraftList(Dict):
       "resultSizeEstimate": integer
     }
     Fields
-    drafts[]	
+    drafts[]
     object (Draft)
 
     List of drafts. Note that the Message property in each Draft resource only contains an id and a threadId. The messages.get method can fetch additional message details.
 
-    nextPageToken	
+    nextPageToken
     string
 
     Token to retrieve the next page of results in the list.
 
-    resultSizeEstimate	
+    resultSizeEstimate
     integer (uint32 format)
 
     Estimated total number of results.
@@ -1363,7 +1213,7 @@ class ThreadList(Dict):
     }
     """
 
-    def __init__(self, threads: dict | Self = None):
+    def __init__(self, threads: dict = None):
         super().__init__()
 
         self.threads: list = []
@@ -1382,27 +1232,3 @@ class ThreadList(Dict):
         if self.threads:
             return True
         return False
-
-
-class UsersThread(Users):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def delete(self, id: str): """requests.delete"""; return self.url + f'/threads/{id}'
-
-    def get(self, id: str): """requests.get"""; return self.url + f'/threads/{id}'
-
-    @property
-    def list(self): """requests.get"""; return self.url + f'/threads'
-
-    def modify(self, id: str):
-        """Modifies the labels applied to the thread. This applies to all messages in the thread.
-
-        requests.post
-        """
-        return self.url + f'/threads/{id}/modify'
-
-    def trash(self, id: str): """requests.post"""; return self.url + f'/threads/{id}/trash'
-
-    def untrash(self, id: str): """reqiests.post"""; return self.url + f'/threads/{id}/untrash'

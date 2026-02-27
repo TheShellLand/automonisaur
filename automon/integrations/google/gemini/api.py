@@ -4,7 +4,7 @@ except:
     from typing_extensions import Self
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
-from automon.integrations.google.gmail.v1 import Dict
+from automon.helpers.dictWrapper import Dict
 from automon.integrations.ollamaWrapper import Tokens
 
 logger = LoggingClient.logging.getLogger(__name__)
