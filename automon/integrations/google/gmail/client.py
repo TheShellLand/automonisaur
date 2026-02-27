@@ -22,7 +22,7 @@ from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.integrations.requestsWrapper import RequestsClient
 from automon.integrations.google.oauth import GoogleAuthClient
 
-import automon.integrations.google.gmail.common
+from ..gmail import common
 
 from .api.v1 import *
 from .config import GoogleGmailConfig
@@ -100,7 +100,7 @@ class AutomonLabels:
 
 class GoogleGmailClient(GoogleAuthClient):
     _api = Api
-    _common = automon.integrations.google.gmail.common
+    common = common
     _temp = automon.helpers.tempfileWrapper.Tempfile
     _sleep = automon.helpers.Sleeper
     _bs4 = bs4
@@ -521,7 +521,7 @@ class GoogleGmailClient(GoogleAuthClient):
 
     def messages_get(self,
                      id: str,
-                     format: Format = Format.full,
+                     format: str = Format.full,
                      metadataHeaders: list = None) -> dict:
         """Gets the specified message."""
         api = UsersMessages(self._userId).get(id)
