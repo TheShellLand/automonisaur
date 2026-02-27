@@ -65,8 +65,8 @@ class GoogleGeminiClient(object):
             api_version: str = None
     ):
         self.config = config or GoogleGeminiConfig()
-        self.model = model or self.models.gemini_2_0_flash
-        self.api_version = api_version or 'v1beta'
+        self.model = model
+        self.api_version = api_version
 
         self._requests = RequestsClient()
 
