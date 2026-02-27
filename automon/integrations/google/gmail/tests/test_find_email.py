@@ -28,7 +28,7 @@ class MyTestCase(unittest.TestCase):
             gmail.users_getProfile()
             # client.history_list(startHistoryId='73211814')
             gmail.messages_list()
-            msg = gmail.messages_get('1953dbd795081667', format=gmail.common.Format.full)
+            msg = gmail.messages_get('1953dbd795081667', format=gmail.classes.Format.full)
 
         pass
 

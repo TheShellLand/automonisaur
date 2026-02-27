@@ -5,9 +5,9 @@ import threading
 # from idlelib.rpc import response_queue
 
 from automon.integrations.google.gmail import GoogleGmailClient
-from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
+from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO, debug
 
 DEBUG_LEVEL = 2
 DEBUG_ = True
@@ -34,14 +34,6 @@ else:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(INFO)
 
-
-def debug(log: str, level: int = 1, **kwargs):
-    global DEBUG_LEVEL
-
-    if level <= DEBUG_LEVEL:
-        print(f"{log}", **kwargs)
-
-
 USE_OLLAMA = False
 USE_GEMINI = True
 CHAT_FOREVER = False
@@ -60,7 +52,7 @@ gmail.config.add_scopes([
 labels = gmail._automon_labels
 
 
-def gmail_labels(gmail: GoogleGmailClient):
+def check_gmail_labels(gmail: GoogleGmailClient):
     if gmail.is_ready():
 
         labels._reset_labels = True
@@ -195,7 +187,7 @@ def main():
     # if _welcome_email.automon_messages:
     #     gmail.messages_trash(id=_welcome_email.automon_messages[0].id)
 
-    gmail_labels(gmail)
+    check_gmail_labels(gmail)
 
     thread = None
     thread_selected = None
@@ -211,82 +203,6 @@ def main():
             [labels.automon, labels.analyze],
             [labels.automon],
         ]
-
-        def is_resume(thread):
-            if labels.resume in thread.automon_messages_labels:
-                debug('resume')
-                return True
-            return False
-
-        def has_resume(thread: GoogleGmailClient.common.Thread):
-            """check if a resume has been sent before"""
-            messages = thread.automon_clean_thread
-            sent = [x for x in messages if labels.sent in x.automon_labels]
-
-            if not sent:
-                return False
-
-            for message in sent:
-                attachments = message.automon_attachments
-                for attachment in attachments:
-                    if attachment.mimeType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-                        return True
-
-            return False
-
-        def is_skipped(thread):
-            if labels.skipped in thread.automon_messages_labels:
-                debug('skipped')
-                return True
-            return False
-
-        def is_error(thread):
-            if labels.error in thread.automon_messages_labels:
-                debug('error')
-                return True
-            return False
-
-        def is_chat(thread):
-            if labels.chat in thread.automon_messages_labels:
-                debug('chat')
-                return True
-            return False
-
-        def is_analyze(thread):
-            if labels.analyze in thread.automon_messages_labels:
-                debug('analyze')
-                return True
-            return False
-
-        def is_scheduled(thread):
-            if labels.scheduled in thread.automon_messages_labels:
-                debug('scheduled')
-                return True
-            return False
-
-        def is_sent(thread):
-            if labels.sent in thread.automon_clean_thread_latest.automon_labels:
-                return True
-            return False
-
-        def is_old(thread):
-            if thread.automon_clean_thread_latest.automon_date_since_now.days >= 3:
-                debug('followup')
-                return True
-            return False
-
-        def is_new(thread):
-            if labels.sent not in thread.automon_clean_thread_latest.automon_labels:
-                debug('new')
-                return True
-            return False
-
-        def is_follow_up(thread):
-            if labels.auto_reply_enabled in thread.automon_messages_labels:
-                if labels.sent in thread.automon_messages_labels:
-                    if thread.automon_message_first.automon_email_from == thread.automon_clean_thread_latest.automon_email_from:
-                        return True
-            return False
 
         def search_email(query, pageToken):
             return gmail.thread_list_automon(
@@ -309,37 +225,37 @@ def main():
                   end='', level=2)
 
             # resume
-            if is_resume(thread):
+            if GoogleGmailClient.utils.is_resume(thread):
                 return False
 
             # chat
-            if is_chat(thread):
+            if GoogleGmailClient.utils.is_chat(thread):
                 return True
 
             # skipped
-            if is_skipped(thread):
+            if GoogleGmailClient.utils.is_skipped(thread):
                 return False
 
             # error
-            if is_error(thread):
+            if GoogleGmailClient.utils.is_error(thread):
                 return True
 
             # analyze
-            if is_analyze(thread):
+            if GoogleGmailClient.utils.is_analyze(thread):
                 return True
 
             # scheduled
-            if is_scheduled(thread):
+            if GoogleGmailClient.utils.is_scheduled(thread):
                 return False
 
             # sent
-            if is_sent(thread):
-                if is_old(thread):
+            if GoogleGmailClient.utils.is_sent(thread):
+                if GoogleGmailClient.utils.is_old(thread):
                     return True
                 debug('sent')
 
             # new
-            if is_new(thread):
+            if GoogleGmailClient.utils.is_new(thread):
                 return True
 
             return False
@@ -438,18 +354,19 @@ def main():
     while not response_check:
 
         def is_human(prompts: list) -> bool:
-            prompts_check = prompts + [f"Respond only True or False, is the first email from a human"]
+            prompts_check = prompts + GoogleGeminiClient.prompts.TrueOrFalseTemplates().email_is_human
             response, model = run_llm(prompts=prompts_check, chat=False)
             return gemini.reponse_is_true(response)
 
         def is_rejected_email(prompts: list) -> bool:
-            prompts_check = prompts + [
-                f"Respond only True or False, Check if any of the emails is from mailer-daemon or the body contains recipient address rejected."]
+            prompts_check = prompts
+            prompts_check += GoogleGeminiClient.prompts.TrueOrFalseTemplates().email_is_rejected
+
             response, model = run_llm(prompts=prompts_check, chat=False)
             return gemini.reponse_is_true(response)
 
         def get_response(prompts: list) -> tuple[str, any]:
-            prompts_get = prompts + [GoogleGeminiClient.prompts.agent_machine_job_applicant]
+            prompts_get = prompts + [GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant]
 
             if labels.error in thread_selected.automon_messages_labels:
                 response, model = run_llm(prompts=prompts_get, chat=True)
@@ -462,12 +379,11 @@ def main():
 
             return response, model
 
-        def check_response(prompts, response) -> tuple[str, any]:
-            prompts_double_check = prompts + [(
-                f"{GoogleGeminiClient.prompts.agent_machine_job_applicant}\n"
-                f"RESPONSE: {response}\n"
-                f"Respond True or False. Is the RESPONSE following all RULES?\n"
-            )]
+        def check_response(prompts: list, response) -> tuple[str, any]:
+            prompts_double_check = prompts
+            prompts_double_check += GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant
+            prompts_double_check += [f"RESPONSE: {response}"]
+            prompts_double_check += GoogleGeminiClient.prompts.TrueOrFalseTemplates().rules_is_followed
 
             double_check, model = run_llm(prompts_double_check)
 
@@ -499,14 +415,14 @@ def main():
 
     def draft_create(thread):
 
-        if is_follow_up(thread):
+        if GoogleGmailClient.utils.is_follow_up(thread):
             resume_attachment = []
 
-        if not has_resume(thread):
+        if not GoogleGmailClient.utils.has_doc_attachment(thread):
             resume_attachment = resume_selected.automon_attachments[1]
             assert resume_attachment.filename
 
-            resume_attachment = gmail.common.EmailAttachment(
+            resume_attachment = gmail.classes.EmailAttachment(
                 bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
                 filename=resume_attachment.filename,
                 mimeType=resume_attachment.mimeType)
@@ -542,8 +458,8 @@ def main():
 
     gmail.config.refresh_token()
 
-    if not is_skipped(thread_selected):
-        if is_follow_up(thread_selected):
+    if not GoogleGmailClient.utils.is_skipped(thread_selected):
+        if GoogleGmailClient.utils.is_follow_up(thread_selected):
             draft = draft_create(thread_selected)
             draft_send(draft=draft)
 
