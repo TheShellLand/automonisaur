@@ -50,12 +50,13 @@ except ImportError:
     # Unix SHIFT-ENTER escape sequence (varies by terminal, \n is common)
     SHIFT_ENTER = '\n'
 
+from automon.integrations.ollamaWrapper import prompt_templates
 
 class GoogleGeminiClient(object):
     models = GoogleGeminiModels()
     models_search = {}
 
-    prompts = automon.integrations.ollamaWrapper.prompt_templates.AgentTemplates()
+    prompts = prompt_templates
     api = GoogleGeminiApi()
 
     def __init__(
