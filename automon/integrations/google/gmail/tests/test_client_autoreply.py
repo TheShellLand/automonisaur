@@ -531,20 +531,29 @@ def main():
             id=thread_selected.id,
             addLabelIds=[labels.unread])
 
+        return draft_get
+
+    def draft_send(draft):
+        draft_sent = gmail.draft_send(draft=draft)
+        gmail.messages_modify(
+            id=thread_selected.automon_message_first.id,
+            addLabelIds=[labels.unread])
+        return draft_sent
+
+    gmail.config.refresh_token()
+
+    if not is_skipped(thread_selected):
         if is_follow_up(thread_selected):
-            draft_sent = gmail.draft_send(draft=draft)
+            draft = draft_create(thread_selected)
+            draft_send(draft=draft)
+
             gmail.messages_modify(
                 id=thread_selected.automon_message_first.id,
                 addLabelIds=[labels.unread])
 
-        gmail.messages_modify(
-            id=thread_selected.automon_message_first.id,
-            removeLabelIds=[labels.processing])
-
-    gmail.config.refresh_token()
-
-    if gmail._automon_labels.skipped not in thread_selected.automon_messages_labels:
-        create_draft(thread_selected)
+    gmail.messages_modify(
+        id=thread_selected.automon_message_first.id,
+        removeLabelIds=[labels.processing])
 
 
 class MyTestCase(unittest.TestCase):
