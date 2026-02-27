@@ -7,6 +7,8 @@ from .client import LoggingClient as Logging
 from .stream import LoggingStream
 from .util import log_secret
 
+from .debug import *
+
 log_format = f'{LoggingRecordAttribute(timestamp=True).levelname().name_and_lineno().funcName().message()}'
 log_format_opentelemetry = environ('OTEL_PYTHON_LOG_FORMAT') or '\t'.join(
     [
@@ -21,6 +23,7 @@ log_format_opentelemetry = environ('OTEL_PYTHON_LOG_FORMAT') or '\t'.join(
 
 try:
     import opentelemetry
+
     # import opentelemetry.instrumentation.logging
 
     logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(ERROR)

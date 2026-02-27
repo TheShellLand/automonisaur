@@ -1,4 +1,5 @@
 from .dates import Dates
+from .debug import debug
 from .dictWrapper import *
 from .loggingWrapper import LoggingClient, INFO, DEBUG, ERROR, CRITICAL
 from .markdown import Chat, Format
