@@ -162,10 +162,12 @@ class GoogleGeminiClient(object):
         self._prompt.add_content(content=content)
 
         content_len = len(Tokens(string=prompt))
-        logger.debug(f"[GoogleGeminiClient] :: "
-                     f"add_content :: "
-                     f"{part.preview} :: "
-                     f"{content_len:,} tokens ({len(self)} total)")
+        logger.debug(
+            f"[GoogleGeminiClient] :: "
+            f"add_content :: "
+            f"{content_len:,} tokens ({len(self)} total) :: "
+            f"{part.bytes}"
+        )
         return self
 
     @property
@@ -270,15 +272,15 @@ class GoogleGeminiClient(object):
         return self.set_model(model=model, api_version=api)
 
     def reponse_is_true(self, response: str) -> bool | None:
-        if 'true' in response.lower():
+        if 'true' in str(response).lower():
             return True
-        if 'false' in response.lower():
+        if 'false' in str(response).lower():
             return False
         raise Exception(f"[GoogleGeminiClient] :: reponse_is_true :: neither true or false")
 
     def response_is_false(self, response: str) -> bool | None:
-        if 'false' in response.lower():
+        if 'false' in str(response).lower():
             return True
-        if 'true' in response.lower():
+        if 'true' in str(response).lower():
             return False
         raise Exception(f"[GoogleGeminiClient] :: response_is_false :: neither true or false")

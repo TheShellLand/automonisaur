@@ -366,38 +366,39 @@ def main():
             return gemini.reponse_is_true(response)
 
         def get_response(prompts: list) -> tuple[str, any]:
-            prompts_get = prompts + [GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant]
+            prompts_ask = prompts + [GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant]
+
+            chat = False
 
             if labels.error in thread_selected.automon_messages_labels:
-                response, model = run_llm(prompts=prompts_get, chat=True)
+                chat = True
 
-            elif labels.chat in thread_selected.automon_messages_labels:
-                response, model = run_llm(prompts=prompts_get, chat=True)
+            if labels.chat in thread_selected.automon_messages_labels:
+                chat = True
 
-            else:
-                response, model = run_llm(prompts=prompts_get, chat=False)
+            response, model = run_llm(prompts=prompts_ask, chat=chat)
 
             return response, model
 
         def check_response(prompts: list, response) -> tuple[str, any]:
-            prompts_double_check = prompts
-            prompts_double_check += GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant
-            prompts_double_check += [f"RESPONSE: {response}"]
-            prompts_double_check += GoogleGeminiClient.prompts.TrueOrFalseTemplates().rules_is_followed
+            prompts_check = prompts
+            prompts_check += GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant
+            prompts_check += [f"RESPONSE: {response}"]
+            prompts_check += GoogleGeminiClient.prompts.TrueOrFalseTemplates().rules_is_followed
 
-            double_check, model = run_llm(prompts_double_check)
+            response_check, model = run_llm(prompts_check)
 
-            if gemini.response_is_false(double_check):
-                ask = prompts + [(
+            if gemini.response_is_false(response_check):
+                prompts_fix = prompts + [(
                     f"RESPONSE: {response} \n"
-                    f"first say what portion of the response was wrong \n"
+                    f"first say what portion of the response was wrong, and highlight the wrong part of the response \n"
                     f"then write a prompt to fix what was wrong using the format: \n"
                     f"RULE: reason goes here"
                 )]
 
-                run_llm(prompts=ask, chat=True)
+                run_llm(prompts=prompts_fix, chat=True)
 
-            return double_check, model
+            return response_check, model
 
         prompts = prompts_resume + prompts_emails
 
@@ -406,9 +407,11 @@ def main():
                 response, model = get_response(prompts)
                 response_check, model = check_response(prompts=prompts, response=response)
 
-                while gemini.response_is_false(response_check):
-                    response, model = get_response(prompts)
-                    response_check, model = check_response(prompts=prompts, response=response)
+                if gemini.response_is_false(response_check):
+                    response_check_loop = False
+                    while gemini.response_is_false(response_check_loop):
+                        response, model = get_response(prompts)
+                        response_check_loop, model = check_response(prompts=prompts, response=response)
 
         else:
             gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
