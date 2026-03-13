@@ -4,15 +4,16 @@ DEBUG = 2
 
 
 def debug(log: str, level: int = 1):
+    global DEBUG
     if level <= DEBUG:
         print(log)
 
 
-def debug_error(log: str, level: int = 1):
+def debug_error(log):
+    import json
     import traceback
     traceback.print_exc()
-    if DEBUG == level:
-        print(log)
+    raise Exception(json.dumps({'message': log}))
 
 
 class PanoramaSecurityRule:
