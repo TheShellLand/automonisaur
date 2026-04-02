@@ -40,6 +40,9 @@ google-auth
 flask
 requests
 
+# illumio
+illumio
+
 # minio
 minio>=7.1.0
 
