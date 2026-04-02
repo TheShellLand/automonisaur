@@ -12,7 +12,7 @@ class Inherit(BaseRestClient):
 
 class Client(unittest.TestCase):
     def test_get(self):
-        self.assertTrue(Inherit().get(url='https://1.1.1.1'))
+        self.assertTrue(Inherit().get(url='https://8.8.8.8'))
 
 
 if __name__ == '__main__':
