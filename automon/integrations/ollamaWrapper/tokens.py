@@ -18,7 +18,7 @@ class Tokens(Dict):
         self.string: str = string
         self._ratio: int = ratio
 
-        logger.debug(f"[Tokens] :: {string[:50]}")
+        logger.debug(f"[Tokens] :: {string}")
 
     def __repr__(self):
         return f"{self.count} tokens"

@@ -139,21 +139,34 @@ class GoogleGeminiClient(object):
 
     def chat_forever(self):
 
+        def help():
+            print(
+                "USAGE:\n"
+                "  /SEND\n"
+                "  /EXIT\n"
+                "  /HELP\n"
+            )
+
         while True:
             prompt = ''
             lines = []
 
-            print(f"INPUT (send with CTRL+C) or /SEND: ")
+            print(f"INPUT (/SEND /EXIT /HELP): ")
             while True:
                 try:
                     line = input()
+                    line_stripped = line.strip().lower()
 
-                    if line.strip().lower() == '/send':
+                    if line_stripped == '/send':
                         break
 
-                    if line.strip().lower() == '/exit':
+                    if line_stripped == '/exit':
                         logger.info(f"[GoogleGeminiClient] :: chat_forever :: done")
                         return self
+
+                    if line_stripped == '/help':
+                        help()
+                        continue
 
                     lines.append(line)
                 except KeyboardInterrupt:

@@ -10,7 +10,7 @@ from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 
 DEBUG_LEVEL = 2
-DEBUG_ = True
+DEBUG_ = False
 DEFAULT_LEVEL = ERROR
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
@@ -26,6 +26,7 @@ LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').set
 LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.tokens').setLevel(DEFAULT_LEVEL)
 
 if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
@@ -218,11 +219,22 @@ def main():
                 return True
             return False
 
-        def has_resume(thread: GoogleGmailClient.v1.Thread):
+        def has_resume(thread: GoogleGmailClient.v1.Thread) -> bool:
             """check if a resume has been sent before"""
             messages = thread.automon_messages
             sent = [x for x in messages if labels.sent in x.automon_labels]
-            raise
+
+            if not sent:
+                return False
+
+            attachments = []
+            for message in messages:
+                for attachment in message.automon_attachments:
+                    mimeType = attachment.mimeType
+                    if mimeType not in attachments:
+                        attachments.append(mimeType)
+
+            return False
 
         def is_skipped(thread):
             if labels.skipped in thread.automon_messages_labels:
@@ -428,13 +440,15 @@ def main():
     skipped = False
     while not response_check:
 
-        def is_human(prompts: list) -> bool:
-            prompts_check = prompts + [f"Respond only True or False, is the first email from a human"]
+        def is_from_human(prompts: list) -> bool:
+            prompts_check = prompts + [
+                f'Respond only True or False, is the first email not from someone "not human" by checking if the sender is an automated platform (e.g., LinkedIn, Indeed, ZipRecruiter) rather than a specific individual, and if the body contains a list of multiple job suggestions or "matches for you" rather than a single, specific job description addressed to your profile.']
             response, model = run_llm(prompts=prompts_check, chat=False)
             return gemini.reponse_is_true(response)
 
         def is_rejected_email(prompts: list) -> bool:
-            prompts_check = prompts + [f"Respond only True or False, Check if any of the emails is from mailer-daemon or the body contains recipient address rejected."]
+            prompts_check = prompts + [
+                f"Respond only True or False, Check if any of the emails is from mailer-daemon or the body contains recipient address rejected."]
             response, model = run_llm(prompts=prompts_check, chat=False)
             return gemini.reponse_is_true(response)
 
@@ -475,7 +489,7 @@ def main():
 
         prompts = prompts_resume + prompts_emails
 
-        if is_human(prompts):
+        if is_from_human(prompts):
             if not is_rejected_email(prompts):
                 response, model = get_response(prompts)
                 response_check, model = check_response(prompts=prompts, response=response)
