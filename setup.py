@@ -37,6 +37,7 @@ setuptools.setup(
         'google-auth',
         'google-auth-httplib2>=0.1.0',
         'google-auth-oauthlib>=0.5.0',
+        'illumio',
         'jupyterlab>=3.1.9',
         'lxml>=4.7.1',
         'lxml>=4.7.1',
@@ -68,6 +69,6 @@ setuptools.setup(
         'typing_extensions',
         'urllib3>=1.26.6',
         'wheel',
-        'xmltodict>=0.12.0'
+        'xmltodict>=0.12.0',
     ]
 )
