@@ -746,8 +746,8 @@ class Message(Dict):
     def __repr__(self):
         repr = []
 
-        if self.hash_md5:
-            repr.append(self.hash_md5[-5:].upper())
+        # if self.hash_md5:
+        #     repr.append(self.hash_md5[-5:].upper())
 
         # if self.id:
         #     repr.append(self.id)

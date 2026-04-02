@@ -10,7 +10,7 @@ from automon.integrations.google.gemini import GoogleGeminiClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO, debug
 
 DEBUG_LEVEL = 2
-DEBUG_ = True
+DEBUG_ = False
 DEFAULT_LEVEL = ERROR
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
@@ -26,6 +26,7 @@ LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').set
 LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.tokens').setLevel(DEFAULT_LEVEL)
 
 if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
@@ -351,9 +352,10 @@ def main():
             break
 
     response_check = False
+    skipped = False
     while not response_check:
 
-        def is_human(prompts: list) -> bool:
+        def is_from_human(prompts: list) -> bool:
             prompts_check = prompts + GoogleGeminiClient.prompts.TrueOrFalseTemplates().email_is_human
             response, model = run_llm(prompts=prompts_check, chat=False)
             return gemini.reponse_is_true(response)
@@ -402,7 +404,7 @@ def main():
 
         prompts = prompts_resume + prompts_emails
 
-        if is_human(prompts):
+        if is_from_human(prompts):
             if not is_rejected_email(prompts):
                 response, model = get_response(prompts)
                 response_check, model = check_response(prompts=prompts, response=response)

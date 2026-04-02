@@ -128,12 +128,13 @@ class GoogleAuthConfig(object):
         if self.credentials:
             with open(credentials_pickle_save, 'wb') as token:
                 pickle.dump(self.credentials, token)
-            return True
 
-        logger.debug(
-            f"[GoogleAuthConfig] :: "
-            f"credentials_pickle_save :: "
-            f"{credentials_pickle_save=} ({os.stat(credentials_pickle_save).st_size / 1024:.2f} KB)")
+            logger.debug(
+                f"[GoogleAuthConfig] :: "
+                f"credentials_pickle_save :: "
+                f"{credentials_pickle_save=} ({os.stat(credentials_pickle_save).st_size / 1024:.2f} KB)")
+
+            return True
 
         return False
 
