@@ -284,12 +284,12 @@ class GoogleGeminiClient(object):
         api, model = random.choice(models)
         return self.set_model(model=model, api_version=api)
 
-    def reponse_is_true(self, response: str) -> bool | None:
+    def response_is_true(self, response: str) -> bool | None:
         if 'true' in str(response).lower():
             return True
         if 'false' in str(response).lower():
             return False
-        raise Exception(f"[GoogleGeminiClient] :: reponse_is_true :: neither true or false")
+        raise Exception(f"[GoogleGeminiClient] :: response_is_true :: neither true or false")
 
     def response_is_false(self, response: str) -> bool | None:
         if 'false' in str(response).lower():
