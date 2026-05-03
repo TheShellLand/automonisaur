@@ -32,8 +32,8 @@ if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
 else:
-    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
-    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(INFO)
+    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(CRITICAL)
+    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(CRITICAL)
 
 USE_OLLAMA = False
 USE_GEMINI = True
@@ -140,7 +140,8 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
 
 
 MODEL_ERRORS = {}
-
+from queue import Queue
+MODEL_API_ERROR_QUEUE = Queue()
 
 def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
     global MODEL_ERRORS
@@ -172,7 +173,8 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
                 for count, model in flipped:
                     MODEL_ERRORS[model] = count
 
-                debug(f"[run_llm] :: ERROR :: {MODEL_ERRORS}")
+                MODEL_API_ERROR_QUEUE.put(response)
+                debug(f"[run_llm] :: ERROR :: {MODEL_API_ERROR_QUEUE.qsize()} errors :: {MODEL_ERRORS}")
 
     if not response:
         raise Exception(f"[run_llm] :: ERROR :: missing llm response :: {response=}")
@@ -358,14 +360,14 @@ def main():
         def is_from_human(prompts: list) -> bool:
             prompts_check = prompts + GoogleGeminiClient.prompts.TrueOrFalseTemplates().email_is_human
             response, model = run_llm(prompts=prompts_check, chat=False)
-            return gemini.reponse_is_true(response)
+            return gemini.response_is_true(response)
 
         def is_rejected_email(prompts: list) -> bool:
             prompts_check = prompts
             prompts_check += GoogleGeminiClient.prompts.TrueOrFalseTemplates().email_is_rejected
 
             response, model = run_llm(prompts=prompts_check, chat=False)
-            return gemini.reponse_is_true(response)
+            return gemini.response_is_true(response)
 
         def get_response(prompts: list) -> tuple[str, any]:
             prompts_ask = prompts + [GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant]
