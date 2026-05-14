@@ -141,7 +141,9 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
 
 MODEL_ERRORS = {}
 from queue import Queue
+
 MODEL_API_ERROR_QUEUE = Queue()
+
 
 def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
     global MODEL_ERRORS
@@ -180,6 +182,57 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
         raise Exception(f"[run_llm] :: ERROR :: missing llm response :: {response=}")
 
     return response, model
+
+
+def draft_create(
+        thread,
+        response,
+        thread_selected,
+):
+    if GoogleGmailClient.utils.is_follow_up(thread):
+        resume_attachment = []
+
+    if not GoogleGmailClient.utils.has_doc_attachment(thread):
+        resume_attachment = resume_selected.automon_attachments[1]
+        assert resume_attachment.filename
+
+        resume_attachment = gmail.classes.EmailAttachment(
+            bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
+            filename=resume_attachment.filename,
+            mimeType=resume_attachment.mimeType)
+
+    to = thread.automon_message_first.automon_header_from.value
+    from_ = thread.automon_message_first.automon_header_to.value
+
+    # create draft
+    body = response
+    subject = "Re: " + thread_selected.automon_message_first.automon_header_subject.value
+    draft = gmail.draft_create(
+        threadId=thread_selected.id,
+        draft_to=to,
+        draft_from=from_,
+        draft_subject=subject,
+        draft_body=body,
+        draft_attachments=[resume_attachment]
+    )
+    draft_get = gmail.draft_get_automon(id=draft.id)
+
+    gmail.messages_modify(
+        id=thread_selected.id,
+        addLabelIds=[labels.unread])
+
+    return draft_get
+
+
+def draft_send(
+        draft,
+        thread_selected
+):
+    draft_sent = gmail.draft_send(draft=draft)
+    gmail.messages_modify(
+        id=thread_selected.automon_message_first.id,
+        addLabelIds=[labels.unread])
+    return draft_sent
 
 
 def main():
@@ -317,12 +370,6 @@ def main():
 
         _message = f"{message.to_prompt()}"
 
-        import re
-
-        # _del = re.compile(r"'data': ('[a-zA-Z0-9-_=]+')").findall(_message)
-        # for _x in _del:
-        #     _message = _message.replace(_x, "''")
-
         if labels.draft not in message.automon_labels:
             prompts_emails.append(
                 f"This is email {i} in an email chain: {_message}\n\n"
@@ -354,7 +401,6 @@ def main():
             break
 
     response_check = False
-    skipped = False
     while not response_check:
 
         def is_from_human(prompts: list) -> bool:
@@ -420,55 +466,19 @@ def main():
         else:
             gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
 
-    def draft_create(thread):
-
-        if GoogleGmailClient.utils.is_follow_up(thread):
-            resume_attachment = []
-
-        if not GoogleGmailClient.utils.has_doc_attachment(thread):
-            resume_attachment = resume_selected.automon_attachments[1]
-            assert resume_attachment.filename
-
-            resume_attachment = gmail.classes.EmailAttachment(
-                bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
-                filename=resume_attachment.filename,
-                mimeType=resume_attachment.mimeType)
-
-        to = thread.automon_message_first.automon_header_from.value
-        from_ = thread.automon_message_first.automon_header_to.value
-
-        # create draft
-        body = response
-        subject = "Re: " + thread_selected.automon_message_first.automon_header_subject.value
-        draft = gmail.draft_create(
-            threadId=thread_selected.id,
-            draft_to=to,
-            draft_from=from_,
-            draft_subject=subject,
-            draft_body=body,
-            draft_attachments=[resume_attachment]
-        )
-        draft_get = gmail.draft_get_automon(id=draft.id)
-
-        gmail.messages_modify(
-            id=thread_selected.id,
-            addLabelIds=[labels.unread])
-
-        return draft_get
-
-    def draft_send(draft):
-        draft_sent = gmail.draft_send(draft=draft)
-        gmail.messages_modify(
-            id=thread_selected.automon_message_first.id,
-            addLabelIds=[labels.unread])
-        return draft_sent
-
     gmail.config.refresh_token()
 
     if not GoogleGmailClient.utils.is_skipped(thread_selected):
         if GoogleGmailClient.utils.is_follow_up(thread_selected):
-            draft = draft_create(thread_selected)
-            draft_send(draft=draft)
+            draft = draft_create(
+                thread=thread,
+                response=response,
+                thread_selected=thread_selected
+            )
+            draft_send(
+                draft=draft,
+                thread_selected=thread_selected
+            )
 
             gmail.messages_modify(
                 id=thread_selected.automon_message_first.id,
