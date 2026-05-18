@@ -5,4 +5,7 @@ def encapsulate(value, object_class):
     if isinstance(value, object_class):
         return value
 
-    return object_class(value)
+    if value is not None:
+        return object_class(value)
+
+    return value
