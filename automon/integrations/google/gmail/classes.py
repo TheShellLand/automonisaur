@@ -374,15 +374,22 @@ class Label(DictHelper):
     The color to assign to the label. Color is only available for labels that have their type set to user.
     """
 
-    def __init__(self, id: str = None, name: str = None, color: Color = None,
-                 messageListVisibility: MessageListVisibility = MessageListVisibility.show,
-                 labelListVisibility: LabelListVisibility = LabelListVisibility.labelShow):
-        super().__init__()
+    def __init__(
+            self,
+            label=None,
+            id: str = None,
+            name: str = None,
+            color: Color = None,
+            messageListVisibility: MessageListVisibility = MessageListVisibility.show,
+            labelListVisibility: LabelListVisibility = LabelListVisibility.labelShow,
+    ):
         self.id = id
         self.name = name
         self.color = color
         self.messageListVisibility = messageListVisibility
         self.labelListVisibility = labelListVisibility
+
+        super().__init__(label)
 
     def __repr__(self):
         if self.id and self.name:
@@ -410,7 +417,7 @@ class LabelList(DictHelper):
     labels: list[Label]
 
     def __init__(self, labels: dict = None):
-        self._labels = []
+        self._labels = None
 
         super().__init__(labels)
 
@@ -424,11 +431,7 @@ class LabelList(DictHelper):
 
     @labels.setter
     def labels(self, value):
-        self._labels = encapsulate(value=self._labels, object_class=Label)
-
-    def _enhance(self):
-        if self.labels:
-            self.labels = [Label().automon_update(x) for x in self.labels]
+        self._labels = encapsulate(value=value, object_class=Label)
 
 
 class LabelAdded:
@@ -1070,11 +1073,12 @@ class Draft(DictHelper):
     The message content of the draft.
     """
 
-    def __init__(self, id: str = None, message: Message = None):
-        super().__init__()
+    def __init__(self, draft=None, id: str = None, message: Message = None):
 
         self.id: str = id
         self.message: Message = message
+
+        super().__init__(draft)
 
     @property
     def automon_message(self) -> Message | None:
@@ -1274,7 +1278,7 @@ class Thread(DictHelper):
 
 
 class ThreadList(DictHelper):
-    threads: list
+    threads: list[Thread]
     nextPageToken: str
     resultSizeEstimate: int
 
@@ -1293,14 +1297,11 @@ class ThreadList(DictHelper):
     """
 
     def __init__(self, threads: dict = None):
-        super().__init__()
-
         self.threads: list = []
         self.nextPageToken: str = None
         self.resultSizeEstimate: int = None
 
-        if threads:
-            self.automon_update(threads)
+        super().__init__(threads)
 
         self.automon_threads: list[Thread] = sorted([Thread(x) for x in self.threads])
 

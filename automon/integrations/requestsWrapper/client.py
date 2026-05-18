@@ -16,16 +16,28 @@ logger.setLevel(DEBUG)
 
 
 class RequestResponse(DictHelper):
+    content: bytes
+    reason: str
+    request: object
+    text: str
+    url: str
+
+    _bs4: bs4.BeautifulSoup
 
     def __init__(self, response=None):
+
+        self.request = None
+
+        self._content = None
+        self._status_code = None
+        self._reason = None
+        self._url = None
+
         super().__init__(response)
 
-        self.response = None
-        self.proxies = None
+        self._bs4 = bs4.BeautifulSoup
 
         self._log_result()
-
-        self._bs4 = bs4.BeautifulSoup
 
     def __bool__(self):
         if self.status_code == 200:
@@ -36,37 +48,38 @@ class RequestResponse(DictHelper):
         if self.status_code == 200:
             msg = [
                 '[RequestResponse]',
-                self.response.request.method,
+                self.request.method,
                 f'{self.status_code}',
-                f'{self.response.url}',
-                f'{self.proxies=}',
+                f'{self.url}',
                 f'{round(len(self.content) / 1024, 2)} KB',
             ]
             msg = ' :: '.join([str(x) for x in msg])
+            return logger.debug(msg)
 
         else:
-
             msg = [
                 '[RequestResponse]',
-                self.response.request.method,
+                self.request.method,
                 f'{self.status_code}',
-                f'{self.response.url}',
-                f'{self.proxies=}',
+                f'{self.url}',
                 f'{round(len(self.content) / 1024, 2)} KB',
                 f'{self.content=}'
             ]
             msg = ' :: '.join([str(x) for x in msg])
-        return logger.error(msg)
+
+        return Exception(msg)
 
     @property
     def content(self) -> bytes:
-        if 'content' in dir(self.response):
-            return self.response.content
-        return b''
+        return self._content
+
+    @content.setter
+    def content(self, content):
+        self._content = content
 
     @property
     def content_bs4(self):
-        if self.content:
+        if self.content is not None:
             return self._bs4(self.content)
 
     def content_to_dict(self):
@@ -74,39 +87,37 @@ class RequestResponse(DictHelper):
 
     @property
     def reason(self):
-        if 'reason' in dir(self.response):
-            return self.response.reason
+        return self._reason
+
+    @reason.setter
+    def reason(self, value):
+        self._reason = value
 
     @property
     def status_code(self):
-        if 'status_code' in dir(self.response):
-            return self.response.status_code
+        return self._status_code
+
+    @status_code.setter
+    def status_code(self, value):
+        self._status_code = value
 
     @property
     def text(self) -> str:
-        if self.response:
-            return self.response.text
-        return ''
+        return self.content.decode('utf-8')
 
     @property
-    def _to_dict(self):
-        return self.to_dict()
+    def url(self) -> str:
+        return self._url
 
-    def to_dict(self) -> dict:
-        if self.response is not None:
-            try:
-                return json.loads(self.content)
-            except Exception as error:
-                raise Exception(f'[RequestsClient] :: TO DICT :: ERROR :: {error=}')
-        return {}
+    @url.setter
+    def url(self, value):
+        self._url = value
+
+    def to_dict(self):
+        return json.loads(self.content)
 
     def to_json(self) -> str:
-        if self.content:
-            try:
-                return json.dumps(json.loads(self.content))
-            except Exception as error:
-                raise Exception(f'[RequestsClient] :: TO JSON :: ERROR :: {error=}')
-        return ''
+        return json.dumps(json.loads(self.content))
 
 
 class RequestsClient(object):
@@ -260,7 +271,7 @@ class RequestsClient(object):
             data: dict = None,
             headers: dict = None,
             max_retries: int = None,
-            **kwargs
+            **kwargs,
     ) -> RequestResponse:
         """requests.patch"""
 

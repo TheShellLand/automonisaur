@@ -149,8 +149,8 @@ class DictHelper(dict):
             return obj
 
         result = {}
-        for key in dir(self):
-            value = getattr(self, key)
+        for key in dir(obj):
+            value = getattr(obj, key)
 
             if key.startswith("_"):
                 continue
@@ -158,7 +158,7 @@ class DictHelper(dict):
             if isinstance(value, Callable):
                 continue
 
-            if type(value) is list:
+            if isinstance(value, list):
                 value = [self._to_dict(x) for x in value]
             else:
                 value = self._to_dict(value)
