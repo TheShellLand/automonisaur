@@ -683,13 +683,14 @@ class GoogleGmailClient(GoogleAuthClient):
                 get_message = self.messages_get_automon(message.id)
                 message.automon_update(get_message)
 
-        threading.start(max_threads=3)
+        if multithread:
+            threading.start(max_threads=3)
 
         messages = []
         duplicates = []
 
-        while threading.completed_queue.qsize() > 0:
-            t_ = threading.completed_queue.get()
+        while threading.queue_completed.qsize() > 0:
+            t_ = threading.queue_completed.get()
             exception = t_.exception
             result_message = t_.result
 
@@ -752,14 +753,20 @@ class GoogleGmailClient(GoogleAuthClient):
 
     def thread_list_automon(self, *args, **kwargs) -> ThreadList:
         """Enhanced `thread_list`"""
-        if kwargs['labelIds']:
-            kwargs['labelIds'] = [l.id for l in kwargs['labelIds']]
+        if kwargs.get('labelIds'):
+            labelIds = kwargs.get('labelIds')
+            kwargs['labelIds'] = [l.id for l in labelIds]
 
         threads = ThreadList(self.thread_list(*args, **kwargs))
+        threads._query = (args, kwargs)
+
+        updated = []
         if threads:
 
-            for thread in threads.automon_threads:
-                thread.automon_update(self.thread_get_automon(id=thread.id))
+            for thread in threads.threads:
+                updated.append(self.thread_get_automon(id=thread.id))
+
+            threads.threads = updated
 
         return threads
 

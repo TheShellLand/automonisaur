@@ -1297,13 +1297,11 @@ class ThreadList(DictHelper):
     """
 
     def __init__(self, threads: dict = None):
-        self.threads: list = []
-        self.nextPageToken: str = None
-        self.resultSizeEstimate: int = None
+        self._threads = []
+        self.nextPageToken = None
+        self.resultSizeEstimate = None
 
         super().__init__(threads)
-
-        self.automon_threads: list[Thread] = sorted([Thread(x) for x in self.threads])
 
     def __repr__(self):
         return f"{len(self.threads)} threads"
@@ -1312,3 +1310,13 @@ class ThreadList(DictHelper):
         if self.threads:
             return True
         return False
+
+    @property
+    def threads(self):
+        self._threads = encapsulate(self._threads, Thread)
+        return self._threads
+
+    @threads.setter
+    def threads(self, value):
+        assert isinstance(value, list)
+        self._threads = encapsulate(value, Thread)
