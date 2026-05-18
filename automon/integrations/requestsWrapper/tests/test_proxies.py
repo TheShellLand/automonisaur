@@ -14,7 +14,7 @@ class Test(unittest.TestCase):
         response = r.get('https://one.one.one.one/')
 
         if response.status_code:
-            print(f'OK :: {response.proxies} :: {response.content} :: {response.status_code=}')
+            print(f'OK :: {r.proxies} :: {response.content} :: {response.status_code=}')
             working_proxies.append(r.proxies)
             pass
 

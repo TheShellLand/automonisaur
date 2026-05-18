@@ -15,7 +15,7 @@ class DictHelper(dict):
             self.automon_update(data)
 
     def __eq__(self, other):
-        if self.__dict__ == other.__dict__:
+        if dict(self) == dict(other):
             return True
         return False
 
