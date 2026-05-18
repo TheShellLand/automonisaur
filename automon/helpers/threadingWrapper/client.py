@@ -18,15 +18,18 @@ class Thread(threading.Thread):
 
         log.debug(f"[Thread] :: {target=} :: {args=} :: {kwargs=}")
 
+    def __repr__(self):
+        return f'[Thread] :: {self.name} :: {self._automon_args}'
+
 
 class ThreadingClient(object):
     _global_threads_max: int = 1
     _global_threads_max_lock: threading.Lock = threading.Lock()
 
     def __init__(self):
-        self.worker_queue: queue.Queue = queue.Queue()
-        self.completed_queue: queue.Queue = queue.Queue()
-        self.error_queue: queue.Queue = queue.Queue()
+        self.queue_worker: queue.Queue = queue.Queue()
+        self.queue_completed: queue.Queue = queue.Queue()
+        self.queue_error: queue.Queue = queue.Queue()
 
         self.threads_list: list[Thread] = []
 
@@ -44,19 +47,19 @@ class ThreadingClient(object):
 
             current_thread.result = result
             current_thread.exception = None
-            self.completed_queue.put(current_thread)
+            self.queue_completed.put(current_thread)
         except Exception as error:
             log.error(f"[ThreadingClient] :: ERROR :: {error=}")
             current_thread.result = None
             current_thread.exception = error
-            self.error_queue.put(current_thread)
+            self.queue_error.put(current_thread)
             raise Exception(f"[ThreadingClient] :: ERROR :: {error=}")
 
     def add_worker(self, target: object, args: tuple = None):
         if args is not None:
             assert type(args) is tuple
 
-        self.worker_queue.put((target, args))
+        self.queue_worker.put((target, args))
         log.debug(f'[ThreadingClient] :: add_worker :: {target=} :: {args=}')
         return self
 
@@ -89,11 +92,11 @@ class ThreadingClient(object):
         all_threads_terminated = all(not t.is_alive() for t in self.threads_list)
 
         # The client is 'done' only when BOTH conditions are met
-        return self.worker_queue.qsize() == 0 and all_threads_terminated
+        return self.queue_worker.qsize() == 0 and all_threads_terminated
 
     def results(self):
-        while self.completed_queue.qsize() > 0:
-            result = self.completed_queue.get()
+        while self.queue_completed.qsize() > 0:
+            result = self.queue_completed.get()
             if result.exception:
                 log.warning(f"[ThreadingClient] :: ERROR :: {result.exception=}")
             log.debug(f'[ThreadingClient] :: results :: {result}')
@@ -113,9 +116,9 @@ class ThreadingClient(object):
             with ThreadingClient._global_threads_max_lock:
                 max_threads_limit = ThreadingClient._global_threads_max
 
-            if self.worker_queue.qsize() > 0 and current_threads_count < max_threads_limit:
+            if self.queue_worker.qsize() > 0 and current_threads_count < max_threads_limit:
 
-                function, args = self.worker_queue.get()
+                function, args = self.queue_worker.get()
 
                 # thread = Thread(target=function, args=args)
                 thread = Thread(target=self._thread_wrapper,
@@ -124,7 +127,8 @@ class ThreadingClient(object):
                 self.threads_list.append(thread)
 
                 thread.start()
-                log.debug(f'[ThreadingClient] :: start :: {thread.name} :: running: '
+                log.debug(f'[ThreadingClient] :: start :: running :: {thread.name} :: '
+                          f'{thread._automon_args} :: '
                           f'{current_threads_count + 1} threads ({max_threads_limit} max)')
 
             else:
@@ -136,7 +140,10 @@ class ThreadingClient(object):
         for thread in self.threads_list:
             thread.join()
 
-        log.debug(f'[ThreadingClient] :: start :: {self._completed_threads_count} threads completed')
+        log.debug(
+            f'[ThreadingClient] :: start :: '
+            f'{self._current_threads_count} running :: '
+            f'{self._completed_threads_count} completed')
         return self
 
     @property
@@ -145,7 +152,7 @@ class ThreadingClient(object):
 
     @property
     def _completed_threads_count(self):
-        return self.completed_queue.qsize()
+        return self.queue_completed.qsize()
 
     def stop(self):
         self.exit_event.set()
