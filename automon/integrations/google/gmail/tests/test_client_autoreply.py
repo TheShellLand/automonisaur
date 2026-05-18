@@ -4,6 +4,7 @@ import time
 import queue
 import threading
 
+from automon.helpers.threadingWrapper import ThreadingClient
 from automon.integrations.google.gmail import GoogleGmailClient
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
@@ -24,9 +25,9 @@ LoggingClient.logging.getLogger('automon.integrations.google.gemini.api').setLev
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.tokens').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEBUG)
 
 if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
@@ -34,11 +35,6 @@ if DEBUG_:
 else:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(CRITICAL)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(CRITICAL)
-
-queue_threads = queue.Queue(maxsize=10)
-queue_new = queue.Queue()
-queue_send = queue.Queue()
-queue_waiting = queue.Queue()
 
 USE_OLLAMA = False
 USE_GEMINI = True
@@ -57,24 +53,144 @@ gmail.config.add_scopes([
 
 labels = gmail._automon_labels
 
+queue_threads = queue.Queue(maxsize=10)
+queue_new = queue.Queue()
+queue_send = queue.Queue()
+queue_chat = queue.Queue()
+queue_skipped = queue.Queue()
+queue_followup = queue.Queue()
+queue_analyze = queue.Queue()
+queue_error = queue.Queue()
+queue_waiting_for_first_call = queue.Queue()
+queue_waiting_for_interview = queue.Queue()
+
+queue_unknown = queue.Queue()
+
+queue_log = queue.Queue()
+
+queues = [
+    queue_threads,
+    queue_new,
+    queue_send,
+    queue_chat,
+    queue_skipped,
+    queue_followup,
+    queue_analyze,
+    queue_error,
+    queue_waiting_for_first_call,
+    queue_waiting_for_interview,
+]
+
+RESUME = None
+
+
 def automon_init(client: GoogleGmailClient):
     pass
 
+
 def producer_threads():
-    pass
+    while gmail.is_ready():
+
+        if queue_threads.full():
+            pass
+
+        query_sequence = [
+            [labels.automon, labels.error],
+            [labels.automon, labels.processing],
+            [labels.automon, labels.chat],
+            [labels.automon, labels.analyze],
+            [labels.automon],
+        ]
+
+        def search_email(query, pageToken):
+            return gmail.thread_list_automon(
+                maxResults=1,
+                pageToken=pageToken,
+                labelIds=query,
+            )
+
+        nextPageToken = None
+
+        for query in query_sequence:
+            thread_search = search_email(query, nextPageToken)
+
+            for thread in thread_search.threads:
+                if thread not in queue_threads.queue:
+                    queue_threads.put(thread)
+                    queue_log.put(f'[producer_threads] :: {thread}')
+
+            nextPageToken = thread_search.nextPageToken
+
 
 def processor_email_thread():
-    pass
+    while True:
+        thread = queue_threads.get()
+
+        queue_log.put(f'[processor_email_thread] :: {thread}')
+
+        # resume
+        if GoogleGmailClient.utils.is_resume(thread):
+            RESUME = thread
+            continue
+
+        # chat
+        if GoogleGmailClient.utils.is_chat(thread):
+            queue_chat.put(thread)
+            continue
+
+        # skipped
+        if GoogleGmailClient.utils.is_skipped(thread):
+            queue_skipped.put(thread)
+            continue
+
+        # error
+        if GoogleGmailClient.utils.is_error(thread):
+            queue_error.put(thread)
+            continue
+
+        # analyze
+        if GoogleGmailClient.utils.is_analyze(thread):
+            queue_analyze.put(thread)
+            continue
+
+        # scheduled
+        if GoogleGmailClient.utils.is_scheduled(thread):
+            pass
+
+        # sent
+        if GoogleGmailClient.utils.is_sent(thread):
+            if GoogleGmailClient.utils.is_old(thread):
+                queue_followup.put(thread)
+                continue
+
+        # new
+        if GoogleGmailClient.utils.is_new(thread):
+            queue_new.put(thread)
+            continue
+
+        queue_unknown.put(thread)
+
+        queue_threads.task_done()
+        pass
+
 
 def processor_email_new():
     pass
 
+
 def processor_email_send():
     pass
+
 
 def processor_email_waiting():
     pass
 
+
+def log_printer():
+    while True:
+        log = queue_log.get()
+        debug(log)
+        queue_log.task_done()
 
 
 def check_gmail_labels(gmail: GoogleGmailClient):
@@ -274,97 +390,17 @@ def main():
 
     _FOLLOW_UP = None
 
-    while gmail.is_ready():
+    threads = ThreadingClient()
 
-        query_sequence = [
-            [labels.automon, labels.error],
-            [labels.automon, labels.processing],
-            [labels.automon, labels.chat],
-            [labels.automon, labels.analyze],
-            [labels.automon],
-        ]
+    threads.add_worker(target=producer_threads)
+    threads.add_worker(target=processor_email_thread)
+    threads.add_worker(target=processor_email_new)
+    threads.add_worker(target=processor_email_send)
+    threads.add_worker(target=processor_email_waiting)
 
-        def search_email(query, pageToken):
-            return gmail.thread_list_automon(
-                maxResults=1,
-                pageToken=pageToken,
-                labelIds=query,
-            )
+    threads.add_worker(target=log_printer)
 
-        def email_found(thread):
-
-            # thread = gmail.thread_get_automon(thread.id)
-
-            first = thread.automon_message_first
-            latest_clean = thread.automon_clean_thread_latest
-
-            debug(f"{latest_clean.automon_date_since_now_str} :: "
-                  f"{thread.automon_messages_count} messages :: "
-                  f"{thread.id} :: "
-                  f"{first.automon_payload.get_header('subject')} :: ",
-                  end='', level=2)
-
-            # resume
-            if GoogleGmailClient.utils.is_resume(thread):
-                return False
-
-            # chat
-            if GoogleGmailClient.utils.is_chat(thread):
-                return True
-
-            # skipped
-            if GoogleGmailClient.utils.is_skipped(thread):
-                return False
-
-            # error
-            if GoogleGmailClient.utils.is_error(thread):
-                return True
-
-            # analyze
-            if GoogleGmailClient.utils.is_analyze(thread):
-                return True
-
-            # scheduled
-            if GoogleGmailClient.utils.is_scheduled(thread):
-                return False
-
-            # sent
-            if GoogleGmailClient.utils.is_sent(thread):
-                if GoogleGmailClient.utils.is_old(thread):
-                    return True
-                debug('sent')
-
-            # new
-            if GoogleGmailClient.utils.is_new(thread):
-                return True
-
-            return False
-
-        _thread_search = None
-        _nextPageToken = None
-        while not thread_selected:
-
-            for _query in query_sequence:
-                _thread_search = search_email(_query, _nextPageToken)
-
-                if _thread_search:
-                    for thread in _thread_search.automon_threads:
-
-                        gmail.thread_modify(id=thread.id, addLabelIds=[labels.processing])
-
-                        if email_found(thread):
-                            thread_selected = thread
-                            break
-
-                        gmail.thread_modify(id=thread.id, removeLabelIds=[labels.processing])
-
-                    if thread_selected: break
-
-                if thread_selected: break
-
-            _nextPageToken = _thread_search.nextPageToken
-
-        if thread_selected: break
+    threads.start(max_threads=len(queues) * 2)
 
     resume_search = gmail.messages_list_automon(
         maxResults=1,
