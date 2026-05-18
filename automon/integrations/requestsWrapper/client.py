@@ -6,11 +6,17 @@ import requests.adapters
 
 import automon.integrations.seleniumWrapper.user_agents
 
+from automon.helpers import DictHelper
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
+
 from .config import RequestsConfig
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
+
+
+class RequestResponse(DictHelper):
+    pass
 
 
 class RequestsClient(object):

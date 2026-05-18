@@ -1,10 +1,14 @@
 import json
+import warnings
 
 
-class Dict(dict):
+class DictHelper(dict):
 
-    def __init__(self):
+    def __init__(self, data: dict = None):
         super().__init__()
+
+        if data is not None:
+            self.automon_update(data)
 
     def __eq__(self, other):
         if self.__dict__ == other.__dict__:
@@ -34,11 +38,11 @@ class Dict(dict):
         raise Exception(f"[Dict] :: automon_update :: ERROR :: {update=}")
 
     def _enhance(self):
+        warnings.warn(f"[Dict] :: Method will be removed in a future release. Pass data into class.__init__.")
         return self
 
     def enhance(self):
-        import warnings
-        warnings.warn(f"[Dict] :: Method will be removed in a future release. Please use '_enhance' instead.")
+        warnings.warn(f"[Dict] :: Method will be removed in a future release. Pass data into class.__init__.")
         return self
 
     def _flatten(self) -> dict:
@@ -113,7 +117,7 @@ class Dict(dict):
     def _update_json(self, update: str):
         return self._update_dict(json.loads(update))
 
-    def _to_dict(self, obj):
+    def _to_dict(self, obj) -> dict:
 
         if not hasattr(obj, "__dict__"):
             return obj
@@ -132,10 +136,8 @@ class Dict(dict):
 
         return result
 
-    def to_dict(self):
-        if self.to_json():
-            return self._to_dict(self)
-        raise Exception(f"[Dict] :: ERROR :: can't serialized :: {self.__dict__}")
+    def to_dict(self) -> dict:
+        return self._to_dict(self)
 
-    def to_json(self, indent: int = None):
+    def to_json(self, indent: int = None) -> str:
         return json.dumps(self._to_dict(self), indent=indent)

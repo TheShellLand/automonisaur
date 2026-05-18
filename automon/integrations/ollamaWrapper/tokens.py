@@ -1,11 +1,11 @@
 from automon.helpers.loggingWrapper import LoggingClient
-from automon.helpers import Dict
+from automon.helpers import DictHelper
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(LoggingClient.DEBUG)
 
 
-class Tokens(Dict):
+class Tokens(DictHelper):
     string: str
     _ratio: int
 

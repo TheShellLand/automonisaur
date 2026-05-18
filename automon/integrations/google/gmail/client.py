@@ -224,7 +224,7 @@ class GoogleGmailClient(GoogleAuthClient):
             q=q,
             includeSpamTrash=includeSpamTrash,
         )
-        return DraftList().automon_update(
+        return DraftList(
             self.requests.get_self(api, headers=self.config.headers, params=params).to_dict()
         )
 

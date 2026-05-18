@@ -1,8 +1,8 @@
 import unittest
 
 import time
+import queue
 import threading
-# from idlelib.rpc import response_queue
 
 from automon.integrations.google.gmail import GoogleGmailClient
 from automon.integrations.ollamaWrapper import OllamaClient
@@ -35,6 +35,11 @@ else:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(CRITICAL)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(CRITICAL)
 
+queue_threads = queue.Queue(maxsize=10)
+queue_new = queue.Queue()
+queue_send = queue.Queue()
+queue_waiting = queue.Queue()
+
 USE_OLLAMA = False
 USE_GEMINI = True
 CHAT_FOREVER = False
@@ -51,6 +56,25 @@ gmail.config.add_scopes([
 ])
 
 labels = gmail._automon_labels
+
+def automon_init(client: GoogleGmailClient):
+    pass
+
+def producer_threads():
+    pass
+
+def processor_email_thread():
+    pass
+
+def processor_email_new():
+    pass
+
+def processor_email_send():
+    pass
+
+def processor_email_waiting():
+    pass
+
 
 
 def check_gmail_labels(gmail: GoogleGmailClient):

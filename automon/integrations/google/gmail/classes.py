@@ -11,7 +11,7 @@ except:
 
 from automon.helpers import Regex
 from automon.helpers import cryptography
-from automon.helpers.dictWrapper import Dict
+from automon.helpers.dictWrapper import DictHelper
 
 from automon.helpers.loggingWrapper import LoggingClient, INFO
 
@@ -127,7 +127,7 @@ class LabelListVisibility:
     labelShowIfUnread = 'labelShowIfUnread'
 
 
-class Color(Dict):
+class Color(DictHelper):
     backgroundColor: str
     textColor: str
 
@@ -164,7 +164,7 @@ class Color(Dict):
         return False
 
 
-class EmailAttachment(Dict):
+class EmailAttachment(DictHelper):
 
     def __init__(
             self,
@@ -212,7 +212,7 @@ class GmailLabels:
         self.trash = Label(name='TRASH', id='TRASH')
 
 
-class Header(Dict):
+class Header(DictHelper):
 
     def __init__(self, header: dict = None):
         super().__init__()
@@ -241,7 +241,7 @@ class Header(Dict):
         return self.name < other.name
 
 
-class HistoryType(Dict):
+class HistoryType(DictHelper):
     """
     {
       "id": string,
@@ -294,7 +294,7 @@ class Type:
     user: str = 'user'
 
 
-class Label(Dict):
+class Label(DictHelper):
     id: str
     name: str
     messageListVisibility: MessageListVisibility
@@ -406,7 +406,7 @@ class Label(Dict):
             self.color = Color().automon_update(self.color)
 
 
-class LabelList(Dict):
+class LabelList(DictHelper):
     labels: list[Label]
 
     def __init__(self, labels: dict = None):
@@ -432,7 +432,7 @@ class LabelRemoved:
     pass
 
 
-class MessagePartBody(Dict):
+class MessagePartBody(DictHelper):
     attachmentId: str
     size: int
     data: str
@@ -513,7 +513,7 @@ class MessagePartBody(Dict):
                 return self.automon_data_bs4().html.text
 
 
-class MessagePart(Dict):
+class MessagePart(DictHelper):
     partId: str
     mimeType: str
     filename: str
@@ -566,7 +566,7 @@ class MessagePart(Dict):
                 return headers
 
 
-class MessagePayload(Dict):
+class MessagePayload(DictHelper):
     partId: str
     mimeType: str
     filename: str
@@ -627,7 +627,7 @@ class MessagePayload(Dict):
                 return headers
 
 
-class Message(Dict):
+class Message(DictHelper):
     historyId: str
     id: str
     internalDate: str
@@ -946,7 +946,7 @@ class Message(Dict):
         return email
 
 
-class MessageAttachments(Dict):
+class MessageAttachments(DictHelper):
 
     def __init__(self, attachments: list[dict] = []):
         super().__init__()
@@ -989,7 +989,7 @@ class MessageDeleted:
     pass
 
 
-class MessageList(Dict):
+class MessageList(DictHelper):
     """
     {
       "messages": [
@@ -1025,7 +1025,7 @@ class MessageList(Dict):
         return False
 
 
-class Draft(Dict):
+class Draft(DictHelper):
     """
     A draft email in the user's mailbox.
 
@@ -1074,7 +1074,7 @@ class Draft(Dict):
             return f"{self.id}"
 
 
-class DraftList(Dict):
+class DraftList(DictHelper):
     """
     If successful, the response body contains data with the following structure:
 
@@ -1106,8 +1106,8 @@ class DraftList(Dict):
     Estimated total number of results.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, drafts: dict = None):
+        super().__init__(drafts)
 
         self.drafts: list = []
         self.nextPageToken: str = None
@@ -1119,7 +1119,7 @@ class DraftList(Dict):
         return str(self)
 
 
-class Thread(Dict):
+class Thread(DictHelper):
     id: str
     historyId: str
     messages: list[str]
@@ -1259,7 +1259,7 @@ class Thread(Dict):
             return self.automon_messages[-1]
 
 
-class ThreadList(Dict):
+class ThreadList(DictHelper):
     threads: list
     nextPageToken: str
     resultSizeEstimate: int

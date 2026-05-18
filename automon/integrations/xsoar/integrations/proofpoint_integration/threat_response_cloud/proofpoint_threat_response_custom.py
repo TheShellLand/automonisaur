@@ -10,7 +10,7 @@ except:
     pass
 
 from automon.integrations.requestsWrapper import RequestsClient
-from automon.helpers.dictWrapper import Dict
+from automon.helpers.dictWrapper import DictHelper
 
 DEBUG = 1
 
@@ -26,7 +26,7 @@ def debug(log: str = '\n', level: int = 1, json_output: bool = False):
         print(log)
 
 
-class ProofpointThreatResponseCloudMessage(Dict):
+class ProofpointThreatResponseCloudMessage(DictHelper):
     abuse_reporter_rank: str
     body_expired: str
     body_present: bool
@@ -91,7 +91,7 @@ class ProofpointThreatResponseCloudMessage(Dict):
         self.incidents = [ProofpointThreatResponseCloudIncident().automon_update(x) for x in self.incidents]
 
 
-class ProofpointThreatResponseCloudMessageResponse(Dict):
+class ProofpointThreatResponseCloudMessageResponse(DictHelper):
     endRow: int
     messages: list[ProofpointThreatResponseCloudMessage]
     statRow: int
@@ -108,7 +108,7 @@ class ProofpointThreatResponseCloudMessageResponse(Dict):
         self.messages = [ProofpointThreatResponseCloudMessage().automon_update(x) for x in self.messages]
 
 
-class ProofpointThreatResponseCloudIncident(Dict):
+class ProofpointThreatResponseCloudIncident(DictHelper):
     abuseSourceIds: list[str]
     assignedTeamId: str
     assignedTeamName: str
@@ -145,7 +145,7 @@ class ProofpointThreatResponseCloudIncident(Dict):
         )
 
 
-class ProofpointThreatResponseCloudIncidentResponse(Dict):
+class ProofpointThreatResponseCloudIncidentResponse(DictHelper):
 
     def __init__(self):
         super().__init__()
@@ -196,7 +196,7 @@ class ProofpointThreatResponseCloudApi(object):
         def upload_message(self):
             return self.incidents + '/uploadMessage'
 
-    class Filters(Dict):
+    class Filters(DictHelper):
         """Filter that both incidents and messages use"""
 
         def __init__(self):
@@ -583,7 +583,7 @@ class ProofpointThreatResponseCloudApi(object):
             }
 
 
-class ProofpointThreatResponseCloudConfig(Dict):
+class ProofpointThreatResponseCloudConfig(DictHelper):
 
     def __init__(
             self,
@@ -887,7 +887,7 @@ class ProofpointThreatResponseCloudClient(RequestsClient):
         return message
 
 
-class Regex(Dict):
+class Regex(DictHelper):
     def __init__(self):
         super().__init__()
 
@@ -937,7 +937,7 @@ class Grok(Regex):
             return self.match()
 
 
-class XsoarEmailHeader(Dict):
+class XsoarEmailHeader(DictHelper):
     def __init__(self, header: tuple[str, str] = None):
         super().__init__()
 
@@ -962,7 +962,7 @@ class XsoarEmailHeader(Dict):
         return self.key.lower() == key.lower()
 
 
-class XsoarEmailPayload(Dict):
+class XsoarEmailPayload(DictHelper):
     headers: list[XsoarEmailHeader]
     payload: str
 
@@ -997,7 +997,7 @@ class XsoarEmailPayload(Dict):
             return header.value
 
 
-class XsoarEmail(Dict):
+class XsoarEmail(DictHelper):
 
     def __init__(self, mime: bytes = b''):
         super().__init__()

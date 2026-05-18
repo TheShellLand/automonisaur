@@ -1,4 +1,4 @@
-from automon.helpers.dictWrapper import Dict
+from automon.helpers.dictWrapper import DictHelper
 
 
 class GoogleGeminiModels(object):
@@ -354,7 +354,7 @@ class GoogleGeminiModels(object):
         return f'gemini-embedding-exp-03-07'
 
 
-class Model(Dict):
+class Model(DictHelper):
 
     def __init__(self, model: dict = None):
         super().__init__()

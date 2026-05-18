@@ -4,7 +4,7 @@ except:
     from typing_extensions import Self
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
-from automon.helpers.dictWrapper import Dict
+from automon.helpers.dictWrapper import DictHelper
 from automon.integrations.ollamaWrapper import Tokens
 
 logger = LoggingClient.logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class GoogleGeminiApi(object):
         return self
 
 
-class Part(Dict):
+class Part(DictHelper):
     text: str
 
     def __init__(self, part: dict | Self = None, text: str = ''):
@@ -98,7 +98,7 @@ class Part(Dict):
         return f"{self.text}".encode()[:50]
 
 
-class Content(Dict):
+class Content(DictHelper):
     parts: list[dict]
     role: str
 
@@ -134,7 +134,7 @@ class Content(Dict):
         return self
 
 
-class Candidate(Dict):
+class Candidate(DictHelper):
     content: dict
     avgLogprobs: float
     finishReason: str
@@ -154,7 +154,7 @@ class Candidate(Dict):
         return Content(self.content)
 
 
-class GeminiPrompt(Dict):
+class GeminiPrompt(DictHelper):
     contents: list[Content]
 
     def __init__(self):
@@ -178,7 +178,7 @@ class GeminiPrompt(Dict):
         return self
 
 
-class GeminiResponse(Dict):
+class GeminiResponse(DictHelper):
     candidates: list[dict]
     usageMetadata: str
     modelVersion: str

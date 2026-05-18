@@ -2,7 +2,7 @@ import json
 
 from enum import Enum
 
-from automon.helpers.dictWrapper import Dict
+from automon.helpers.dictWrapper import DictHelper
 
 
 class V0(object):
@@ -15,7 +15,7 @@ class UsersApi(V0):
         return f'{self.api}/meta/whoami'
 
 
-class Base(Dict):
+class Base(DictHelper):
     id: str
     name: str
     permissionLevel: str
@@ -26,7 +26,7 @@ class Base(Dict):
         return False
 
 
-class BasesResponse(Dict):
+class BasesResponse(DictHelper):
     bases: list[Base]
 
     def __init__(self):
@@ -116,7 +116,7 @@ class TableFieldType(object):
     float = number
 
 
-class TableField(Dict):
+class TableField(DictHelper):
     description: str
     name: str
     type: str
@@ -145,7 +145,7 @@ class TableField(Dict):
         return f'{self.name} :: {self.type}'
 
 
-class TableView(Dict):
+class TableView(DictHelper):
     id: str
     name: str
     type: str
@@ -159,7 +159,7 @@ class TableView(Dict):
         return f'{self.name} :: {self.type}'
 
 
-class Table(Dict):
+class Table(DictHelper):
     description: str
     fields: list[TableField]
     id: str
@@ -190,7 +190,7 @@ class Table(Dict):
             self.views = [TableView().automon_update(x) for x in self.views]
 
 
-class TablesResponse(Dict):
+class TablesResponse(DictHelper):
     bases: list[Table]
 
     def __init__(self):
@@ -228,7 +228,7 @@ class TablesApi(V0):
         return f'{self.api}/meta/bases/{baseId}/tables'
 
 
-class RecordField(Dict):
+class RecordField(DictHelper):
 
     def __init__(self, field: dict = None):
         super().__init__()
@@ -243,7 +243,7 @@ class RecordField(Dict):
         return self.__dict__ == other.__dict__
 
 
-class Record(Dict):
+class Record(DictHelper):
     createdTime: str
     fields: dict[str, RecordField]
     id: str
@@ -266,7 +266,7 @@ class Record(Dict):
         self.fields = RecordField().automon_update(self.fields)
 
 
-class RecordsResponse(Dict):
+class RecordsResponse(DictHelper):
     records: list[Record]
 
     def __init__(self):
