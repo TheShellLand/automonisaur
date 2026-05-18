@@ -4,6 +4,8 @@ import base64
 import datetime
 import dateutil.parser
 
+from automon import encapsulate
+
 try:
     from typing import Self
 except:
@@ -215,13 +217,11 @@ class GmailLabels:
 class Header(DictHelper):
 
     def __init__(self, header: dict = None):
-        super().__init__()
 
         self.name: str = ''
         self.value: str = ''
 
-        if header:
-            self.automon_update(header)
+        super().__init__(header)
 
     def __repr__(self):
         if self.name:
@@ -410,14 +410,21 @@ class LabelList(DictHelper):
     labels: list[Label]
 
     def __init__(self, labels: dict = None):
-        super().__init__()
-        self.labels: list[Label] = []
+        self._labels = []
 
-        if labels:
-            self.automon_update(labels)
+        super().__init__(labels)
 
     def __len__(self):
         return len(self.labels)
+
+    @property
+    def labels(self):
+        self._labels = encapsulate(value=self._labels, object_class=Label)
+        return self._labels
+
+    @labels.setter
+    def labels(self, value):
+        self._labels = encapsulate(value=self._labels, object_class=Label)
 
     def _enhance(self):
         if self.labels:
@@ -724,7 +731,6 @@ class Message(DictHelper):
     """
 
     def __init__(self, message: dict = None):
-        super().__init__()
 
         self.historyId: str = None
         self.id: str = None
@@ -736,8 +742,7 @@ class Message(DictHelper):
         self.snippet: str = None
         self.threadId: str = None
 
-        if message:
-            self.automon_update(message)
+        super().__init__(message)
 
         self.automon_labels: list[Label] = sorted(
             [Label().automon_update(x) for x in self.labelIds if isinstance(x, dict)])
@@ -1002,17 +1007,17 @@ class MessageList(DictHelper):
     }
     """
 
+    messages: list[Message]
+    resultSizeEstimate: str
+    nextPageToken: str
+
     def __init__(self, messages: dict | Self = None):
-        super().__init__()
 
-        self.messages: list = []
-        self.resultSizeEstimate: int
-        self.nextPageToken: str
+        self._messages = []
+        self.resultSizeEstimate = None
+        self.nextPageToken = None
 
-        if messages:
-            self.automon_update(messages)
-
-        self.automon_messages: list[Message] = sorted([Message(m) for m in self.messages])
+        super().__init__(messages)
 
     def __repr__(self):
         if self.messages:
@@ -1023,6 +1028,15 @@ class MessageList(DictHelper):
         if self.messages:
             return True
         return False
+
+    @property
+    def messages(self) -> list[Message]:
+        self._messages = encapsulate(value=self._messages, object_class=Message)
+        return self._messages
+
+    @messages.setter
+    def messages(self, value):
+        self._messages = encapsulate(value=value, object_class=Message)
 
 
 class Draft(DictHelper):

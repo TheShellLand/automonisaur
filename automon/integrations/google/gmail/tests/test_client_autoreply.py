@@ -377,7 +377,7 @@ def main():
         if labels.draft in message.automon_labels:
             gmail.messages_trash(id=message.id)
 
-    resume_selected = resume_search.automon_messages[0]
+    resume_selected = resume_search.messages[0]
 
     resume = resume_selected.automon_attachments_first
     resume = resume.automon_parts[0].automon_body.automon_data_html_text

@@ -2,6 +2,7 @@ import automon.integrations.requestsWrapper
 
 from .config import PanoramaConfig
 from .api.v10 import *
+from ..requestsWrapper import RequestResponse
 
 
 class PanoramaClient(object):
@@ -23,14 +24,14 @@ class PanoramaClient(object):
             return True
         return False
 
-    def _request_get(self, url, params=None, **kwargs) -> bool:
+    def _request_get(self, url, params=None, **kwargs) -> RequestResponse:
         url = self._api_url(url)
 
         headers = self.headers
         request = self._requests.get(url=url, params=params, headers=headers, **kwargs)
         return request
 
-    def _request_post(self, url, params=None, **kwargs) -> bool:
+    def _request_post(self, url, params=None, **kwargs) -> RequestResponse:
         url = self._api_url(url)
 
         headers = self.headers
@@ -49,12 +50,12 @@ class PanoramaClient(object):
         """
 
         url = Api().keygen
-        request = self._request_post(url=url)
+        response = self._request_post(url=url)
 
-        if request:
-            self.config.PANORAMA_API_KEY = self._requests.text
+        if response:
+            self.config.PANORAMA_API_KEY = response.text
         else:
-            error = self._requests.content
+            error = response.content
             raise Exception(f'[PanoramaClient] :: get_api_key :: ERROR :: {error=}')
 
         return self

@@ -357,16 +357,13 @@ class GoogleGeminiModels(object):
 class Model(DictHelper):
 
     def __init__(self, model: dict = None):
-        super().__init__()
-
         self.name = None
         self.displayName = None
         self.inputTokenLimit = None
         self.outputTokenLimit = None
         self.description = None
 
-        if model:
-            self.automon_update(model)
+        super().__init__(model)
 
     def __repr__(self):
         return f"{self.name} :: {self.description} :: {self.inputTokenLimit} :: {self.outputTokenLimit}"

@@ -202,7 +202,7 @@ class GoogleGeminiClient(object):
         if print_stream:
             self._chat.print_stream()
 
-        self._prompt.add_content(self._chat.response.automon_content)
+        self._prompt.add_content(self._chat.response.content)
         return self
 
     def chat_forever(self):

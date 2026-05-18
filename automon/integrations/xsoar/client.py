@@ -3,7 +3,7 @@ import json
 from lxml.html.diff import end_tag
 
 from automon.log import logging
-from automon.integrations.requestsWrapper import RequestsClient
+from automon.integrations.requestsWrapper import RequestsClient, RequestResponse
 
 from .config import XSOARConfig
 from .endpoints import *
@@ -49,17 +49,14 @@ class XSOARClient(object):
     def auth(self):
         raise NotImplementedError
 
-    @property
-    def _client_content(self):
-        return self._requests.content
+    def _client_content(self, response: RequestResponse):
+        return response.content
 
-    @property
-    def _client_errors(self):
-        return self._requests.errors
+    def _client_errors(self, response: RequestResponse):
+        return response.errors
 
-    @property
-    def _client_response(self):
-        return self._requests.to_dict()
+    def _client_response(self, response: RequestResponse):
+        return response.to_dict()
 
     def _get(self, endpoint: str):
         url = f'{self.config.host}/{endpoint}'
@@ -71,7 +68,7 @@ class XSOARClient(object):
             logger.info(f'[XSOARClient] :: get :: done')
             return response
 
-        error = self._client_errors
+        error = self._client_errors(response)
         logger.error(f'[XSOARClient] :: get :: ERROR :: {error=}')
         raise Exception(f'[XSOARClient] :: get :: ERROR :: {error=}')
 
@@ -98,12 +95,12 @@ class XSOARClient(object):
             logger.info(f'[XSOARClient] :: post :: done')
             return response
 
-        status_code = self._requests.status_code
+        status_code = response.status_code
         if status_code == 201:
             logger.info(f'[XSOARClient] :: post :: {status_code=} :: done')
             return True
 
-        error = self._client_errors
+        error = self._client_errors(response)
         import traceback
         traceback.print_exc()
         raise Exception(f'[XSOARClient] :: post :: ERROR :: {status_code=} :: {error=}')
@@ -113,13 +110,12 @@ class XSOARClient(object):
         file = self._get(endpoint=self.api.Files().get_by_entryid(entryid=entryid))
 
         if file:
-            file = self._client_response
             self._file = file
             logger.debug(f'[XSOARClient] :: download_file :: {file=}')
             logger.info(f'[XSOARClient] :: download_file :: done')
             return self
 
-        logger.error(f'[XSOARClient] :: download_file :: ERROR :: {self._client_content}')
+        logger.error(f'[XSOARClient] :: download_file :: ERROR :: {self._client_content(file)}')
         raise Exception
 
     def incident_create(
@@ -166,7 +162,6 @@ class XSOARClient(object):
         )
 
         if incident:
-            incident = self._client_response
             incident = Incident().update(incident)
             self._incident_created = incident
             logger.debug(f'[XSOARClient] :: incident_create :: {incident=}')
@@ -174,7 +169,7 @@ class XSOARClient(object):
             logger.info(f'[XSOARClient] :: incident_create :: done')
             return self
 
-        logger.error(f'[XSOARClient] :: incident_create :: ERROR :: {self._client_content}')
+        logger.error(f'[XSOARClient] :: incident_create :: ERROR :: {self._client_content(incident)}')
         raise Exception
 
     def incident_delete(self, id: str = None, ids: list = None, body: dict = None):
@@ -201,7 +196,6 @@ class XSOARClient(object):
         )
 
         if incident:
-            incident = self._client_response
             incident['data'] = [Incident().update(x) for x in incident['data']]
             self._incident_deleted = incident
             logger.debug(f'[XSOARClient] :: incident_delete :: deleted {id=} {ids=}')
@@ -209,7 +203,7 @@ class XSOARClient(object):
             logger.info(f'[XSOARClient] :: incident_delete :: done')
             return self
 
-        logger.error(f'[XSOARClient] :: incident_delete :: ERROR :: {self._client_content}')
+        logger.error(f'[XSOARClient] :: incident_delete :: ERROR :: {self._client_content(incident)}')
         raise Exception
 
     def incidents_search(
@@ -252,7 +246,6 @@ class XSOARClient(object):
         incidents = self._post(endpoint=self.api.Incidents().search_incident, data=incident)
 
         if incidents:
-            incidents = self._client_response
             incidents['data'] = [Incident().update(x) for x in incidents['data']]
             self._incidents_search = incidents
             logger.debug(
@@ -266,8 +259,8 @@ class XSOARClient(object):
             logger.info(f'[XSOARClient] :: incidents :: done')
             return self
 
-        logger.error(f'[XSOARClient] :: incidents :: ERROR :: {self._client_content}')
-        raise Exception(f'[XSOARClient] :: incidents :: ERROR :: {self._client_content}')
+        logger.error(f'[XSOARClient] :: incidents :: ERROR :: {self._client_content(incidents)}')
+        raise Exception(f'[XSOARClient] :: incidents :: ERROR :: {self._client_content(incidents)}')
 
     def playbook_search(self):
         return self

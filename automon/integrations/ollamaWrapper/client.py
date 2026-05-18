@@ -10,10 +10,10 @@ import readline
 
 import automon
 
-import automon.helpers.tempfileWrapper
 import automon.helpers.uuidWrapper
-import automon.integrations.requestsWrapper
+import automon.helpers.tempfileWrapper
 
+from automon.integrations.requestsWrapper import RequestsClient
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
 from .chat import OllamaChat
@@ -294,8 +294,7 @@ class OllamaClient(object):
 
         if not download:
             print(f":: SYSTEM :: downloading {url} ::")
-            download = automon.integrations.requestsWrapper.RequestsClient()
-            download.get(url=url)
+            download = RequestsClient(url=url).get()
             download = download.text
 
         if download:

@@ -11,10 +11,10 @@ working_proxies = []
 
 class Test(unittest.TestCase):
     def test_get(self):
-        r.get('https://one.one.one.one/')
+        response = r.get('https://one.one.one.one/')
 
-        if r.status_code:
-            print(f'OK :: {r.proxies} :: {r.content} :: {r.status_code=}')
+        if response.status_code:
+            print(f'OK :: {response.proxies} :: {response.content} :: {response.status_code=}')
             working_proxies.append(r.proxies)
             pass
 

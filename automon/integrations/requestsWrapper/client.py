@@ -16,7 +16,97 @@ logger.setLevel(DEBUG)
 
 
 class RequestResponse(DictHelper):
-    pass
+
+    def __init__(self, response=None):
+        super().__init__(response)
+
+        self.response = None
+        self.proxies = None
+
+        self._log_result()
+
+        self._bs4 = bs4.BeautifulSoup
+
+    def __bool__(self):
+        if self.status_code == 200:
+            return True
+        return False
+
+    def _log_result(self):
+        if self.status_code == 200:
+            msg = [
+                '[RequestResponse]',
+                self.response.request.method,
+                f'{self.status_code}',
+                f'{self.response.url}',
+                f'{self.proxies=}',
+                f'{round(len(self.content) / 1024, 2)} KB',
+            ]
+            msg = ' :: '.join([str(x) for x in msg])
+
+        else:
+
+            msg = [
+                '[RequestResponse]',
+                self.response.request.method,
+                f'{self.status_code}',
+                f'{self.response.url}',
+                f'{self.proxies=}',
+                f'{round(len(self.content) / 1024, 2)} KB',
+                f'{self.content=}'
+            ]
+            msg = ' :: '.join([str(x) for x in msg])
+        return logger.error(msg)
+
+    @property
+    def content(self) -> bytes:
+        if 'content' in dir(self.response):
+            return self.response.content
+        return b''
+
+    @property
+    def content_bs4(self):
+        if self.content:
+            return self._bs4(self.content)
+
+    def content_to_dict(self):
+        return self.to_dict()
+
+    @property
+    def reason(self):
+        if 'reason' in dir(self.response):
+            return self.response.reason
+
+    @property
+    def status_code(self):
+        if 'status_code' in dir(self.response):
+            return self.response.status_code
+
+    @property
+    def text(self) -> str:
+        if self.response:
+            return self.response.text
+        return ''
+
+    @property
+    def _to_dict(self):
+        return self.to_dict()
+
+    def to_dict(self) -> dict:
+        if self.response is not None:
+            try:
+                return json.loads(self.content)
+            except Exception as error:
+                raise Exception(f'[RequestsClient] :: TO DICT :: ERROR :: {error=}')
+        return {}
+
+    def to_json(self) -> str:
+        if self.content:
+            try:
+                return json.dumps(json.loads(self.content))
+            except Exception as error:
+                raise Exception(f'[RequestsClient] :: TO JSON :: ERROR :: {error=}')
+        return ''
 
 
 class RequestsClient(object):
@@ -30,7 +120,6 @@ class RequestsClient(object):
 
         self.url: str = url
         self.data: any = data
-        self.errors: bytes = b''
         self.response = None
         self.requests = requests
         self.proxies = self.config.get_proxy()
@@ -41,16 +130,6 @@ class RequestsClient(object):
 
     def __repr__(self):
         return f'{self.__dict__}'
-
-    def __len__(self):
-        if self.content:
-            len(self.content)
-
-    def __bool__(self):
-        if self.status_code:
-            if self.status_code == 200:
-                return True
-        return False
 
     def _get_session(self) -> requests.Session:
         """Gets the current thread's dedicated requests.Session."""
@@ -66,30 +145,7 @@ class RequestsClient(object):
         return self._get_session()
 
     def _log_result(self):
-        if self.status_code == 200:
-            msg = [
-                '[RequestsClient]',
-                self.response.request.method,
-                f'{self.status_code}',
-                f'{self.response.url}',
-                f'{self.proxies=}',
-                f'{round(len(self.content) / 1024, 2)} KB',
-            ]
-            msg = ' :: '.join([str(x) for x in msg])
-            return logger.debug(msg)
-
-        msg = [
-            '[RequestsClient]',
-            self.response.request.method,
-            f'{self.status_code}',
-            f'{self.response.url}',
-            f'{self.proxies=}',
-            f'{round(len(self.content) / 1024, 2)} KB',
-            f'{self.content=}'
-        ]
-
-        msg = ' :: '.join([str(x) for x in msg])
-        return logger.error(msg)
+        raise
 
     def _params(self, url, data, headers):
         if url is None:
@@ -110,14 +166,6 @@ class RequestsClient(object):
     def content(self):
         if hasattr(self.response, 'content'):
             return self.response.content
-
-    @property
-    def content_bs4(self):
-        if self.content:
-            return self._bs4(self.content)
-
-    def content_to_dict(self):
-        return self.to_dict()
 
     def _set_retry(self, max_retries: int = None, **kwargs):
 
@@ -167,7 +215,7 @@ class RequestsClient(object):
             headers: dict = None,
             max_retries: int = 5,
             **kwargs
-    ) -> bool:
+    ) -> RequestResponse:
         """requests.delete"""
 
         url, data, headers = self._params(url, data, headers)
@@ -176,17 +224,8 @@ class RequestsClient(object):
 
         logger.debug(f'[RequestsClient] :: DELETE :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
-        try:
-            self.response = self.session.delete(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
-            self._log_result()
-
-            if self.status_code == 200:
-                return True
-
-        except Exception as error:
-            self.errors = error
-            raise Exception(f'[RequestsClient] :: DELETE :: ERROR :: {error=}')
-        return False
+        response = self.session.delete(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
+        return RequestResponse(response)
 
     def delete_self(self, *args, **kwargs):
         self.delete(*args, **kwargs)
@@ -199,7 +238,7 @@ class RequestsClient(object):
             headers: dict = None,
             max_retries: int = None,
             **kwargs
-    ) -> bool:
+    ) -> RequestResponse:
         """requests.get"""
 
         url, data, headers = self._params(url, data, headers)
@@ -208,19 +247,8 @@ class RequestsClient(object):
 
         logger.debug(f'[RequestsClient] :: GET :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
-        try:
-            self.response = self.session.get(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
-            self._log_result()
-
-            if self.status_code == 200:
-                return True
-
-            self.errors = self.content
-
-        except Exception as error:
-            self.errors = error
-            raise Exception(f'[RequestsClient] :: GET :: ERROR :: {error=}')
-        return False
+        response = self.session.get(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
+        return RequestResponse(response)
 
     def get_self(self, *args, **kwargs):
         self.get(*args, **kwargs)
@@ -233,7 +261,7 @@ class RequestsClient(object):
             headers: dict = None,
             max_retries: int = None,
             **kwargs
-    ) -> bool:
+    ) -> RequestResponse:
         """requests.patch"""
 
         url, data, headers = self._params(url, data, headers)
@@ -242,19 +270,8 @@ class RequestsClient(object):
 
         logger.debug(f'[RequestsClient] :: PATCH :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
-        try:
-            self.response = self.session.patch(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
-            self._log_result()
-
-            if self.status_code == 200:
-                return True
-
-            self.errors = self.content
-
-        except Exception as error:
-            self.errors = error
-            raise Exception(f'[RequestsClient] :: PATCH :: ERROR :: {error=}')
-        return False
+        response = self.session.patch(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
+        return RequestResponse(response)
 
     def patch_self(self, *args, **kwargs):
         self.patch(*args, **kwargs)
@@ -267,7 +284,7 @@ class RequestsClient(object):
             headers: dict = None,
             max_retries: int = None,
             **kwargs
-    ) -> bool:
+    ) -> RequestResponse:
         """requests.post"""
 
         url, data, headers = self._params(url, data, headers)
@@ -276,19 +293,8 @@ class RequestsClient(object):
 
         logger.debug(f'[RequestsClient] :: POST :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
-        try:
-            self.response = self.session.post(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
-            self._log_result()
-
-            if self.status_code == 200:
-                return True
-
-            self.errors = self.content
-
-        except Exception as error:
-            self.errors = error
-            raise Exception(f'[RequestsClient] :: POST :: ERROR :: {error=}')
-        return False
+        response = self.session.post(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
+        return RequestResponse(response)
 
     def post_self(self, *args, **kwargs):
         self.post(*args, **kwargs)
@@ -301,7 +307,7 @@ class RequestsClient(object):
             headers: dict = None,
             max_retries: int = None,
             **kwargs
-    ) -> bool:
+    ) -> RequestResponse:
         """requests.put"""
 
         url, data, headers = self._params(url, data, headers)
@@ -310,39 +316,12 @@ class RequestsClient(object):
 
         logger.debug(f'[RequestsClient] :: PUT :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
-        try:
-            self.response = self.session.put(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
-            self._log_result()
-
-            if self.status_code == 200:
-                return True
-
-            self.errors = self.content
-
-        except Exception as error:
-            self.errors = error
-            raise Exception(f'[RequestsClient] :: PUT :: ERROR :: {error=}')
-        return False
+        response = self.session.put(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
+        return RequestResponse(response)
 
     def put_self(self, *args, **kwargs):
         self.put(*args, **kwargs)
         return self
-
-    @property
-    def reason(self):
-        if 'reason' in dir(self.response):
-            return self.response.reason
-
-    @property
-    def status_code(self):
-        if 'status_code' in dir(self.response):
-            return self.response.status_code
-
-    @property
-    def text(self) -> str:
-        if self.response:
-            return self.response.text
-        return ''
 
     @property
     def _to_dict(self):

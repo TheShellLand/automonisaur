@@ -13,7 +13,8 @@ class ElasticsearchJvmMonitor:
     def __init__(self, config: ElasticsearchConfig = None):
 
         self._config = config if isinstance(config, ElasticsearchConfig) else ElasticsearchConfig()
-        self._client = ElasticsearchClient(config) if isinstance(config, ElasticsearchConfig) else ElasticsearchClient()
+        self._client = ElasticsearchClient(config=config) if isinstance(config,
+                                                                        ElasticsearchConfig) else ElasticsearchClient()
 
         self._endpoint = self._client.config.ELASTICSEARCH_HOST
 

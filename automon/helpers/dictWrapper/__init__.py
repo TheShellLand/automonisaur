@@ -1,11 +1,15 @@
 import json
 import warnings
 
+from typing import Any, Callable
+
 
 class DictHelper(dict):
 
     def __init__(self, data: dict = None):
         super().__init__()
+
+        self._raw_data = data
 
         if data is not None:
             self.automon_update(data)
@@ -20,6 +24,28 @@ class DictHelper(dict):
 
     def __repr__(self):
         return f"{self.to_dict()}"
+
+    def __setitem__(self, key: Any, value: Any) -> None:
+        """
+        This method automatically triggers every time ANY value is saved
+        or changed inside your custom dictionary.
+        """
+        # 1. Check if the value being saved is a list
+        if isinstance(value, list):
+
+            # 2. Look inside the list. If there are dictionaries inside it,
+            #    convert them into DictHelpers so dot-notation works on them too!
+            processed_list = []
+            for item in value:
+                if isinstance(item, dict):
+                    processed_list.append(DictHelper(item))
+                else:
+                    processed_list.append(item)
+
+            value = processed_list
+
+        # 3. Save the final processed value into the dictionary memory
+        super().__setitem__(key, value)
 
     def automon_update(self, update: dict | str | object | None):
 
@@ -123,8 +149,13 @@ class DictHelper(dict):
             return obj
 
         result = {}
-        for key, value in obj.__dict__.items():
+        for key in dir(self):
+            value = getattr(self, key)
+
             if key.startswith("_"):
+                continue
+
+            if isinstance(value, Callable):
                 continue
 
             if type(value) is list:

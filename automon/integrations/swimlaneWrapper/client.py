@@ -53,12 +53,12 @@ class SwimlaneClientRest(object):
             json=self.config.credentials,
         )
 
-        apiKey = dict(json.loads(self.requests.content)).get('token')
+        apiKey = dict(json.loads(response.content)).get('token')
         self.config.apiKey = apiKey
 
         self.requests.update_headers(self.config.headers)
 
-        self.config.userName_model = await self.requests.to_dict()
+        self.config.userName_model = await response.to_dict()
 
         return response
 
@@ -72,7 +72,7 @@ class SwimlaneClientRest(object):
             url=url,
         )
 
-        self.config.userName_model = await self.requests.to_dict()
+        self.config.userName_model = await response.to_dict()
 
         return response
 
@@ -81,7 +81,7 @@ class SwimlaneClientRest(object):
         url = f'{self.host}/{Logging.by_id(jobId=jobId)}'
 
         response = await self.requests.get(url=url)
-        logs_job = await self.requests.to_dict()
+        logs_job = await response.to_dict()
 
         return logs_job
 
@@ -105,7 +105,7 @@ class SwimlaneClientRest(object):
         # self.requests.session.headers.update(header)
 
         response = await self.requests.post(url=url, json=request_body, headers=header)
-        logs_recent = await self.requests.to_dict()
+        logs_recent = await response.to_dict()
 
         return logs_recent
 
@@ -126,7 +126,7 @@ class SwimlaneClientRest(object):
             url=url,
         )
 
-        self.apps = await self.requests.to_dict()
+        self.apps = await response.to_dict()
 
         return self.apps
 
@@ -137,7 +137,7 @@ class SwimlaneClientRest(object):
             url=url,
         )
 
-        app = await self.requests.to_dict()
+        app = await response.to_dict()
 
         return app
 
@@ -148,7 +148,7 @@ class SwimlaneClientRest(object):
             url=url,
         )
 
-        app = await self.requests.to_dict()
+        app = await response.to_dict()
 
         return app
 
@@ -167,7 +167,7 @@ class SwimlaneClientRest(object):
 
         record_hashmap = {}
 
-        record = await self.requests.to_dict()
+        record = await response.to_dict()
         record_values = dict(record.get('values'))
 
         for item in record_values.items():
@@ -198,7 +198,7 @@ class SwimlaneClientRest(object):
             url=url,
         )
 
-        record = await self.requests.to_dict()
+        record = await response.to_dict()
 
         return record
 
@@ -236,7 +236,7 @@ class SwimlaneClientRest(object):
             json=record
         )
 
-        record_created = await self.requests.content_to_dict()
+        record_created = await response.content_to_dict()
 
         return record_created
 
@@ -251,7 +251,7 @@ class SwimlaneClientRest(object):
             json=data
         )
 
-        record_created = await self.requests.content_to_dict()
+        record_created = await response.content_to_dict()
 
         return record_created
 
@@ -263,7 +263,7 @@ class SwimlaneClientRest(object):
             url=url
         )
 
-        if self.requests.status_code == 204 or self.requests.status_code == 404:
+        if response.status_code == 204 or response.status_code == 404:
             return True
 
         return response
@@ -276,7 +276,7 @@ class SwimlaneClientRest(object):
             url=url
         )
 
-        record = await self.requests.to_dict()
+        record = await response.to_dict()
 
         return record
 
@@ -301,6 +301,6 @@ class SwimlaneClientRest(object):
             url=url,
         )
 
-        self.workspaces = await self.requests.to_dict()
+        self.workspaces = await response.to_dict()
 
         return self.workspaces

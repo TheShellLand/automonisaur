@@ -2,7 +2,7 @@ import datetime
 import time
 
 from automon.helpers.threadingWrapper import *
-from automon.integrations.requestsWrapper import RequestsClient
+from automon.integrations.requestsWrapper import RequestsClient, RequestResponse
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
 from .api import *
@@ -63,7 +63,7 @@ class AirtableClient(object):
             **kwargs) -> RequestsClient:
 
         self._wait_for_rate_limit()
-        response = self.requests.delete_self(url=url, **kwargs)
+        response = self.requests.delete(url=url, **kwargs)
         if not response:
             raise
 
@@ -76,7 +76,7 @@ class AirtableClient(object):
             **kwargs) -> RequestsClient:
 
         self._wait_for_rate_limit()
-        response = self.requests.get_self(url=url, **kwargs)
+        response = self.requests.get(url=url, **kwargs)
         if not response:
             raise
 
@@ -87,12 +87,12 @@ class AirtableClient(object):
             self,
             url: str,
             data: str,
-            **kwargs) -> RequestsClient:
+            **kwargs) -> RequestResponse:
 
         self._wait_for_rate_limit()
-        response = self.requests.post_self(url=url, data=data, **kwargs)
+        response = self.requests.post(url=url, data=data, **kwargs)
         if not response:
-            raise Exception(response.errors, data)
+            raise Exception(response, data)
 
         self._update_last_request()
         return response
@@ -104,7 +104,7 @@ class AirtableClient(object):
             **kwargs) -> RequestsClient:
 
         self._wait_for_rate_limit()
-        response = self.requests.patch_self(url=url, data=data, **kwargs)
+        response = self.requests.patch(url=url, data=data, **kwargs)
         if not response:
             raise
 
@@ -118,7 +118,7 @@ class AirtableClient(object):
             **kwargs) -> RequestsClient:
 
         self._wait_for_rate_limit()
-        response = self.requests.put_self(url=url, data=data, **kwargs)
+        response = self.requests.put(url=url, data=data, **kwargs)
         if not response:
             raise
 
@@ -178,7 +178,7 @@ class AirtableClient(object):
 
         url = self._api.records.list(baseId=baseId, tableId=tableId, tableName=tableName)
         response = self._requests_post(url=url, data=data).to_dict()
-        response = RecordsResponse().automon_update(response)
+        response = RecordsResponse(response)
 
         return response
 
@@ -191,7 +191,7 @@ class AirtableClient(object):
 
         url = self._api.records.list(baseId=baseId, recordId=recordId, tableId=tableId, tableName=tableName)
         response = self._requests_delete(url).to_dict()
-        response = RecordsResponse().automon_update(response)
+        response = RecordsResponse(response)
 
         return response
 
@@ -204,7 +204,7 @@ class AirtableClient(object):
 
         url = self._api.records.list(baseId=baseId, recordId=recordId, tableId=tableId, tableName=tableName)
         response = self._requests_get(url).to_dict()
-        response = RecordsResponse().automon_update(response)
+        response = RecordsResponse(response)
 
         return response
 
@@ -216,7 +216,7 @@ class AirtableClient(object):
 
         url = self._api.records.list(baseId=baseId, tableId=tableId, tableName=tableName)
         response = self._requests_get(url).to_dict()
-        response = RecordsResponse().automon_update(response)
+        response = RecordsResponse(response)
 
         return response
 
@@ -233,7 +233,7 @@ class AirtableClient(object):
             response = self._requests_patch(url).to_dict()
         else:
             response = self._requests_put(url).to_dict()
-        response = RecordsResponse().automon_update(response)
+        response = RecordsResponse(response)
 
         return response
 
@@ -241,7 +241,7 @@ class AirtableClient(object):
 
         url = self._api.tables.list(baseId=baseId)
         response = self._requests_get(url=url).to_dict()
-        response = TablesResponse().automon_update(response)
+        response = TablesResponse(response)
 
         logger.debug(f'[AirtableClient] :: tables_list :: {response=}')
         return response
@@ -261,7 +261,7 @@ class AirtableClient(object):
         data = table.to_json()
         url = self._api.tables.create(baseId=baseId)
         response = self._requests_post(url=url, data=data).to_dict()
-        response = Table().automon_update(response)
+        response = Table(response)
 
         logger.debug(f'[AirtableClient] :: tables_create :: {response=}')
         return response

@@ -2,6 +2,7 @@ import json
 
 from enum import Enum
 
+from automon import encapsulate
 from automon.helpers.dictWrapper import DictHelper
 
 
@@ -70,7 +71,7 @@ class BasesApi(V0):
 class TableOptions(object):
     color: str
     icon: str
-    number = {'precision': 3} # 0-8
+    number = {'precision': 3}  # 0-8
 
 
 class TableFieldType(object):
@@ -167,8 +168,8 @@ class Table(DictHelper):
     primaryFieldId: str
     views: list[TableView]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, response=None):
+        super().__init__(response)
 
     def __bool__(self):
         if self.id and self.name:
@@ -193,9 +194,9 @@ class Table(DictHelper):
 class TablesResponse(DictHelper):
     bases: list[Table]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, response=None):
         self.tables = []
+        super().__init__(response)
 
     def __bool__(self):
         if self.tables:
@@ -231,29 +232,26 @@ class TablesApi(V0):
 class RecordField(DictHelper):
 
     def __init__(self, field: dict = None):
-        super().__init__()
-
-        if field:
-            self.automon_update(field)
+        super().__init__(field)
 
     def __len__(self):
-        return self.__dict__.keys().__len__()
+        return super().__len__()
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        if not isinstance(other, RecordField):
+            return False
+        return dict(self) == dict(other)
 
 
 class Record(DictHelper):
     createdTime: str
-    fields: dict[str, RecordField]
+    fields: RecordField
     id: str
 
-    def __init__(self, fields: dict | RecordField = None):
-        super().__init__()
-        self.fields = fields
+    def __init__(self, fields: dict = None):
+        self._fields = None
 
-        if isinstance(fields, dict):
-            self.fields = RecordField(fields)
+        super().__init__(fields)
 
     def __repr__(self):
         return f'{self.fields.__len__()} fields'
@@ -262,16 +260,22 @@ class Record(DictHelper):
         if isinstance(other, Record):
             return self.fields == other.fields
 
-    def _enhance(self):
-        self.fields = RecordField().automon_update(self.fields)
+    @property
+    def fields(self):
+        self._fields = encapsulate(value=self._fields, object_class=RecordField)
+        return self._fields
+
+    @fields.setter
+    def fields(self, value):
+        self._fields = encapsulate(value=value, object_class=RecordField)
 
 
 class RecordsResponse(DictHelper):
     records: list[Record]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, response=None):
         self.records = []
+        super().__init__(response)
 
     def __repr__(self):
         return f'{self.records.__len__()} records'

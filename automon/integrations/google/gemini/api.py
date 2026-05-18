@@ -3,6 +3,7 @@ try:
 except:
     from typing_extensions import Self
 
+from automon.helpers import *
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
 from automon.helpers.dictWrapper import DictHelper
 from automon.integrations.ollamaWrapper import Tokens
@@ -71,13 +72,9 @@ class Part(DictHelper):
     text: str
 
     def __init__(self, part: dict | Self = None, text: str = ''):
-        super().__init__()
-
         self.text: str = text
 
-        if part:
-            self.automon_update(part)
-            logger.debug(f"[Part] :: {self.bytes[:50]} :: {Tokens(self.text).count_pretty} tokens")
+        super().__init__(part)
 
     def __repr__(self):
         return f"{len(self)} tokens"
@@ -99,25 +96,23 @@ class Part(DictHelper):
 
 
 class Content(DictHelper):
-    parts: list[dict]
+    parts: list[Part]
     role: str
 
     automon_parts: list[Part]
 
     def __init__(self, content: dict = None, role: str = 'user'):
-        super().__init__()
 
-        self.role: str = role
-        self.parts: list[dict] = []
+        self.role = role
+        self._parts = []
 
-        if content:
-            self.automon_update(content)
+        super().__init__(content)
 
     def __repr__(self):
         return f"{len(self)} tokens"
 
     def __len__(self):
-        return sum(len(x) for x in self.automon_parts)
+        return sum(len(x) for x in self.parts)
 
     def __bool__(self):
         if self.role and self.parts:
@@ -125,42 +120,49 @@ class Content(DictHelper):
         return False
 
     @property
-    def automon_parts(self):
-        return [Part(x) for x in self.parts]
+    def parts(self) -> list[Part]:
+        if isinstance(self._parts, list):
+            self._parts = encapsulate(value=self._parts, object_class=Part)
+        return self._parts
+
+    @parts.setter
+    def parts(self, value):
+        assert isinstance(value, list)
+        self._parts = encapsulate(value=value, object_class=Part)
 
     def add_part(self, part: Part):
         assert isinstance(part, Part)
-        self.parts.append(part.to_dict())
+        self._parts.append(part)
         return self
 
 
 class Candidate(DictHelper):
-    content: dict
+    content: Content
     avgLogprobs: float
     finishReason: str
 
-    automon_content: Content
-
     def __init__(self, candidate: dict = None):
-        super().__init__()
+        self._content = None
 
-        self.content: dict = {}
-
-        if candidate:
-            self.automon_update(candidate)
+        super().__init__(candidate)
 
     @property
-    def automon_content(self) -> Content:
-        return Content(self.content)
+    def content(self) -> Content:
+        self._content = encapsulate(value=self._content, object_class=Content)
+        return self._content
+
+    @content.setter
+    def content(self, value):
+        self._content = encapsulate(value=value, object_class=Content)
 
 
 class GeminiPrompt(DictHelper):
     contents: list[Content]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, prompt: dict = None):
+        self._contents = None
 
-        self.contents: list[Content] = []
+        super().__init__(prompt)
 
     def __repr__(self):
         return f"{len(self)} tokens"
@@ -168,9 +170,18 @@ class GeminiPrompt(DictHelper):
     def __len__(self) -> int:
         return sum(len(x) for x in self.contents)
 
+    @property
+    def contents(self):
+        self._contents = encapsulate(value=self._contents, object_class=Content)
+        return self._contents
+
+    @contents.setter
+    def contents(self, value):
+        self._contents = encapsulate(value=value, object_class=Content)
+
     def add_content(self, content: Content):
         assert isinstance(content, Content)
-        self.contents.append(content)
+        self._contents.append(content)
         return self
 
     def clear_history(self):
@@ -179,39 +190,40 @@ class GeminiPrompt(DictHelper):
 
 
 class GeminiResponse(DictHelper):
-    candidates: list[dict]
+    candidates: list[Candidate]
     usageMetadata: str
     modelVersion: str
     modelVersion: str
 
-    automon_candidate: list[Candidate]
-
     def __init__(self, response: dict = None):
-        super().__init__()
 
-        self.candidates: list[dict] = []
+        self._candidates: list[dict] = []
 
-        if response:
-            self.automon_update(response)
+        super().__init__(response)
 
     @property
-    def automon_candidate(self) -> list[Candidate]:
-        return [Candidate(x) for x in self.candidates]
+    def candidates(self):
+        self._candidates = encapsulate(value=self._candidates, object_class=Candidate)
+        return self._candidates
+
+    @candidates.setter
+    def candidates(self, value):
+        self._candidates = encapsulate(value=self._candidates, object_class=Candidate)
 
     @property
     def response(self) -> Candidate | None:
-        if self.automon_candidate:
-            return self.automon_candidate[0]
+        if self.candidates:
+            return self.candidates[0]
 
     def _chunks(self):
-        for chunk in self.automon_candidate:
-            for part in chunk.automon_content.automon_parts:
+        for chunk in self.candidates:
+            for part in chunk.content.parts:
                 yield part.text
 
     def _chunks_list(self):
         chunks = []
-        for chunk in self.automon_candidate:
-            for part in chunk.automon_content.automon_parts:
+        for chunk in self.candidates:
+            for part in chunk.content.parts:
                 chunks.append(part.text)
         return chunks
 

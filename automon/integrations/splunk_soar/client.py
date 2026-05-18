@@ -5,7 +5,7 @@ import functools
 from typing import Optional
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
-from automon.integrations.requestsWrapper import RequestsClient
+from automon.integrations.requestsWrapper import RequestsClient, RequestResponse
 
 from .action_run import ActionRun
 from .artifact import Artifact
@@ -54,19 +54,19 @@ class SplunkSoarClient:
     def __repr__(self) -> str:
         return f'{self.__dict__}'
 
-    def _content(self) -> bytes:
+    def _content(self, response) -> bytes:
         """get result"""
-        if self.client.response:
-            return self.client.response.content
+        if response:
+            return response.content
         return b''
 
-    def _content_dict(self) -> dict:
+    def _content_dict(self, response) -> dict:
         """convert request.content to dict"""
-        if self._content():
-            return json.loads(self._content())
+        if response:
+            return json.loads(self._content(response))
         return {}
 
-    def _get(self, url: str) -> bool:
+    def _get(self, url: str) -> RequestResponse:
         """send get request"""
         return self.client.get(url=url, headers=self.client.headers)
 
@@ -82,11 +82,11 @@ class SplunkSoarClient:
 
         return wrapper
 
-    def _delete(self, url: str) -> bool:
+    def _delete(self, url: str) -> RequestResponse:
         """send get request"""
         return self.client.delete(url=url, headers=self.client.headers)
 
-    def _post(self, url: str, data: dict) -> bool:
+    def _post(self, url: str, data: dict) -> RequestResponse:
         """send post request"""
         return self.client.post(url=url, headers=self.client.headers, data=data)
 
@@ -94,11 +94,11 @@ class SplunkSoarClient:
     def close_container(self, container_id: int, **kwargs) -> Optional[CloseContainerResponse]:
         """Set container status to closed"""
         data = dict(status='closed')
-        if self._post(Urls.container(identifier=container_id, **kwargs), data=json.dumps(data)):
-            if self.client.response.status_code == 200:
-                response = CloseContainerResponse(self._content_dict())
-                logger.info(f'container closed: {response}')
-                return response
+        response = self._post(Urls.container(identifier=container_id, **kwargs), data=json.dumps(data))
+        if response:
+            response = CloseContainerResponse(self._content_dict(response))
+            logger.info(f'container closed: {response}')
+            return response
 
         logger.error(msg=f'close failed. {self.client.to_dict()}')
 
@@ -111,11 +111,11 @@ class SplunkSoarClient:
         data = dict(cancel=cancel)
         data = json.dumps(data)
 
-        if self._post(Urls.playbook_run(identifier=playbook_run_id, **kwargs), data=data):
-            if self.client.response.status_code == 200:
-                response = CancelPlaybookResponse(self._content_dict())
-                logger.info(f'cancel playbook run: {response}')
-                return response
+        response = self._post(Urls.playbook_run(identifier=playbook_run_id, **kwargs), data=data)
+        if response:
+            response = CancelPlaybookResponse(self._content_dict(response))
+            logger.info(f'cancel playbook run: {response}')
+            return response
 
         logger.error(f'cancel failed: {playbook_run_id} {self.client.to_dict()}')
 
@@ -162,18 +162,15 @@ class SplunkSoarClient:
                  type=type)
         )
 
-        if self._post(Urls.artifact(*args, **kwargs), data=artifact.to_json()):
-            if self.client.response.status_code == 200:
-                id = self.client.to_dict()['id']
-                logger.info(f'artifact created. {artifact} {self.client.to_dict()}')
-                return self.get_artifact(artifact_id=id)
-            else:
-                existing_artifact_id = self.client.to_dict()['existing_artifact_id']
-                logger.info(f'artifact exists. {artifact} {self.client.to_dict()}')
-                return self.get_artifact(artifact_id=existing_artifact_id)
-
-        logger.error(f'create artifact. {self.client.to_dict()}')
-        return False
+        response = self._post(Urls.artifact(*args, **kwargs), data=artifact.to_json())
+        if response:
+            id = response.to_dict().get('id')
+            logger.info(f'artifact created. {artifact} {response.to_dict()}')
+            return self.get_artifact(artifact_id=id)
+        else:
+            existing_artifact_id = response.to_dict().get('existing_artifact_id')
+            logger.info(f'artifact exists. {artifact} {response.to_dict()}')
+            return self.get_artifact(artifact_id=existing_artifact_id)
 
     @_is_connected
     def create_container(
@@ -204,7 +201,8 @@ class SplunkSoarClient:
             container_type=None,
             template_id=None,
             authorized_users=None,
-            *args, **kwargs) -> Container:
+            *args, **kwargs
+    ) -> Container:
         """Create container"""
 
         container = Container(
@@ -236,13 +234,13 @@ class SplunkSoarClient:
                  authorized_users=authorized_users)
         )
 
-        if self._post(Urls.container(*args, **kwargs), data=container.to_json()):
-            if self.client.response.status_code == 200:
-                response = CreateContainerResponse(self.client.to_dict())
-                logger.info(f'container created. {container} {response}')
-                return response
+        response = self._post(Urls.container(*args, **kwargs), data=container.to_json())
+        if response:
+            response = CreateContainerResponse(response.to_dict())
+            logger.info(f'container created. {container} {response}')
+            return response
+
         logger.error(f'create container. {self.client.to_dict()}')
-        return False
 
     @staticmethod
     def base64_encode(data: bytes, **kwargs) -> str:
@@ -271,8 +269,9 @@ class SplunkSoarClient:
             metadata=metadata
         ))
 
-        if self._post(Urls.container_attachment(**kwargs), data=data):
-            response = CreateContainerAttachmentResponse(self.client.to_dict())
+        response = self._post(Urls.container_attachment(**kwargs), data=data)
+        if response:
+            response = CreateContainerAttachmentResponse(response.to_dict())
             logger.info(f'create attachment: {response}')
             return response
 
@@ -296,8 +295,9 @@ class SplunkSoarClient:
             trace=trace
         ))
 
-        if self._post(Urls.vault_add(identifire=data.id, **kwargs), data=data.to_json()):
-            response = Vault(self._content_dict())
+        response = self._post(Urls.vault_add(identifire=data.id, **kwargs), data=data.to_json())
+        if response:
+            response = Vault(self._content_dict(response))
             logger.info(msg=f'add vault: {response}')
             return response
 
@@ -308,20 +308,21 @@ class SplunkSoarClient:
         """Delete containers"""
         assert isinstance(container_id, int)
 
-        if self._delete(Urls.container(identifier=container_id, *args, **kwargs)):
-            if self.client.response.status_code == 200:
-                logger.info(f'container deleted: {container_id}')
-                return True
+        response = self._delete(Urls.container(identifier=container_id, *args, **kwargs))
+        if response:
+            logger.info(f'container deleted: {container_id}')
+            return True
         logger.error(f'delete container: {container_id}. {self.client.to_dict()}')
         return False
 
     def is_connected(self) -> bool:
         """check if client can connect"""
         if self.config.is_ready:
-            if self._get(Urls.container(page_size=1)):
+            response = self._get(Urls.container(page_size=1))
+            if response:
                 logger.info(f'client connected '
                             f'{self.config.host} '
-                            f'[{self.client.response.status_code}] ')
+                            f'[{response.status_code}] ')
                 return True
 
         logger.error(f'client not connected')
@@ -346,8 +347,9 @@ class SplunkSoarClient:
     @_is_connected
     def generic_delete(self, api: str, **kwargs) -> Optional[GenericResponse]:
         """Make generic delete calls"""
-        if self._delete(Urls.generic(api=api, **kwargs)):
-            response = GenericResponse(self._content_dict())
+        response = self._delete(Urls.generic(api=api, **kwargs))
+        if response:
+            response = GenericResponse(self._content_dict(response))
             logger.info(f'generic delete {api}: {response}')
             return response
 
@@ -356,8 +358,9 @@ class SplunkSoarClient:
     @_is_connected
     def generic_get(self, api: str, **kwargs) -> Optional[GenericResponse]:
         """Make generic get calls"""
-        if self._get(Urls.generic(api=api, **kwargs)):
-            response = GenericResponse(self._content_dict())
+        response = self._get(Urls.generic(api=api, **kwargs))
+        if response:
+            response = GenericResponse(self._content_dict(response))
             logger.info(f'generic get {api}: {response}')
             return response
 
@@ -366,8 +369,9 @@ class SplunkSoarClient:
     @_is_connected
     def generic_post(self, api: str, data: dict, **kwargs) -> Optional[GenericResponse]:
         """Make generic post calls"""
-        if self._post(Urls.generic(api=api, **kwargs), data=data):
-            response = GenericResponse(self._content_dict())
+        response = self._post(Urls.generic(api=api, **kwargs), data=data)
+        if response:
+            response = GenericResponse(self._content_dict(response))
             logger.info(f'generic post {api}: {response}')
             return response
 
@@ -376,8 +380,9 @@ class SplunkSoarClient:
     @_is_connected
     def get_action_run(self, action_run_id: int = None, **kwargs) -> ActionRun:
         """Get action run"""
-        if self._get(Urls.action_run(identifier=action_run_id, **kwargs)):
-            action_run = ActionRun(self._content_dict())
+        response = self._get(Urls.action_run(identifier=action_run_id, **kwargs))
+        if response:
+            action_run = ActionRun(self._content_dict(response))
             logger.info(f'get action run: {action_run}')
             return action_run
 
@@ -387,8 +392,9 @@ class SplunkSoarClient:
     @_is_connected
     def get_artifact(self, artifact_id: int = None, **kwargs) -> Artifact:
         """Get artifact"""
-        if self._get(Urls.artifact(identifier=artifact_id, **kwargs)):
-            artifact = Artifact(self._content_dict())
+        response = self._get(Urls.artifact(identifier=artifact_id, **kwargs))
+        if response:
+            artifact = Artifact(self._content_dict(response))
             logger.info(f'get artifact: {artifact}')
             return artifact
 
@@ -398,8 +404,9 @@ class SplunkSoarClient:
     @_is_connected
     def get_container(self, container_id: int = None, **kwargs) -> Container:
         """Get container"""
-        if self._get(Urls.container(identifier=container_id, **kwargs)):
-            container = Container(self._content_dict())
+        response = self._get(Urls.container(identifier=container_id, **kwargs))
+        if response:
+            container = Container(self._content_dict(response))
             logger.info(f'get container: {container}')
             return container
 
@@ -409,8 +416,9 @@ class SplunkSoarClient:
     @_is_connected
     def get_playbook_run(self, playbook_run_id: str, **kwargs) -> Optional[PlaybookRun]:
         """Get running playbook"""
-        if self._get(Urls.playbook_run(identifier=playbook_run_id, **kwargs)):
-            response = PlaybookRun(self._content_dict())
+        response = self._get(Urls.playbook_run(identifier=playbook_run_id, **kwargs))
+        if response:
+            response = PlaybookRun(self._content_dict(response))
 
             if response.status != 'failed':
                 logger.info(f'playbook run: {response}')
@@ -424,19 +432,20 @@ class SplunkSoarClient:
     @_is_connected
     def get_vault(self, vault_id: int, **kwargs) -> Optional[Vault]:
         """Get vault object"""
-        if self._get(Urls.vault(identifier=vault_id, **kwargs)):
-            if self.client.response.status_code == 200:
-                response = Vault(self._content_dict())
-                logger.info(msg=f'get vault: {response}')
-                return response
+        response = self._get(Urls.vault(identifier=vault_id, **kwargs))
+        if response:
+            response = Vault(self._content_dict(response))
+            logger.info(msg=f'get vault: {response}')
+            return response
 
         logger.error(msg=f'get vault failed: {self.client.to_dict()}')
 
     @_is_connected
     def list_artifact(self, **kwargs) -> Response:
         """list artifacts"""
-        if self._get(Urls.artifact(**kwargs)):
-            response = Response(self._content_dict())
+        response = self._get(Urls.artifact(**kwargs))
+        if response:
+            response = Response(self._content_dict(response))
             logger.info(f'list artifacts: {response.count}')
             return response
 
@@ -445,16 +454,18 @@ class SplunkSoarClient:
     @_is_connected
     def list_action_run(self, **kwargs) -> bool:
         """list action run"""
-        if self._get(Urls.action_run(**kwargs)):
-            self.containers = self._content_dict()
+        response = self._get(Urls.action_run(**kwargs))
+        if response:
+            self.containers = self._content_dict(response)
             return True
         return False
 
     @_is_connected
     def list_app(self, **kwargs) -> bool:
         """list app"""
-        if self._get(Urls.app(**kwargs)):
-            self.app = self._content_dict()
+        response = self._get(Urls.app(**kwargs))
+        if response:
+            self.app = self._content_dict(response)
             return True
         return False
 
@@ -464,9 +475,10 @@ class SplunkSoarClient:
             page: int = None,
             page_size: int = None, **kwargs) -> bool:
         """list app run"""
-        if self._get(Urls.app_run(page=page, page_size=page_size, **kwargs)):
-            self.app_run = AppRunResponse(self._content_dict())
-            response = AppRunResponse(self._content_dict())
+        response = self._get(Urls.app_run(page=page, page_size=page_size, **kwargs))
+        if response:
+            self.app_run = AppRunResponse(self._content_dict(response))
+            response = AppRunResponse(self._content_dict(response))
             response.data = [AppRunResults(x) for x in response.data]
             logger.info(f'list app runs, page: {page} page_size: {page_size}, {response.summary()}')
             self.app_run = response
@@ -534,10 +546,12 @@ class SplunkSoarClient:
             page: int = None,
             page_size: int = 1000, **kwargs) -> Response:
         """list artifacts"""
-        if self._get(Urls.artifact(page=page, page_size=page_size, **kwargs)):
-            response = Response(self._content())
+        response = self._get(Urls.artifact(page=page, page_size=page_size, **kwargs))
+        if response:
+            response = Response(self._content_dict(response))
             logger.info(f'list artifacts: {len(response.data)}')
             return response
+
         return Response()
 
     @_is_connected
@@ -582,8 +596,9 @@ class SplunkSoarClient:
     @_is_connected
     def list_asset(self, **kwargs) -> Response:
         """list asset"""
-        if self._get(Urls.asset(**kwargs)):
-            response = Response(self._content_dict())
+        response = self._get(Urls.asset(**kwargs))
+        if response:
+            response = Response(self._content_dict(response))
             logger.info(f'list assets: {len(response.data)}')
             return response
         return Response()
@@ -597,8 +612,9 @@ class SplunkSoarClient:
         """list containers"""
 
         url = Urls.container(page=page, page_size=page_size, *args, **kwargs)
-        if self._get(url):
-            response = Response(self._content_dict())
+        response = self._get(url)
+        if response:
+            response = Response(self._content_dict(response))
             logger.info(f'list containers: {len(response.data)}')
             return response
         logger.error(f'no containers')
@@ -655,15 +671,17 @@ class SplunkSoarClient:
     @_is_connected
     def list_cluster_node(self, **kwargs) -> Optional[dict]:
         """List cluster node"""
-        if self._get(Urls.cluster_node(**kwargs)):
-            cluster_node = self._content_dict()
+        response = self._get(Urls.cluster_node(**kwargs))
+        if response:
+            cluster_node = self._content_dict(response)
             return cluster_node
 
     @_is_connected
     def list_vault(self, **kwargs) -> Optional[VaultResponse]:
         """List vault"""
-        if self._get(Urls.vault(**kwargs)):
-            response = VaultResponse(self._content_dict())
+        response = self._get(Urls.vault(**kwargs))
+        if response:
+            response = VaultResponse(self._content_dict(response))
             logger.info(msg=f'list vault: {response}')
             return response
 
@@ -728,11 +746,11 @@ class SplunkSoarClient:
             cancel_runs=cancel_runs
         )
         data = json.dumps(data)
-        if self._post(Urls.playbook(identifier=playbook_id, **kwargs), data=data):
-            if self.client.response.status_code == 200:
-                response = UpdatePlaybookResponse(self._content_dict())
-                logger.info(f'update playbook: {data}')
-                return response
+        response = self._post(Urls.playbook(identifier=playbook_id, **kwargs), data=data)
+        if response:
+            response = UpdatePlaybookResponse(self._content_dict(response))
+            logger.info(f'update playbook: {data}')
+            return response
 
         logger.error(f'update failed: {self.client.to_dict()}')
 
@@ -752,10 +770,10 @@ class SplunkSoarClient:
             run=run
         )
         data = json.dumps(data)
-        if self._post(Urls.playbook_run(**kwargs), data=data):
-            if self.client.response.status_code == 200:
-                response = RunPlaybookResponse(self._content_dict())
-                logger.info(f'run playbook: {data}')
-                return response
+        response = self._post(Urls.playbook_run(**kwargs), data=data)
+        if response:
+            response = RunPlaybookResponse(self._content_dict(response))
+            logger.info(f'run playbook: {data}')
+            return response
 
         logger.error(f'run failed: {self.client.to_dict()}')
