@@ -461,16 +461,11 @@ class MessagePartBody(DictHelper):
     def __repr__(self):
         repr = []
 
-        if self.attachmentId:
-            repr.append(self.attachmentId[-8:])
+        repr.append(self.attachmentId)
+        repr.append(self.automon_data_hash())
+        repr.append(f'{round(self.size / 1024):,} KB')
 
-        if self.automon_data_hash:
-            repr.append(self.automon_data_hash)
-
-        if self.size:
-            repr.append(f'{round(self.size / 1024):,} KB')
-
-        return ' :: '.join(repr)
+        return ' :: '.join([x for x in repr if x is not None])
 
     def __bool__(self):
         if self.size:
@@ -490,12 +485,10 @@ class MessagePartBody(DictHelper):
         if self.data:
             return io.BytesIO(self.automon_data_base64decoded())
 
-    @property
     def automon_data_html_text(self) -> str | None:
         if self.data:
             return self._html_text()
 
-    @property
     def automon_data_decoded(self) -> str | None:
         if self.data:
             try:
@@ -503,7 +496,6 @@ class MessagePartBody(DictHelper):
             except:
                 pass
 
-    @property
     def automon_data_hash(self):
         if self.data:
             return cryptography.Hashlib.md5(self.data)
@@ -740,7 +732,7 @@ class Message(DictHelper):
         super().__init__(message)
 
         self.automon_labels: list[Label] = sorted(
-            [Label().automon_update(x) for x in self.labelIds if isinstance(x, dict)])
+            [Label(x) for x in self.labelIds if isinstance(x, dict)])
         self.automon_payload: MessagePayload = MessagePayload(self.payload)
 
     def __repr__(self):
@@ -927,20 +919,20 @@ class Message(DictHelper):
         if self.automon_payload:
             body = self.automon_payload.automon_body
             if body:
-                text = body.automon_data_html_text
+                text = body.automon_data_html_text()
                 if text:
                     email['body'] = text
             if self.automon_payload.automon_parts:
                 parts = self.automon_payload.automon_parts
                 for part in parts:
                     if part.mimeType == 'text/plain':
-                        email['body'] = part.automon_body.automon_data_html_text
+                        email['body'] = part.automon_body.automon_data_html_text()
                         break
 
                     more_parts = part.automon_parts
                     for more_part in more_parts:
                         if more_part.mimeType == 'text/plain':
-                            email['body'] = more_part.automon_body.automon_data_html_text
+                            email['body'] = more_part.automon_body.automon_data_html_text()
                             break
 
         return email

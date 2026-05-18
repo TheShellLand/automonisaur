@@ -436,7 +436,7 @@ def main():
     resume_selected = resume_search.messages[0]
 
     resume = resume_selected.automon_attachments_first
-    resume = resume.automon_parts[0].automon_body.automon_data_html_text
+    resume = resume.automon_parts[0].automon_body.automon_data_html_text()
 
     prompts_resume = [f"This is your resume: <RESUME>{resume}</RESUME>\n\n", ]
 
@@ -471,7 +471,7 @@ def main():
                 break
 
             _draft = thread_selected.automon_message_latest
-            _resume = _draft.automon_attachments_first.automon_body.automon_data_html_text
+            _resume = _draft.automon_attachments_first.automon_body.automon_data_html_text()
 
             prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
             response, model = run_llm(prompts=prompts, chat=False)

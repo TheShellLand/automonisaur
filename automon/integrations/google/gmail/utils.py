@@ -59,20 +59,23 @@ def is_scheduled(thread: Thread):
 
 
 def is_sent(thread: Thread):
-    if labels.sent in thread.automon_clean_thread_latest.automon_labels:
-        return True
+    if thread.automon_clean_thread_latest is not None:
+        if labels.sent in thread.automon_clean_thread_latest.automon_labels:
+            return True
     return False
 
 
 def is_old(thread: Thread):
-    if thread.automon_clean_thread_latest.automon_date_since_now.days >= 3:
-        return True
+    if thread.automon_clean_thread_latest:
+        if thread.automon_clean_thread_latest.automon_date_since_now.days >= 3:
+            return True
     return False
 
 
 def is_new(thread: Thread):
-    if labels.sent not in thread.automon_clean_thread_latest.automon_labels:
-        return True
+    if thread.automon_clean_thread_latest:
+        if labels.sent not in thread.automon_clean_thread_latest.automon_labels:
+            return True
     return False
 
 
