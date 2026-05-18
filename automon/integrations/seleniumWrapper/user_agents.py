@@ -13,7 +13,7 @@ logger.setLevel(DEBUG)
 def public_site_useragents():
     url = 'https://www.useragents.me/'
     proxies_table = automon.integrations.requestsWrapper.RequestsClient(url)
-    proxies_table.get()
+    proxies_table = proxies_table.get()
 
     proxies_tables = pandas.read_html(io.StringIO(proxies_table.text))
 
