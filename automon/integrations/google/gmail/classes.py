@@ -6,11 +6,6 @@ import dateutil.parser
 
 from automon import encapsulate
 
-try:
-    from typing import Self
-except:
-    from typing_extensions import Self
-
 from automon.helpers import Regex
 from automon.helpers import cryptography
 from automon.helpers.dictWrapper import DictHelper
@@ -455,15 +450,13 @@ class MessagePartBody(DictHelper):
     }
     """
 
-    def __init__(self, message: dict | Self = None):
-        super().__init__()
+    def __init__(self, message: dict = None):
 
         self.attachmentId: str = None
         self.size: int = None
         self.data: str = None
 
-        if message:
-            self.automon_update(message)
+        super().__init__(message)
 
     def __repr__(self):
         repr = []
@@ -505,7 +498,10 @@ class MessagePartBody(DictHelper):
     @property
     def automon_data_decoded(self) -> str | None:
         if self.data:
-            return self.automon_data_base64decoded().decode()
+            try:
+                return self.automon_data_base64decoded().decode()
+            except:
+                pass
 
     @property
     def automon_data_hash(self):
@@ -534,10 +530,9 @@ class MessagePart(DictHelper):
 
     automon_body: MessagePartBody
     automon_headers: list[Header]
-    automon_parts: list[Self]
+    automon_parts: list
 
-    def __init__(self, part: dict | Self = None):
-        super().__init__()
+    def __init__(self, part: dict = None):
 
         self.partId: str = ''
         self.mimeType: str = ''
@@ -547,8 +542,7 @@ class MessagePart(DictHelper):
 
         self.parts: list[dict] = []
 
-        if part:
-            self.automon_update(part)
+        super().__init__(part)
 
         self.automon_body = MessagePartBody(self.body)
         self.automon_parts = [MessagePart(x) for x in self.parts]
@@ -590,15 +584,13 @@ class MessagePayload(DictHelper):
     automon_headers: list[Header]
     automon_parts: list[MessagePart]
 
-    def __init__(self, message: dict | Self = None):
-        super().__init__()
+    def __init__(self, message: dict = None):
 
         self.body: dict = {}
         self.parts: list[dict] = []
         self.size: int = None
 
-        if message:
-            self.automon_update(message)
+        super().__init__(message)
 
         self.automon_body: MessagePartBody = MessagePartBody(self.body)
         self.automon_parts: list[MessagePart] = [MessagePart(x) for x in self.parts]
@@ -1014,7 +1006,7 @@ class MessageList(DictHelper):
     resultSizeEstimate: str
     nextPageToken: str
 
-    def __init__(self, messages: dict | Self = None):
+    def __init__(self, messages: dict = None):
 
         self._messages = []
         self.resultSizeEstimate = None
@@ -1125,11 +1117,11 @@ class DraftList(DictHelper):
     """
 
     def __init__(self, drafts: dict = None):
-        super().__init__(drafts)
-
         self.drafts: list = []
         self.nextPageToken: str = None
         self.resultSizeEstimate: int = None
+
+        super().__init__(drafts)
 
     def __repr__(self):
         if self.drafts:
@@ -1171,8 +1163,7 @@ class Thread(DictHelper):
     }
     """
 
-    def __init__(self, thread: dict | Self = None):
-        super().__init__()
+    def __init__(self, thread: dict = None):
         self.id: str = ''
         self.historyId: str = ''
         self.messages: list = []
@@ -1181,8 +1172,7 @@ class Thread(DictHelper):
         self.addLabelIds: list = []
         self.removeLabelIds: list = []
 
-        if thread:
-            self.automon_update(thread)
+        super().__init__(thread)
 
         messages = []
         duplicates = []

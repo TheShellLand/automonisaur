@@ -123,6 +123,17 @@ def producer_threads():
             nextPageToken = thread_search.nextPageToken
 
 
+def producer_resume():
+    while RESUME is None:
+        threads = gmail.thread_list_automon(
+            maxResults=1,
+            labelIds=[labels.automon, labels.resume]
+        )
+
+        for thread in threads.threads:
+            queue_threads.put(thread)
+
+
 def processor_email_thread():
     while True:
         thread = queue_threads.get()
@@ -190,7 +201,10 @@ def processor_email_thread():
 
 
 def processor_email_new():
-    pass
+    while True:
+        thread = queue_new.get()
+
+        queue_new.task_done()
 
 
 def processor_email_send():
@@ -408,6 +422,8 @@ def main():
     threads = ThreadingClient()
 
     threads.add_worker(target=producer_threads)
+    threads.add_worker(target=producer_resume)
+
     threads.add_worker(target=processor_email_thread)
     threads.add_worker(target=processor_email_new)
     threads.add_worker(target=processor_email_send)
@@ -416,17 +432,6 @@ def main():
     threads.add_worker(target=log_printer)
 
     threads.start(max_threads=len(queues) * 2)
-
-    resume_search = gmail.messages_list_automon(
-        maxResults=1,
-        labelIds=[labels.automon, labels.resume]
-    )
-
-    for message in thread.automon_messages:
-
-        # delete DRAFT
-        if labels.draft in message.automon_labels:
-            gmail.messages_trash(id=message.id)
 
     resume_selected = resume_search.messages[0]
 
