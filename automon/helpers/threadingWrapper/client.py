@@ -12,9 +12,9 @@ class Thread(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
         super().__init__(group, target, name, args, kwargs)
         # Store arguments as public attributes
-        self.public_target = target
-        self.public_args = args
-        self.public_kwargs = kwargs
+        self._automon_target = target
+        self._automon_args = args
+        self._automon_kwargs = kwargs
 
         log.debug(f"[Thread] :: {target=} :: {args=} :: {kwargs=}")
 
@@ -37,7 +37,11 @@ class ThreadingClient(object):
 
         try:
             log.debug(f"[ThreadingClient] :: wrapper :: {current_thread.name} :: {target=} :: {args=}")
-            result = target(*args)
+            if args is not None:
+                result = target(*args)
+            else:
+                result = target()
+
             current_thread.result = result
             current_thread.exception = None
             self.completed_queue.put(current_thread)
@@ -48,8 +52,9 @@ class ThreadingClient(object):
             self.error_queue.put(current_thread)
             raise Exception(f"[ThreadingClient] :: ERROR :: {error=}")
 
-    def add_worker(self, target: object, args: tuple):
-        assert type(args) is tuple
+    def add_worker(self, target: object, args: tuple = None):
+        if args is not None:
+            assert type(args) is tuple
 
         self.worker_queue.put((target, args))
         log.debug(f'[ThreadingClient] :: add_worker :: {target=} :: {args=}')
