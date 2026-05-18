@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="automonisaur",
-    version="0.7.1",
+    version="0.7.2",
     author="naisanza",
     author_email="naisanza@gmail.com",
     description="Core libraries for automonisaur",
@@ -47,9 +47,9 @@ setuptools.setup(
         'nest-asyncio>=1.5.1',
         'numpy>=1.19.5',
         'ollama',
-        'opentelemetry-distro==0.43b0',
-        'opentelemetry-exporter-otlp==1.22.0',
-        'opentelemetry-instrumentation-logging==0.43b0',
+        'opentelemetry-distro',
+        'opentelemetry-exporter-otlp',
+        'opentelemetry-instrumentation-logging',
         'pandas>=1.1.5',
         'psutil>=5.8.0',
         'pytest-cov>=2.12.1',
