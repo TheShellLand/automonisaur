@@ -133,7 +133,7 @@ class ThreadingClient(object):
 
                 log.debug(f'[ThreadingClient] :: start :: '
                           f'running :: {thread.name} :: '
-                          f'{thread._target_args_args} :: '
+                          f'{thread._target_args} :: '
                           f'{current_threads_count + 1} threads ({max_threads_limit} max)')
 
             else:
