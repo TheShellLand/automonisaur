@@ -66,7 +66,7 @@ queue_waiting_for_interview: Queue[Thread] = Queue()
 queue_unknown: Queue[Thread] = Queue()
 
 queue_error: Queue[tuple[Thread, Exception]] = Queue()
-queue_log = Queue()
+queue_log: Queue[str] = Queue()
 
 queues = [
     queue_threads,
@@ -83,14 +83,14 @@ queues = [
     queue_log,
 ]
 
-RESUME = None
+RESUME: Thread = None
 
 
 def automon_init(client: GoogleGmailClient):
     pass
 
 
-def producer_threads():
+def get_threads():
     while gmail.is_ready():
 
         if queue_threads.full():
@@ -125,7 +125,7 @@ def producer_threads():
             nextPageToken = thread_search.nextPageToken
 
 
-def producer_resume():
+def get_resume():
     while RESUME is None:
         threads = gmail.thread_list_automon(
             maxResults=1,
@@ -304,7 +304,6 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
 
 
 MODEL_ERRORS = {}
-from queue import Queue
 
 MODEL_API_ERROR_QUEUE = Queue()
 
@@ -416,8 +415,8 @@ def main():
 
     threads = ThreadingClient()
 
-    threads.add_worker(target=producer_threads)
-    threads.add_worker(target=producer_resume)
+    threads.add_worker(target=get_threads)
+    threads.add_worker(target=get_resume)
 
     threads.add_worker(target=processor_email_thread)
     threads.add_worker(target=processor_email_new)

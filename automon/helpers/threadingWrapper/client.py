@@ -12,9 +12,9 @@ class Thread(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
         super().__init__(group, target, name, args, kwargs)
         # Store arguments as public attributes
-        self._automon_target = target
-        self._automon_args = args
-        self._automon_kwargs = kwargs
+        self._target = target
+        self._target_args = args
+        self._target_kwargs = kwargs
 
         log.debug(f"[Thread] :: {target=} :: {args=} :: {kwargs=}")
 
