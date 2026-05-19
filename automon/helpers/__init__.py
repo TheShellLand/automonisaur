@@ -6,6 +6,7 @@ from .loggingWrapper import LoggingClient, INFO, DEBUG, ERROR, CRITICAL
 from .markdown import Chat, Format
 from .networking import Networking
 from .regex import Regex
+from .repr import repr_str
 from .sleeper import Sleeper
 from .subprocessWrapper import Run
 from .tempfileWrapper import Tempfile
