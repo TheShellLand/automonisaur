@@ -1143,30 +1143,19 @@ class Thread(DictHelper):
 
         super().__init__(thread)
 
-        messages = []
-        duplicates = []
-        for m in self.messages:
-            m = Message(m)
-            if m not in messages:
-                messages.append(m)
-            else:
-                duplicates.append(m)
-
-        self._automon_messages: list[Message] = sorted(messages)
-
     def __repr__(self):
         if self.snippet:
             return self.snippet
 
-        if self.id and self._automon_messages_count:
-            return f'{self.id} :: {self._automon_messages_count} messages'
+        if self.id and self._messages_count:
+            return f'{self.id} :: {self._messages_count} messages'
 
         return f'{self}'
 
     def __lt__(self, other):
-        if self._automon_clean_thread_latest and other._automon_clean_thread_latest:
-            if self._automon_clean_thread_latest._date_utc and other._automon_clean_thread_latest._date_utc:
-                if self._automon_clean_thread_latest._date_utc < other._automon_clean_thread_latest._date_utc:
+        if self._clean_thread_latest and other._clean_thread_latest:
+            if self._clean_thread_latest._date_utc and other._clean_thread_latest._date_utc:
+                if self._clean_thread_latest._date_utc < other._clean_thread_latest._date_utc:
                     return True
         return False
 
@@ -1186,11 +1175,11 @@ class Thread(DictHelper):
         self._messages = encapsulate(value, Message)
 
     @property
-    def _automon_messages_count(self) -> int:
+    def _messages_count(self) -> int:
         return len(self.messages)
 
     @property
-    def _automon_clean_thread(self) -> list[Message]:
+    def _clean_thread(self) -> list[Message]:
         """All messages excluding DRAFT"""
         messages = []
         labels = GmailLabels()
@@ -1202,14 +1191,14 @@ class Thread(DictHelper):
         return messages
 
     @property
-    def _automon_clean_thread_first(self) -> Message | None:
-        if self._automon_clean_thread:
-            return self._automon_clean_thread[0]
+    def _clean_thread_first(self) -> Message | None:
+        if self._clean_thread:
+            return self._clean_thread[0]
 
     @property
-    def _automon_clean_thread_latest(self) -> Message | None:
-        if self._automon_clean_thread:
-            return self._automon_clean_thread[-1]
+    def _clean_thread_latest(self) -> Message | None:
+        if self._clean_thread:
+            return self._clean_thread[-1]
 
     @property
     def _automon_messages_duplicates(self) -> list[Message]:
@@ -1223,11 +1212,11 @@ class Thread(DictHelper):
         return duplicates
 
     @property
-    def _automon_messages_count(self):
+    def _messages_count(self):
         return len(self.messages)
 
     @property
-    def _automon_messages_labels(self):
+    def _messages_labels(self):
         labels = []
         for message in self.messages:
             for label in message.labelIds:
@@ -1236,12 +1225,12 @@ class Thread(DictHelper):
         return sorted(labels)
 
     @property
-    def _automon_message_first(self) -> Message | None:
+    def _message_first(self) -> Message | None:
         if self.messages:
             return self.messages[0]
 
     @property
-    def _automon_message_latest(self) -> Message | None:
+    def _message_latest(self) -> Message | None:
         if self.messages:
             return self.messages[-1]
 

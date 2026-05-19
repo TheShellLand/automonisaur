@@ -363,12 +363,12 @@ def draft_create(
             filename=resume_attachment.filename,
             mimeType=resume_attachment.mimeType)
 
-    to = thread._automon_message_first._header_from.value
-    from_ = thread._automon_message_first._header_to.value
+    to = thread._message_first._header_from.value
+    from_ = thread._message_first._header_to.value
 
     # create draft
     body = response
-    subject = "Re: " + thread_selected._automon_message_first._header_subject.value
+    subject = "Re: " + thread_selected._message_first._header_subject.value
     draft = gmail.draft_create(
         threadId=thread_selected.id,
         draft_to=to,
@@ -392,7 +392,7 @@ def draft_send(
 ):
     draft_sent = gmail.draft_send(draft=draft)
     gmail.messages_modify(
-        id=thread_selected._automon_message_first.id,
+        id=thread_selected._message_first.id,
         addLabelIds=[labels.unread])
     return draft_sent
 

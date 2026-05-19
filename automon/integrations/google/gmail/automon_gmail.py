@@ -235,7 +235,7 @@ class AutomonGmailClient(GoogleGmailClient):
             thread: Thread,
             days: int = 3
     ) -> bool:
-        message = thread._automon_clean_thread_latest
+        message = thread._clean_thread_latest
 
         if self.labels.sent in message.labelIds:
 
