@@ -723,12 +723,13 @@ class Message(DictHelper):
         super().__init__(message)
 
     def __repr__(self):
-        labels = [
-            l.name for l in self.labelIds
-            if l.name == 'SENT'
-               or l.name == 'DRAFT'
-               or l.name == 'TRASH'
-        ]
+        labels = []
+        labels_name = ['SENT', 'DRAFT', 'TRASH']
+        for l in self.labelIds:
+            if isinstance(l, Label):
+                if l.name in labels_name:
+                    labels.append(l)
+
         return repr_str([
             labels,
             self._date_since_now_str,
