@@ -2,6 +2,7 @@ import io
 import os
 import bs4
 import pandas
+import warnings
 import threading
 import email
 import email.encoders
@@ -677,9 +678,6 @@ class GoogleGmailClient(GoogleAuthClient):
         for message in thread.messages:
 
             if multithread:
-                import warnings
-                warnings.warn(
-                    f"[GoogleGmailClient] :: thread_get_automon :: multithreading returns duplicate results from gmail api")
                 threading.add_worker(target=update_message, args=(message,))
             else:
                 message_full = self.messages_get_automon(message.id)
@@ -687,23 +685,6 @@ class GoogleGmailClient(GoogleAuthClient):
 
         if multithread:
             threading.start(max_threads=3)
-
-        messages = []
-        duplicates = []
-
-        while threading.queue_completed.qsize() > 0:
-            t_ = threading.queue_completed.get()
-            exception = t_.exception
-            result_message = t_.result
-
-            for message in thread.messages:
-                if message == result_message:
-                    message.automon_update(result_message)
-
-                    if message not in messages:
-                        messages.append(message)
-                    else:
-                        duplicates.append(message)
 
         return thread
 
@@ -767,7 +748,7 @@ class GoogleGmailClient(GoogleAuthClient):
         if threads:
 
             for thread in threads.threads:
-                update_thread.append(self.thread_get_automon(id=thread.id))
+                update_thread.append(self.thread_get_automon(id=thread.id, multithread=True))
 
             threads.threads = update_thread
 
