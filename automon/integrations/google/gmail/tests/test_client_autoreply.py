@@ -28,7 +28,7 @@ LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').set
 LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.tokens').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEBUG)
+LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEFAULT_LEVEL)
 
 if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
@@ -84,6 +84,11 @@ queues = [
 ]
 
 RESUME: Thread = None
+
+
+def queue_put(item, queue):
+    if item not in queue.queue:
+        queue.put(item)
 
 
 def automon_init(client: GoogleGmailClient):
@@ -152,21 +157,21 @@ def processor_email_thread():
 
         # skipped
         if GoogleGmailClient.utils.is_skipped(thread):
-            queue_skipped.put(thread)
+            queue_put(thread, queue_skipped)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads')
             continue
 
         # error
         if GoogleGmailClient.utils.is_error(thread):
-            queue_error.put(thread)
+            queue_put(thread, queue_error)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads')
             continue
 
         # analyze
         if GoogleGmailClient.utils.is_analyze(thread):
-            queue_analyze.put(thread)
+            queue_put(thread, queue_analyze)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_analyze :: {queue_analyze.qsize()} threads')
             continue
@@ -178,19 +183,19 @@ def processor_email_thread():
         # sent
         if GoogleGmailClient.utils.is_sent(thread):
             if GoogleGmailClient.utils.is_old(thread):
-                queue_followup.put(thread)
+                queue_put(thread, queue_followup)
                 queue_threads.task_done()
                 queue_log.put(f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads')
                 continue
 
         # new
         if GoogleGmailClient.utils.is_new(thread):
-            queue_new.put(thread)
+            queue_put(thread, queue_new)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_new :: {queue_new.qsize()} threads')
             continue
 
-        queue_unknown.put(thread)
+        queue_put(thread, queue_unknown)
         queue_log.put(f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads')
 
         queue_threads.task_done()
