@@ -1,11 +1,12 @@
 import unittest
 
 import time
-import queue
 import threading
 
+from queue import Queue
+
 from automon.helpers.threadingWrapper import ThreadingClient
-from automon.integrations.google.gmail import GoogleGmailClient
+from automon.integrations.google.gmail import GoogleGmailClient, Thread
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO, debug
@@ -53,32 +54,33 @@ gmail.config.add_scopes([
 
 labels = gmail._automon_labels
 
-queue_threads = queue.Queue(maxsize=10)
-queue_new = queue.Queue(maxsize=10)
-queue_send = queue.Queue()
-queue_chat = queue.Queue()
-queue_skipped = queue.Queue()
-queue_followup = queue.Queue()
-queue_analyze = queue.Queue()
-queue_error = queue.Queue()
-queue_waiting_for_first_call = queue.Queue()
-queue_waiting_for_interview = queue.Queue()
+queue_threads: Queue[Thread] = Queue(maxsize=10)
+queue_new: Queue[Thread] = Queue(maxsize=10)
+queue_send: Queue[Thread] = Queue()
+queue_skipped: Queue[Thread] = Queue()
+queue_followup: Queue[Thread] = Queue()
+queue_analyze: Queue[Thread] = Queue()
+queue_waiting_for_first_call: Queue[Thread] = Queue()
+queue_waiting_for_interview: Queue[Thread] = Queue()
 
-queue_unknown = queue.Queue()
+queue_unknown: Queue[Thread] = Queue()
 
-queue_log = queue.Queue()
+queue_error: Queue[tuple[Thread, Exception]] = Queue()
+queue_log = Queue()
 
 queues = [
     queue_threads,
     queue_new,
     queue_send,
-    queue_chat,
     queue_skipped,
     queue_followup,
     queue_analyze,
     queue_error,
     queue_waiting_for_first_call,
     queue_waiting_for_interview,
+    queue_unknown,
+    queue_error,
+    queue_log,
 ]
 
 RESUME = None
@@ -144,13 +146,6 @@ def processor_email_thread():
         if GoogleGmailClient.utils.is_resume(thread):
             RESUME = thread
             queue_threads.task_done()
-            continue
-
-        # chat
-        if GoogleGmailClient.utils.is_chat(thread):
-            queue_chat.put(thread)
-            queue_threads.task_done()
-            queue_log.put(f'[processor_email_thread] :: queue_chat :: {queue_chat.qsize()} threads')
             continue
 
         # skipped

@@ -40,12 +40,6 @@ def is_error(thread: Thread):
     return False
 
 
-def is_chat(thread: Thread):
-    if labels.chat in thread._automon_messages_labels:
-        return True
-    return False
-
-
 def is_analyze(thread: Thread):
     if labels.analyze in thread._automon_messages_labels:
         return True

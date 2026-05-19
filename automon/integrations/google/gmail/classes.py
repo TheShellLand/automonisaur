@@ -36,18 +36,11 @@ class AutomonLabels:
         # required
         self.automon = Label(name='automon', color=self._color_default)
 
-        # welcome
-        # self.welcome = Label(name='automon/welcome', color=self._color_default)
-        # self.help = Label(name='automon/help', color=self._color_light)
-
         # resume
         self.resume = Label(name='automon/resume', color=self._color_light)
 
         # analyze
         self.analyze = Label(name='automon/analyze', color=self._color_default)
-
-        # chat
-        self.chat = Label(name='automon/chat', color=self._color_light)
 
         # enable auto reply
         self.auto_reply_enabled = Label(name='automon/auto reply enabled', color=self._color_default)
