@@ -127,6 +127,8 @@ class ThreadingClient(object):
                 self.threads_list.append(thread)
 
                 thread.start()
+                self.queue_worker.task_done()
+
                 log.debug(f'[ThreadingClient] :: start :: running :: {thread.name} :: '
                           f'{thread._automon_args} :: '
                           f'{current_threads_count + 1} threads ({max_threads_limit} max)')

@@ -99,7 +99,6 @@ def get_threads():
         query_sequence = [
             [labels.automon, labels.error],
             [labels.automon, labels.processing],
-            [labels.automon, labels.chat],
             [labels.automon, labels.analyze],
             [labels.automon],
         ]
@@ -495,9 +494,6 @@ def main():
             chat = False
 
             if labels.error in thread_selected.automon_messages_labels:
-                chat = True
-
-            if labels.chat in thread_selected.automon_messages_labels:
                 chat = True
 
             response, model = run_llm(prompts=prompts_ask, chat=chat)
