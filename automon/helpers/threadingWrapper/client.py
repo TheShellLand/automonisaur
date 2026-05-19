@@ -21,7 +21,7 @@ class Thread(threading.Thread):
         log.debug(f"[Thread] :: {target=} :: {args=} :: {kwargs=}")
 
     def __repr__(self):
-        return f'[Thread] :: {self.name} :: {self._automon_args}'
+        return f'[Thread] :: {self.name} :: {self._target_args}'
 
 
 class ThreadingClient(object):
@@ -71,7 +71,8 @@ class ThreadingClient(object):
             old_value = ThreadingClient._global_threads_max
             new_value = int(ThreadingClient._global_threads_max * 0.25)
 
-            ThreadingClient._global_threads_max = new_value
+            if new_value > 0:
+                ThreadingClient._global_threads_max = new_value
 
         log.debug(f'[ThreadingClient] :: global_threads_max :: {old_value} -> {new_value}')
         return self
@@ -97,11 +98,20 @@ class ThreadingClient(object):
         return self.queue_worker.qsize() == 0 and all_threads_terminated
 
     def results(self):
+        # 1. Process all successfully completed threads first
         while self.queue_completed.qsize() > 0:
             result = self.queue_completed.get()
+            log.debug(f'[ThreadingClient] :: results :: {result}')
+            self.queue_completed.task_done()
+            yield result
+
+        # 2. Process and yield all failed threads so errors aren't swallowed
+        while self.queue_error.qsize() > 0:
+            result = self.queue_error.get()
             if result.exception:
                 log.warning(f"[ThreadingClient] :: ERROR :: {result.exception=}")
-            log.debug(f'[ThreadingClient] :: results :: {result}')
+            log.debug(f'[ThreadingClient] :: results (error) :: {result}')
+            self.queue_error.task_done()
             yield result
 
     def start(self, max_threads: int = None):
@@ -136,6 +146,11 @@ class ThreadingClient(object):
                           f'{thread._target_args} :: '
                           f'{current_threads_count + 1} threads ({max_threads_limit} max)')
 
+                log.info(
+                    f'[ThreadingClient] :: start :: '
+                    f'{self._current_threads_count} running :: '
+                    f'{self._completed_threads_count} completed')
+
             else:
                 time.sleep(0.1)
 
@@ -145,10 +160,6 @@ class ThreadingClient(object):
         for thread in self.threads_list:
             thread.join()
 
-        log.debug(
-            f'[ThreadingClient] :: start :: '
-            f'{self._current_threads_count} running :: '
-            f'{self._completed_threads_count} completed')
         return self
 
     @property
