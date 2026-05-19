@@ -61,7 +61,7 @@ class DictHelper(dict):
         if isinstance(update, dict):
             return self._update_dict(update)
 
-        raise Exception(f"[Dict] :: automon_update :: ERROR :: {update=}")
+        warnings.warn(f"[Dict] :: automon_update :: WARN :: {update=}")
 
     def _enhance(self):
         warnings.warn(f"[Dict] :: Method will be removed in a future release. Pass data into class.__init__.")
@@ -134,7 +134,11 @@ class DictHelper(dict):
     def _update_dict(self, update: dict):
 
         for key, value in update.items():
-            setattr(self, key, value)
+            try:
+                setattr(self, key, value)
+            except Exception as error:
+                warnings.warn(f"[Dict] :: _update_dict :: WARN :: {error=}")
+
 
         self.enhance()
         self._enhance()
