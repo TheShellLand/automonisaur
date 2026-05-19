@@ -64,17 +64,19 @@ class GoogleGmailClient(GoogleAuthClient):
         if self.user_info_email:
             return self.user_info_email
 
-    def draft_create(self,
-                     threadId: str = None,
-                     raw: str = None,
-                     draft_subject: str = None,
-                     draft_from: str = None,
-                     draft_to: list[str] = [],
-                     draft_cc: list[str] = [],
-                     draft_bc: list[str] = [],
-                     draft_body: str = '',
-                     draft_attachments: list[EmailAttachment] = [],
-                     **kwargs) -> Draft:
+    def draft_create(
+            self,
+            threadId: str = None,
+            raw: str = None,
+            draft_subject: str = None,
+            draft_from: str = None,
+            draft_to: list[str] = [],
+            draft_cc: list[str] = [],
+            draft_bc: list[str] = [],
+            draft_body: str = '',
+            draft_attachments: list[EmailAttachment] = [],
+            **kwargs,
+    ) -> Draft:
         """Creates a new draft with the DRAFT label."""
         if raw:
             raw = base64.urlsafe_b64encode(raw.encode()).decode()
@@ -306,9 +308,9 @@ class GoogleGmailClient(GoogleAuthClient):
         response = self.requests.delete(api, headers=self.config.headers)
         return bool(response)
 
-    def labels_get(self, id: str) -> Label:
+    def labels_get(self, id: str | Label) -> Label:
         """Gets the specified label."""
-        if type(id) is Label:
+        if isinstance(id, Label):
             id = id.id
 
         for _label in self._cache_labels:
@@ -327,8 +329,15 @@ class GoogleGmailClient(GoogleAuthClient):
 
     def labels_get_by_name(self, name: str) -> Label | None:
         """Gets label by name"""
+
+        for label in self._cache_labels:
+            if label.name == name:
+                return label
+
         labels = self.labels_list()
-        for label in labels:
+        self._cache_labels = labels
+
+        for label in self._cache_labels:
             if label.name == name:
                 return Label(label)
 
@@ -538,20 +547,20 @@ class GoogleGmailClient(GoogleAuthClient):
             maxResults: int = 100,
             pageToken: str = None,
             q: str = None,
-            labelIds: list = [],
+            labelIds: list[Label] = None,
             includeSpamTrash: bool = False
     ) -> MessageList:
         """Lists the messages in the user's mailbox."""
         logger.debug(
             f"[GoogleGmailClient] :: message_list :: {maxResults=} :: {pageToken=} :: {q=} :: {labelIds=} :: {includeSpamTrash=}")
 
+        labelIds = list(labelIds) if labelIds is not None else []
+
+        if labelIds:
+            labelIds = [l.id for l in labelIds]
+
         if maxResults > 500:
             raise Exception(f"[GoogleGmailClient] :: message_list :: ERROR :: {maxResults=} > 500")
-
-        for label in labelIds:
-            if isinstance(label, Label):
-                labelIds = [x.id for x in labelIds]
-                break
 
         api = UsersMessages(self._userId).list
         params = dict(
@@ -586,32 +595,44 @@ class GoogleGmailClient(GoogleAuthClient):
     def messages_modify(
             self,
             id: str,
-            addLabelIds: list = [],
-            removeLabelIds: list = []
-    ) -> Message:
+            addLabelIds: list[str] = None,
+            removeLabelIds: list[str] = None,
+    ) -> dict:
         """Modifies the labels on the specified message."""
-        if len(addLabelIds) > 100 or len(removeLabelIds) > 100:
-            raise Exception(
-                f"[GoogleGmailClient] :: messages_modify :: ERROR :: {len(addLabelIds)=} {len(addLabelIds)=} > 100")
 
         api = UsersMessages(self._userId).modify(id)
 
-        if addLabelIds:
-            for addLabelId in addLabelIds:
-                if isinstance(addLabelId, Label):
-                    addLabelIds = [addLabelId.id for addLabelId in addLabelIds]
-                    break
-        if removeLabelIds:
-            for removeLabelId in removeLabelIds:
-                if isinstance(removeLabelId, Label):
-                    removeLabelIds = [removeLabelId.id for removeLabelId in removeLabelIds]
-                    break
+        if len(addLabelIds) > 100 or len(removeLabelIds) > 100:
+            raise Exception(
+                f"[GoogleGmailClient] :: messages_modify :: ERROR :: {len(addLabelIds)=} {len(addLabelIds)=} > 100")
 
         data = {
             "addLabelIds": addLabelIds,
             "removeLabelIds": removeLabelIds
         }
         response = self.requests.post(api, headers=self.config.headers, json=data).to_dict()
+
+        return response
+
+    def messages_modify_automon(
+            self,
+            id: str,
+            addLabelIds: list[Label] = None,
+            removeLabelIds: list[Label] = None,
+    ) -> Message:
+        """Enhanced `messages_modify`."""
+
+        addLabelIds = list(addLabelIds) if addLabelIds is not None else []
+        removeLabelIds = list(removeLabelIds) if removeLabelIds is not None else []
+
+        addLabelIds = [l.id for l in addLabelIds]
+        removeLabelIds = [l.id for l in removeLabelIds]
+
+        response = self.messages_modify(
+            id=id,
+            addLabelIds=addLabelIds,
+            removeLabelIds=removeLabelIds,
+        )
 
         return Message(response)
 
@@ -644,7 +665,8 @@ class GoogleGmailClient(GoogleAuthClient):
             self,
             id: str,
             format: Format = Format.full,
-            metadataHeaders: list = None) -> dict:
+            metadataHeaders: list = None,
+    ) -> dict:
         """
 
         format
@@ -664,7 +686,11 @@ class GoogleGmailClient(GoogleAuthClient):
         )
         return self.requests.get(api, headers=self.config.headers, params=params).to_dict()
 
-    def thread_get_automon(self, id: str = None, multithread: bool = False) -> Thread:
+    def thread_get_automon(
+            self,
+            id: str = None,
+            multithread: bool = False,
+    ) -> Thread:
 
         thread = Thread(self.thread_get(id=id))
 
@@ -724,8 +750,6 @@ class GoogleGmailClient(GoogleAuthClient):
         Include threads from SPAM and TRASH in the results.
         """
 
-        labelIds = list(labelIds) if labelIds is not None else []
-
         api = UsersThread(self._userId).list
         params = dict(
             maxResults=maxResults,
@@ -742,14 +766,12 @@ class GoogleGmailClient(GoogleAuthClient):
             q: str = '',
             maxResults: int = 100,
             pageToken: str = '',
-            labelIds: list[str] = None,
+            labelIds: list[Label] = None,
             includeSpamTrash: bool = False
     ) -> ThreadList:
         """Enhanced `thread_list`"""
         labelIds = list(labelIds) if labelIds is not None else []
-
-        if labelIds:
-            labelIds = [l.id for l in labelIds]
+        labelIds = [l.id for l in labelIds]
 
         threads = ThreadList(self.thread_list(
             q=q,

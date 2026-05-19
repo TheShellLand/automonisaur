@@ -166,7 +166,7 @@ class AutomonGmailClient(GoogleGmailClient):
             draft_body=f'Please copy and paste your resume here, and also add it as an attachment.',
         )
 
-        self.messages_modify(
+        self.messages_modify_automon(
             id=resume_error.id,
             addLabelIds=[self.labels.automon, self.labels.error, self.labels.resume]
         )

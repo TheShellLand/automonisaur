@@ -230,7 +230,7 @@ def processor_email_new():
 
             response, model = get_response(prompt)
 
-            response_passed, model = check_response(prompts=prompt, response=response)
+            response, model = check_response(prompts=prompt, response=response)
 
             if gemini.response_is_false(response_passed):
                 response_check_loop = False
@@ -250,7 +250,7 @@ def processor_email_new():
                         thread_selected=thread
                     )
 
-        gmail.messages_modify(
+        gmail.messages_modify_automon(
             id=thread._message_first.id,
             removeLabelIds=[labels.processing])
 
@@ -303,7 +303,7 @@ def processor_draft_send(gmail):
 
         draft_sent = gmail.draft_send(draft=draft)
 
-        gmail.messages_modify(
+        gmail.messages_modify_automon(
             id=thread._message_first.id,
             addLabelIds=[labels.unread])
 
@@ -485,7 +485,7 @@ def draft_create(
     )
     draft_get = gmail.draft_get_automon(id=draft.id)
 
-    gmail.messages_modify(
+    gmail.messages_modify_automon(
         id=thread_selected.id,
         addLabelIds=[labels.unread])
 
@@ -495,9 +495,9 @@ def draft_create(
 def main():
     global gemini
 
-    threads = ThreadingClient()
+    check_gmail_labels(gmail)
 
-    threads.add_worker(target=check_gmail_labels, args=(gmail,))
+    threads = ThreadingClient()
 
     threads.add_worker(target=get_threads)
     threads.add_worker(target=get_resume)
