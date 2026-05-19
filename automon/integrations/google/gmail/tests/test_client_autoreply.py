@@ -34,7 +34,7 @@ if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
 else:
-    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(CRITICAL)
+    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(CRITICAL)
 
 USE_OLLAMA = False

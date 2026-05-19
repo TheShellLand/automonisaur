@@ -109,8 +109,8 @@ class GoogleGeminiClient(object):
         if version not in self.models_search:
             key = self.config.random_api_key()
             url = self.api.base.version(version).models('').key(key=key).url
-            models = self._requests.get_self(url=url).to_dict()
-            self.models_search[version] = [Model(x) for x in models['models']]
+            models = self._requests.get(url=url).to_dict()
+            self.models_search[version] = [Model(x) for x in models.get('models', [])]
         return self
 
     def _list_models_v1(self):

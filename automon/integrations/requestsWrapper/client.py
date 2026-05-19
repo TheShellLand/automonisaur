@@ -239,8 +239,7 @@ class RequestsClient(object):
         return RequestResponse(response)
 
     def delete_self(self, *args, **kwargs):
-        self.delete(*args, **kwargs)
-        return self
+        return self.delete(*args, **kwargs)
 
     def get(
             self,
@@ -262,8 +261,7 @@ class RequestsClient(object):
         return RequestResponse(response)
 
     def get_self(self, *args, **kwargs):
-        self.get(*args, **kwargs)
-        return self
+        return self.get(*args, **kwargs)
 
     def patch(
             self,
@@ -285,8 +283,7 @@ class RequestsClient(object):
         return RequestResponse(response)
 
     def patch_self(self, *args, **kwargs):
-        self.patch(*args, **kwargs)
-        return self
+        return self.patch(*args, **kwargs)
 
     def post(
             self,
@@ -308,8 +305,7 @@ class RequestsClient(object):
         return RequestResponse(response)
 
     def post_self(self, *args, **kwargs):
-        self.post(*args, **kwargs)
-        return self
+        return self.post(*args, **kwargs)
 
     def put(
             self,
@@ -331,8 +327,7 @@ class RequestsClient(object):
         return RequestResponse(response)
 
     def put_self(self, *args, **kwargs):
-        self.put(*args, **kwargs)
-        return self
+        return self.put(*args, **kwargs)
 
     @property
     def _to_dict(self):
