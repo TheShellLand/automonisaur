@@ -413,10 +413,8 @@ class Label(DictHelper):
         super().__init__(label)
 
     def __repr__(self):
-        if self.id and self.name:
-            return f"{self.name} :: {self.id}"
         if self.name:
-            return f"{self.name}"
+            return str(self.name)
         return str(self.id)
 
     def __eq__(self, other):
