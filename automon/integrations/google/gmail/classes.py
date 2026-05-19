@@ -2,14 +2,12 @@ import io
 import bs4
 import base64
 import datetime
+import hashlib
 import dateutil.parser
 
-from automon import encapsulate
+from typing import Self
 
-from automon.helpers import Regex
-from automon.helpers import cryptography
-from automon.helpers.dictWrapper import DictHelper
-
+from automon.helpers import *
 from automon.helpers.loggingWrapper import LoggingClient, INFO
 
 logger = LoggingClient.logging.getLogger(__name__)
@@ -125,9 +123,6 @@ class LabelListVisibility:
 
 
 class Color(DictHelper):
-    backgroundColor: str
-    textColor: str
-
     """
     JSON representation
 
@@ -150,10 +145,14 @@ class Color(DictHelper):
     #000000, #434343, #666666, #999999, #cccccc, #efefef, #f3f3f3, #ffffff, #fb4c2f, #ffad47, #fad165, #16a766, #43d692, #4a86e8, #a479e2, #f691b3, #f6c5be, #ffe6c7, #fef1d1, #b9e4d0, #c6f3de, #c9daf8, #e4d7f5, #fcdee8, #efa093, #ffd6a2, #fce8b3, #89d3b2, #a0eac9, #a4c2f4, #d0bcf1, #fbc8d9, #e66550, #ffbc6b, #fcda83, #44b984, #68dfa9, #6d9eeb, #b694e8, #f7a7c0, #cc3a21, #eaa041, #f2c960, #149e60, #3dc789, #3c78d8, #8e63ce, #e07798, #ac2b16, #cf8933, #d5ae49, #0b804b, #2a9c68, #285bac, #653e9b, #b65775, #822111, #a46a21, #aa8831, #076239, #1a764d, #1c4587, #41236d, #83334c #464646, #e7e7e7, #0d3472, #b6cff5, #0d3b44, #98d7e4, #3d188e, #e3d7ff, #711a36, #fbd3e0, #8a1c0a, #f2b2a8, #7a2e0b, #ffc8af, #7a4706, #ffdeb5, #594c05, #fbe983, #684e07, #fdedc1, #0b4f30, #b3efd3, #04502e, #a2dcc1, #c2c2c2, #4986e7, #2da2bb, #b99aff, #994a64, #f691b2, #ff7537, #ffad46, #662e37, #ebdbde, #cca6ac, #094228, #42d692, #16a765
     """
 
-    def __init__(self, backgroundColor: str = None, textColor: str = None):
-        super().__init__()
+    backgroundColor: str
+    textColor: str
+
+    def __init__(self, color=None, backgroundColor: str = None, textColor: str = None):
         self.backgroundColor = str(backgroundColor).lower()
         self.textColor = str(textColor).lower()
+
+        super().__init__(color)
 
     def __bool__(self):
         if self.backgroundColor and self.textColor:
@@ -162,6 +161,11 @@ class Color(DictHelper):
 
 
 class EmailAttachment(DictHelper):
+    bytes: bytes
+    filename: str
+    mimeType: str
+    content_type: str
+    encoding: str
 
     def __init__(
             self,
@@ -169,17 +173,14 @@ class EmailAttachment(DictHelper):
             filename: str = '',
             mimeType: str = None,
             content_type: str = None,
-            encoding: str = None):
-        super().__init__()
+            encoding: str = None
+    ):
 
-        if type(bytes_) is not bytes:
-            raise Exception(f"Not bytes {type(bytes_)=}")
-
-        self.bytes_: bytes = bytes_
-        self.filename: str = filename
-        self.mimeType: str = mimeType
-        self.content_type: str = content_type
-        self.encoding: str = encoding
+        self._bytes = bytes_
+        self.filename = filename
+        self.mimeType = mimeType
+        self._content_type = content_type
+        self.encoding = encoding
 
         if mimeType:
             self.content_type, self.encoding = mimeType.split('/', 1)
@@ -187,10 +188,42 @@ class EmailAttachment(DictHelper):
             self.content_type = content_type
             self.encoding = encoding
 
+        super().__init__()
+
     def __bool__(self):
-        if self.bytes_:
+        if self.bytes:
             return True
         return False
+
+    @property
+    def bytes(self):
+        value = self._bytes
+        self._bytes = bytes(value)
+        return self._bytes
+
+    @bytes.setter
+    def bytes(self, value):
+        self._bytes = bytes(value)
+
+    @property
+    def content_type(self):
+        if self.mimeType:
+            self.content_type, _ = self.mimeType.split('/', 1)
+        return self._content_type
+
+    @content_type.setter
+    def content_type(self, value):
+        self._content_type = value
+
+    @property
+    def encoding(self):
+        if self.mimeType:
+            _, self.encoding = self.mimeType.split('/', 1)
+        return self._encoding
+
+    @encoding.setter
+    def encoding(self, value):
+        self._encoding = value
 
 
 class Format:
@@ -290,17 +323,6 @@ class Type:
 
 
 class Label(DictHelper):
-    id: str
-    name: str
-    messageListVisibility: MessageListVisibility
-    labelListVisibility: LabelListVisibility
-    type: Type
-    messagesTotal: int
-    messagesUnread: int
-    threadsTotal: int
-    threadsUnread: int
-    color: Color
-
     """
     {
       "id": string,
@@ -369,6 +391,17 @@ class Label(DictHelper):
     The color to assign to the label. Color is only available for labels that have their type set to user.
     """
 
+    id: str
+    name: str
+    messageListVisibility: MessageListVisibility
+    labelListVisibility: LabelListVisibility
+    type: Type
+    messagesTotal: int
+    messagesUnread: int
+    threadsTotal: int
+    threadsUnread: int
+    color: Color
+
     def __init__(
             self,
             label=None,
@@ -380,7 +413,7 @@ class Label(DictHelper):
     ):
         self.id = id
         self.name = name
-        self.color = color
+        self._color = color
         self.messageListVisibility = messageListVisibility
         self.labelListVisibility = labelListVisibility
 
@@ -403,6 +436,16 @@ class Label(DictHelper):
             return True
         return False
 
+    @property
+    def color(self):
+        value = self._color
+        self._color = encapsulate(value, Color)
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        self._color = encapsulate(value, Color)
+
     def _enhance(self):
         if hasattr(self, 'color'):
             self.color = Color().automon_update(self.color)
@@ -421,7 +464,8 @@ class LabelList(DictHelper):
 
     @property
     def labels(self):
-        self._labels = encapsulate(value=self._labels, object_class=Label)
+        value = self._labels
+        self._labels = encapsulate(value=value, object_class=Label)
         return self._labels
 
     @labels.setter
@@ -438,10 +482,6 @@ class LabelRemoved:
 
 
 class MessagePartBody(DictHelper):
-    attachmentId: str
-    size: int
-    data: str
-
     """
     {
       "attachmentId": string,
@@ -449,6 +489,10 @@ class MessagePartBody(DictHelper):
       "data": string
     }
     """
+
+    attachmentId: str
+    size: int
+    data: str
 
     def __init__(self, message: dict = None):
 
@@ -459,13 +503,11 @@ class MessagePartBody(DictHelper):
         super().__init__(message)
 
     def __repr__(self):
-        repr = []
-
-        repr.append(self.attachmentId)
-        repr.append(self.automon_data_hash())
-        repr.append(f'{round(self.size / 1024):,} KB')
-
-        return ' :: '.join([x for x in repr if x is not None])
+        return repr_str([
+            self.attachmentId,
+            self._data_hash(),
+            f'{round(self.size / 1024):,} KB',
+        ])
 
     def __bool__(self):
         if self.size:
@@ -477,38 +519,38 @@ class MessagePartBody(DictHelper):
             return True
         return False
 
-    def automon_data_base64decoded(self) -> bytes | None:
+    def _data_base64decoded(self) -> bytes | None:
         if self.data:
             return base64.urlsafe_b64decode(self.data)
 
-    def automon_data_BytesIO(self) -> io.BytesIO | None:
+    def _data_BytesIO(self) -> io.BytesIO | None:
         if self.data:
-            return io.BytesIO(self.automon_data_base64decoded())
+            return io.BytesIO(self._data_base64decoded())
 
-    def automon_data_html_text(self) -> str | None:
+    def _data_html_text(self) -> str | None:
         if self.data:
             return self._html_text()
 
-    def automon_data_decoded(self) -> str | None:
+    def _data_decoded(self) -> str | None:
         if self.data:
             try:
-                return self.automon_data_base64decoded().decode()
+                return self._data_base64decoded().decode()
             except:
                 pass
 
-    def automon_data_hash(self):
+    def _data_hash(self):
         if self.data:
-            return cryptography.Hashlib.md5(self.data)
+            return hashlib.md5(self.data.encode()).hexdigest()
 
-    def automon_data_bs4(self) -> bs4.BeautifulSoup | None:
-        decoded = self.automon_data_base64decoded()
+    def _data_bs4(self) -> bs4.BeautifulSoup | None:
+        decoded = self._data_base64decoded()
         if decoded:
             return bs4.BeautifulSoup(decoded)
 
     def _html_text(self) -> str | None:
-        if self.automon_data_bs4():
-            if self.automon_data_bs4().html:
-                return self.automon_data_bs4().html.text
+        if self._data_bs4():
+            if self._data_bs4().html:
+                return self._data_bs4().html.text
 
 
 class MessagePart(DictHelper):
@@ -518,46 +560,58 @@ class MessagePart(DictHelper):
     headers: list[dict]
     body: dict
 
-    parts: list[dict]
-
-    automon_body: MessagePartBody
-    automon_headers: list[Header]
-    automon_parts: list
+    parts: list[Self]
 
     def __init__(self, part: dict = None):
 
-        self.partId: str = ''
-        self.mimeType: str = ''
-        self.filename: str = ''
-        self.headers: list[str] = []
-        self.body: dict = {}
+        self.partId = None
+        self.mimeType = None
+        self.filename = None
+        self._headers = []
+        self._body = None
 
-        self.parts: list[dict] = []
+        self._parts = []
 
         super().__init__(part)
 
-        self.automon_body = MessagePartBody(self.body)
-        self.automon_parts = [MessagePart(x) for x in self.parts]
-
     def __repr__(self):
-        repr = []
-
-        if self.filename:
-            repr.append(self.filename)
-
-        if self.mimeType:
-            repr.append(self.mimeType)
-
-        return ' :: '.join(repr)
+        return repr_str([
+            self.filename,
+            self.mimeType,
+        ])
 
     @property
-    def automon_headers(self) -> list[Header]:
-        if self.headers:
-            return [Header(x) for x in self.headers]
-        return []
+    def body(self):
+        value = self._body
+        self._body = encapsulate(value=value, object_class=MessagePartBody)
+        return self._body
+
+    @body.setter
+    def body(self, value):
+        self._body = encapsulate(value=value, object_class=MessagePartBody)
+
+    @property
+    def headers(self):
+        value = self._headers
+        self._headers = encapsulate(value=value, object_class=Header)
+        return self._headers
+
+    @headers.setter
+    def headers(self, value):
+        self._headers = encapsulate(value=value, object_class=Header)
+
+    @property
+    def parts(self):
+        value = self._parts
+        self._parts = encapsulate(value=value, object_class=MessagePart)
+        return self._parts
+
+    @parts.setter
+    def parts(self, value):
+        self._parts = encapsulate(value=value, object_class=MessagePart)
 
     def get_header(self, header: str) -> Header | None:
-        for headers in self.automon_headers:
+        for headers in self.headers:
             if header.lower() in headers.name.lower():
                 return headers
 
@@ -566,86 +620,74 @@ class MessagePayload(DictHelper):
     partId: str
     mimeType: str
     filename: str
-    headers: list[str]
-    body: dict
+    headers: list[Header]
+    body: MessagePartBody
 
-    parts: list[dict]
+    parts: list[MessagePart]
     size: int
-
-    automon_body: MessagePartBody
-    automon_headers: list[Header]
-    automon_parts: list[MessagePart]
 
     def __init__(self, message: dict = None):
 
-        self.body: dict = {}
-        self.parts: list[dict] = []
-        self.size: int = None
+        self._body = None
+        self._headers = []
+        self._parts = []
+        self.size = None
 
         super().__init__(message)
 
-        self.automon_body: MessagePartBody = MessagePartBody(self.body)
-        self.automon_parts: list[MessagePart] = [MessagePart(x) for x in self.parts]
-
     def __repr__(self):
-        repr = []
-
-        if self.filename:
-            repr.append(self.filename)
-
-        if self.mimeType:
-            repr.append(self.mimeType)
-
-        if self.size:
-            repr.append(f"{self.size} B")
-
-        return ' :: '.join(repr)
+        return repr_str([
+            self.filename,
+            self.mimeType,
+            f"{self.size} B",
+        ])
 
     def __bool__(self):
         if self.size is not None and self.size > 0:
             return True
-        if self.automon_parts:
+        if self.parts:
             return True
-        if self.automon_body:
+        if self.body:
             return True
         return False
 
     @property
-    def automon_headers(self) -> list[Header] | None:
-        if self.headers:
-            return [Header(x) for x in self.headers]
+    def body(self):
+        value = self._body
+        self._body = encapsulate(value=value, object_class=MessagePartBody)
+        return self._body
+
+    @body.setter
+    def body(self, value):
+        self._body = encapsulate(value=value, object_class=MessagePartBody)
+
+    @property
+    def headers(self) -> list[Header]:
+        value = self._headers
+        self._headers = encapsulate(value=value, object_class=Header)
+        return self._headers
+
+    @headers.setter
+    def headers(self, value):
+        self._headers = encapsulate(value=value, object_class=Header)
+
+    @property
+    def parts(self):
+        value = self._parts
+        self._parts = encapsulate(value=value, object_class=MessagePart)
+        return self._parts
+
+    @parts.setter
+    def parts(self, value):
+        self._parts = encapsulate(value=value, object_class=MessagePart)
 
     def get_header(self, header: str) -> Header | None:
-        for headers in self.automon_headers:
+        for headers in self.headers:
             if header.lower() in headers.name.lower():
                 return headers
 
 
 class Message(DictHelper):
-    historyId: str
-    id: str
-    internalDate: str
-    labelIds: list[str]
-    payload: dict
-    raw: str
-    sizeEstimate: str
-    snippet: str
-    threadId: str
-
-    automon_attachments: list
-    automon_date: dateutil.parser.parse
-    automon_date_str: str
-    automon_date_since_now: datetime.timedelta
-    automon_date_since_now_str: str
-    automon_email_from: str
-    automon_email_to: str
-    automon_header_from: Header
-    automon_header_subject: Header
-    automon_header_to: Header
-    automon_labels: list[Label]
-    automon_payload: MessagePayload
-    automon_raw_decoded: str
-
     """
     {
       "id": string,
@@ -662,116 +704,50 @@ class Message(DictHelper):
       "sizeEstimate": integer,
       "raw": string
     }
-
-
-    Fields
-    id
-    string
-
-    The immutable ID of the message.
-
-    threadId
-    string
-
-    The ID of the thread the message belongs to. To add a message or draft to a thread, the following criteria must be met:
-
-    The requested threadId must be specified on the Message or Draft.Message you supply with your request.
-    The References and In-Reply-To headers must be set in compliance with the RFC 2822 standard.
-    The Subject headers must match.
-
-    labelIds[]
-    string
-
-    List of IDs of labels applied to this message.
-
-    snippet
-    string
-
-    A short part of the message text.
-
-    historyId
-    string
-
-    The ID of the last history record that modified this message.
-
-    internalDate
-    string (int64 format)
-
-    The internal message creation timestamp (epoch ms), which determines ordering in the inbox. For normal SMTP-received email, this represents the time the message was originally accepted by Google, which is more reliable than the Date header. However, for API-migrated mail, it can be configured by client to be based on the Date header.
-
-    payload
-    object (MessagePart)
-
-    The parsed email structure in the message parts.
-
-    sizeEstimate
-    integer
-
-    Estimated size in bytes of the message.
-
-    raw
-    string (bytes format)
-
-    The entire email message in an RFC 2822 formatted and base64url encoded string. Returned in messages.get and drafts.get responses when the format=RAW parameter is supplied.
-
-    A base64-encoded string.
     """
+
+    historyId: str
+    id: str
+    internalDate: str
+    labelIds: list[Label]
+    payload: MessagePayload
+    raw: str
+    sizeEstimate: str
+    snippet: str
+    threadId: str
 
     def __init__(self, message: dict = None):
 
-        self.historyId: str = None
-        self.id: str = None
-        self.internalDate: str = None
-        self.labelIds: list[str] = []
-        self.payload: dict = None
-        self.raw: str = None
-        self.sizeEstimate: str = None
-        self.snippet: str = None
-        self.threadId: str = None
+        self.historyId = None
+        self.id = None
+        self.internalDate = None
+        self._labelIds = []
+        self._payload = None
+        self.raw = None
+        self.sizeEstimate = None
+        self.snippet = None
+        self.threadId = None
 
         super().__init__(message)
 
-        self.automon_labels: list[Label] = sorted(
-            [Label(x) for x in self.labelIds if isinstance(x, dict)])
-        self.automon_payload: MessagePayload = MessagePayload(self.payload)
-
     def __repr__(self):
-        repr = []
-
-        # if self.hash_md5:
-        #     repr.append(self.hash_md5[-5:].upper())
-
-        # if self.id:
-        #     repr.append(self.id)
-
         labels = [
-            l.name for l in self.automon_labels
+            l.name for l in self.labelIds
             if l.name == 'SENT'
                or l.name == 'DRAFT'
                or l.name == 'TRASH'
         ]
-        if labels:
-            repr.extend(labels)
-
-        if self.automon_date_since_now_str:
-            repr.append(self.automon_date_since_now_str)
-
-        if self.automon_email_from:
-            repr.append(self.automon_email_from)
-
-        if self.automon_date_utc:
-            repr.append(f"{self.automon_date_utc}")
-
-        if self.snippet:
-            repr.append(self.snippet[:125])
-
-        repr = ' :: '.join(repr)
-
-        return repr
+        return repr_str([
+            labels,
+            self._date_since_now_str,
+            self._email_from,
+            self._date_utc_str,
+            self.snippet,
+        ])
 
     def __lt__(self, other):
-        if self.automon_date_epoch_s and other.automon_date_epoch_s:
-            if self.automon_date_epoch_s < other.automon_date_epoch_s:
+        if isinstance(other, Message):
+            if self._date_epoch_s < other._date_epoch_s:
                 return True
         return False
 
@@ -786,57 +762,74 @@ class Message(DictHelper):
         return False
 
     @property
-    def automon_attachments(self) -> MessagePartBody | MessagePart | None:
+    def labelIds(self):
+        value = self._labelIds
+        self._labelIds = sorted(encapsulate(value, Label))
+        return self._labelIds
+
+    @labelIds.setter
+    def labelIds(self, value):
+        self._labelIds = sorted(encapsulate(value, Label))
+
+    @property
+    def payload(self):
+        value = self._payload
+        self._payload = encapsulate(value, MessagePayload)
+        return self._payload
+
+    @payload.setter
+    def payload(self, value):
+        self._payload = encapsulate(value, MessagePayload)
+
+    @property
+    def _attachments(self) -> list[MessagePartBody | MessagePart]:
         payloads = []
-        if self.automon_payload:
-            if self.automon_payload.size:
-                # yield self.automon_payload.automon_body
-                payloads.append(self.automon_payload.automon_body)
-            if self.automon_payload.automon_parts:
-                for parts in self.automon_payload.automon_parts:
-                    # yield parts
+        if self.payload:
+            if self.payload.size:
+                payloads.append(self.payload.body)
+            if self.payload.parts:
+                for parts in self.payload.parts:
                     payloads.append(parts)
-        # yield None
         return payloads
 
     @property
-    def automon_attachments_first(self) -> MessagePartBody | MessagePart | None:
-        if self.automon_attachments:
-            return self.automon_attachments[0]
+    def _attachments_first(self) -> MessagePartBody | MessagePart | None:
+        if self._attachments:
+            return self._attachments[0]
 
     @property
-    def automon_date_epoch_s(self) -> float | None:
+    def _date_epoch_s(self) -> float | None:
         if self.internalDate:
             epoch_ms = int(self.internalDate)
             epoch_s = epoch_ms / 1000.0
             return epoch_s
 
     @property
-    def automon_date_local(self):
-        if self.automon_date_epoch_s:
-            date_local = datetime.datetime.fromtimestamp(self.automon_date_epoch_s)
+    def _date_local(self):
+        if self._date_epoch_s:
+            date_local = datetime.datetime.fromtimestamp(self._date_epoch_s)
             return date_local
 
     @property
-    def automon_date_local_str(self) -> str | None:
-        if self.automon_date_local:
-            return str(self.automon_date_local)
+    def _date_local_str(self) -> str | None:
+        if self._date_local:
+            return str(self._date_local)
 
     @property
-    def automon_date_utc(self):
-        if self.automon_date_epoch_s:
-            date_utc = datetime.datetime.fromtimestamp(self.automon_date_epoch_s, tz=datetime.timezone.utc)
+    def _date_utc(self):
+        if self._date_epoch_s:
+            date_utc = datetime.datetime.fromtimestamp(self._date_epoch_s, tz=datetime.timezone.utc)
             return date_utc
 
     @property
-    def automon_date_utc_str(self) -> str | None:
-        if self.automon_date_utc:
-            return str(self.automon_date_local)
+    def _date_utc_str(self) -> str | None:
+        if self._date_utc:
+            return str(self._date_local)
 
     @property
-    def automon_date_since_now(self) -> datetime.timedelta | None:
-        if self.automon_date_local:
-            automon_date = self.automon_date_local
+    def _date_since_now(self) -> datetime.timedelta | None:
+        if self._date_local:
+            automon_date = self._date_local
             time_delta = datetime.datetime.now()
             # time_delta = time_delta.replace(tzinfo=datetime.timezone(automon_date.utcoffset()))
             time_delta = time_delta - automon_date
@@ -844,9 +837,9 @@ class Message(DictHelper):
             return time_delta
 
     @property
-    def automon_date_since_now_str(self) -> str | None:
-        if self.automon_date_since_now:
-            time_delta = self.automon_date_since_now
+    def _date_since_now_str(self) -> str | None:
+        if self._date_since_now:
+            time_delta = self._date_since_now
 
             days = time_delta.days
             if days > 0:
@@ -865,8 +858,8 @@ class Message(DictHelper):
                 return f"{seconds} seconds ago"
 
     @property
-    def automon_email_from(self) -> str | None:
-        automon_header_from = self.automon_header_from
+    def _email_from(self) -> str | None:
+        automon_header_from = self._header_from
         if automon_header_from:
             email = automon_header_from.value
             email = Regex().config_ignorecase().re_email().search(email).group()
@@ -874,8 +867,8 @@ class Message(DictHelper):
             return email
 
     @property
-    def automon_email_to(self) -> str | None:
-        automon_header_to = self.automon_header_to
+    def _email_to(self) -> str | None:
+        automon_header_to = self._header_to
         if automon_header_to:
             email = automon_header_to.value
             email = Regex().config_ignorecase().re_email().search(email).group()
@@ -883,56 +876,56 @@ class Message(DictHelper):
             return email
 
     @property
-    def hash_md5(self):
-        return cryptography.Hashlib.md5(self.id)
+    def _hash_md5(self) -> str:
+        return hashlib.md5(self.id.encode()).hexdigest()
 
     @property
-    def automon_header_from(self) -> Header | None:
-        if self.automon_payload:
-            if self.automon_payload.automon_headers:
-                return self.automon_payload.get_header('From')
+    def _header_from(self) -> Header | None:
+        if self.payload:
+            if self.payload.headers:
+                return self.payload.get_header('From')
 
     @property
-    def automon_header_subject(self) -> Header | None:
-        if self.automon_payload:
-            if self.automon_payload.automon_headers:
-                return self.automon_payload.get_header('Subject')
+    def _header_subject(self) -> Header | None:
+        if self.payload:
+            if self.payload.headers:
+                return self.payload.get_header('Subject')
 
     @property
-    def automon_header_to(self) -> Header | None:
-        if self.automon_payload:
-            if self.automon_payload.automon_headers:
-                return self.automon_payload.get_header('To')
+    def _header_to(self) -> Header | None:
+        if self.payload:
+            if self.payload.headers:
+                return self.payload.get_header('To')
 
-    def automon_raw_decoded(self) -> str | None:
+    def _raw_decoded(self) -> str | None:
         if self.raw is not None:
             return base64.urlsafe_b64decode(self.raw).decode()
 
     def to_prompt(self) -> dict:
         email = {}
-        email['from'] = self.automon_email_from
-        email['to'] = self.automon_email_to
-        email['subject'] = self.automon_header_subject.value
-        email['date'] = self.automon_date_local_str
-        email['date_epoch'] = self.automon_date_epoch_s
+        email['from'] = self._email_from
+        email['to'] = self._email_to
+        email['subject'] = self._header_subject.value
+        email['date'] = self._date_local_str
+        email['date_epoch'] = self._date_epoch_s
 
-        if self.automon_payload:
-            body = self.automon_payload.automon_body
+        if self.payload:
+            body = self.payload.body
             if body:
-                text = body.automon_data_html_text()
+                text = body._data_html_text()
                 if text:
                     email['body'] = text
-            if self.automon_payload.automon_parts:
-                parts = self.automon_payload.automon_parts
+            if self.payload.parts:
+                parts = self.payload.parts
                 for part in parts:
                     if part.mimeType == 'text/plain':
-                        email['body'] = part.automon_body.automon_data_html_text()
+                        email['body'] = part.body._data_html_text()
                         break
 
-                    more_parts = part.automon_parts
+                    more_parts = part.parts
                     for more_part in more_parts:
                         if more_part.mimeType == 'text/plain':
-                            email['body'] = more_part.automon_body.automon_data_html_text()
+                            email['body'] = more_part.body._data_html_text()
                             break
 
         return email
@@ -941,9 +934,10 @@ class Message(DictHelper):
 class MessageAttachments(DictHelper):
 
     def __init__(self, attachments: list[dict] = []):
-        super().__init__()
 
-        self.attachments: list[dict] = attachments
+        self._attachments: list[dict] = None
+
+        super().__init__(attachments)
 
     def __repr__(self):
         return f"{len(self.attachments)} attachments"
@@ -954,23 +948,23 @@ class MessageAttachments(DictHelper):
         return False
 
     @property
-    def automon_attachments(self) -> list[MessagePart] | None:
-        return [MessagePart(x) for x in self.attachments]
+    def attachments(self) -> list[MessagePart] | None:
+        value = self._attachments
+        self._attachments = encapsulate(value, MessagePart)
+        return self._attachments
+
+    @attachments.setter
+    def attachments(self, value):
+        self._attachments = encapsulate(value, MessagePart)
 
     @property
-    def automon_first_attachment(self) -> MessagePart | None:
-        for part in self.automon_attachments:
+    def _first_attachment(self) -> MessagePart | None:
+        for part in self.attachments:
             return part
 
-    # def from_hash(self, hash_md5: str):
-    #     for attachment in self.automon_attachments:
-    #         if hash_md5 == attachment.automon_attachment.hash_md5:
-    #             return attachment
-    #     raise Exception(f"[AutomonAttachments] :: from_hash :: hash not found {hash_md5} ::")
-
     @property
-    def has_filename(self) -> list[MessagePart]:
-        return [x for x in self.automon_attachments if x.filename]
+    def _has_filename(self) -> list[MessagePart]:
+        return [x for x in self.attachments if x.filename]
 
 
 class MessageAdded:
@@ -1071,7 +1065,7 @@ class Draft(DictHelper):
 
     def __repr__(self):
         try:
-            return f'{self.id} :: {self.message.automon_header_subject.value}'
+            return f'{self.id} :: {self.message._header_subject.value}'
         except:
             return f"{self.id}"
 
@@ -1109,7 +1103,7 @@ class DraftList(DictHelper):
     """
 
     def __init__(self, drafts: dict = None):
-        self.drafts: list = []
+        self.drafts: list[Draft] = []
         self.nextPageToken: str = None
         self.resultSizeEstimate: int = None
 
@@ -1122,24 +1116,6 @@ class DraftList(DictHelper):
 
 
 class Thread(DictHelper):
-    id: str
-    historyId: str
-    messages: list[str]
-    snippet: str
-
-    addLabelIds: list[str]
-    removeLavelIds: list[str]
-
-    automon_messages: list[Message]
-    automon_message_first: Message
-    automon_message_latest: Message
-    automon_messages_count: int
-    automon_messages_labels: list[Label]
-
-    automon_clean_thread: list[Message]
-    automon_clean_thread_first: Message
-    automon_clean_thread_latest: Message
-
     """
     A collection of messages representing a conversation.
 
@@ -1155,10 +1131,18 @@ class Thread(DictHelper):
     }
     """
 
+    id: str
+    historyId: str
+    messages: list[Message]
+    snippet: str
+
+    addLabelIds: list[str]
+    removeLavelIds: list[str]
+
     def __init__(self, thread: dict = None):
         self.id: str = ''
         self.historyId: str = ''
-        self.messages: list = []
+        self._messages: list = []
         self.snippet: str = ''
 
         self.addLabelIds: list = []
@@ -1175,21 +1159,21 @@ class Thread(DictHelper):
             else:
                 duplicates.append(m)
 
-        self.automon_messages: list[Message] = sorted(messages)
+        self._automon_messages: list[Message] = sorted(messages)
 
     def __repr__(self):
         if self.snippet:
             return self.snippet
 
-        if self.id and self.automon_messages_count:
-            return f'{self.id} :: {self.automon_messages_count} messages'
+        if self.id and self._automon_messages_count:
+            return f'{self.id} :: {self._automon_messages_count} messages'
 
         return f'{self}'
 
     def __lt__(self, other):
-        if self.automon_clean_thread_latest and other.automon_clean_thread_latest:
-            if self.automon_clean_thread_latest.automon_date_utc and other.automon_clean_thread_latest.automon_date_utc:
-                if self.automon_clean_thread_latest.automon_date_utc < other.automon_clean_thread_latest.automon_date_utc:
+        if self._automon_clean_thread_latest and other._automon_clean_thread_latest:
+            if self._automon_clean_thread_latest._date_utc and other._automon_clean_thread_latest._date_utc:
+                if self._automon_clean_thread_latest._date_utc < other._automon_clean_thread_latest._date_utc:
                     return True
         return False
 
@@ -1199,36 +1183,46 @@ class Thread(DictHelper):
         return False
 
     @property
-    def automon_messages_count(self) -> int:
-        return len(self.automon_messages)
+    def messages(self):
+        value = self._messages
+        self._messages = encapsulate(value, Message)
+        return self._messages
+
+    @messages.setter
+    def messages(self, value):
+        self._messages = encapsulate(value, Message)
 
     @property
-    def automon_clean_thread(self) -> list[Message]:
+    def _automon_messages_count(self) -> int:
+        return len(self.messages)
+
+    @property
+    def _automon_clean_thread(self) -> list[Message]:
         """All messages excluding DRAFT"""
         messages = []
         labels = GmailLabels()
 
-        for message in self.automon_messages:
-            if labels.draft not in message.automon_labels:
+        for message in self.messages:
+            if labels.draft not in message.labelIds:
                 messages.append(message)
 
         return messages
 
     @property
-    def automon_clean_thread_first(self) -> Message | None:
-        if self.automon_clean_thread:
-            return self.automon_clean_thread[0]
+    def _automon_clean_thread_first(self) -> Message | None:
+        if self._automon_clean_thread:
+            return self._automon_clean_thread[0]
 
     @property
-    def automon_clean_thread_latest(self) -> Message | None:
-        if self.automon_clean_thread:
-            return self.automon_clean_thread[-1]
+    def _automon_clean_thread_latest(self) -> Message | None:
+        if self._automon_clean_thread:
+            return self._automon_clean_thread[-1]
 
     @property
-    def automon_messages_duplicates(self) -> list[Message]:
+    def _automon_messages_duplicates(self) -> list[Message]:
         messages = []
         duplicates = []
-        for message in self.automon_messages:
+        for message in self.messages:
             if message not in messages:
                 messages.append(message)
             else:
@@ -1236,36 +1230,30 @@ class Thread(DictHelper):
         return duplicates
 
     @property
-    def automon_messages_count(self):
-        return len(self.automon_messages)
+    def _automon_messages_count(self):
+        return len(self.messages)
 
     @property
-    def automon_messages_labels(self):
+    def _automon_messages_labels(self):
         labels = []
-        for message in self.automon_messages:
-            for label in message.automon_labels:
+        for message in self.messages:
+            for label in message.labelIds:
                 if label not in labels:
                     labels.append(label)
         return sorted(labels)
 
     @property
-    def automon_message_first(self) -> Message | None:
-        if self.automon_messages:
-            return self.automon_messages[0]
+    def _automon_message_first(self) -> Message | None:
+        if self.messages:
+            return self.messages[0]
 
     @property
-    def automon_message_latest(self) -> Message | None:
-        if self.automon_messages:
-            return self.automon_messages[-1]
+    def _automon_message_latest(self) -> Message | None:
+        if self.messages:
+            return self.messages[-1]
 
 
 class ThreadList(DictHelper):
-    threads: list[Thread]
-    nextPageToken: str
-    resultSizeEstimate: int
-
-    _automon_threads: list[Thread]
-
     """
     {
       "threads": [
@@ -1277,6 +1265,10 @@ class ThreadList(DictHelper):
       "resultSizeEstimate": integer
     }
     """
+
+    threads: list[Thread]
+    nextPageToken: str
+    resultSizeEstimate: int
 
     def __init__(self, threads: dict = None):
         self._threads = []

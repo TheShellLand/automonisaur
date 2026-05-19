@@ -362,20 +362,20 @@ def draft_create(
         resume_attachment = []
 
     if not GoogleGmailClient.utils.has_doc_attachment(thread):
-        resume_attachment = resume_selected.automon_attachments[1]
+        resume_attachment = resume_selected.attachments[1]
         assert resume_attachment.filename
 
         resume_attachment = gmail.classes.EmailAttachment(
-            bytes_=resume_attachment.automon_body.automon_data_base64decoded(),
+            bytes_=resume_attachment.body._data_base64decoded(),
             filename=resume_attachment.filename,
             mimeType=resume_attachment.mimeType)
 
-    to = thread.automon_message_first.automon_header_from.value
-    from_ = thread.automon_message_first.automon_header_to.value
+    to = thread._automon_message_first._header_from.value
+    from_ = thread._automon_message_first._header_to.value
 
     # create draft
     body = response
-    subject = "Re: " + thread_selected.automon_message_first.automon_header_subject.value
+    subject = "Re: " + thread_selected._automon_message_first._header_subject.value
     draft = gmail.draft_create(
         threadId=thread_selected.id,
         draft_to=to,
@@ -399,7 +399,7 @@ def draft_send(
 ):
     draft_sent = gmail.draft_send(draft=draft)
     gmail.messages_modify(
-        id=thread_selected.automon_message_first.id,
+        id=thread_selected._automon_message_first.id,
         addLabelIds=[labels.unread])
     return draft_sent
 
@@ -435,8 +435,8 @@ def main():
 
     resume_selected = resume_search.messages[0]
 
-    resume = resume_selected.automon_attachments_first
-    resume = resume.automon_parts[0].automon_body.automon_data_html_text()
+    resume = resume_selected._attachments_first
+    resume = resume.parts[0].body._data_html_text()
 
     prompts_resume = [f"This is your resume: <RESUME>{resume}</RESUME>\n\n", ]
 
@@ -445,12 +445,12 @@ def main():
     prompts_emails_all = []
     for message in thread_selected.automon_messages:
 
-        if labels.draft in message.automon_labels:
+        if labels.draft in message.labelIds:
             continue
 
         _message = f"{message.to_prompt()}"
 
-        if labels.draft not in message.automon_labels:
+        if labels.draft not in message.labelIds:
             prompts_emails.append(
                 f"This is email {i} in an email chain: {_message}\n\n"
             )
@@ -466,12 +466,12 @@ def main():
 
     response = None
     for message in thread_selected.automon_messages:
-        if labels.analyze in message.automon_labels:
-            if labels.sent in thread_selected.automon_message_latest.automon_labels:
+        if labels.analyze in message.labelIds:
+            if labels.sent in thread_selected.automon_message_latest.labelIds:
                 break
 
             _draft = thread_selected.automon_message_latest
-            _resume = _draft.automon_attachments_first.automon_body.automon_data_html_text()
+            _resume = _draft._attachments_first.body._data_html_text()
 
             prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
             response, model = run_llm(prompts=prompts, chat=False)

@@ -472,31 +472,33 @@ class GoogleGmailClient(GoogleAuthClient):
             format=format,
             metadataHeaders=metadataHeaders
         )
-        return self.requests.get(api, headers=self.config.headers, params=params).to_dict()
+        response = self.requests.get(api, headers=self.config.headers, params=params)
+        return response.to_dict()
 
     def messages_get_automon(self, *args, **kwargs) -> Message:
         """Enhanced `message_get`"""
         message = Message(self.messages_get(*args, **kwargs))
 
         if message.labelIds:
-            message.automon_labels = [self.labels_get(x) for x in message.labelIds]
+            message.labelIds = [self.labels_get(x) for x in message.labelIds]
 
         # update attachments
-        automon_parts = []
-        if message.automon_payload:
-            automon_parts = message.automon_payload.automon_parts
+        payload = []
+        payload_parts = []
+        if message.payload:
+            payload_parts = message.payload.parts
 
-        for part in automon_parts:
-            if part.automon_body.attachmentId:
+        for part in payload_parts:
+            if part.body.attachmentId:
                 messages_attachments_get = self.messages_attachments_get(
                     messageId=message.id,
-                    attachmentId=part.automon_body.attachmentId)
+                    attachmentId=part.body.attachmentId)
 
                 df_a = pandas.DataFrame([messages_attachments_get.to_dict()])
                 df_b = pandas.DataFrame([part.body])
                 df_a.update(df_b)
 
-                part.automon_body.automon_update(df_a.to_dict(orient='records')[0])
+                part.body.automon_update(df_a.to_dict(orient='records')[0])
 
         return message
 
@@ -672,7 +674,7 @@ class GoogleGmailClient(GoogleAuthClient):
 
         threading = automon.helpers.threadingWrapper.ThreadingClient()
 
-        for message in thread.automon_messages:
+        for message in thread.messages:
 
             if multithread:
                 import warnings
@@ -680,8 +682,8 @@ class GoogleGmailClient(GoogleAuthClient):
                     f"[GoogleGmailClient] :: thread_get_automon :: multithreading returns duplicate results from gmail api")
                 threading.add_worker(target=update_message, args=(message,))
             else:
-                get_message = self.messages_get_automon(message.id)
-                message.automon_update(get_message)
+                message_full = self.messages_get_automon(message.id)
+                message.automon_update(message_full)
 
         if multithread:
             threading.start(max_threads=3)
@@ -694,7 +696,7 @@ class GoogleGmailClient(GoogleAuthClient):
             exception = t_.exception
             result_message = t_.result
 
-            for message in thread.automon_messages:
+            for message in thread.messages:
                 if message == result_message:
                     message.automon_update(result_message)
 
@@ -749,7 +751,8 @@ class GoogleGmailClient(GoogleAuthClient):
             labelIds=labelIds,
             includeSpamTrash=includeSpamTrash
         )
-        return self.requests.get(api, headers=self.config.headers, params=params).to_dict()
+        response = self.requests.get(api, headers=self.config.headers, params=params)
+        return response.to_dict()
 
     def thread_list_automon(self, *args, **kwargs) -> ThreadList:
         """Enhanced `thread_list`"""
@@ -760,13 +763,13 @@ class GoogleGmailClient(GoogleAuthClient):
         threads = ThreadList(self.thread_list(*args, **kwargs))
         threads._query = (args, kwargs)
 
-        updated = []
+        update_thread = []
         if threads:
 
             for thread in threads.threads:
-                updated.append(self.thread_get_automon(id=thread.id))
+                update_thread.append(self.thread_get_automon(id=thread.id))
 
-            threads.threads = updated
+            threads.threads = update_thread
 
         return threads
 

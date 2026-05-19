@@ -135,7 +135,7 @@ class AutomonGmailClient(GoogleGmailClient):
 
     def delete_draft(self, message: Message):
         # delete DRAFT
-        if self.labels.draft in message.automon_labels:
+        if self.labels.draft in message.labelIds:
             return self.messages_trash(id=message.id)
 
     def delete_extra_data(self, message: Message):
@@ -176,8 +176,8 @@ class AutomonGmailClient(GoogleGmailClient):
 
         resume_selected = self.get_resume_message()
 
-        resume_attachments = resume_selected.automon_attachments_first
-        resume = resume_attachments.body.automon_data_html_text
+        resume_attachments = resume_selected._attachments_first
+        resume = resume_attachments.body._data_html_text
 
         if resume:
             return resume
@@ -186,41 +186,41 @@ class AutomonGmailClient(GoogleGmailClient):
 
     def is_analyze(self, thread: Thread) -> bool:
         for message in thread.messages:
-            if self.labels.analyze in message.automon_labels:
+            if self.labels.analyze in message.labelIds:
                 return True
         return False
 
     def is_auto_reply(self, thread: Thread) -> bool:
         for message in thread.messages:
-            if self.labels.auto_reply_enabled in message.automon_labels:
+            if self.labels.auto_reply_enabled in message.labelIds:
                 return True
         return False
 
     def is_chat(self, thread: Thread) -> bool:
         for message in thread.messages:
-            if self.labels.chat in message.automon_labels:
+            if self.labels.chat in message.labelIds:
                 return True
         return False
 
     def is_debug(self, thread: Thread) -> bool:
         for message in thread.messages:
-            if self.labels.debug in message.automon_labels:
+            if self.labels.debug in message.labelIds:
                 return True
         return False
 
     def is_draft(self, message: Message) -> bool:
-        if self.labels.draft in message.automon_labels:
+        if self.labels.draft in message.labelIds:
             return True
         return False
 
     def is_resume(self, thread: Thread) -> bool:
         for message in thread.messages:
-            if self.labels.resume in message.automon_labels:
+            if self.labels.resume in message.labelIds:
                 return True
         return False
 
     def is_sent(self, message: Message) -> bool:
-        if self.labels.sent in message.automon_labels:
+        if self.labels.sent in message.labelIds:
             return True
         return False
 
@@ -235,9 +235,9 @@ class AutomonGmailClient(GoogleGmailClient):
             thread: Thread,
             days: int = 3
     ) -> bool:
-        message = thread.automon_clean_thread_latest
+        message = thread._automon_clean_thread_latest
 
-        if self.labels.sent in message.automon_labels:
+        if self.labels.sent in message.labelIds:
 
             latest_date = dateutil.parser.parse(message.payload.get_header('Date').value)
             now = datetime.datetime.now()
@@ -258,8 +258,8 @@ class AutomonGmailClient(GoogleGmailClient):
         return False
 
     def not_draft_and_trash(self, message: Message) -> bool:
-        if (self.labels.draft not in message.automon_labels and
-                self.labels.trash not in message.automon_labels):
+        if (self.labels.draft not in message.labelIds and
+                self.labels.trash not in message.labelIds):
             return True
         return False
 
