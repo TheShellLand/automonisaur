@@ -504,7 +504,6 @@ class MessagePartBody(DictHelper):
 
     def __repr__(self):
         return repr_str([
-            self.attachmentId,
             self._data_hash(),
             f'{round(self.size / 1024):,} KB',
         ])
@@ -557,8 +556,8 @@ class MessagePart(DictHelper):
     partId: str
     mimeType: str
     filename: str
-    headers: list[dict]
-    body: dict
+    headers: list[Header]
+    body: MessagePartBody
 
     parts: list[Self]
 

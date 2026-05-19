@@ -139,7 +139,6 @@ class DictHelper(dict):
             except Exception as error:
                 warnings.warn(f"[Dict] :: _update_dict :: WARN :: {error=}")
 
-
         self.enhance()
         self._enhance()
         return self

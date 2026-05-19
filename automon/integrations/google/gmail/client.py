@@ -490,12 +490,12 @@ class GoogleGmailClient(GoogleAuthClient):
 
         for part in payload_parts:
             if part.body.attachmentId:
-                messages_attachments_get = self.messages_attachments_get(
+                attachment = self.messages_attachments_get(
                     messageId=message.id,
                     attachmentId=part.body.attachmentId)
 
-                df_a = pandas.DataFrame([messages_attachments_get.to_dict()])
-                df_b = pandas.DataFrame([part.body])
+                df_a = pandas.DataFrame([attachment.to_dict()])
+                df_b = pandas.DataFrame([part.body.to_dict()])
                 df_a.update(df_b)
 
                 part.body.automon_update(df_a.to_dict(orient='records')[0])
