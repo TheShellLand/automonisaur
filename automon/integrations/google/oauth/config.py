@@ -160,6 +160,7 @@ class GoogleAuthConfig(object):
             self._credentials_pickle_load()
 
         if self.credentials and not self.credentials.expired and not reauth:
+            self.refresh_token()
             return self.credentials
 
         scopes = self.scopes
