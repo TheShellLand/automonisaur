@@ -733,8 +733,9 @@ class Message(DictHelper):
             labels,
             self._date_since_now_str,
             self._email_from,
+            self._header_subject,
+            self.labelIds,
             self._date_utc_str,
-            self.snippet,
         ])
 
     def __lt__(self, other):
@@ -1143,13 +1144,11 @@ class Thread(DictHelper):
         super().__init__(thread)
 
     def __repr__(self):
-        if self.snippet:
-            return self.snippet
-
-        if self.id and self._messages_count:
-            return f'{self.id} :: {self._messages_count} messages'
-
-        return f'{self}'
+        return repr_str([
+            f'{self._messages_count} messages',
+            self._message_first,
+            self.id,
+        ])
 
     def __lt__(self, other):
         if self._clean_thread_latest and other._clean_thread_latest:
@@ -1221,6 +1220,11 @@ class Thread(DictHelper):
     def _message_latest(self) -> Message | None:
         if self.messages:
             return self.messages[-1]
+
+    def to_prompt(self) -> dict:
+        prompt = {}
+        prompt['emails'] = [x.to_prompt() for x in self.messages]
+        return prompt
 
 
 class ThreadList(DictHelper):

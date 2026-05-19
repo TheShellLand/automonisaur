@@ -693,7 +693,7 @@ class GoogleGmailClient(GoogleAuthClient):
             q: str = '',
             maxResults: int = 100,
             pageToken: str = '',
-            labelIds: list[str] = [],
+            labelIds: list[str] = None,
             includeSpamTrash: bool = False
     ) -> dict:
         """
@@ -724,6 +724,8 @@ class GoogleGmailClient(GoogleAuthClient):
         Include threads from SPAM and TRASH in the results.
         """
 
+        labelIds = list(labelIds) if labelIds is not None else []
+
         api = UsersThread(self._userId).list
         params = dict(
             maxResults=maxResults,
@@ -735,14 +737,27 @@ class GoogleGmailClient(GoogleAuthClient):
         response = self.requests.get(api, headers=self.config.headers, params=params)
         return response.to_dict()
 
-    def thread_list_automon(self, *args, **kwargs) -> ThreadList:
+    def thread_list_automon(
+            self,
+            q: str = '',
+            maxResults: int = 100,
+            pageToken: str = '',
+            labelIds: list[str] = None,
+            includeSpamTrash: bool = False
+    ) -> ThreadList:
         """Enhanced `thread_list`"""
-        if kwargs.get('labelIds'):
-            labelIds = kwargs.get('labelIds')
-            kwargs['labelIds'] = [l.id for l in labelIds]
+        labelIds = list(labelIds) if labelIds is not None else []
 
-        threads = ThreadList(self.thread_list(*args, **kwargs))
-        threads._query = (args, kwargs)
+        if labelIds:
+            labelIds = [l.id for l in labelIds]
+
+        threads = ThreadList(self.thread_list(
+            q=q,
+            maxResults=maxResults,
+            pageToken=pageToken,
+            labelIds=labelIds,
+            includeSpamTrash=includeSpamTrash
+        ))
 
         update_thread = []
         if threads:

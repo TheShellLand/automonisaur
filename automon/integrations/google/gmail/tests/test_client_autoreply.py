@@ -6,7 +6,7 @@ import threading
 from queue import Queue
 
 from automon.helpers.threadingWrapper import ThreadingClient
-from automon.integrations.google.gmail import GoogleGmailClient, Thread
+from automon.integrations.google.gmail import *
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO, debug
@@ -56,7 +56,7 @@ labels = gmail._automon_labels
 
 queue_threads: Queue[Thread] = Queue(maxsize=10)
 queue_new: Queue[Thread] = Queue(maxsize=10)
-queue_send: Queue[Thread] = Queue()
+queue_send: Queue[tuple[Thread, Draft]] = Queue()
 queue_skipped: Queue[Thread] = Queue()
 queue_followup: Queue[Thread] = Queue()
 queue_analyze: Queue[Thread] = Queue()
@@ -108,23 +108,21 @@ def get_threads():
             [labels.automon],
         ]
 
-        def search_email(query, pageToken):
-            return gmail.thread_list_automon(
-                maxResults=1,
-                pageToken=pageToken,
-                labelIds=query,
-            )
-
         nextPageToken = None
 
         for query in query_sequence:
-            thread_search = search_email(query, nextPageToken)
+            thread_search = gmail.thread_list_automon(
+                maxResults=1,
+                pageToken=nextPageToken,
+                labelIds=query,
+            )
 
             for thread in thread_search.threads:
+
                 if thread not in queue_threads.queue:
                     queue_threads.put(thread)
                     # queue_log.put(f'[producer_threads] :: {thread}')
-                    queue_log.put(f'[producer_threads] :: {queue_threads.unfinished_tasks} threads')
+                    queue_log.put(f'[producer_threads] :: {queue_threads.unfinished_tasks} threads :: Thread({thread})')
 
             nextPageToken = thread_search.nextPageToken
 
@@ -203,14 +201,37 @@ def processor_email_thread():
 
 
 def processor_email_new():
+    global RESUME
+
     while True:
-        thread = queue_new.get()
+        if RESUME is None:
+            import time
+            time.sleep(1)
+            continue
+
+        thread: Thread = queue_new.get()
+
+        prompt = thread.to_prompt()
+
+        resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text()
+
+        prompt['resume'] = resume_str
 
         queue_new.task_done()
 
 
-def processor_email_send():
-    pass
+def processor_draft_send(gmail):
+    while True:
+        item: tuple[Thread, Draft] = queue_send.get()
+        thread, draft = item
+
+        draft_sent = gmail.draft_send(draft=draft)
+
+        gmail.messages_modify(
+            id=thread._message_first.id,
+            addLabelIds=[labels.unread])
+
+        queue_send.task_done()
 
 
 def processor_email_waiting():
@@ -394,76 +415,30 @@ def draft_create(
     return draft_get
 
 
-def draft_send(
-        draft,
-        thread_selected
-):
-    draft_sent = gmail.draft_send(draft=draft)
-    gmail.messages_modify(
-        id=thread_selected._message_first.id,
-        addLabelIds=[labels.unread])
-    return draft_sent
-
-
 def main():
     global gemini
 
-    # init
-    # _welcome_email = gmail.messages_list_automon(labelIds=[labels.automon, labels.welcome])
-    # if _welcome_email.automon_messages:
-    #     gmail.messages_trash(id=_welcome_email.automon_messages[0].id)
-
-    check_gmail_labels(gmail)
-
-    thread = None
-    thread_selected = None
-
-    _FOLLOW_UP = None
-
     threads = ThreadingClient()
+
+    threads.add_worker(target=check_gmail_labels, args=(gmail,))
 
     threads.add_worker(target=get_threads)
     threads.add_worker(target=get_resume)
 
     threads.add_worker(target=processor_email_thread)
     threads.add_worker(target=processor_email_new)
-    threads.add_worker(target=processor_email_send)
+    threads.add_worker(target=processor_draft_send, args=(gmail,))
     threads.add_worker(target=processor_email_waiting)
 
     threads.add_worker(target=log_printer)
 
     threads.start(max_threads=len(queues) * 2)
 
-    resume_selected = resume_search.messages[0]
-
-    resume = resume_selected._attachments_first
-    resume = resume.parts[0].body._data_html_text()
-
     prompts_resume = [f"This is your resume: <RESUME>{resume}</RESUME>\n\n", ]
 
     i = 1
     prompts_emails = []
     prompts_emails_all = []
-    for message in thread_selected.automon_messages:
-
-        if labels.draft in message.labelIds:
-            continue
-
-        _message = f"{message.to_prompt()}"
-
-        if labels.draft not in message.labelIds:
-            prompts_emails.append(
-                f"This is email {i} in an email chain: {_message}\n\n"
-            )
-
-        prompts_emails_all.append(
-            f"This is email {i} in an email chain: {_message}\n\n"
-        )
-
-        i += 1
-
-    if not prompts_emails:
-        return
 
     response = None
     for message in thread_selected.automon_messages:
@@ -553,14 +528,6 @@ def main():
                 response=response,
                 thread_selected=thread_selected
             )
-            draft_send(
-                draft=draft,
-                thread_selected=thread_selected
-            )
-
-            gmail.messages_modify(
-                id=thread_selected.automon_message_first.id,
-                addLabelIds=[labels.unread])
 
     gmail.messages_modify(
         id=thread_selected.automon_message_first.id,
