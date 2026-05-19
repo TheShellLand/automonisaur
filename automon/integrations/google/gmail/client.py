@@ -772,26 +772,22 @@ class GoogleGmailClient(GoogleAuthClient):
     def thread_modify(
             self,
             id: str,
-            addLabelIds: list = [],
-            removeLabelIds: list = []
+            addLabelIds: list = None,
+            removeLabelIds: list = None
     ) -> Thread:
+
+        addLabelIds = list(addLabelIds) if addLabelIds is not None else []
+        removeLabelIds = list(removeLabelIds) if removeLabelIds is not None else []
 
         if len(addLabelIds) > 100 or len(removeLabelIds) > 100:
             raise Exception(
-                f"[GoogleGmailClient] :: messages_modify :: ERROR :: {len(addLabelIds)=} {len(addLabelIds)=} > 100")
+                f"[GoogleGmailClient] :: messages_modify :: ERROR :: "
+                f"{len(addLabelIds)=} {len(removeLabelIds)=} > 100")
 
         api = UsersThread(self._userId).modify(id=id)
 
-        if addLabelIds:
-            for addLabelId in addLabelIds:
-                if isinstance(addLabelId, Label):
-                    addLabelIds = [addLabelId.id for addLabelId in addLabelIds]
-                    break
-        if removeLabelIds:
-            for removeLabelId in removeLabelIds:
-                if isinstance(removeLabelId, Label):
-                    removeLabelIds = [removeLabelId.id for removeLabelId in removeLabelIds]
-                    break
+        addLabelIds = [lbl.id if hasattr(lbl, 'id') else lbl for lbl in addLabelIds]
+        removeLabelIds = [lbl.id if hasattr(lbl, 'id') else lbl for lbl in removeLabelIds]
 
         data = {
             "addLabelIds": addLabelIds,

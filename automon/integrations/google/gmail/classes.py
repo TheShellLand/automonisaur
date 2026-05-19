@@ -1221,10 +1221,8 @@ class Thread(DictHelper):
         if self.messages:
             return self.messages[-1]
 
-    def to_prompt(self) -> dict:
-        prompt = {}
-        prompt['emails'] = [x.to_prompt() for x in self.messages]
-        return prompt
+    def to_prompt(self) -> list[dict]:
+        return [{'message': x.to_prompt()} for x in self.messages]
 
 
 class ThreadList(DictHelper):

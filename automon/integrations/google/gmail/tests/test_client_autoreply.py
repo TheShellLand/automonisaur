@@ -203,7 +203,8 @@ def processor_email_thread():
 def processor_email_new():
     global RESUME
 
-    while True:
+    PROCESSING = True
+    while PROCESSING:
         if RESUME is None:
             import time
             time.sleep(1)
@@ -211,13 +212,88 @@ def processor_email_new():
 
         thread: Thread = queue_new.get()
 
-        prompt = thread.to_prompt()
-
         resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text()
 
-        prompt['resume'] = resume_str
+        prompt = thread.to_prompt()
+        prompt.append({'resume': resume_str})
+
+        response_passed = False
+        while not response_passed:
+
+            if not is_from_human(prompt):
+                gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                break
+
+            if is_rejected_email(prompt):
+                gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                break
+
+            response, model = get_response(prompt)
+
+            response_passed, model = check_response(prompts=prompt, response=response)
+
+            if gemini.response_is_false(response_passed):
+                response_check_loop = False
+                while gemini.response_is_false(response_check_loop):
+                    response, model = get_response(prompt)
+                    response_check_loop, model = check_response(prompts=prompt, response=response)
+
+            else:
+                gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+
+        if response_passed:
+            if not GoogleGmailClient.utils.is_skipped(thread_selected):
+                if GoogleGmailClient.utils.is_follow_up(thread_selected):
+                    draft = draft_create(
+                        thread=thread,
+                        response=response,
+                        thread_selected=thread
+                    )
+
+        gmail.messages_modify(
+            id=thread._message_first.id,
+            removeLabelIds=[labels.processing])
 
         queue_new.task_done()
+
+
+def is_from_human(prompts: list) -> bool:
+    prompts.append({'question': GoogleGeminiClient.prompts.TrueOrFalseTemplates().email_is_human})
+    response, model = run_llm(prompts=prompts, chat=False)
+    return gemini.response_is_true(response)
+
+
+def is_rejected_email(prompts: list) -> bool:
+    prompts.append({'question': GoogleGeminiClient.prompts.TrueOrFalseTemplates().email_is_rejected})
+    response, model = run_llm(prompts=prompts, chat=False)
+    return gemini.response_is_true(response)
+
+
+def get_response(prompts: list) -> tuple[str, any]:
+    prompts.append({'question': GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant})
+    response, model = run_llm(prompts=prompts, chat=chat)
+    return response, model
+
+
+def check_response(prompts: list, response) -> tuple[str, any]:
+    prompts_check = prompts
+    prompts_check += GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant
+    prompts_check += [f"RESPONSE: {response}"]
+    prompts_check += GoogleGeminiClient.prompts.TrueOrFalseTemplates().rules_is_followed
+
+    response_check, model = run_llm(prompts_check)
+
+    if gemini.response_is_false(response_check):
+        prompts_fix = prompts + [(
+            f"RESPONSE: {response} \n"
+            f"first say what portion of the response was wrong, and highlight the wrong part of the response \n"
+            f"then write a prompt to fix what was wrong using the format: \n"
+            f"RULE: reason goes here"
+        )]
+
+        run_llm(prompts=prompts_fix, chat=True)
+
+    return response_check, model
 
 
 def processor_draft_send(gmail):
@@ -376,15 +452,16 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
 
 
 def draft_create(
-        thread,
-        response,
-        thread_selected,
+        thread: Thread,
+        response: str,
+        thread_selected: Thread,
+        resume_attachment: MessagePartBody,
 ):
     if GoogleGmailClient.utils.is_follow_up(thread):
         resume_attachment = []
 
     if not GoogleGmailClient.utils.has_doc_attachment(thread):
-        resume_attachment = resume_selected.attachments[1]
+        resume_attachment = resume_attachment.attachments[1]
         assert resume_attachment.filename
 
         resume_attachment = gmail.classes.EmailAttachment(
@@ -433,105 +510,6 @@ def main():
     threads.add_worker(target=log_printer)
 
     threads.start(max_threads=len(queues) * 2)
-
-    prompts_resume = [f"This is your resume: <RESUME>{resume}</RESUME>\n\n", ]
-
-    i = 1
-    prompts_emails = []
-    prompts_emails_all = []
-
-    response = None
-    for message in thread_selected.automon_messages:
-        if labels.analyze in message.labelIds:
-            if labels.sent in thread_selected.automon_message_latest.labelIds:
-                break
-
-            _draft = thread_selected.automon_message_latest
-            _resume = _draft._attachments_first.body._data_html_text()
-
-            prompts = [_resume] + [f"Give me an analysis of the resume. \n"]
-            response, model = run_llm(prompts=prompts, chat=False)
-
-            gmail.messages_modify(id=_draft.id, removeLabelIds=[labels.analyze])
-            gmail.messages_trash(id=_draft.id)
-            break
-
-    response_check = False
-    while not response_check:
-
-        def is_from_human(prompts: list) -> bool:
-            prompts_check = prompts + GoogleGeminiClient.prompts.TrueOrFalseTemplates().email_is_human
-            response, model = run_llm(prompts=prompts_check, chat=False)
-            return gemini.response_is_true(response)
-
-        def is_rejected_email(prompts: list) -> bool:
-            prompts_check = prompts
-            prompts_check += GoogleGeminiClient.prompts.TrueOrFalseTemplates().email_is_rejected
-
-            response, model = run_llm(prompts=prompts_check, chat=False)
-            return gemini.response_is_true(response)
-
-        def get_response(prompts: list) -> tuple[str, any]:
-            prompts_ask = prompts + [GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant]
-
-            chat = False
-
-            if labels.error in thread_selected.automon_messages_labels:
-                chat = True
-
-            response, model = run_llm(prompts=prompts_ask, chat=chat)
-
-            return response, model
-
-        def check_response(prompts: list, response) -> tuple[str, any]:
-            prompts_check = prompts
-            prompts_check += GoogleGeminiClient.prompts.AgentTemplates().agent_machine_job_applicant
-            prompts_check += [f"RESPONSE: {response}"]
-            prompts_check += GoogleGeminiClient.prompts.TrueOrFalseTemplates().rules_is_followed
-
-            response_check, model = run_llm(prompts_check)
-
-            if gemini.response_is_false(response_check):
-                prompts_fix = prompts + [(
-                    f"RESPONSE: {response} \n"
-                    f"first say what portion of the response was wrong, and highlight the wrong part of the response \n"
-                    f"then write a prompt to fix what was wrong using the format: \n"
-                    f"RULE: reason goes here"
-                )]
-
-                run_llm(prompts=prompts_fix, chat=True)
-
-            return response_check, model
-
-        prompts = prompts_resume + prompts_emails
-
-        if is_from_human(prompts):
-            if not is_rejected_email(prompts):
-                response, model = get_response(prompts)
-                response_check, model = check_response(prompts=prompts, response=response)
-
-                if gemini.response_is_false(response_check):
-                    response_check_loop = False
-                    while gemini.response_is_false(response_check_loop):
-                        response, model = get_response(prompts)
-                        response_check_loop, model = check_response(prompts=prompts, response=response)
-
-        else:
-            gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-
-    gmail.config.refresh_token()
-
-    if not GoogleGmailClient.utils.is_skipped(thread_selected):
-        if GoogleGmailClient.utils.is_follow_up(thread_selected):
-            draft = draft_create(
-                thread=thread,
-                response=response,
-                thread_selected=thread_selected
-            )
-
-    gmail.messages_modify(
-        id=thread_selected.automon_message_first.id,
-        removeLabelIds=[labels.processing])
 
 
 class MyTestCase(unittest.TestCase):
