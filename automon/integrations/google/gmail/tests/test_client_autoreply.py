@@ -132,7 +132,8 @@ def get_resume():
         )
 
         for thread in threads.threads:
-            queue_threads.put(thread)
+            if gmail.utils.is_resume(thread):
+                queue_threads.put(thread)
 
 
 def processor_email_thread():

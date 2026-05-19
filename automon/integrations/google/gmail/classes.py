@@ -418,8 +418,9 @@ class Label(DictHelper):
         return str(self.id)
 
     def __eq__(self, other):
-        if self.id == other.id and self.name == other.name:
-            return True
+        if isinstance(other, Label):
+            if self.id == other.id or self.name == other.name:
+                return True
         return False
 
     def __lt__(self, other):
@@ -1197,17 +1198,6 @@ class Thread(DictHelper):
     def _clean_thread_latest(self) -> Message | None:
         if self._clean_thread:
             return self._clean_thread[-1]
-
-    @property
-    def _automon_messages_duplicates(self) -> list[Message]:
-        messages = []
-        duplicates = []
-        for message in self.messages:
-            if message not in messages:
-                messages.append(message)
-            else:
-                duplicates.append(message)
-        return duplicates
 
     @property
     def _messages_count(self):
