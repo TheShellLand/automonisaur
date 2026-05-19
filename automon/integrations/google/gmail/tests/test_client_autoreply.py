@@ -125,6 +125,7 @@ def get_threads():
 
 
 def get_resume():
+    global RESUME
     while RESUME is None:
         threads = gmail.thread_list_automon(
             maxResults=1,
@@ -144,6 +145,7 @@ def processor_email_thread():
 
         # resume
         if GoogleGmailClient.utils.is_resume(thread):
+            global RESUME
             RESUME = thread
             queue_threads.task_done()
             continue
