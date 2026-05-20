@@ -114,7 +114,7 @@ def get_threads():
 
         for query in query_sequence:
             thread_search = gmail.thread_list_automon(
-                maxResults=1,
+                maxResults=10,
                 pageToken=nextPageToken,
                 labelIds=query,
             )
@@ -125,7 +125,7 @@ def get_threads():
                     query_history.put(thread)
                     queue_threads.put(thread)
                     # queue_log.put(f'[get_threads] :: {thread}')
-                    queue_log.put(f'[get_threads] :: {query_history.qsize()} total :: Thread({thread})')
+                    queue_log.put(f'[get_threads] :: {query_history.qsize()} total :: {thread}')
 
             nextPageToken = thread_search.nextPageToken
 

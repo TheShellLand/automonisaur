@@ -916,6 +916,10 @@ class Message(DictHelper):
                         email['body'] = part.body._data_html_text()
                         break
 
+                    if part.mimeType == 'text/html':
+                        email['body'] = part.body._data_html_text()
+                        break
+
                     more_parts = part.parts
                     for more_part in more_parts:
                         if more_part.mimeType == 'text/plain':
@@ -1148,10 +1152,10 @@ class Thread(DictHelper):
 
     def __repr__(self):
         return repr_str([
+            self.id.upper()[-4:],
             f'{self._messages_count} messages',
             self._message_first._date_since_now_str,
             self._message_first._header_subject,
-            self.id,
         ])
 
     def __lt__(self, other):
