@@ -57,7 +57,7 @@ class GoogleGeminiClient(object):
     models = GoogleGeminiModels()
     models_search = {}
 
-    templates = prompt_templates
+    _templates = prompt_templates
     api = GoogleGeminiApi()
 
     def __init__(
@@ -157,7 +157,7 @@ class GoogleGeminiClient(object):
         if not isinstance(prompt, str):
             prompt = str(prompt)
 
-        part = Part(text=prompt)
+        part = Part({'text': prompt})
         content = Content(role=role).add_part(part=part)
         self._prompt.add_content(content=content)
 
@@ -189,14 +189,15 @@ class GoogleGeminiClient(object):
 
         url = self.api.base.version(self.api_version).models(self.model).generateContent.key(
             key=self.config.random_api_key()).url
-        json = self._prompt.to_dict()
+        json = self._prompt.to_prompt()
         chat = self._requests.post(url=url, json=json, headers=self.config.headers())
 
         if not chat:
-            logger.error(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {chat.to_dict()}')
+            error = chat.to_dict().get('error')
+            logger.error(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {error}')
             raise Exception(
                 f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model}',
-                chat.to_dict(),
+                error,
                 self.model
             )
 

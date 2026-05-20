@@ -1,5 +1,6 @@
 import bs4
 import json
+import pandas
 import threading
 import requests
 import requests.adapters
@@ -81,6 +82,13 @@ class RequestResponse(DictHelper):
     def content_bs4(self):
         if self.content is not None:
             return self._bs4(self.content)
+
+    @property
+    def content_df(self):
+        try:
+            return pandas.DataFrame(self.content)
+        except:
+            pass
 
     def content_to_dict(self):
         return self.to_dict()

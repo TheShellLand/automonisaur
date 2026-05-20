@@ -54,7 +54,7 @@ gmail.config.add_scopes([
 
 labels = gmail._automon_labels
 
-queue_threads: Queue[Thread] = Queue(maxsize=10)
+queue_threads: Queue[Thread] = Queue(maxsize=1)
 queue_new: Queue[Thread] = Queue(maxsize=1)
 queue_send: Queue[tuple[Thread, Draft]] = Queue()
 queue_skipped: Queue[Thread] = Queue()
@@ -137,7 +137,7 @@ def get_resume():
 
         for thread in threads.threads:
             if gmail.utils.is_resume(thread):
-                queue_threads.put(thread)
+                RESUME = thread
 
 
 def processor_email_thread():
@@ -258,28 +258,28 @@ def processor_email_new():
 
 
 def is_from_human(prompts: list) -> bool:
-    prompts.append({'question': GoogleGeminiClient.templates.TrueOrFalseTemplates().email_is_human})
+    prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().email_is_human})
     response, model = run_llm(prompts=prompts, chat=False)
     return gemini.response_is_true(response)
 
 
 def is_rejected_email(prompts: list) -> bool:
-    prompts.append({'question': GoogleGeminiClient.templates.TrueOrFalseTemplates().email_is_rejected})
+    prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().email_is_rejected})
     response, model = run_llm(prompts=prompts, chat=False)
     return gemini.response_is_true(response)
 
 
 def get_response(prompts: list) -> tuple[str, any]:
-    prompts.append({'question': GoogleGeminiClient.templates.AgentTemplates().agent_machine_job_applicant})
+    prompts.append({'question': GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant})
     response, model = run_llm(prompts=prompts, chat=chat)
     return response, model
 
 
 def check_response(prompts: list, response) -> tuple[str, any]:
     prompts_check = prompts
-    prompts_check += GoogleGeminiClient.templates.AgentTemplates().agent_machine_job_applicant
+    prompts_check += GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant
     prompts_check += [f"RESPONSE: {response}"]
-    prompts_check += GoogleGeminiClient.templates.TrueOrFalseTemplates().rules_is_followed
+    prompts_check += GoogleGeminiClient._templates.TrueOrFalseTemplates().rules_is_followed
 
     response_check, model = run_llm(prompts_check)
 
@@ -452,6 +452,8 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
                         DF.loc[len(DF)] = new_error
 
                 DF.sort_values(by='error_count', ascending=True, inplace=True)
+
+                print(DF)
 
                 pass
 

@@ -155,10 +155,10 @@ class DictHelper(dict):
         for key in dir(obj):
             value = getattr(obj, key)
 
-            if key.startswith("_"):
+            if isinstance(value, Callable):
                 continue
 
-            if isinstance(value, Callable):
+            if key.startswith("_"):
                 continue
 
             if isinstance(value, list):

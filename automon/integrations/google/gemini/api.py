@@ -72,7 +72,7 @@ class Part(DictHelper):
     text: str
 
     def __init__(self, part: dict | Self = None, text: str = ''):
-        self.text: str = text
+        self._text: str = text
 
         super().__init__(part)
 
@@ -81,6 +81,15 @@ class Part(DictHelper):
 
     def __len__(self) -> int:
         return len(self.tokens)
+
+    @property
+    def text(self):
+        self._text = str(self._text)
+        return self._text
+
+    @text.setter
+    def text(self, value):
+        self._text = str(value)
 
     @property
     def bytes(self):
@@ -92,14 +101,12 @@ class Part(DictHelper):
 
     @property
     def preview(self):
-        return f"{self.text}".encode()[:120]
+        return self.text[:120]
 
 
 class Content(DictHelper):
     parts: list[Part]
     role: str
-
-    automon_parts: list[Part]
 
     def __init__(self, content: dict = None, role: str = 'user'):
 
@@ -187,6 +194,15 @@ class GeminiPrompt(DictHelper):
     def clear_history(self):
         self.contents = []
         return self
+
+    def to_prompt(self):
+        prompt = {'contents': []}
+        for content in self.contents:
+            parts = []
+            for part in content.parts:
+                parts.append({'text': part.text})
+            prompt['contents'].append({'parts': parts})
+        return prompt
 
 
 class GeminiResponse(DictHelper):
