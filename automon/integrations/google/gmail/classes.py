@@ -1147,6 +1147,7 @@ class Thread(DictHelper):
         return repr_str([
             f'{self._messages_count} messages',
             self._message_first._date_since_now_str,
+            self._message_first._header_subject,
             self.id,
         ])
 

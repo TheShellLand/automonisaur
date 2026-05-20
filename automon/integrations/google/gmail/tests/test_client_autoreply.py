@@ -98,8 +98,10 @@ def automon_init(client: GoogleGmailClient):
 def get_threads():
     while gmail.is_ready():
 
-        if queue_threads.full():
-            pass
+        while queue_threads.full():
+            import time
+            time.sleep(10)
+            continue
 
         query_sequence = [
             [labels.automon, labels.error],
