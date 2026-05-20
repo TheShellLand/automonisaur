@@ -23,7 +23,7 @@ class GoogleGeminiModels(object):
             # self.gemini_3_flash,
             # self.gemini_2_5_flash,
             # self.gemini_2_5_flash_exp,
-            # self.gemini_2_5_flash_lite,
+            self.gemini_2_5_flash_lite,
             # self.gemini_2_5_flash_live,
             # self.gemini_2_5_flash_preview_09_2025,
             # self.gemini_2_5_pro,
@@ -34,6 +34,9 @@ class GoogleGeminiModels(object):
             # self.gemini_2_0_flash_live,
             self.gemini_2_5_flash_live_native_audio,
             # self.gemma_3_27b_it,
+            self.gemini_3_5_flash,
+            self.gemini_3_flash_preview,
+            self.gemini_3_1_flash_lite_preview,
         ]
 
         self.PRO_TIER = [
@@ -121,6 +124,14 @@ class GoogleGeminiModels(object):
     @property
     def gemini_3_flash(self):
         return f'gemini-3-flash'
+
+    @property
+    def gemini_3_1_flash_lite_preview(self):
+        return f'gemini-3.1-flash-lite-preview'
+
+    @property
+    def gemini_3_5_flash(self):
+        return f'gemini-3.5-flash'
 
     @property
     def gemini_3_flash_preview(self):

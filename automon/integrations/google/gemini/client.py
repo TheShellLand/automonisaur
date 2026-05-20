@@ -54,7 +54,7 @@ from automon.integrations.ollamaWrapper import prompt_templates
 
 
 class GoogleGeminiClient(object):
-    models = GoogleGeminiModels()
+    _models = GoogleGeminiModels()
     models_search = {}
 
     _templates = prompt_templates
@@ -75,7 +75,7 @@ class GoogleGeminiClient(object):
         self._prompt = GeminiPrompt()
         self._chat: GeminiResponse = None
 
-        self.models_in_use = self.models.FREE_TIER
+        self.models_in_use = self._models.FREE_TIER
 
         if self.model and self.api_version:
             self._check_model()

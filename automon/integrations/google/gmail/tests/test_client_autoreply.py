@@ -54,8 +54,8 @@ gmail.config.add_scopes([
 
 labels = gmail._automon_labels
 
-queue_threads: Queue[Thread] = Queue(maxsize=10)
-queue_new: Queue[Thread] = Queue(maxsize=1)
+queue_threads: Queue[Thread] = Queue()
+queue_new: Queue[Thread] = Queue()
 queue_send: Queue[tuple[Thread, Draft]] = Queue()
 queue_skipped: Queue[Thread] = Queue()
 queue_followup: Queue[Thread] = Queue()
@@ -96,11 +96,12 @@ def automon_init(client: GoogleGmailClient):
     pass
 
 
-def get_threads():
-    while gmail.is_ready():
+def get_threads(gmail_client: GoogleGmailClient):
+    while True:
+        while not gmail.is_ready():
+            time.sleep(1)
 
         while queue_threads.full():
-            import time
             time.sleep(10)
 
         query_sequence = [
@@ -124,13 +125,12 @@ def get_threads():
                 if thread not in query_history.queue:
                     query_history.put(thread)
                     queue_threads.put(thread)
-                    # queue_log.put(f'[get_threads] :: {thread}')
-                    queue_log.put(f'[get_threads] :: {query_history.qsize()} total :: {thread}')
+                    queue_log.put(f'[get_threads] :: {query_history.qsize()} total')
 
             nextPageToken = thread_search.nextPageToken
 
 
-def get_resume():
+def get_resume(gmail: GoogleGmailClient):
     global RESUME
     while RESUME is None:
         threads = gmail.thread_list_automon(
@@ -203,7 +203,7 @@ def processor_email_thread():
         pass
 
 
-def processor_email_new():
+def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
     global RESUME
 
     _PROCESSING = True
@@ -230,14 +230,14 @@ def processor_email_new():
                 gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
                 break
 
-            response, model = get_response(prompt)
+            response, model = write_email_reply(prompt)
 
-            response, model = check_response(prompts=prompt, response=response)
+            _response, model = check_response(prompts=prompt, response=response)
 
             if gemini.response_is_false(response_passed):
                 response_check_loop = False
                 while gemini.response_is_false(response_check_loop):
-                    response, model = get_response(prompt)
+                    response, model = write_email_reply(prompt)
                     response_check_loop, model = check_response(prompts=prompt, response=response)
 
             else:
@@ -273,31 +273,32 @@ def is_rejected_email(prompts: list) -> bool:
     return gemini.response_is_true(response)
 
 
-def get_response(prompts: list) -> tuple[str, any]:
+def write_email_reply(prompts: list) -> tuple[str, any]:
     prompts = prompts.copy()
     prompts.append({'question': GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant})
-    response, model = run_llm(prompts=prompts, chat=chat)
+    response, model = run_llm(prompts=prompts, chat=False)
     return response, model
 
 
 def check_response(prompts: list, response) -> tuple[str, any]:
     prompts = prompts.copy()
-    prompts_check = prompts
-    prompts_check += GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant
-    prompts_check += [f"RESPONSE: {response}"]
-    prompts_check += GoogleGeminiClient._templates.TrueOrFalseTemplates().rules_is_followed
+    new_prompts = prompts.copy()
+    new_prompts.append({'RULES': GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant})
+    new_prompts.append({'RESPONSE': response})
+    new_prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().rules_is_followed})
 
-    response_check, model = run_llm(prompts_check)
+    response_check, model = run_llm(prompts)
 
     if gemini.response_is_false(response_check):
-        prompts_fix = prompts + [(
-            f"RESPONSE: {response} \n"
-            f"first say what portion of the response was wrong, and highlight the wrong part of the response \n"
-            f"then write a prompt to fix what was wrong using the format: \n"
-            f"RULE: reason goes here"
-        )]
+        pls_fix = prompts.copy()
+        pls_fix.append({'RULES': GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant})
+        pls_fix.append({'RESPONSE': response})
+        pls_fix.append({'question': 'tell me what rule was broken, '
+                                    'and then write a rule general enough to avoid breaking this rule. '
+                                    'write the new rule in the same format as the other rules. '}
+                       )
 
-        run_llm(prompts=prompts_fix, chat=True)
+        r, _ = run_llm(prompts=pls_fix, chat=True)
 
     return response_check, model
 
@@ -376,6 +377,7 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
 
         # gemini.add_content(role='model', prompt=gemini.prompts.agent_machine_job_applicant)
 
+        prompts = prompts.copy()
         for prompt in prompts:
             gemini.add_content(prompt)
 
@@ -386,11 +388,22 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
 
         debug(model)
 
-        mask = (DF['model'] == model)
+        mask = DF['model'] == model
         if mask.any():
-            DF.loc[mask, 'working_count'] += 1
+            idx = DF[mask].index[0]
+
+            DF.at[idx, 'working_count'] = int(DF.at[idx, 'working_count']) + 1
         else:
-            DF.loc[len(DF)] = {'model': model, 'working_count': 1}
+            new_event = {
+                'model': model,
+                'last_error': '',
+                'error_count': 0,
+                'working_count': 1,
+            }
+            DF.loc[len(DF)] = new_event
+        DF.sort_values(by='working_count', ascending=True, inplace=True, ignore_index=True)
+
+        print(DF)
 
         return response, gemini
 
@@ -427,12 +440,21 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
 MODEL_ERRORS = {}
 import pandas as pd
 
-cols = ['model', 'last_error', 'error_count', 'working_count']
-MODEL_API_ERROR_DF = pd.DataFrame(columns=cols)
+schema = {
+    'model': 'str',
+    'last_error': 'str',
+    'error_count': 'Int16',
+    'working_count': 'Int16',
+}
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 1200)
+
+MODEL_API_ERROR_DF = pd.DataFrame(columns=schema.keys()).astype(schema)
 DF = MODEL_API_ERROR_DF
 
 
-def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
+def run_llm(prompts: list, chat: bool = False) -> tuple[str, object]:
     global MODEL_ERRORS
     global DF
 
@@ -451,21 +473,21 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
                 error_ = error.args[1]
                 model = error.args[2]
 
-                new_event = {
-                    'model': model,
-                    'last_error': error_,
-                    'error_count': 1,
-                }
-
-                mask = (DF['model'] == model)
-
+                mask = DF['model'] == model
                 if mask.any():
-                    DF.loc[mask, 'last_error'] = error_
-                    DF.loc[mask, 'error_count'] += 1
-                else:
-                    DF.loc[len(DF)] = new_event
+                    idx = DF[mask].index[0]
 
-                DF.sort_values(by='error_count', ascending=True, inplace=True)
+                    DF.at[idx, 'last_error'] = error_
+                    DF.at[idx, 'error_count'] = int(DF.at[idx, 'error_count']) + 1
+                else:
+                    new_event = {
+                        'model': model,
+                        'last_error': error_,
+                        'error_count': 1,
+                        'working_count': 0,
+                    }
+                    DF.loc[len(DF)] = new_event
+                DF.sort_values(by='working_count', ascending=True, inplace=True, ignore_index=True)
 
                 print(DF)
 
@@ -487,7 +509,7 @@ def draft_create(
         resume_attachment = resume_attachment.attachments[1]
         assert resume_attachment.filename
 
-        resume_attachment = gmail.classes.EmailAttachment(
+        resume_attachment = gmail._classes.EmailAttachment(
             bytes_=resume_attachment.body._data_base64decoded(),
             filename=resume_attachment.filename,
             mimeType=resume_attachment.mimeType)
@@ -522,11 +544,11 @@ def main():
 
     threads = ThreadingClient()
 
-    threads.add_worker(target=get_threads)
-    threads.add_worker(target=get_resume)
+    threads.add_worker(target=get_threads, args=(gmail,))
+    threads.add_worker(target=get_resume, args=(gmail,))
 
     threads.add_worker(target=processor_email_thread)
-    threads.add_worker(target=processor_email_new)
+    threads.add_worker(target=processor_email_new, args=(gmail, gemini))
     threads.add_worker(target=processor_draft_send, args=(gmail,))
     threads.add_worker(target=processor_email_waiting)
 

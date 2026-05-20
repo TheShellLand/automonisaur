@@ -1,5 +1,3 @@
-
-
 class AgentTemplates:
 
     @property
@@ -35,15 +33,13 @@ class AgentTemplates:
 class TrueOrFalseTemplates:
 
     @property
-    def email_is_human(self) -> list:
-        return ["Respond only True or False, is the first email from a human"]
+    def email_is_human(self) -> str:
+        return "Respond only True or False, is the first email from a human"
 
     @property
-    def email_is_rejected(self) -> list:
-        return [
-            f"Respond only True or False, Check if any of the emails is from mailer-daemon or the body contains recipient address rejected."
-        ]
+    def email_is_rejected(self) -> str:
+        return f"Respond only True or False, Check if any of the emails is from mailer-daemon or the body contains recipient address rejected."
 
     @property
-    def rules_is_followed(self) -> list:
-        return [f"Respond True or False. Is the RESPONSE following all RULES?"]
+    def rules_is_followed(self) -> str:
+        return f"Respond only True or False. Is the RESPONSE following all RULES?"
