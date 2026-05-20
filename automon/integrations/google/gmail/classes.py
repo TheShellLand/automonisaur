@@ -1146,7 +1146,7 @@ class Thread(DictHelper):
     def __repr__(self):
         return repr_str([
             f'{self._messages_count} messages',
-            self._message_first,
+            self._message_first._date_since_now_str,
             self.id,
         ])
 
