@@ -408,8 +408,10 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
 
 
 MODEL_ERRORS = {}
+import pandas as pd
 
-MODEL_API_ERROR_QUEUE = Queue()
+MODEL_API_ERROR_DF = pd.DataFrame()
+DF = MODEL_API_ERROR_DF
 
 
 def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
@@ -427,26 +429,31 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
                 break
         except Exception as error:
             if len(error.args) > 1:
-                model = error.args[1]
-                MODEL_ERRORS[model] = MODEL_ERRORS.get(model, 0) + 1
+                error_ = error.args[1].get('error')
+                model = error.args[2]
 
-                flipped = []
-                for model, count in MODEL_ERRORS.items():
-                    flipped.append((count, model))
+                global DF
 
-                # 2. Sort it (Python sorts by the first item, which is the count)
-                flipped.sort()
+                new_error = {
+                    'model': model,
+                    'error': error_,
+                    'error_count': 1
+                }
 
-                # 3. Flip it back into a dict: {'ollama': 2, 'gemini': 5}
-                MODEL_ERRORS = {}
-                for count, model in flipped:
-                    MODEL_ERRORS[model] = count
+                if DF.empty:
+                    DF = pd.DataFrame([new_error])
+                else:
 
-                MODEL_API_ERROR_QUEUE.put(response)
-                debug(f"[run_llm] :: ERROR :: {MODEL_API_ERROR_QUEUE.qsize()} errors :: {MODEL_ERRORS}")
+                    mask = (DF['model'] == model) & (DF['error'] == error_)
 
-    if not response:
-        raise Exception(f"[run_llm] :: ERROR :: missing llm response :: {response=}")
+                    if mask.any():
+                        DF.loc[mask, 'error_count'] += 1
+                    else:
+                        DF.loc[len(DF)] = new_error
+
+                DF.sort_values(by='error_count', ascending=True, inplace=True)
+
+                pass
 
     return response, model
 

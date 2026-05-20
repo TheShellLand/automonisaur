@@ -160,7 +160,7 @@ class GeminiPrompt(DictHelper):
     contents: list[Content]
 
     def __init__(self, prompt: dict = None):
-        self._contents = None
+        self._contents = []
 
         super().__init__(prompt)
 

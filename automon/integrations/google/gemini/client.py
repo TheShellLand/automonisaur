@@ -193,9 +193,12 @@ class GoogleGeminiClient(object):
         chat = self._requests.post(url=url, json=json, headers=self.config.headers())
 
         if not chat:
-            logger.error(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.to_dict()}')
-            raise Exception(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {self._requests.to_dict()}',
-                            self.model)
+            logger.error(f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model} :: {chat.to_dict()}')
+            raise Exception(
+                f'[GoogleGeminiClient] :: chat :: ERROR :: {self.model}',
+                chat.to_dict(),
+                self.model
+            )
 
         self._chat = GeminiResponse(self._requests.to_dict())
 
