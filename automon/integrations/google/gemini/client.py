@@ -201,7 +201,7 @@ class GoogleGeminiClient(object):
                 self.model
             )
 
-        self._chat = GeminiResponse(self._requests.to_dict())
+        self._chat = GeminiResponse(chat.to_dict())
 
         if print_stream:
             self._chat.print_stream()

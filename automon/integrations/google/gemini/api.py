@@ -219,12 +219,13 @@ class GeminiResponse(DictHelper):
 
     @property
     def candidates(self):
-        self._candidates = encapsulate(value=self._candidates, object_class=Candidate)
+        value = self._candidates
+        self._candidates = encapsulate(value=value, object_class=Candidate)
         return self._candidates
 
     @candidates.setter
     def candidates(self, value):
-        self._candidates = encapsulate(value=self._candidates, object_class=Candidate)
+        self._candidates = encapsulate(value=value, object_class=Candidate)
 
     @property
     def response(self) -> Candidate | None:
