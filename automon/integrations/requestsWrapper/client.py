@@ -86,7 +86,7 @@ class RequestResponse(DictHelper):
     @property
     def content_df(self):
         try:
-            return pandas.DataFrame(self.content)
+            return pandas.DataFrame(self.to_dict())
         except:
             pass
 
