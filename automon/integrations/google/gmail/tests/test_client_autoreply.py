@@ -258,24 +258,28 @@ def processor_email_new():
 
 
 def is_from_human(prompts: list) -> bool:
+    prompts = prompts.copy()
     prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().email_is_human})
     response, model = run_llm(prompts=prompts, chat=False)
     return gemini.response_is_true(response)
 
 
 def is_rejected_email(prompts: list) -> bool:
+    prompts = prompts.copy()
     prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().email_is_rejected})
     response, model = run_llm(prompts=prompts, chat=False)
     return gemini.response_is_true(response)
 
 
 def get_response(prompts: list) -> tuple[str, any]:
+    prompts = prompts.copy()
     prompts.append({'question': GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant})
     response, model = run_llm(prompts=prompts, chat=chat)
     return response, model
 
 
 def check_response(prompts: list, response) -> tuple[str, any]:
+    prompts = prompts.copy()
     prompts_check = prompts
     prompts_check += GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant
     prompts_check += [f"RESPONSE: {response}"]
