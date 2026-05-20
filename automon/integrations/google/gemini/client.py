@@ -57,7 +57,7 @@ class GoogleGeminiClient(object):
     models = GoogleGeminiModels()
     models_search = {}
 
-    prompts = prompt_templates
+    templates = prompt_templates
     api = GoogleGeminiApi()
 
     def __init__(
@@ -155,7 +155,7 @@ class GoogleGeminiClient(object):
 
     def add_content(self, prompt: str, role: str = 'user'):
         if not isinstance(prompt, str):
-            return self
+            prompt = str(prompt)
 
         part = Part(text=prompt)
         content = Content(role=role).add_part(part=part)

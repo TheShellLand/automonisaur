@@ -92,7 +92,7 @@ class Part(DictHelper):
 
     @property
     def preview(self):
-        return f"{self.text}".encode()[:50]
+        return f"{self.text}".encode()[:120]
 
 
 class Content(DictHelper):
