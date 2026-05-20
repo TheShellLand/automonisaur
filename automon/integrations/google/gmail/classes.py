@@ -901,6 +901,7 @@ class Message(DictHelper):
         email['subject'] = self._header_subject.value
         email['date'] = self._date_local_str
         email['date_epoch'] = self._date_epoch_s
+        email['body'] = None
 
         if self.payload:
             body = self.payload.body
@@ -921,6 +922,8 @@ class Message(DictHelper):
                             email['body'] = more_part.body._data_html_text()
                             break
 
+        if email['body'] is None:
+            raise Exception(f'body not found')
         return email
 
 

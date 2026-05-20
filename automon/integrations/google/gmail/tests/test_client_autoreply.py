@@ -13,7 +13,7 @@ from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO, debug
 
 DEBUG_LEVEL = 2
 DEBUG_ = False
-DEFAULT_LEVEL = ERROR
+DEFAULT_LEVEL = CRITICAL
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
@@ -54,7 +54,7 @@ gmail.config.add_scopes([
 
 labels = gmail._automon_labels
 
-queue_threads: Queue[Thread] = Queue(maxsize=1)
+queue_threads: Queue[Thread] = Queue(maxsize=10)
 queue_new: Queue[Thread] = Queue(maxsize=1)
 queue_send: Queue[tuple[Thread, Draft]] = Queue()
 queue_skipped: Queue[Thread] = Queue()
@@ -64,6 +64,7 @@ queue_waiting_for_first_call: Queue[Thread] = Queue()
 queue_waiting_for_interview: Queue[Thread] = Queue()
 
 queue_unknown: Queue[Thread] = Queue()
+query_history: Queue[Thread] = Queue()
 
 queue_error: Queue[tuple[Thread, Exception]] = Queue()
 queue_log: Queue[str] = Queue()
@@ -101,7 +102,6 @@ def get_threads():
         while queue_threads.full():
             import time
             time.sleep(10)
-            continue
 
         query_sequence = [
             [labels.automon, labels.error],
@@ -121,10 +121,11 @@ def get_threads():
 
             for thread in thread_search.threads:
 
-                if thread not in queue_threads.queue:
+                if thread not in query_history.queue:
+                    query_history.put(thread)
                     queue_threads.put(thread)
                     # queue_log.put(f'[get_threads] :: {thread}')
-                    queue_log.put(f'[get_threads] :: {queue_threads.unfinished_tasks} threads :: Thread({thread})')
+                    queue_log.put(f'[get_threads] :: {query_history.qsize()} total :: Thread({thread})')
 
             nextPageToken = thread_search.nextPageToken
 
@@ -146,7 +147,7 @@ def processor_email_thread():
     while True:
         thread = queue_threads.get()
 
-        # queue_log.put(f'[processor_email_thread] :: {thread}')
+        queue_log.put(f'[processor_email_thread] :: {thread}')
 
         # resume
         if GoogleGmailClient.utils.is_resume(thread):
@@ -205,19 +206,18 @@ def processor_email_thread():
 def processor_email_new():
     global RESUME
 
-    PROCESSING = True
-    while PROCESSING:
-        if RESUME is None:
+    _PROCESSING = True
+    while _PROCESSING:
+        while RESUME is None:
             import time
             time.sleep(1)
-            continue
 
         thread: Thread = queue_new.get()
 
-        resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text()
+        _resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text()
 
         prompt = thread.to_prompt()
-        prompt.append({'resume': resume_str})
+        prompt.append({'resume': _resume_str})
 
         response_passed = False
         while not response_passed:
@@ -368,6 +368,9 @@ def check_gmail_labels(gmail: GoogleGmailClient):
 def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClient]:
     gemini = GoogleGeminiClient()
     gemini.set_random_model()
+    model = gemini.model
+
+    global DF
 
     if gemini.is_ready():
 
@@ -377,11 +380,19 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
             gemini.add_content(prompt)
 
         if chat:
-            gemini_response = gemini.chat().chat_forever().chat_response()
+            response = gemini.chat().chat_forever().chat_response()
         else:
-            gemini_response = gemini.chat().chat_response()
+            response = gemini.chat().chat_response()
 
-        return gemini_response, gemini
+        debug(model)
+
+        mask = (DF['model'] == model)
+        if mask.any():
+            DF.loc[mask, 'working_count'] += 1
+        else:
+            DF.loc[len(DF)] = {'model': model, 'working_count': 1}
+
+        return response, gemini
 
 
 def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
@@ -416,12 +427,14 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
 MODEL_ERRORS = {}
 import pandas as pd
 
-MODEL_API_ERROR_DF = pd.DataFrame()
+cols = ['model', 'last_error', 'error_count', 'working_count']
+MODEL_API_ERROR_DF = pd.DataFrame(columns=cols)
 DF = MODEL_API_ERROR_DF
 
 
 def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
     global MODEL_ERRORS
+    global DF
 
     response = None
     while True:
@@ -435,27 +448,22 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, any]:
                 break
         except Exception as error:
             if len(error.args) > 1:
-                error_ = error.args[1].get('error')
+                error_ = error.args[1]
                 model = error.args[2]
 
-                global DF
-
-                new_error = {
+                new_event = {
                     'model': model,
-                    'error': error_,
-                    'error_count': 1
+                    'last_error': error_,
+                    'error_count': 1,
                 }
 
-                if DF.empty:
-                    DF = pd.DataFrame([new_error])
+                mask = (DF['model'] == model)
+
+                if mask.any():
+                    DF.loc[mask, 'last_error'] = error_
+                    DF.loc[mask, 'error_count'] += 1
                 else:
-
-                    mask = (DF['model'] == model) & (DF['error'] == error_)
-
-                    if mask.any():
-                        DF.loc[mask, 'error_count'] += 1
-                    else:
-                        DF.loc[len(DF)] = new_error
+                    DF.loc[len(DF)] = new_event
 
                 DF.sort_values(by='error_count', ascending=True, inplace=True)
 

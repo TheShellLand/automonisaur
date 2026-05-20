@@ -1,5 +1,5 @@
 from .dates import Dates
-from .debug import debug, debug_str
+from .debug import *
 from .dictWrapper import *
 from .encapsulation import *
 from .loggingWrapper import LoggingClient, INFO, DEBUG, ERROR, CRITICAL

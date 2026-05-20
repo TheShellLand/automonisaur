@@ -4,7 +4,7 @@ import time
 
 import automon
 
-from automon import debug_str
+from automon.helpers import *
 
 log = automon.helpers.loggingWrapper.logging.getLogger(__name__)
 log.setLevel(automon.helpers.loggingWrapper.DEBUG)
@@ -55,7 +55,8 @@ class ThreadingClient(object):
             current_thread.result = None
             current_thread.exception = error
             self.queue_error.put(current_thread)
-            raise Exception(f"[ThreadingClient] :: ERROR :: {error=}")
+            # raise Exception(f"[ThreadingClient] :: ERROR :: {error=}")
+            raise debug_exception(locals(), error)
 
     def add_worker(self, target: object, args: tuple = None):
         if args is not None:
