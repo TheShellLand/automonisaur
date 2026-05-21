@@ -70,9 +70,9 @@ class GoogleGmailClient(GoogleAuthClient):
             raw: str = None,
             draft_subject: str = None,
             draft_from: str = None,
-            draft_to: list[str] = [],
-            draft_cc: list[str] = [],
-            draft_bc: list[str] = [],
+            draft_to: list[str] | str = [],
+            draft_cc: list[str] | str = [],
+            draft_bc: list[str] | str = [],
             draft_body: str = '',
             draft_attachments: list[EmailAttachment] = [],
             **kwargs,
@@ -81,13 +81,13 @@ class GoogleGmailClient(GoogleAuthClient):
         if raw:
             raw = base64.urlsafe_b64encode(raw.encode()).decode()
         else:
-            if type(draft_to) is str:
+            if isinstance(draft_to, str):
                 draft_to = [draft_to]
 
-            if type(draft_cc) is str:
+            if isinstance(draft_cc, str):
                 draft_cc = [draft_cc]
 
-            if type(draft_bc) is str:
+            if isinstance(draft_bc, str):
                 draft_bc = [draft_bc]
 
             email_build = email.mime.multipart.MIMEMultipart()
@@ -108,7 +108,7 @@ class GoogleGmailClient(GoogleAuthClient):
                     continue
 
                 filename = attachment.filename
-                bytes_ = attachment.bytes_
+                bytes_ = attachment.bytes
                 mimeType = attachment.mimeType
                 content_type = attachment.content_type
                 encoding = attachment.encoding
