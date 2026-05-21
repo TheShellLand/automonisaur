@@ -108,6 +108,12 @@ queues = [
 RESUME: Thread = None
 
 
+def gmail_token_refresher(gmail: GoogleGmailClient):
+    while True:
+        gmail.config.refresh_token()
+        time.sleep(60)
+
+
 def automon_init(client: GoogleGmailClient):
     pass
 
@@ -580,7 +586,9 @@ def main():
 
     threads.add_worker(target=log_printer)
 
-    threads.start(max_threads=len(queues) * 2)
+    threads.add_worker(target=gmail_token_refresher, args=(gmail,))
+
+    threads.start()
 
 
 class MyTestCase(unittest.TestCase):

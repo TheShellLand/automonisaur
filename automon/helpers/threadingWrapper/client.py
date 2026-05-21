@@ -117,9 +117,11 @@ class ThreadingClient(object):
 
     def start(self, max_threads: int = None):
 
-        if max_threads:
-            with ThreadingClient._global_threads_max_lock:
-                ThreadingClient._global_threads_max = max_threads
+        if max_threads is None:
+            max_threads = self.queue_worker.qsize()
+
+        with ThreadingClient._global_threads_max_lock:
+            ThreadingClient._global_threads_max = max_threads
 
         while not self.is_done():
 
