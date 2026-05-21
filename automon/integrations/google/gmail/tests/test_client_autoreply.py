@@ -333,6 +333,8 @@ def processor_draft_send(gmail: GoogleGmailClient):
                 id=thread._message_first.id,
                 addLabelIds=[labels.unread])
 
+            debug(f'[processor_draft_send] :: sent :: {draft_sent}')
+
         queue_send.task_done()
 
 

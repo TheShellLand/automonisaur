@@ -58,7 +58,7 @@ class GoogleGeminiClient(object):
     _models_search = {}
 
     _templates = prompt_templates
-    api = GoogleGeminiApi()
+    _api = GoogleGeminiApi()
 
     def __init__(
             self,
@@ -66,16 +66,16 @@ class GoogleGeminiClient(object):
             model: str = None,
             api_version: str = None
     ):
-        self.config = config or GoogleGeminiConfig()
         self.model = model
         self.api_version = api_version
-
-        self._requests = RequestsClient()
+        self._config = config or GoogleGeminiConfig()
 
         self._prompt = GeminiPrompt()
         self._chat: GeminiResponse = None
 
         self.models_in_use = self._models.FREE_TIER
+
+        self._requests = RequestsClient()
 
         if self.model and self.api_version:
             self._check_model()
@@ -112,8 +112,8 @@ class GoogleGeminiClient(object):
 
     def _list_models(self, version: str = 'v1beta'):
         if version not in self._models_search:
-            key = self.config.random_api_key()
-            url = self.api.base.version(version).models('').key(key=key).url
+            key = self._config.random_api_key()
+            url = self._api.base.version(version).models('').key(key=key).url
             models = self._requests.get(url=url).to_dict()
             self._models_search[version] = [Model(x) for x in models.get('models', [])]
         return self
@@ -193,10 +193,10 @@ class GoogleGeminiClient(object):
         """
         self._check_model()
 
-        url = self.api.base.version(self.api_version).models(self.model).generateContent.key(
-            key=self.config.random_api_key()).url
+        url = self._api.base.version(self.api_version).models(self.model).generateContent.key(
+            key=self._config.random_api_key()).url
         json = self._prompt.to_prompt()
-        chat = self._requests.post(url=url, json=json, headers=self.config.headers())
+        chat = self._requests.post(url=url, json=json, headers=self._config.headers())
 
         if not chat:
             error = chat.to_dict().get('error')
@@ -271,7 +271,7 @@ class GoogleGeminiClient(object):
         return self._chat.to_string()
 
     def is_ready(self) -> bool:
-        if self.model and self.config.is_ready():
+        if self.api_version and self.model and self._config.is_ready():
             return True
         logger.error(f'[GoogleGeminiClient] :: is_ready :: ERROR')
         return False
@@ -289,6 +289,9 @@ class GoogleGeminiClient(object):
         models = []
         for api, models_ in self._models_search.items():
             for model in models_:
+                if model.name_short in self._models.DONT_USE:
+                    continue
+
                 models.append((api, model))
 
         api, model = random.choice(models)

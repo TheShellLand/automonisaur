@@ -1,3 +1,4 @@
+from automon import repr_str
 from automon.helpers.dictWrapper import DictHelper
 
 
@@ -38,6 +39,16 @@ class GoogleGeminiModels(object):
             self.gemini_3_flash_preview,
             self.gemini_3_1_flash_lite,
             self.gemini_3_1_flash_lite_preview,
+        ]
+
+        self.DONT_USE = [
+            'gemini-2.5-flash-native-audio-latest',
+            'imagen-4.0-fast-generate-001',
+            'deep-research-preview-04-2026',
+            'gemini-embedding-2-preview',
+            'gemini-pro-latest',
+            'deep-research-max-preview-04-2026',
+            'gemini-2.5-flash-preview-tts',
         ]
 
         self.PRO_TIER = [
@@ -387,4 +398,13 @@ class Model(DictHelper):
         super().__init__(model)
 
     def __repr__(self):
-        return f"{self.name} :: {self.description} :: {self.inputTokenLimit} :: {self.outputTokenLimit}"
+        return repr_str([
+            self.name,
+            self.description,
+            self.inputTokenLimit,
+            self.outputTokenLimit,
+        ])
+
+    @property
+    def name_short(self):
+        return self.name.split('/')[-1]
