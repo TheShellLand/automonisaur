@@ -42,7 +42,7 @@ class GoogleGeminiModels(object):
         ]
 
         self.NOT_GOOD = [
-            'gemma-4-26b-a4b-it'
+            'gemma-4-26b-a4b-it',
             'gemma-4-31b-it',
         ]
 
