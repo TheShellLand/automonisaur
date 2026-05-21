@@ -167,11 +167,11 @@ class GoogleGmailClient(GoogleAuthClient):
 
     def draft_get(
             self,
-            id: str or Draft,
+            id: str | Draft,
             format: Format = Format.full
     ) -> Draft:
         """Gets the specified draft."""
-        if type(id) is Draft:
+        if isinstance(id, Draft):
             id = id.id
 
         api = UsersDrafts(self._userId).get(id)
@@ -185,8 +185,8 @@ class GoogleGmailClient(GoogleAuthClient):
     def draft_get_automon(self, *args, **kwargs) -> Draft:
         draft = self.draft_get(*args, **kwargs)
 
-        if draft.automon_message:
-            draft.automon_update(self.messages_get_automon(draft.automon_message.id))
+        if draft.message:
+            draft.automon_update(self.messages_get_automon(draft.message.id))
 
         return draft
 

@@ -1063,22 +1063,28 @@ class Draft(DictHelper):
     """
 
     def __init__(self, draft=None, id: str = None, message: Message = None):
-
         self.id: str = id
-        self.message: Message = message
+        self._message: Message = message
+        self.snippet = None
 
         super().__init__(draft)
 
     @property
-    def automon_message(self) -> Message | None:
-        if self.message:
-            return Message(self.message)
+    def message(self) -> Message | None:
+        value = self._message
+        self._message = encapsulate(value=value, object_class=Message)
+        return self._message
+
+    @message.setter
+    def message(self, value):
+        self._message = encapsulate(value=value, object_class=Message)
 
     def __repr__(self):
-        try:
-            return f'{self.id} :: {self.message._header_subject.value}'
-        except:
-            return f"{self.id}"
+        return repr_str([
+            self.id,
+            self.message._header_subject.value,
+            self.snippet,
+        ])
 
 
 class DraftList(DictHelper):
@@ -1180,9 +1186,6 @@ class Thread(DictHelper):
         if self.messages:
             return True
         return False
-
-    def __hash__(self):
-        return hash(self.id)
 
     @property
     def messages(self):
