@@ -1083,6 +1083,9 @@ class Draft(DictHelper):
     def __repr__(self):
         return repr_str([
             self.id[-4:],
+            self.message._email_from,
+            self.message._email_to,
+            self.message._header_subject.value,
         ])
 
     @property

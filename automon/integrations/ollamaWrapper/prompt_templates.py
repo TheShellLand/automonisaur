@@ -39,9 +39,10 @@ class TrueOrFalseTemplates:
     @property
     def email_is_rejected(self) -> str:
         return (f"Respond only True or False, "
-                f"Check if any of the emails is from mailer-daemon "
+                f"Check if any of the emails is from 'mailer-daemon' "
                 f"or the body contains recipient address rejected "
-                f"or from Mail Delivery Subsystem")
+                f"or from 'Mail Delivery Subsystem' "
+                f"or 'Message blocked' ")
 
     @property
     def rules_is_followed(self) -> str:
