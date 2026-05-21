@@ -19,11 +19,11 @@ class DictHelper(dict):
             return True
         return False
 
-    def __iter__(self):
-        return self
-
     def __repr__(self):
         return f"{self.to_dict()}"
+
+    def __hash__(self):
+        return hash(tuple(self))
 
     def __setitem__(self, key: Any, value: Any) -> None:
         """
@@ -64,10 +64,6 @@ class DictHelper(dict):
         warnings.warn(f"[Dict] :: automon_update :: WARN :: {update=}")
 
     def _enhance(self):
-        warnings.warn(f"[Dict] :: Method will be removed in a future release. Pass data into class.__init__.")
-        return self
-
-    def enhance(self):
         warnings.warn(f"[Dict] :: Method will be removed in a future release. Pass data into class.__init__.")
         return self
 
@@ -139,7 +135,6 @@ class DictHelper(dict):
             except Exception as error:
                 warnings.warn(f"[Dict] :: _update_dict :: WARN :: {error=}")
 
-        self.enhance()
         self._enhance()
         return self
 
