@@ -733,6 +733,7 @@ class Message(DictHelper):
             labels,
             self._date_since_now_str,
             self._email_from,
+            self._email_to,
             self._header_subject,
             self.labelIds,
             self._date_utc_str,
