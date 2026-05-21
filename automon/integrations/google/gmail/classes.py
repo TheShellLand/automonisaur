@@ -519,6 +519,7 @@ class MessagePartBody(DictHelper):
         if self.data:
             return io.BytesIO(self._data_base64decoded)
 
+    @property
     def _data_html_text(self) -> str | None:
         if self.data:
             return self._html_text()
@@ -920,24 +921,24 @@ class Message(DictHelper):
         if self.payload:
             body = self.payload.body
             if body:
-                text = body._data_html_text()
+                text = body._data_html_text
                 if text:
                     email['body'] = text
             if self.payload.parts:
                 parts = self.payload.parts
                 for part in parts:
                     if part.mimeType == 'text/plain':
-                        email['body'] = part.body._data_html_text()
+                        email['body'] = part.body._data_html_text
                         break
 
                     if part.mimeType == 'text/html':
-                        email['body'] = part.body._data_html_text()
+                        email['body'] = part.body._data_html_text
                         break
 
                     more_parts = part.parts
                     for more_part in more_parts:
                         if more_part.mimeType == 'text/plain':
-                            email['body'] = more_part.body._data_html_text()
+                            email['body'] = more_part.body._data_html_text
                             break
 
         if email['body'] is None:

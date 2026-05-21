@@ -233,7 +233,7 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
 
         thread: Thread = queue_new.get()
 
-        _resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text()
+        _resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text
 
         prompt = thread.to_prompt()
         prompt.append({'resume': _resume_str})
