@@ -88,8 +88,9 @@ RESUME: Thread = None
 
 
 def queue_put(item, queue):
-    if item not in queue.queue:
-        queue.put(item)
+    with queue.mutex:
+        if item not in queue.queue:
+            queue.put(item)
 
 
 def automon_init(client: GoogleGmailClient):

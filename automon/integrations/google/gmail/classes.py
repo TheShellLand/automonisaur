@@ -879,8 +879,9 @@ class Message(DictHelper):
             return email
 
     @property
-    def _hash_md5(self) -> str:
-        return hashlib.md5(self.id.encode()).hexdigest()
+    def _hash_md5(self) -> str | None:
+        if self.id is not None:
+            return hashlib.md5(self.id.encode()).hexdigest()
 
     @property
     def _header_from(self) -> Header | None:
