@@ -76,7 +76,7 @@ class UniqueQueue(queue.Queue):
 
 
 queue_threads: Queue[Thread] = UniqueQueue(maxsize=5)
-queue_new: Queue[Thread] = UniqueQueue()
+queue_new: Queue[Thread] = UniqueQueue(maxsize=5)
 queue_send: Queue[tuple[Thread, Draft]] = UniqueQueue()
 queue_skipped: Queue[Thread] = UniqueQueue()
 queue_followup: Queue[Thread] = UniqueQueue()
@@ -229,7 +229,6 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
     _PROCESSING = True
     while _PROCESSING:
         while RESUME is None:
-            import time
             time.sleep(1)
 
         thread: Thread = queue_new.get()
@@ -396,6 +395,7 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
     gemini = GoogleGeminiClient()
     gemini.set_random_model()
     model = gemini.model
+    api = gemini.api_version
 
     global DF
 
@@ -412,8 +412,6 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
         else:
             response = gemini.chat().chat_response()
 
-        debug(model)
-
         mask = DF['model'] == model
         if mask.any():
             idx = DF[mask].index[0]
@@ -429,7 +427,8 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
             DF.loc[len(DF)] = new_event
         DF.sort_values(by='working_count', ascending=True, inplace=True, ignore_index=True)
 
-        print(DF)
+        debug((api, model))
+        debug(DF)
 
         return response, gemini
 
@@ -536,7 +535,7 @@ def draft_create(
         assert resume_attachment.filename
 
         resume_attachment = gmail._classes.EmailAttachment(
-            bytes_=resume_attachment.body._data_base64decoded(),
+            bytes_=resume_attachment.body._data_base64decoded,
             filename=resume_attachment.filename,
             mimeType=resume_attachment.mimeType
         )

@@ -488,16 +488,16 @@ class MessagePartBody(DictHelper):
 
     def __init__(self, message: dict = None):
 
-        self.attachmentId: str = None
-        self.size: int = None
-        self.data: str = None
+        self.attachmentId = None
+        self.size = None
+        self.data = None
 
         super().__init__(message)
 
     def __repr__(self):
         return repr_str([
             self._data_hash(),
-            f'{round(self.size / 1024):,} KB',
+            f'{self.size / 1024:,.2f} KB',
         ])
 
     def __bool__(self):
@@ -510,22 +510,24 @@ class MessagePartBody(DictHelper):
             return True
         return False
 
+    @property
     def _data_base64decoded(self) -> bytes | None:
         if self.data:
             return base64.urlsafe_b64decode(self.data)
 
     def _data_BytesIO(self) -> io.BytesIO | None:
         if self.data:
-            return io.BytesIO(self._data_base64decoded())
+            return io.BytesIO(self._data_base64decoded)
 
     def _data_html_text(self) -> str | None:
         if self.data:
             return self._html_text()
 
+    @property
     def _data_decoded(self) -> str | None:
         if self.data:
             try:
-                return self._data_base64decoded().decode()
+                return self._data_base64decoded.decode()
             except:
                 pass
 
@@ -534,7 +536,7 @@ class MessagePartBody(DictHelper):
             return hashlib.md5(self.data.encode()).hexdigest()
 
     def _data_bs4(self) -> bs4.BeautifulSoup | None:
-        decoded = self._data_base64decoded()
+        decoded = self._data_base64decoded
         if decoded:
             return bs4.BeautifulSoup(decoded)
 
@@ -1062,10 +1064,18 @@ class Draft(DictHelper):
 
     The message content of the draft.
     """
+    id: str
+    message: Message
+    snippet: str
 
-    def __init__(self, draft=None, id: str = None, message: Message = None):
-        self.id: str = id
-        self._message: Message = message
+    def __init__(
+            self,
+            draft=None,
+            id: str = None,
+            message: Message = None
+    ):
+        self.id = id
+        self._message = message
         self.snippet = None
 
         super().__init__(draft)

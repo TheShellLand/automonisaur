@@ -41,6 +41,11 @@ class GoogleGeminiModels(object):
             self.gemini_3_1_flash_lite_preview,
         ]
 
+        self.NOT_GOOD = [
+            'gemma-4-26b-a4b-it'
+            'gemma-4-31b-it',
+        ]
+
         self.DONT_USE = [
             'gemini-2.5-flash-native-audio-latest',
             'imagen-4.0-fast-generate-001',
@@ -74,7 +79,6 @@ class GoogleGeminiModels(object):
             'aqa',
             'gemini-2.5-flash-native-audio-preview-09-2025',
             'gemini-embedding-2',
-
         ]
 
         self.PRO_TIER = [

@@ -292,6 +292,9 @@ class GoogleGeminiClient(object):
                 if model.name_short in self._models.DONT_USE:
                     continue
 
+                if model.name_short in self._models.NOT_GOOD:
+                    continue
+
                 models.append((api, model))
 
         api, model = random.choice(models)
