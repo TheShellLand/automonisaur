@@ -321,16 +321,17 @@ def is_good_reply(prompts: list, response) -> bool:
     return gemini.response_is_true(response)
 
 
-def processor_draft_send(gmail):
+def processor_draft_send(gmail: GoogleGmailClient):
     while True:
         item: tuple[Thread, Draft] = queue_send.get()
         thread, draft = item
 
-        draft_sent = gmail.draft_send(draft=draft)
+        if labels.auto_reply_enabled in thread._messages_labels:
+            draft_sent = gmail.draft_send(draft=draft)
 
-        gmail.messages_modify_automon(
-            id=thread._message_first.id,
-            addLabelIds=[labels.unread])
+            gmail.messages_modify_automon(
+                id=thread._message_first.id,
+                addLabelIds=[labels.unread])
 
         queue_send.task_done()
 
