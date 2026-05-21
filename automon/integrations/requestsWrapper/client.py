@@ -7,7 +7,7 @@ import requests.adapters
 
 import automon.integrations.seleniumWrapper.user_agents
 
-from automon.helpers import DictHelper
+from automon.helpers import *
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
 from .config import RequestsConfig
@@ -34,11 +34,15 @@ class RequestResponse(DictHelper):
         self._reason = None
         self._url = None
 
-        super().__init__(response)
-
         self._bs4 = bs4.BeautifulSoup
 
+        super().__init__(response)
+
         self._log_result()
+
+        if not self:
+            _raw_data = self._raw_data
+            raise debug_exception(locals(), f'request failed')
 
     def __bool__(self):
         if self.status_code == 200:

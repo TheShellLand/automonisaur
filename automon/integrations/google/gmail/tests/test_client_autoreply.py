@@ -75,7 +75,7 @@ class UniqueQueue(queue.Queue):
         return item
 
 
-queue_threads: Queue[Thread] = UniqueQueue()
+queue_threads: Queue[Thread] = UniqueQueue(maxsize=5)
 queue_new: Queue[Thread] = UniqueQueue()
 queue_send: Queue[tuple[Thread, Draft]] = UniqueQueue()
 queue_skipped: Queue[Thread] = UniqueQueue()
@@ -106,11 +106,6 @@ queues = [
 ]
 
 RESUME: Thread = None
-
-
-def queue_put(item, queue):
-    if item not in queue.queue:
-        queue.put(item, block=False)
 
 
 def automon_init(client: GoogleGmailClient):
@@ -149,6 +144,8 @@ def get_threads(gmail_client: GoogleGmailClient):
                     queue_log.put(f'[get_threads] :: {query_history.qsize()} total')
 
             nextPageToken = thread_search.nextPageToken
+
+        time.sleep(0.1)
 
 
 def get_resume(gmail: GoogleGmailClient):
@@ -221,6 +218,8 @@ def processor_email_thread():
         queue_log.put(f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads')
 
         queue_threads.task_done()
+        time.sleep(0.1)
+
         pass
 
 
@@ -294,6 +293,7 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
             removeLabelIds=[labels.processing])
 
         queue_new.task_done()
+        time.sleep(0.1)
 
 
 def is_from_human(prompts: list) -> bool:
@@ -475,7 +475,7 @@ schema = {
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 2000)
-pd.set_option('display.max_colwidth', 150)
+pd.set_option('display.max_colwidth', 120)
 
 MODEL_API_ERROR_DF = pd.DataFrame(columns=schema.keys()).astype(schema)
 DF = MODEL_API_ERROR_DF

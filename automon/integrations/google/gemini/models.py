@@ -66,6 +66,15 @@ class GoogleGeminiModels(object):
             'gemini-2.0-flash-001',
             'gemini-2.0-flash-lite',
             'nano-banana-pro-preview',
+            'deep-research-pro-preview-12-2025',
+            'antigravity-preview-05-2026',
+            'gemini-3.1-pro-preview-customtools',
+            'gemini-3.1-flash-image-preview',
+            'gemini-2.5-pro-preview-tts',
+            'aqa',
+            'gemini-2.5-flash-native-audio-preview-09-2025',
+            'gemini-embedding-2',
+
         ]
 
         self.PRO_TIER = [

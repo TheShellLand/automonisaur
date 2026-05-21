@@ -1070,6 +1070,11 @@ class Draft(DictHelper):
 
         super().__init__(draft)
 
+    def __repr__(self):
+        return repr_str([
+            self.id[-4:],
+        ])
+
     @property
     def message(self) -> Message | None:
         value = self._message
@@ -1079,13 +1084,6 @@ class Draft(DictHelper):
     @message.setter
     def message(self, value):
         self._message = encapsulate(value=value, object_class=Message)
-
-    def __repr__(self):
-        return repr_str([
-            self.id[-4:],
-            self.message._header_subject.value,
-            self.snippet,
-        ])
 
 
 class DraftList(DictHelper):

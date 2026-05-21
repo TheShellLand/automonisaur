@@ -186,7 +186,7 @@ class GoogleGmailClient(GoogleAuthClient):
         draft = self.draft_get(*args, **kwargs)
 
         if draft.message:
-            draft.automon_update(self.messages_get_automon(draft.message.id))
+            draft.message = self.messages_get_automon(draft.message.id)
 
         return draft
 
@@ -245,7 +245,8 @@ class GoogleGmailClient(GoogleAuthClient):
         logger.debug(f"[GoogleGmailClient] :: draft_send :: {draft=}")
         api = UsersDrafts(self._userId).send
         data = draft.to_dict()
-        return Message(self._requests.post(api, headers=self.config.headers, json=data).to_dict())
+        response = self._requests.post(api, headers=self.config.headers, json=data).to_dict()
+        return Message(response)
 
     def draft_update(self, id: str) -> Draft:
         api = UsersDrafts(self._userId).update(id)
