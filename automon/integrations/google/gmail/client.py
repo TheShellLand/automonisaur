@@ -244,7 +244,7 @@ class GoogleGmailClient(GoogleAuthClient):
         """Sends the specified, existing draft to the recipients in the To, Cc, and Bcc headers."""
         logger.debug(f"[GoogleGmailClient] :: draft_send :: {draft=}")
         api = UsersDrafts(self._userId).send
-        data = draft.to_dict()
+        data = {'id': draft.id}
         response = self._requests.post(api, headers=self.config.headers, json=data).to_dict()
         return Message(response)
 
