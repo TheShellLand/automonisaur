@@ -1,6 +1,7 @@
 import unittest
 
 import time
+import queue
 import threading
 
 from queue import Queue
@@ -54,20 +55,40 @@ gmail.config.add_scopes([
 
 labels = gmail._automon_labels
 
-queue_threads: Queue[Thread] = Queue()
-queue_new: Queue[Thread] = Queue()
-queue_send: Queue[tuple[Thread, Draft]] = Queue()
-queue_skipped: Queue[Thread] = Queue()
-queue_followup: Queue[Thread] = Queue()
-queue_analyze: Queue[Thread] = Queue()
-queue_waiting_for_first_call: Queue[Thread] = Queue()
-queue_waiting_for_interview: Queue[Thread] = Queue()
 
-queue_unknown: Queue[Thread] = Queue()
-query_history: Queue[Thread] = Queue()
+class UniqueQueue(queue.Queue):
+    def _init(self, maxsize):
+        super()._init(maxsize)
+        # Create a set to track items currently inside the queue
+        self.all_items = set()
 
-queue_error: Queue[tuple[Thread, Exception]] = Queue()
-queue_log: Queue[str] = Queue()
+    def _put(self, item):
+        # Only add to the underlying deque if it's not in our set
+        if item not in self.all_items:
+            super()._put(item)
+            self.all_items.add(item)
+
+    def _get(self):
+        # Remove from the set when the item is popped
+        item = super()._get()
+        self.all_items.remove(item)
+        return item
+
+
+queue_threads: Queue[Thread] = UniqueQueue()
+queue_new: Queue[Thread] = UniqueQueue()
+queue_send: Queue[tuple[Thread, Draft]] = UniqueQueue()
+queue_skipped: Queue[Thread] = UniqueQueue()
+queue_followup: Queue[Thread] = UniqueQueue()
+queue_analyze: Queue[Thread] = UniqueQueue()
+queue_waiting_for_first_call: Queue[Thread] = UniqueQueue()
+queue_waiting_for_interview: Queue[Thread] = UniqueQueue()
+
+queue_unknown: Queue[Thread] = UniqueQueue()
+query_history: Queue[Thread] = UniqueQueue()
+
+queue_error: Queue[tuple[Thread, Exception]] = UniqueQueue()
+queue_log: Queue[str] = UniqueQueue()
 
 queues = [
     queue_threads,
@@ -88,9 +109,8 @@ RESUME: Thread = None
 
 
 def queue_put(item, queue):
-    with queue.mutex:
-        if item not in queue.queue:
-            queue.put(item)
+    if item not in queue.queue:
+        queue.put(item, block=False)
 
 
 def automon_init(client: GoogleGmailClient):
@@ -159,21 +179,21 @@ def processor_email_thread():
 
         # skipped
         if GoogleGmailClient.utils.is_skipped(thread):
-            queue_put(thread, queue_skipped)
+            queue_skipped.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads')
             continue
 
         # error
         if GoogleGmailClient.utils.is_error(thread):
-            queue_put(thread, queue_error)
+            queue_error.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads')
             continue
 
         # analyze
         if GoogleGmailClient.utils.is_analyze(thread):
-            queue_put(thread, queue_analyze)
+            queue_analyze.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_analyze :: {queue_analyze.qsize()} threads')
             continue
@@ -185,19 +205,19 @@ def processor_email_thread():
         # sent
         if GoogleGmailClient.utils.is_sent(thread):
             if GoogleGmailClient.utils.is_old(thread):
-                queue_put(thread, queue_followup)
+                queue_followup.put(thread)
                 queue_threads.task_done()
                 queue_log.put(f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads')
                 continue
 
         # new
         if GoogleGmailClient.utils.is_new(thread):
-            queue_put(thread, queue_new)
+            queue_new.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_new :: {queue_new.qsize()} threads')
             continue
 
-        queue_put(thread, queue_unknown)
+        queue_unknown.put(thread)
         queue_log.put(f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads')
 
         queue_threads.task_done()

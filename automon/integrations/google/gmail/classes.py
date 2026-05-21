@@ -1181,6 +1181,9 @@ class Thread(DictHelper):
             return True
         return False
 
+    def __hash__(self):
+        return hash(self.id)
+
     @property
     def messages(self):
         value = self._messages
