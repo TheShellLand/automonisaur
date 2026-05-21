@@ -1082,7 +1082,7 @@ class Draft(DictHelper):
 
     def __repr__(self):
         return repr_str([
-            self.id,
+            self.id[-4:],
             self.message._header_subject.value,
             self.snippet,
         ])
