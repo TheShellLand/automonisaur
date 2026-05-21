@@ -774,6 +774,16 @@ class Message(DictHelper):
     def payload(self, value):
         self._payload = encapsulate(value, MessagePayload)
 
+    def find_attachment(self, filename=None, mimeType=None) -> MessagePart | None:
+        for attachment in self._attachments:
+            if attachment.filename == filename:
+                return attachment
+            if attachment.mimeType == mimeType:
+                return attachment
+
+    def find_attachment_docx(self) -> MessagePart | None:
+        return self.find_attachment(mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+
     @property
     def _attachments(self) -> list[MessagePartBody | MessagePart]:
         payloads = []

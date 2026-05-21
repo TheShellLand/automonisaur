@@ -243,7 +243,7 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
         if response_passed:
             if not GoogleGmailClient.utils.is_skipped(thread):
                 if GoogleGmailClient.utils.is_new(thread):
-                    resume_attachment = RESUME._message_first._attachments_first.body
+                    resume_attachment = RESUME._message_first.find_attachment_docx()
 
                     draft = draft_create(
                         thread=thread,
@@ -497,7 +497,7 @@ def draft_create(
         thread: Thread,
         response: str,
         thread_selected: Thread,
-        resume_attachment: MessagePartBody,
+        resume_attachment: MessagePart,
 ):
     if GoogleGmailClient.utils.is_follow_up(thread):
         resume_attachment = []
@@ -508,7 +508,8 @@ def draft_create(
         resume_attachment = gmail._classes.EmailAttachment(
             bytes_=resume_attachment.body._data_base64decoded(),
             filename=resume_attachment.filename,
-            mimeType=resume_attachment.mimeType)
+            mimeType=resume_attachment.mimeType
+        )
 
     to = thread._message_first._header_from.value
     from_ = thread._message_first._header_to.value
