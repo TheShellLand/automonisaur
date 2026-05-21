@@ -55,7 +55,7 @@ from automon.integrations.ollamaWrapper import prompt_templates
 
 class GoogleGeminiClient(object):
     _models = GoogleGeminiModels()
-    models_search = {}
+    _models_search = {}
 
     _templates = prompt_templates
     api = GoogleGeminiApi()
@@ -81,7 +81,12 @@ class GoogleGeminiClient(object):
             self._check_model()
 
     def __repr__(self):
-        return f"[GoogleGeminiClient] :: {len(self)} tokens"
+        return repr_str([
+            f"[GoogleGeminiClient]",
+            self.api_version,
+            self.model,
+            f'{len(self)} tokens',
+        ])
 
     def __len__(self) -> int:
         return len(self._prompt)
@@ -106,11 +111,11 @@ class GoogleGeminiClient(object):
         return download
 
     def _list_models(self, version: str = 'v1beta'):
-        if version not in self.models_search:
+        if version not in self._models_search:
             key = self.config.random_api_key()
             url = self.api.base.version(version).models('').key(key=key).url
             models = self._requests.get(url=url).to_dict()
-            self.models_search[version] = [Model(x) for x in models.get('models', [])]
+            self._models_search[version] = [Model(x) for x in models.get('models', [])]
         return self
 
     def _list_models_v1(self):
@@ -128,7 +133,7 @@ class GoogleGeminiClient(object):
         self._list_models_v1beta()
 
         models = {}
-        for api, models_ in self.models_search.items():
+        for api, models_ in self._models_search.items():
             if model:
                 models[api] = [x for x in models_ if model in x.name]
             else:
@@ -148,10 +153,11 @@ class GoogleGeminiClient(object):
         assert api and model
 
         self._list_models(version=api)
-        for model_ in self.models_search[api]:
-            if model == model_.name.split('/')[-1]:
+        for model_ in self._models_search[api]:
+            model_ = model_.name.split('/')[-1]
+            if model_ == model:
                 return True
-        raise Exception(f"[GoogleGeminiClient] :: ERROR :: Model {model} not found in {api}")
+        raise debug_exception(locals(), f'{api}/{model} not found')
 
     def add_content(self, prompt: str, role: str = 'user'):
         if not isinstance(prompt, str):
@@ -277,11 +283,11 @@ class GoogleGeminiClient(object):
         return self
 
     def set_random_model(self):
-        if not self.models_search:
+        if not self._models_search:
             self._find_model_all()
 
         models = []
-        for api, models_ in self.models_search.items():
+        for api, models_ in self._models_search.items():
             for model in models_:
                 models.append((api, model))
 
