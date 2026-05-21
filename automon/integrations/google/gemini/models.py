@@ -49,6 +49,7 @@ class GoogleGeminiModels(object):
         ]
 
         self.GEMMA = [
+            self.gemma_4_31b_it,
             self.gemma_3_27b,
             self.gemma_3_12b,
             self.gemma_3_7b,
@@ -100,6 +101,10 @@ class GoogleGeminiModels(object):
         ]
 
         self.GEMINI_ALL = []
+
+    @property
+    def gemma_4_31b_it(self):
+        return f'gemma-4-31b-it'
 
     @property
     def gemma_3_27b(self):

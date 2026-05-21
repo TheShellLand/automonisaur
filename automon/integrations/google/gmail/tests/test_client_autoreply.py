@@ -220,6 +220,7 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
         prompt.append({'resume': _resume_str})
 
         response_passed = False
+        response = False
         while not response_passed:
 
             if not is_from_human(prompt):
@@ -230,27 +231,37 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
                 gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
                 break
 
-            response, model = write_email_reply(prompt)
-
-            _response, model = check_response(prompts=prompt, response=response)
-
-            if gemini.response_is_false(response_passed):
-                response_check_loop = False
-                while gemini.response_is_false(response_check_loop):
+            while True:
+                try:
                     response, model = write_email_reply(prompt)
-                    response_check_loop, model = check_response(prompts=prompt, response=response)
-
-            else:
-                gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                    if is_good_reply(prompts=prompt, response=response):
+                        response_passed = True
+                        break
+                except:
+                    pass
 
         if response_passed:
-            if not GoogleGmailClient.utils.is_skipped(thread_selected):
-                if GoogleGmailClient.utils.is_follow_up(thread_selected):
+            if not GoogleGmailClient.utils.is_skipped(thread):
+                if GoogleGmailClient.utils.is_new(thread):
+                    resume_attachment = RESUME._message_first._attachments_first.body
+
                     draft = draft_create(
                         thread=thread,
                         response=response,
-                        thread_selected=thread
+                        thread_selected=thread,
+                        resume_attachment=resume_attachment,
                     )
+
+                elif GoogleGmailClient.utils.is_follow_up(thread):
+
+                    draft = draft_create(
+                        thread=thread,
+                        response=response,
+                        thread_selected=thread,
+                    )
+
+                if labels.auto_reply_enabled in thread._messages_labels:
+                    queue_send.put((thread, draft))
 
         gmail.messages_modify_automon(
             id=thread._message_first.id,
@@ -280,27 +291,13 @@ def write_email_reply(prompts: list) -> tuple[str, any]:
     return response, model
 
 
-def check_response(prompts: list, response) -> tuple[str, any]:
+def is_good_reply(prompts: list, response) -> bool:
     prompts = prompts.copy()
-    new_prompts = prompts.copy()
-    new_prompts.append({'RULES': GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant})
-    new_prompts.append({'RESPONSE': response})
-    new_prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().rules_is_followed})
-
-    response_check, model = run_llm(prompts)
-
-    if gemini.response_is_false(response_check):
-        pls_fix = prompts.copy()
-        pls_fix.append({'RULES': GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant})
-        pls_fix.append({'RESPONSE': response})
-        pls_fix.append({'question': 'tell me what rule was broken, '
-                                    'and then write a rule general enough to avoid breaking this rule. '
-                                    'write the new rule in the same format as the other rules. '}
-                       )
-
-        r, _ = run_llm(prompts=pls_fix, chat=True)
-
-    return response_check, model
+    prompts.append({'RULES': GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant})
+    prompts.append({'RESPONSE': response})
+    prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().rules_is_followed})
+    response, model = run_llm(prompts)
+    return gemini.response_is_true(response)
 
 
 def processor_draft_send(gmail):
@@ -506,7 +503,6 @@ def draft_create(
         resume_attachment = []
 
     if not GoogleGmailClient.utils.has_doc_attachment(thread):
-        resume_attachment = resume_attachment.attachments[1]
         assert resume_attachment.filename
 
         resume_attachment = gmail._classes.EmailAttachment(
