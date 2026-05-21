@@ -244,25 +244,29 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
         response = False
         while not response_passed:
 
-            if not is_from_human(prompt):
-                gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-                break
-
-            if is_rejected_email(prompt):
-                gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-                break
-
             while True:
+
                 try:
+                    if not is_from_human(prompt):
+                        gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                        break
+
+                    if is_rejected_email(prompt):
+                        gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                        break
+
                     response, model = write_email_reply(prompt)
                     if is_good_reply(prompts=prompt, response=response):
                         response_passed = True
                         break
+
                 except:
                     pass
 
         if response_passed:
             if not GoogleGmailClient.utils.is_skipped(thread):
+                draft = None
+
                 if GoogleGmailClient.utils.is_new(thread):
                     resume_attachment = RESUME._message_first.find_attachment_docx()
 
@@ -281,8 +285,9 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
                         thread_selected=thread,
                     )
 
-                if labels.auto_reply_enabled in thread._messages_labels:
-                    queue_send.put((thread, draft))
+                if draft is not None:
+                    if labels.auto_reply_enabled in thread._messages_labels:
+                        queue_send.put((thread, draft))
 
         gmail.messages_modify_automon(
             id=thread._message_first.id,
@@ -469,7 +474,8 @@ schema = {
 }
 
 pd.set_option('display.max_columns', None)
-pd.set_option('display.width', 1200)
+pd.set_option('display.width', 2000)
+pd.set_option('display.max_colwidth', 150)
 
 MODEL_API_ERROR_DF = pd.DataFrame(columns=schema.keys()).astype(schema)
 DF = MODEL_API_ERROR_DF
@@ -522,7 +528,7 @@ def draft_create(
         response: str,
         thread_selected: Thread,
         resume_attachment: MessagePart,
-):
+) -> Draft:
     if GoogleGmailClient.utils.is_follow_up(thread):
         resume_attachment = []
 

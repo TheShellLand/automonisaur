@@ -49,6 +49,23 @@ class GoogleGeminiModels(object):
             'gemini-pro-latest',
             'deep-research-max-preview-04-2026',
             'gemini-2.5-flash-preview-tts',
+            'gemini-2.5-pro',
+            'veo-3.0-generate-001',
+            'gemini-3-pro-preview',
+            'gemini-robotics-er-1.5-preview',
+            'gemini-2.0-flash',
+            'imagen-4.0-generate-001',
+            'imagen-4.0-ultra-generate-001',
+            'gemini-3.1-pro-preview',
+            'gemini-embedding-001',
+            'veo-2.0-generate-001',
+            'gemini-3-pro-image-preview',
+            'veo-3.1-lite-generate-preview',
+            'gemini-2.5-flash-image',
+            'gemini-2.5-computer-use-preview-10-2025',
+            'gemini-2.0-flash-001',
+            'gemini-2.0-flash-lite',
+            'nano-banana-pro-preview',
         ]
 
         self.PRO_TIER = [
