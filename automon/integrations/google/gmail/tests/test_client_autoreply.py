@@ -239,6 +239,10 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
 
         thread: Thread = queue_new.get()
 
+        gmail.messages_modify_automon(
+            id=thread._message_first.id,
+            addLabelIds=[labels.processing])
+
         _resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text
 
         prompt = thread.to_prompt()
