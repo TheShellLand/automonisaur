@@ -239,6 +239,8 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
 
         thread: Thread = queue_new.get()
 
+        debug(f'[processor_email_new] :: {thread}')
+
         gmail.messages_modify_automon(
             id=thread._message_first.id,
             addLabelIds=[labels.processing])

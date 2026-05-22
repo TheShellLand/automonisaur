@@ -136,8 +136,11 @@ class ThreadingClient(object):
                 function, args = self.queue_worker.get()
 
                 # thread = Thread(target=function, args=args)
-                thread = Thread(target=self._thread_wrapper,
-                                args=(function, args))
+                thread = Thread(
+                    target=self._thread_wrapper,
+                    args=(function, args),
+                    name=getattr(function, '__name__')
+                )
 
                 self.threads_list.append(thread)
 
