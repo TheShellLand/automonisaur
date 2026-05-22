@@ -690,7 +690,7 @@ class GoogleGmailClient(GoogleAuthClient):
     def thread_get_automon(
             self,
             id: str = None,
-            multithread: bool = False,
+            multithread: bool = True,
     ) -> Thread:
 
         thread = Thread(self.thread_get(id=id))
