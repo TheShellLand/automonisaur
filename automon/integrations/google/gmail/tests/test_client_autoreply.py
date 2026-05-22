@@ -122,15 +122,13 @@ def automon_init(client: GoogleGmailClient):
 def get_threads(gmail_client: GoogleGmailClient):
     while True:
         while not gmail.is_ready():
-            time.sleep(1)
-
-        while queue_threads.full():
-            time.sleep(10)
+            time.sleep(0.1)
 
         query_sequence = [
             [labels.automon, labels.error],
             [labels.automon, labels.processing],
             [labels.automon, labels.analyze],
+            [labels.automon, labels.waiting],
             [labels.automon],
         ]
 
@@ -138,7 +136,7 @@ def get_threads(gmail_client: GoogleGmailClient):
 
         for query in query_sequence:
             thread_search = gmail.thread_list_automon(
-                maxResults=10,
+                # maxResults=10,
                 pageToken=nextPageToken,
                 labelIds=query,
             )
@@ -223,7 +221,9 @@ def processor_email_thread():
                 id=thread._message_first.id,
                 addLabelIds=[labels.waiting])
 
-            if GoogleGmailClient.utils.is_waiting(thread):
+            thread = gmail.thread_get_automon(id=thread.id)
+
+            if not GoogleGmailClient.utils.is_old(thread):
                 queue_waiting.put(thread)
                 queue_threads.task_done()
                 queue_log.put(f'[processor_email_thread] :: queue_waiting :: {queue_waiting.qsize()} threads')
@@ -238,6 +238,10 @@ def processor_email_thread():
 
         queue_unknown.put(thread)
         queue_log.put(f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads :: {thread}')
+
+        gmail.messages_modify_automon(
+            id=thread._message_first.id,
+            removeLabelIds=[labels.processing])
 
         queue_threads.task_done()
         time.sleep(0.1)

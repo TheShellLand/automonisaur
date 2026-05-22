@@ -23,7 +23,7 @@ class DictHelper(dict):
         return f"{self.to_dict()}"
 
     def __hash__(self):
-        return hash(tuple(self))
+        return hash(tuple(self.to_dict()))
 
     def __setitem__(self, key: Any, value: Any) -> None:
         """

@@ -1192,6 +1192,14 @@ class Thread(DictHelper):
             self._messages_labels,
         ])
 
+    def __eq__(self, other):
+        if isinstance(other, Thread):
+            return self.id == other.id
+        return False
+
+    def __hash__(self):
+        return hash(self.id)
+
     def __lt__(self, other):
         if self._clean_thread_latest and other._clean_thread_latest:
             if self._clean_thread_latest._date_utc and other._clean_thread_latest._date_utc:
