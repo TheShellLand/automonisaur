@@ -24,7 +24,7 @@ queue_waiting_for_interview: Queue[Thread] = UniqueQueue()
 queue_unknown: Queue[Thread] = UniqueQueue()
 query_history: Queue[Thread] = UniqueQueue()
 
-queue_error: Queue[tuple[Thread, Exception]] = UniqueQueue()
+queue_error: Queue[Thread] = UniqueQueue()
 queue_log: Queue[str] = UniqueQueue()
 
 queues = [
@@ -115,7 +115,7 @@ def get_threads(gmail_client: AutomonGmailClient):
 
         for query in query_sequence:
             thread_search = gmail.thread_list_automon(
-                # maxResults=10,
+                maxResults=1,
                 pageToken=nextPageToken,
                 labelIds=query,
             )
@@ -508,19 +508,12 @@ def draft_create(
         thread: Thread,
         response: str,
         thread_selected: Thread,
-        resume_attachment: MessagePart,
+        resume_attachment: MessagePart = None,
 ) -> Draft:
-    if gmail.is_follow_up(thread):
-        resume_attachment = []
-
-    if not gmail.has_doc_attachment(thread):
+    if resume_attachment is not None:
         assert resume_attachment.filename
 
-        resume_attachment = gmail._classes.EmailAttachment(
-            bytes_=resume_attachment.body._data_base64decoded,
-            filename=resume_attachment.filename,
-            mimeType=resume_attachment.mimeType
-        )
+        resume_attachment = gmail.draft_attachment_create(resume_attachment)
 
     to = thread._message_first._header_from.value
     from_ = thread._message_first._header_to.value

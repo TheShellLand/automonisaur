@@ -79,6 +79,12 @@ class GoogleGeminiModels(object):
             'aqa',
             'gemini-2.5-flash-native-audio-preview-09-2025',
             'gemini-embedding-2',
+            'veo-3.1-generate-preview',
+            'gemini-3.1-flash-tts-preview',
+            'veo-3.0-fast-generate-001',
+            'lyria-3-pro-preview',
+            'veo-3.1-fast-generate-preview',
+            'lyria-3-clip-preview',
         ]
 
         self.PRO_TIER = [

@@ -159,6 +159,13 @@ class GoogleGmailClient(GoogleAuthClient):
         response = self._requests.post(api, headers=self.config.headers, json=data).to_dict()
         return Draft(response)
 
+    def draft_attachment_create(self, attachment: MessagePart):
+        return EmailAttachment(
+            bytes_=attachment.body._data_base64decoded,
+            filename=attachment.filename,
+            mimeType=attachment.mimeType
+        )
+
     def draft_delete(self, id: str):
         """Immediately and permanently deletes the specified draft."""
         api = UsersDrafts(self._userId).delete(id)
