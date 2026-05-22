@@ -6,74 +6,12 @@ import threading
 
 from queue import Queue
 
+from automon.helpers import *
 from automon.helpers.threadingWrapper import ThreadingClient
 from automon.integrations.google.gmail import *
 from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO, debug
-
-DEBUG_LEVEL = 2
-DEBUG_ = False
-DEFAULT_LEVEL = CRITICAL
-
-LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.client').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.utils').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
-LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.google.gemini.api').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.tokens').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEFAULT_LEVEL)
-
-if DEBUG_:
-    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
-    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
-else:
-    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
-    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(CRITICAL)
-
-USE_OLLAMA = False
-USE_GEMINI = True
-CHAT_FOREVER = False
-
-gmail = GoogleGmailClient()
-gemini = GoogleGeminiClient()
-
-# gmail.config.add_gmail_scopes()
-gmail.config.add_scopes([
-    "https://www.googleapis.com/auth/gmail.labels",
-    "https://www.googleapis.com/auth/gmail.compose",
-    "https://www.googleapis.com/auth/gmail.readonly",
-    "https://www.googleapis.com/auth/gmail.modify",
-])
-
-labels = gmail._automon_labels
-
-
-class UniqueQueue(queue.Queue):
-    def _init(self, maxsize):
-        super()._init(maxsize)
-        # Create a set to track items currently inside the queue
-        self.all_items = set()
-
-    def _put(self, item):
-        # Only add to the underlying deque if it's not in our set
-        if item not in self.all_items:
-            super()._put(item)
-            self.all_items.add(item)
-
-    def _get(self):
-        # Remove from the set when the item is popped
-        item = super()._get()
-        self.all_items.remove(item)
-        return item
-
 
 queue_threads: Queue[Thread] = UniqueQueue(maxsize=5)
 queue_new: Queue[Thread] = UniqueQueue(maxsize=5)
@@ -108,18 +46,61 @@ queues = [
 
 RESUME: Thread = None
 
+DEBUG_LEVEL = 2
+DEBUG_ = False
+DEFAULT_LEVEL = CRITICAL
 
-def gmail_token_refresher(gmail: GoogleGmailClient):
+LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.client').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.utils').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
+LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.google.gemini.api').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.tokens').setLevel(DEFAULT_LEVEL)
+LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEFAULT_LEVEL)
+
+if DEBUG_:
+    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
+    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
+else:
+    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
+    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(CRITICAL)
+
+USE_OLLAMA = False
+USE_GEMINI = True
+CHAT_FOREVER = False
+
+gmail = AutomonGmailClient()
+gemini = GoogleGeminiClient()
+
+# gmail.config.add_gmail_scopes()
+gmail.config.add_scopes([
+    "https://www.googleapis.com/auth/gmail.labels",
+    "https://www.googleapis.com/auth/gmail.compose",
+    "https://www.googleapis.com/auth/gmail.readonly",
+    "https://www.googleapis.com/auth/gmail.modify",
+])
+
+labels = gmail._labels
+
+
+def gmail_token_refresher(gmail: AutomonGmailClient):
     while True:
         gmail.config.refresh_token()
         time.sleep(60)
 
 
-def automon_init(client: GoogleGmailClient):
+def automon_init(client: AutomonGmailClient):
     pass
 
 
-def get_threads(gmail_client: GoogleGmailClient):
+def get_threads(gmail_client: AutomonGmailClient):
     while True:
         while not gmail.is_ready():
             time.sleep(0.1)
@@ -153,7 +134,7 @@ def get_threads(gmail_client: GoogleGmailClient):
         time.sleep(0.1)
 
 
-def get_resume(gmail: GoogleGmailClient):
+def get_resume(gmail: AutomonGmailClient):
     global RESUME
     while RESUME is None:
         threads = gmail.thread_list_automon(
@@ -175,47 +156,47 @@ def processor_email_thread():
         delete_drafts(thread=thread, gmail=gmail)
 
         # resume
-        if GoogleGmailClient.utils.is_resume(thread):
+        if AutomonGmailClient.utils.is_resume(thread):
             global RESUME
             RESUME = thread
             queue_threads.task_done()
             continue
 
         # skipped
-        if GoogleGmailClient.utils.is_skipped(thread):
+        if AutomonGmailClient.utils.is_skipped(thread):
             queue_skipped.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads')
             continue
 
         # error
-        if GoogleGmailClient.utils.is_error(thread):
+        if AutomonGmailClient.utils.is_error(thread):
             queue_error.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads')
             continue
 
         # analyze
-        if GoogleGmailClient.utils.is_analyze(thread):
+        if AutomonGmailClient.utils.is_analyze(thread):
             queue_analyze.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_analyze :: {queue_analyze.qsize()} threads')
             continue
 
         # scheduled
-        if GoogleGmailClient.utils.is_scheduled(thread):
+        if AutomonGmailClient.utils.is_scheduled(thread):
             pass
 
         # followup
-        if GoogleGmailClient.utils.is_sent(thread):
-            if GoogleGmailClient.utils.is_old(thread):
+        if AutomonGmailClient.utils.is_sent(thread):
+            if AutomonGmailClient.utils.is_old(thread):
                 queue_followup.put(thread)
                 queue_threads.task_done()
                 queue_log.put(f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads')
                 continue
 
         # waiting
-        if GoogleGmailClient.utils.is_sent(thread):
+        if AutomonGmailClient.utils.is_sent(thread):
 
             gmail.messages_modify_automon(
                 id=thread._message_first.id,
@@ -223,14 +204,14 @@ def processor_email_thread():
 
             thread = gmail.thread_get_automon(id=thread.id)
 
-            if not GoogleGmailClient.utils.is_old(thread):
+            if not AutomonGmailClient.utils.is_old(thread):
                 queue_waiting.put(thread)
                 queue_threads.task_done()
                 queue_log.put(f'[processor_email_thread] :: queue_waiting :: {queue_waiting.qsize()} threads')
                 continue
 
         # new
-        if GoogleGmailClient.utils.is_new(thread):
+        if AutomonGmailClient.utils.is_new(thread):
             queue_new.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_new :: {queue_new.qsize()} threads :: {thread}')
@@ -249,7 +230,7 @@ def processor_email_thread():
         pass
 
 
-def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
+def processor_email_new(gmail: AutomonGmailClient, gemini: GoogleGeminiClient):
     global RESUME
 
     _PROCESSING = True
@@ -294,10 +275,10 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
                     pass
 
         if response_passed:
-            if not GoogleGmailClient.utils.is_skipped(thread):
+            if not AutomonGmailClient.utils.is_skipped(thread):
                 draft = None
 
-                if GoogleGmailClient.utils.is_new(thread):
+                if AutomonGmailClient.utils.is_new(thread):
                     resume_attachment = RESUME._message_first.find_attachment_docx()
 
                     draft = draft_create(
@@ -307,7 +288,7 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
                         resume_attachment=resume_attachment,
                     )
 
-                elif GoogleGmailClient.utils.is_follow_up(thread):
+                elif AutomonGmailClient.utils.is_follow_up(thread):
 
                     draft = draft_create(
                         thread=thread,
@@ -358,14 +339,14 @@ def is_good_reply(prompts: list, response) -> bool:
     return gemini.response_is_true(response)
 
 
-def delete_drafts(thread: Thread, gmail: GoogleGmailClient):
+def delete_drafts(thread: Thread, gmail: AutomonGmailClient):
     for message in thread.messages:
         if labels.draft in message.labelIds:
             gmail.messages_trash(message.id)
             debug(f'[delete_drafts] :: deleted :: {message}')
 
 
-def processor_draft_send(gmail: GoogleGmailClient):
+def processor_draft_send(gmail: AutomonGmailClient):
     while True:
         item: tuple[Thread, Draft] = queue_send.get()
         thread, draft = item
@@ -392,44 +373,6 @@ def log_printer():
         log = queue_log.get()
         debug(log)
         queue_log.task_done()
-
-
-def check_gmail_labels(gmail: GoogleGmailClient):
-    if gmail.is_ready():
-
-        labels._reset_labels = True
-
-        def init_automon_labels(label, reset_labels):
-
-            id = label.id
-            name = label.name
-            color = label.color
-
-            if label.id is None:
-                labels_get_by_name = gmail.labels_get_by_name(name)
-
-                if labels_get_by_name is None:
-                    label.automon_update(
-                        gmail.labels_create(
-                            name=name,
-                            color=color,
-                        )
-                    )
-                else:
-                    if reset_labels:
-                        gmail.labels_update(id=labels_get_by_name.id, color=color)
-
-                    label.automon_update(
-                        labels_get_by_name
-                    )
-
-        _threads = []
-        for label in labels.all_labels:
-            t = threading.Thread(target=init_automon_labels, args=(label, labels._reset_labels))
-            _threads.append(t)
-            t.start()
-
-        for t in _threads: t.join()
 
 
 def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClient]:
@@ -569,10 +512,10 @@ def draft_create(
         thread_selected: Thread,
         resume_attachment: MessagePart,
 ) -> Draft:
-    if GoogleGmailClient.utils.is_follow_up(thread):
+    if AutomonGmailClient.utils.is_follow_up(thread):
         resume_attachment = []
 
-    if not GoogleGmailClient.utils.has_doc_attachment(thread):
+    if not AutomonGmailClient.utils.has_doc_attachment(thread):
         assert resume_attachment.filename
 
         resume_attachment = gmail._classes.EmailAttachment(
@@ -606,10 +549,14 @@ def draft_create(
 
 def main():
     global gemini
+    global gmail
 
-    check_gmail_labels(gmail)
+    while not gmail.is_ready():
+        time.sleep(1)
 
     threads = ThreadingClient()
+
+    threads.add_worker(target=gmail.create_labels)
 
     threads.add_worker(target=get_threads, args=(gmail,))
     threads.add_worker(target=get_resume, args=(gmail,))

@@ -36,18 +36,17 @@ logger.setLevel(DEBUG)
 
 
 class GoogleGmailClient(GoogleAuthClient):
+    """Google Gmail client
+
+    https://developers.google.com/gmail/api/reference/rest
+    """
+
     _api = Api
     _classes = classes
     utils = utils
     _temp = automon.helpers.tempfileWrapper.Tempfile
     _sleep = automon.helpers.Sleeper
     _bs4 = bs4
-    _automon_labels = AutomonLabels()
-
-    """Google Gmail client
-
-    https://developers.google.com/gmail/api/reference/rest
-    """
 
     def __init__(self, config: GoogleGmailConfig = None):
         super().__init__()
@@ -302,7 +301,7 @@ class GoogleGmailClient(GoogleAuthClient):
 
     def labels_delete(self, id: str) -> bool:
         """Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to."""
-        if type(id) is Label:
+        if isinstance(id, Label):
             id = id.id
 
         api = UsersLabels(self._userId).delete(id)
@@ -327,6 +326,18 @@ class GoogleGmailClient(GoogleAuthClient):
 
         logger.debug(f"[GoogleGmailClient] :: labels_get :: {label.name=}")
         return label
+
+    def labels_get_automon(self, label: Label) -> Label:
+        id = label.id
+        name = label.name
+
+        if id is not None:
+            return self.labels_get(id=id)
+
+        if name is not None:
+            return self.labels_get_by_name(name=name)
+
+        raise NotImplementedError
 
     def labels_get_by_name(self, name: str) -> Label | None:
         """Gets label by name"""

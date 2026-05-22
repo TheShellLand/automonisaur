@@ -14,67 +14,6 @@ logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(INFO)
 
 
-class AutomonLabels:
-
-    def __init__(self):
-        self._reset_labels = False
-
-        self._color_default = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
-        self._color_debug = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
-        self._color_error = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
-        self._color_green = Color(backgroundColor='#076239', textColor='#b9e4d0')
-        self._color_light = Color(backgroundColor='#8e63ce', textColor='#ffffff')
-        self._color_pink = Color(backgroundColor='#b65775', textColor='#ffffff')
-        self._color_yellow = Color(backgroundColor='#ffbc6b', textColor='#fef1d1')
-
-        # general
-        self.draft = Label(name='DRAFT', id='DRAFT')
-        self.sent = Label(name='SENT', id='SENT')
-        self.unread = Label(name='UNREAD', id='UNREAD')
-        self.trash = Label(name='TRASH', id='TRASH')
-
-        # required
-        self.automon = Label(name='automon', color=self._color_default)
-
-        # resume
-        self.resume = Label(name='automon/resume', color=self._color_light)
-
-        # analyze
-        self.analyze = Label(name='automon/analyze', color=self._color_default)
-
-        # enable auto reply
-        self.auto_reply_enabled = Label(name='automon/auto reply enabled', color=self._color_default)
-
-        # need user input
-        self.user_action_required = Label(name='automon/user action required', color=self._color_error)
-
-        # error
-        self.error = Label(name='automon/error', color=self._color_error)
-
-        # scheduled
-        self.scheduled = Label(name='automon/scheduled', color=self._color_default)
-
-        # waiting for interview
-        self.waiting_for_interview = Label(name='automon/waiting for interview', color=self._color_default)
-
-        # waiting
-        self.waiting = Label(name='automon/waiting', color=self._color_yellow)
-
-        # processing
-        self.processing = Label(name='automon/processing', color=self._color_yellow)
-
-        # skipped
-        self.skipped = Label(name='automon/skipped', color=self._color_error)
-
-    @property
-    def all_labels(self):
-        return [
-            getattr(self, k) for k, v in vars(self).items()
-            if isinstance(v, Label)
-            if 'automon' in v.name
-        ]
-
-
 class InternalDateSource:
     receivedTime = 'receivedTime'
     dateHeader = 'dateHeader'
@@ -229,9 +168,12 @@ class Format:
     metadata = 'metadata'
 
 
-class GmailLabels:
+class GmailLabels(DictHelper):
 
     def __init__(self):
+        super().__init__()
+
+        # gmail default labels
         self.draft = Label(name='DRAFT', id='DRAFT')
         self.sent = Label(name='SENT', id='SENT')
         self.unread = Label(name='UNREAD', id='UNREAD')

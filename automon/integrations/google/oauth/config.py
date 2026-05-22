@@ -62,7 +62,9 @@ class GoogleAuthConfig(object):
 
     def add_scopes(self, scopes: list) -> list:
         logger.debug(f"[GoogleAuthConfig] :: add_scopes :: {scopes=}")
-        self.scopes += scopes
+        for scope in scopes:
+            if scope not in self.scopes:
+                self.scopes.append(scope)
 
         return self.scopes
 
