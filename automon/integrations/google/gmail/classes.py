@@ -369,8 +369,13 @@ class Label(DictHelper):
         return False
 
     def __lt__(self, other):
-        if self.name < other.name:
-            return True
+        if isinstance(other, Label):
+            if self.name is not None:
+                if self.name < other.name:
+                    return True
+            if self.id is not None:
+                if self.id < other.id:
+                    return True
         return False
 
     @property
@@ -705,12 +710,23 @@ class Message(DictHelper):
 
     @property
     def labelIds(self):
-        value = self._labelIds
+        value = self._labelIds.copy()
+        for v in value:
+            if isinstance(v, str):
+                value = [Label(id=x) for x in value]
+                break
+
         self._labelIds = sorted(encapsulate(value, Label))
         return self._labelIds
 
     @labelIds.setter
-    def labelIds(self, value):
+    def labelIds(self, value: list):
+        value = value.copy()
+        for v in value:
+            if isinstance(v, str):
+                value = [Label(id=x) for x in value]
+                break
+
         self._labelIds = sorted(encapsulate(value, Label))
 
     @property

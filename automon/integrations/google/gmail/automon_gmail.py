@@ -79,9 +79,9 @@ class AutomonLabels(GmailLabels):
 
     def all_labels(self):
         return [
-            getattr(self, x) for x in self.to_dict().keys()
-            if not x.startswith("_")
-            if not x == 'automon'
+            getattr(self, x) for x in dir(self)
+            if isinstance(getattr(self, x), Label)
+            if getattr(self, x).name.startswith('automon')
         ]
 
 
