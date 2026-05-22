@@ -57,6 +57,9 @@ class AutomonLabels:
         # waiting for interview
         self.waiting_for_interview = Label(name='automon/waiting for interview', color=self._color_default)
 
+        # waiting
+        self.waiting = Label(name='automon/waiting', color=self._color_yellow)
+
         # processing
         self.processing = Label(name='automon/processing', color=self._color_yellow)
 
@@ -67,7 +70,7 @@ class AutomonLabels:
     def all_labels(self):
         return [
             getattr(self, k) for k, v in vars(self).items()
-            if type(v) == Label
+            if isinstance(v, Label)
             if 'automon' in v.name
         ]
 

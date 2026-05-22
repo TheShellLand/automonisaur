@@ -59,6 +59,13 @@ def is_sent(thread: Thread):
     return False
 
 
+def is_waiting(thread: Thread):
+    if thread._clean_thread_latest is not None:
+        if labels.waiting in thread._clean_thread_latest.labelIds:
+            return True
+    return False
+
+
 def is_old(thread: Thread):
     if thread._clean_thread_latest:
         if thread._clean_thread_latest._date_since_now.days >= 3:

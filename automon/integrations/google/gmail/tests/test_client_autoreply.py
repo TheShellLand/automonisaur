@@ -80,6 +80,7 @@ queue_new: Queue[Thread] = UniqueQueue(maxsize=5)
 queue_send: Queue[tuple[Thread, Draft]] = UniqueQueue()
 queue_skipped: Queue[Thread] = UniqueQueue()
 queue_followup: Queue[Thread] = UniqueQueue()
+queue_waiting: Queue[Thread] = UniqueQueue()
 queue_analyze: Queue[Thread] = UniqueQueue()
 queue_waiting_for_first_call: Queue[Thread] = UniqueQueue()
 queue_waiting_for_interview: Queue[Thread] = UniqueQueue()
@@ -173,6 +174,8 @@ def processor_email_thread():
 
         queue_log.put(f'[processor_email_thread] :: {thread}')
 
+        delete_drafts(thread=thread, gmail=gmail)
+
         # resume
         if GoogleGmailClient.utils.is_resume(thread):
             global RESUME
@@ -205,7 +208,7 @@ def processor_email_thread():
         if GoogleGmailClient.utils.is_scheduled(thread):
             pass
 
-        # sent
+        # followup
         if GoogleGmailClient.utils.is_sent(thread):
             if GoogleGmailClient.utils.is_old(thread):
                 queue_followup.put(thread)
@@ -213,15 +216,28 @@ def processor_email_thread():
                 queue_log.put(f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads')
                 continue
 
+        # waiting
+        if GoogleGmailClient.utils.is_sent(thread):
+
+            gmail.messages_modify_automon(
+                id=thread._message_first.id,
+                addLabelIds=[labels.waiting])
+
+            if GoogleGmailClient.utils.is_waiting(thread):
+                queue_waiting.put(thread)
+                queue_threads.task_done()
+                queue_log.put(f'[processor_email_thread] :: queue_waiting :: {queue_waiting.qsize()} threads')
+                continue
+
         # new
         if GoogleGmailClient.utils.is_new(thread):
             queue_new.put(thread)
             queue_threads.task_done()
-            queue_log.put(f'[processor_email_thread] :: queue_new :: {queue_new.qsize()} threads')
+            queue_log.put(f'[processor_email_thread] :: queue_new :: {queue_new.qsize()} threads :: {thread}')
             continue
 
         queue_unknown.put(thread)
-        queue_log.put(f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads')
+        queue_log.put(f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads :: {thread}')
 
         queue_threads.task_done()
         time.sleep(0.1)
@@ -244,8 +260,6 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
         gmail.messages_modify_automon(
             id=thread._message_first.id,
             addLabelIds=[labels.processing])
-
-        delete_drafts(thread=thread, gmail=gmail)
 
         _resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text
 
@@ -303,7 +317,8 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
 
         gmail.messages_modify_automon(
             id=thread._message_first.id,
-            removeLabelIds=[labels.processing])
+            removeLabelIds=[labels.processing],
+            addLabelIds=[labels.waiting])
 
         queue_new.task_done()
         time.sleep(0.1)
@@ -361,6 +376,7 @@ def processor_draft_send(gmail: GoogleGmailClient):
             debug(f'[processor_draft_send] :: sent :: {draft_sent}')
 
         queue_send.task_done()
+        time.sleep(0.1)
 
 
 def processor_email_waiting():

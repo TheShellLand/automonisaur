@@ -40,10 +40,6 @@ class RequestResponse(DictHelper):
 
         self._log_result()
 
-        if not self:
-            _raw_data = self._raw_data
-            raise debug_exception(locals(), f'request failed')
-
     def __bool__(self):
         if self.status_code == 200:
             return True
@@ -248,6 +244,10 @@ class RequestsClient(object):
         logger.debug(f'[RequestsClient] :: DELETE :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
         response = self.session.delete(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
+
+        if not response:
+            debug_exception(locals(), response)
+
         return RequestResponse(response)
 
     def delete_self(self, *args, **kwargs):
@@ -270,6 +270,10 @@ class RequestsClient(object):
         logger.debug(f'[RequestsClient] :: GET :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
         response = self.session.get(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
+
+        if not response:
+            debug_exception(locals(), response)
+
         return RequestResponse(response)
 
     def get_self(self, *args, **kwargs):
@@ -292,6 +296,10 @@ class RequestsClient(object):
         logger.debug(f'[RequestsClient] :: PATCH :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
         response = self.session.patch(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
+
+        if not response:
+            debug_exception(locals(), response)
+
         return RequestResponse(response)
 
     def patch_self(self, *args, **kwargs):
@@ -314,6 +322,10 @@ class RequestsClient(object):
         logger.debug(f'[RequestsClient] :: POST :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
         response = self.session.post(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
+
+        if not response:
+            debug_exception(locals(), response)
+
         return RequestResponse(response)
 
     def post_self(self, *args, **kwargs):
@@ -336,6 +348,10 @@ class RequestsClient(object):
         logger.debug(f'[RequestsClient] :: PUT :: {url=} :: {data=} :: {headers=} :: {self.proxies=} :: {kwargs=}')
 
         response = self.session.put(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
+
+        if not response:
+            debug_exception(locals(), response)
+
         return RequestResponse(response)
 
     def put_self(self, *args, **kwargs):
