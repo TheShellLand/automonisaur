@@ -59,6 +59,9 @@ class AutomonLabels(GmailLabels):
         # waiting
         self.waiting = Label(name='automon/waiting', color=self._color_default)
 
+        # skipped
+        self.skipped = Label(name='automon/skipped', color=self._color_default)
+
         # scheduled
         self.scheduled = Label(name='automon/scheduled', color=self._color_enabled)
 

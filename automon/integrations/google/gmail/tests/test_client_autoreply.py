@@ -145,7 +145,7 @@ def get_resume(gmail: AutomonGmailClient):
                 RESUME = thread
 
 
-def processor_email_thread():
+def processor_email_thread(gmail: AutomonGmailClient):
     while True:
         thread = queue_threads.get()
 
@@ -154,47 +154,47 @@ def processor_email_thread():
         delete_drafts(thread=thread, gmail=gmail)
 
         # resume
-        if AutomonGmailClient.is_resume(thread):
+        if gmail.is_resume(thread):
             global RESUME
             RESUME = thread
             queue_threads.task_done()
             continue
 
         # skipped
-        if AutomonGmailClient.is_skipped(thread):
+        if gmail.is_skipped(thread):
             queue_skipped.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads')
             continue
 
         # error
-        if AutomonGmailClient.is_error(thread):
+        if gmail.is_error(thread):
             queue_error.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads')
             continue
 
         # analyze
-        if AutomonGmailClient.is_analyze(thread):
+        if gmail.is_analyze(thread):
             queue_analyze.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_analyze :: {queue_analyze.qsize()} threads')
             continue
 
         # scheduled
-        if AutomonGmailClient.is_scheduled(thread):
+        if gmail.is_scheduled(thread):
             pass
 
         # followup
-        if AutomonGmailClient.is_sent(thread):
-            if AutomonGmailClient.is_old(thread):
+        if gmail.is_sent(thread):
+            if gmail.is_old(thread):
                 queue_followup.put(thread)
                 queue_threads.task_done()
                 queue_log.put(f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads')
                 continue
 
         # waiting
-        if AutomonGmailClient.is_sent(thread):
+        if gmail.is_sent(thread):
 
             gmail.messages_modify_automon(
                 id=thread._message_first.id,
@@ -202,14 +202,14 @@ def processor_email_thread():
 
             thread = gmail.thread_get_automon(id=thread.id)
 
-            if not AutomonGmailClient.is_old(thread):
+            if not gmail.is_old(thread):
                 queue_waiting.put(thread)
                 queue_threads.task_done()
                 queue_log.put(f'[processor_email_thread] :: queue_waiting :: {queue_waiting.qsize()} threads')
                 continue
 
         # new
-        if AutomonGmailClient.is_new(thread):
+        if gmail.is_new(thread):
             queue_new.put(thread)
             queue_threads.task_done()
             queue_log.put(f'[processor_email_thread] :: queue_new :: {queue_new.qsize()} threads :: {thread}')
@@ -273,10 +273,10 @@ def processor_email_new(gmail: AutomonGmailClient, gemini: GoogleGeminiClient):
                     pass
 
         if response_passed:
-            if not AutomonGmailClient.is_skipped(thread):
+            if not gmail.is_skipped(thread):
                 draft = None
 
-                if AutomonGmailClient.is_new(thread):
+                if gmail.is_new(thread):
                     resume_attachment = RESUME._message_first.find_attachment_docx()
 
                     draft = draft_create(
@@ -286,7 +286,7 @@ def processor_email_new(gmail: AutomonGmailClient, gemini: GoogleGeminiClient):
                         resume_attachment=resume_attachment,
                     )
 
-                elif AutomonGmailClient.is_follow_up(thread):
+                elif gmail.is_follow_up(thread):
 
                     draft = draft_create(
                         thread=thread,
@@ -510,10 +510,10 @@ def draft_create(
         thread_selected: Thread,
         resume_attachment: MessagePart,
 ) -> Draft:
-    if AutomonGmailClient.is_follow_up(thread):
+    if gmail.is_follow_up(thread):
         resume_attachment = []
 
-    if not AutomonGmailClient.has_doc_attachment(thread):
+    if not gmail.has_doc_attachment(thread):
         assert resume_attachment.filename
 
         resume_attachment = gmail._classes.EmailAttachment(
@@ -559,7 +559,7 @@ def main():
     threads.add_worker(target=get_threads, args=(gmail,))
     threads.add_worker(target=get_resume, args=(gmail,))
 
-    threads.add_worker(target=processor_email_thread)
+    threads.add_worker(target=processor_email_thread, args=(gmail,))
     threads.add_worker(target=processor_email_new, args=(gmail, gemini))
     threads.add_worker(target=processor_draft_send, args=(gmail,))
     threads.add_worker(target=processor_email_waiting)
