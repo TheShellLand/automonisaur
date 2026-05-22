@@ -245,6 +245,8 @@ def processor_email_new(gmail: GoogleGmailClient, gemini: GoogleGeminiClient):
             id=thread._message_first.id,
             addLabelIds=[labels.processing])
 
+        delete_drafts(thread=thread, gmail=gmail)
+
         _resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text
 
         prompt = thread.to_prompt()
@@ -335,6 +337,13 @@ def is_good_reply(prompts: list, response) -> bool:
     prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().rules_is_followed})
     response, model = run_llm(prompts)
     return gemini.response_is_true(response)
+
+
+def delete_drafts(thread: Thread, gmail: GoogleGmailClient):
+    for message in thread.messages:
+        if labels.draft in message.labelIds:
+            gmail.messages_trash(message.id)
+            debug(f'[delete_drafts] :: deleted :: {message}')
 
 
 def processor_draft_send(gmail: GoogleGmailClient):

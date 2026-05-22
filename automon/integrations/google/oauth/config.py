@@ -323,7 +323,7 @@ class GoogleAuthConfig(object):
         creds = self.credentials
         Request = google.auth.transport.requests.Request()
 
-        if creds and creds.expired and creds.refresh_token:
+        if creds and creds.expired or creds.refresh_token:
             creds.refresh(Request)
             return True
 

@@ -77,7 +77,7 @@ class Part(DictHelper):
         super().__init__(part)
 
     def __repr__(self):
-        return f"{len(self)} tokens :: {self.preview}"
+        return f"{len(self)} tokens :: {self._preview}"
 
     def __len__(self) -> int:
         return len(self.tokens)
@@ -100,7 +100,7 @@ class Part(DictHelper):
         return Tokens(self.text)
 
     @property
-    def preview(self):
+    def _preview(self):
         return self.text[:120]
 
 
