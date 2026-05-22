@@ -98,7 +98,7 @@ def automon_init(client: AutomonGmailClient):
     pass
 
 
-def get_threads(gmail_client: AutomonGmailClient):
+def get_threads(gmail: AutomonGmailClient):
     while True:
         while not gmail.is_ready():
             time.sleep(0.1)
@@ -115,10 +115,11 @@ def get_threads(gmail_client: AutomonGmailClient):
 
         for query in query_sequence:
             thread_search = gmail.thread_list_automon(
-                maxResults=1,
+                # maxResults=1,
                 pageToken=nextPageToken,
                 labelIds=query,
             )
+            queue_log.put(f'[get_threads] :: {query} :: {thread_search}')
 
             for thread in thread_search.threads:
 
@@ -151,7 +152,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
         queue_log.put(f'[processor_email_thread] :: {thread}')
 
-        delete_drafts(thread=thread, gmail=gmail)
+        gmail.clean_drafts(thread)
 
         # resume
         if gmail.is_resume(thread):
@@ -335,13 +336,6 @@ def is_good_reply(prompts: list, response) -> bool:
     prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().rules_is_followed})
     response, model = run_llm(prompts)
     return gemini.response_is_true(response)
-
-
-def delete_drafts(thread: Thread, gmail: AutomonGmailClient):
-    for message in thread.messages:
-        if labels.draft in message.labelIds:
-            gmail.messages_trash(message.id)
-            debug(f'[delete_drafts] :: deleted :: {message}')
 
 
 def processor_draft_send(gmail: AutomonGmailClient):

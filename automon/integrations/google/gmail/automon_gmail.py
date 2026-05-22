@@ -41,7 +41,7 @@ class AutomonLabels(GmailLabels):
         self.automon = Label(name='automon', color=self._color_default)
 
         # allow auto reply
-        self.auto_reply_enabled = Label(name='automon/auto reply enabled', color=self._color_enabled)
+        self.auto_reply_enabled = Label(name='automon/auto reply enabled', color=self._color_default)
 
         # currently processing
         self.processing = Label(name='automon/processing >>>', color=self._color_processing)

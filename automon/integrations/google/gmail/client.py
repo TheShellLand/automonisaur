@@ -574,9 +574,7 @@ class GoogleGmailClient(GoogleAuthClient):
             f"[GoogleGmailClient] :: message_list :: {maxResults=} :: {pageToken=} :: {q=} :: {labelIds=} :: {includeSpamTrash=}")
 
         labelIds = list(labelIds) if labelIds is not None else []
-
-        if labelIds:
-            labelIds = [l.id for l in labelIds]
+        labelIds = [self.labels_get_automon(l).id for l in labelIds]
 
         if maxResults > 500:
             raise Exception(f"[GoogleGmailClient] :: message_list :: ERROR :: {maxResults=} > 500")
@@ -644,8 +642,8 @@ class GoogleGmailClient(GoogleAuthClient):
         addLabelIds = list(addLabelIds) if addLabelIds is not None else []
         removeLabelIds = list(removeLabelIds) if removeLabelIds is not None else []
 
-        addLabelIds = [l.id for l in addLabelIds]
-        removeLabelIds = [l.id for l in removeLabelIds]
+        addLabelIds = [self.labels_get_automon(l).id for l in addLabelIds]
+        removeLabelIds = [self.labels_get_automon(l).id for l in removeLabelIds]
 
         response = self.messages_modify(
             id=id,
@@ -790,7 +788,7 @@ class GoogleGmailClient(GoogleAuthClient):
     ) -> ThreadList:
         """Enhanced `thread_list`"""
         labelIds = list(labelIds) if labelIds is not None else []
-        labelIds = [l.id for l in labelIds]
+        labelIds = [self.labels_get_automon(l).id for l in labelIds]
 
         threads = ThreadList(self.thread_list(
             q=q,
@@ -813,12 +811,15 @@ class GoogleGmailClient(GoogleAuthClient):
     def thread_modify(
             self,
             id: str,
-            addLabelIds: list = None,
-            removeLabelIds: list = None
+            addLabelIds: list[Label] = None,
+            removeLabelIds: list[Label] = None
     ) -> Thread:
 
         addLabelIds = list(addLabelIds) if addLabelIds is not None else []
         removeLabelIds = list(removeLabelIds) if removeLabelIds is not None else []
+
+        addLabelIds = [self.labels_get_automon(l).id for l in addLabelIds]
+        removeLabelIds = [self.labels_get_automon(l).id for l in removeLabelIds]
 
         if len(addLabelIds) > 100 or len(removeLabelIds) > 100:
             raise Exception(
@@ -826,9 +827,6 @@ class GoogleGmailClient(GoogleAuthClient):
                 f"{len(addLabelIds)=} {len(removeLabelIds)=} > 100")
 
         api = UsersThread(self._userId).modify(id=id)
-
-        addLabelIds = [lbl.id if hasattr(lbl, 'id') else lbl for lbl in addLabelIds]
-        removeLabelIds = [lbl.id if hasattr(lbl, 'id') else lbl for lbl in removeLabelIds]
 
         data = {
             "addLabelIds": addLabelIds,
