@@ -23,6 +23,8 @@ class RequestResponse(DictHelper):
     text: str
     url: str
 
+    request: requests.sessions.Response
+
     _bs4: bs4.BeautifulSoup
 
     def __init__(self, response=None):
@@ -68,7 +70,7 @@ class RequestResponse(DictHelper):
             ]
             msg = ' :: '.join([str(x) for x in msg])
 
-        return Exception(msg)
+        raise debug_exception(locals(), msg)
 
     @property
     def content(self) -> bytes:

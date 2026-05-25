@@ -295,7 +295,8 @@ class GoogleGeminiClient(object):
                 if model.name_short in self._models.NOT_GOOD:
                     continue
 
-                models.append((api, model))
+                if 'generateContent' in model.supportedGenerationMethods:
+                    models.append((api, model))
 
         api, model = random.choice(models)
         return self.set_model(model=model, api_version=api)
