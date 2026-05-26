@@ -270,7 +270,7 @@ def processor_email_new(gmail: AutomonGmailClient, gemini: GoogleGeminiClient):
                         response_passed = True
                         break
 
-                except:
+                except Exception as error:
                     pass
 
         if response_passed:
@@ -384,9 +384,9 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
             gemini.add_content(prompt)
 
         if chat:
-            response = gemini.chat().chat_forever().chat_response()
+            response = gemini.chat().chat_forever().response()
         else:
-            response = gemini.chat().chat_response()
+            response = gemini.chat().response()
 
         mask = DF['model'] == model
         if mask.any():
@@ -421,21 +421,21 @@ def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
             ollama.add_prompt(prompt)
 
         ollama.set_context_window(ollama.get_total_tokens() * 1.10)
-        ollama_response = ollama.chat().chat_response
+        response = ollama.chat().response()
 
-        import re
-        try:
-            think_re = re.compile(r"(<think>.*</think>)", flags=re.DOTALL)
-            think_ = think_re.search(ollama_response).groups()
-            think_ = str(think_).strip()
+        # import re
+        # try:
+        #     think_re = re.compile(r"(<think>.*</think>)", flags=re.DOTALL)
+        #     think_ = think_re.search(response).groups()
+        #     think_ = str(think_).strip()
+        #
+        #     response_re = re.compile(r"<think>.*</think>(.*)", flags=re.DOTALL)
+        #     response_ = response_re.search(response).groups()
+        #     response_ = str(response_[0]).strip()
+        # except:
+        #     raise
 
-            response_re = re.compile(r"<think>.*</think>(.*)", flags=re.DOTALL)
-            response_ = response_re.search(ollama_response).groups()
-            response_ = str(response_[0]).strip()
-        except:
-            raise
-
-        return response_, ollama
+        return response, ollama
 
 
 MODEL_ERRORS = {}
@@ -462,11 +462,12 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, object]:
 
     response = None
     while True:
-        try:
-            if USE_OLLAMA:
-                response, model = run_ollama(prompts=prompts)
-                break
 
+        if USE_OLLAMA:
+            response, model = run_ollama(prompts=prompts)
+            break
+
+        try:
             if USE_GEMINI:
                 response, model = run_gemini(prompts=prompts, chat=chat)
                 break

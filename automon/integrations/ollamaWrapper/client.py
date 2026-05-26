@@ -33,7 +33,7 @@ class OllamaClient(object):
     templates = AgentTemplates()
 
     model: str
-    messages: list[dict]
+    prompts: list[dict]
 
     context: tuple[OllamaChat]
     chat_log: tuple[OllamaChat]
@@ -55,7 +55,7 @@ class OllamaClient(object):
         self._ollama = ollama
 
         self.model = model
-        self.messages = messages
+        self.prompts = messages
         self.STREAM = stream
 
         self.context = None
@@ -106,19 +106,18 @@ class OllamaClient(object):
             f'{tokens.count_pretty} tokens :: '
             f'{len(content)} chars')
 
-        model = self.model
-        max_tokens = self._max_tokens.get(model)
-        if len(tokens) > max_tokens:
-            raise debug_exception(locals(), 'too many tokens')
-
         message = {
             "role": role,
-            "content": content
+            "content": str(content)
         }
 
-        self.messages.append(message)
+        self.prompts.append(message)
 
-        total_tokens = sum_tokens(self.messages)
+        total_tokens = sum_tokens(self.prompts)
+        model = self.model
+        max_tokens = self._max_tokens.get(model)
+        if total_tokens > max_tokens:
+            raise debug_exception(locals(), 'too many tokens')
 
         logger.debug(
             f'[OllamaClient] :: '
@@ -130,13 +129,13 @@ class OllamaClient(object):
         return self
 
     def add_prompt_followup(self, **kwargs):
-        self.messages = []
+        self.prompts = []
         self.add_prompt(**kwargs)
 
         return self
 
     def clear_context(self):
-        self.messages = []
+        self.prompts = []
         logger.info(f'[OllamaClient] :: clear_context :: done')
         return self
 
@@ -151,16 +150,16 @@ class OllamaClient(object):
         if not options:
             options = self._ollama_options
 
-        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.messages):,} total tokens')
+        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.prompts):,} total tokens')
 
         chat = self._ollama.chat(
             model=self.model,
-            messages=self.messages,
+            messages=self.prompts,
             stream=self.STREAM,
             options=options,
             **kwargs
         )
-        chat = OllamaChat(model=self.model, chat=chat, messages=self.messages)
+        chat = OllamaChat(model=self.model, chat=chat, messages=self.prompts)
         self.chat_log = self.chat_log + (chat,)
         self._ollama_chat = chat
 
@@ -270,14 +269,14 @@ class OllamaClient(object):
         return
 
     @property
-    def chat_response(self):
+    def _chat_response(self):
         try:
             return self.chat_log[-1].to_string()
         except:
             pass
 
     def _agent_clear(self):
-        self.messages = [self.messages[0]]
+        self.prompts = [self.prompts[0]]
         self._full_chat_log = ''
         print(f":: SYSTEM :: context memory cleared. ::")
 
@@ -363,11 +362,11 @@ class OllamaClient(object):
         print(f":: {'/token':20} {'show total tokens.':<30} ::")
 
     def _agent_list(self):
-        if not self.messages:
+        if not self.prompts:
             print(f":: SYSTEM :: no messages ::")
             return
 
-        for m in self.messages:
+        for m in self.prompts:
             role = m['role']
             content = m['content'].strip().splitlines()[0][:200]
             print(f":: SYSTEM :: <{role}> {content} ::")
@@ -410,7 +409,7 @@ class OllamaClient(object):
         return self._num_ctx
 
     def get_total_tokens(self):
-        return sum_tokens(self.messages)
+        return sum_tokens(self.prompts)
 
     def has_downloaded_models(self, model: str):
 
@@ -475,7 +474,7 @@ class OllamaClient(object):
             return False
 
         with open(chat_session, 'rb') as session:
-            self.messages = pickle.load(session)
+            self.prompts = pickle.load(session)
 
         logger.debug(
             f'[OllamaClient] :: pickle_load :: {chat_session=} :: {os.stat(chat_session).st_size / 1024:.2f} KB')
@@ -492,7 +491,7 @@ class OllamaClient(object):
             chat_session = os.path.join(temp, session_name)
 
         with open(chat_session, 'wb') as session:
-            pickle.dump(self.messages, session)
+            pickle.dump(self.prompts, session)
 
         logger.debug(
             f'[OllamaClient] :: pickle_save :: saved {chat_session=} :: {os.stat(chat_session).st_size / 1024:.2f} KB')
@@ -506,12 +505,11 @@ class OllamaClient(object):
         return False
 
     def print_response(self):
-
-        for content in self._ollama_chat.contents():
-            # logger.debug(f'[OllamaClient] :: print_response :: {content=}')
-            print(content, end='', flush=True)
-
+        self._ollama_chat.print_stream()
         return self
+
+    def response(self):
+        return self._ollama_chat.response()
 
     def set_context_window(self, tokens: int):
         tokens = round(tokens)
@@ -538,79 +536,3 @@ class OllamaClient(object):
 
         logger.error(f'[OllamaClient] :: start_local_server :: failed')
         return False
-
-    def use_template_chatbot_with_input(self, input: str, question: str):
-
-        template = (f"""
-You are a highly articulate and helpful chat bot. 
-Your task is to answer questions using data provided in the <DATA> section.
-    - Use the information in the <INPUT> section.
-
-<INSTRUCTIONS>
--   Always give a truthful and honest answers.
--   You are allowed to ask a follow up question if it will help clarify the <INPUT> section.
--   For everything else, please explicitly mention these notes. 
--   Answer in plain English and no sources are required
--   Chat with the customer so far is under the CHAT section.
-</INSTRUCTIONS>
-
-
-QUESTION: {question}
-ANSWER:
-
-
-<DATA>
-<INPUT>
-{input}
-</INPUT>
-</DATA>
-
-""")
-
-        return self.add_chain(template)
-
-    def use_template_chatbot_with_multi_input(self, input: [dict], question: str):
-        """
-
-        inputs: {
-            "tag": "name of tag",
-            "text" "string of text"
-        }
-
-        """
-
-        INPUTS = []
-        for input_ in input:
-            tag = input_['tag']
-            text = input_['text']
-
-            INPUTS.append(f"<{tag}>\n{text}\n</{tag}>")
-
-        INPUTS = '\n\n'.join(INPUTS)
-
-        template = textwrap.dedent(f"""
-You are a highly articulate and helpful chat bot. 
-Your task is to answer questions using data provided in the <DATA> section.
-    - Use the information in the <DATA> section.
-
-<INSTRUCTIONS>
--   Always give a truthful and honest answers.
--   You are allowed to ask a follow up question if it will help clarify the <INPUT> section.
--   For everything else, please explicitly mention these notes. 
--   Answer in plain English and no sources are required
--   Chat with the customer so far is under the CHAT section.
-</INSTRUCTIONS>
-
-
-QUESTION: {question}
-ANSWER:
-
-
-<DATA>
-
-{INPUTS}
-
-</DATA>
-
-""")
-        return self.add_chain(template)

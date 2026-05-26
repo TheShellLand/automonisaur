@@ -16,9 +16,9 @@ class TestOllamaClient(unittest.TestCase):
             return
 
         ollama.add_prompt(
-            "What time is it?"
+            "Who are you?"
         )
-        ollama.chat()
+        response = ollama.chat().response()
 
         ollama.print_response()
 

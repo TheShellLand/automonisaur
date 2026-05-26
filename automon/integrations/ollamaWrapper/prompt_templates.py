@@ -38,6 +38,82 @@ class AgentTemplates:
             f"You will always give concise and direct answers.\n"
         )
 
+    @property
+    def use_template_chatbot_with_input(self, input: str, question: str) -> str:
+        template = (f"""
+        You are a highly articulate and helpful chat bot. 
+        Your task is to answer questions using data provided in the <DATA> section.
+            - Use the information in the <INPUT> section.
+
+        <INSTRUCTIONS>
+        -   Always give a truthful and honest answers.
+        -   You are allowed to ask a follow up question if it will help clarify the <INPUT> section.
+        -   For everything else, please explicitly mention these notes. 
+        -   Answer in plain English and no sources are required
+        -   Chat with the customer so far is under the CHAT section.
+        </INSTRUCTIONS>
+
+
+        QUESTION: {question}
+        ANSWER:
+
+
+        <DATA>
+        <INPUT>
+        {input}
+        </INPUT>
+        </DATA>
+
+        """)
+        return template
+
+    @property
+    def use_template_chatbot_with_multi_input(self, input: [dict], question: str):
+        """
+
+        inputs: {
+            "tag": "name of tag",
+            "text" "string of text"
+        }
+
+        """
+
+        INPUTS = []
+        for input_ in input:
+            tag = input_['tag']
+            text = input_['text']
+
+            INPUTS.append(f"<{tag}>\n{text}\n</{tag}>")
+
+        INPUTS = '\n\n'.join(INPUTS)
+
+        template = (f"""
+        You are a highly articulate and helpful chat bot. 
+        Your task is to answer questions using data provided in the <DATA> section.
+            - Use the information in the <DATA> section.
+        
+        <INSTRUCTIONS>
+        -   Always give a truthful and honest answers.
+        -   You are allowed to ask a follow up question if it will help clarify the <INPUT> section.
+        -   For everything else, please explicitly mention these notes. 
+        -   Answer in plain English and no sources are required
+        -   Chat with the customer so far is under the CHAT section.
+        </INSTRUCTIONS>
+        
+        
+        QUESTION: {question}
+        ANSWER:
+        
+        
+        <DATA>
+        
+        {INPUTS}
+        
+        </DATA>
+        
+        """)
+        return self.add_chain(template)
+
 
 class TrueOrFalseTemplates:
 

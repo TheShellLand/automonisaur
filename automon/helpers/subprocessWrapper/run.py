@@ -58,7 +58,6 @@ class Run:
         logger.debug(f'Run :: set_command :: {command=}')
         if command:
             self.command = command
-            logger.info(f'Run :: set_command :: done')
             return True
         return False
 
@@ -91,14 +90,12 @@ class Run:
         :return:
         """
         logger.debug(f'Run :: which :: {program=} :: {args=} :: {kwargs=}')
-        logger.info(f'Run :: which :: done')
         return self.run(command=f'which {program}', *args, **kwargs)
 
     def run_command(self, *args, **kwargs) -> bool:
         """alias to run"""
         logger.debug(f'Run :: run_command :: {args=} :: {kwargs=}')
         run = self.run(*args, **kwargs)
-        logger.info(f'Run :: run_command :: done')
         return run
 
     def run(
@@ -150,7 +147,6 @@ class Run:
                     f'stdout {round(len(self.stdout) / 1024, 2)} KB :: '
                     f'stderr {round(len(self.stderr) / 1024, 2)} KB'
                 )
-                logger.info(f'Run :: run :: done')
                 return True
 
         except Exception as error:

@@ -54,18 +54,15 @@ class OllamaChat(object):
         return [self._message(chunk) for chunk in self.chunks]
 
     def print_stream(self):
-        try:
-            for content in self.contents():
-                print(f'{content}', end='', flush=True)
-
-        except KeyboardInterrupt:
-            print(f"\n:: SYSTEM :: ending transmission. ::")
-            return self
-
-        print('\n', flush=True)
+        response = ''.join(self.contents())
+        print(f'{response}\n', flush=True)
         return self
+
+    def response(self) -> str:
+        return ''.join(self.contents())
 
     def to_string(self) -> str:
         string = ''.join(self.contents())
-        logger.debug(f'[OllamaChat] :: to_string :: {Tokens(string).count_pretty} tokens')
+        tokens = Tokens(string)
+        logger.debug(f'[OllamaChat] :: to_string :: {tokens.count_pretty} tokens')
         return string

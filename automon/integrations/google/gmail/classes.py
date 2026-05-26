@@ -690,6 +690,7 @@ class Message(DictHelper):
             self._header_subject,
             self.labelIds,
             self._date_utc_str,
+            self.snippet,
         ])
 
     def __lt__(self, other):
@@ -1048,6 +1049,7 @@ class Draft(DictHelper):
             self.message._email_from,
             self.message._email_to,
             self.message._header_subject.value,
+            self.message.snippet,
         ])
 
     @property
@@ -1230,7 +1232,7 @@ class Thread(DictHelper):
             return self.messages[-1]
 
     def to_prompt(self) -> list[dict]:
-        return [{'message': x.to_prompt()} for x in self.messages]
+        return [{'email': x.to_prompt()} for x in self.messages]
 
 
 class ThreadList(DictHelper):
