@@ -70,8 +70,8 @@ else:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(CRITICAL)
 
-USE_OLLAMA = False
-USE_GEMINI = True
+USE_OLLAMA = True
+USE_GEMINI = False
 CHAT_FOREVER = False
 
 gmail = AutomonGmailClient()
@@ -296,7 +296,7 @@ def processor_email_new(gmail: AutomonGmailClient, gemini: GoogleGeminiClient):
                     )
 
                 if draft is not None:
-                    if labels.auto_reply_enabled in thread._messages_labels:
+                    if labels.auto_reply in thread._messages_labels:
                         queue_send.put((thread, draft))
 
         gmail.messages_modify_automon(
@@ -343,7 +343,7 @@ def processor_draft_send(gmail: AutomonGmailClient):
         item: tuple[Thread, Draft] = queue_send.get()
         thread, draft = item
 
-        if labels.auto_reply_enabled in thread._messages_labels:
+        if labels.auto_reply in thread._messages_labels:
             draft_sent = gmail.draft_send(draft=draft)
 
             gmail.messages_modify_automon(
@@ -411,14 +411,14 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
 
 def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
     ollama = OllamaClient()
-    ollama.set_model('deepseek-r1:8b')
+    ollama.set_model('gemma4:latest')
 
     if ollama.is_ready():
 
         # ollama.add_message(role='model', content=ollama.prompts.agent_machine_job_applicant)
 
         for prompt in prompts:
-            ollama.add_message(prompt)
+            ollama.add_prompt(prompt)
 
         ollama.set_context_window(ollama.get_total_tokens() * 1.10)
         ollama_response = ollama.chat().chat_response

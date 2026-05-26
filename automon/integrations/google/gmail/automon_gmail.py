@@ -41,7 +41,7 @@ class AutomonLabels(GmailLabels):
         self.automon = Label(name='automon', color=self._color_default)
 
         # allow auto reply
-        self.auto_reply_enabled = Label(name='automon/auto reply enabled', color=self._color_default)
+        self.auto_reply = Label(name='automon/auto reply', color=self._color_default)
 
         # currently processing
         self.processing = Label(name='automon/processing >>>', color=self._color_processing)
@@ -214,7 +214,7 @@ class AutomonGmailClient(GoogleGmailClient):
 
     def is_auto_reply(self, thread: Thread) -> bool:
         for message in thread.messages:
-            if self._labels.auto_reply_enabled in message.labelIds:
+            if self._labels.auto_reply in message.labelIds:
                 return True
         return False
 
@@ -241,7 +241,7 @@ class AutomonGmailClient(GoogleGmailClient):
         return False
 
     def is_follow_up(self, thread: Thread):
-        if self._labels.auto_reply_enabled in thread._messages_labels:
+        if self._labels.auto_reply in thread._messages_labels:
             if self._labels.sent in thread._messages_labels:
                 if thread._message_first._email_from == thread._clean_thread_latest._email_from:
                     return True
