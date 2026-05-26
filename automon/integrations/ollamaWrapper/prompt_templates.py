@@ -1,7 +1,7 @@
 class AgentTemplates:
 
     @property
-    def agent_machine_job_applicant(self):
+    def agent_machine_job_applicant(self) -> list[str]:
         return [(
             "RULE: Behave as a real human person in a conversational thread replying to emails.\n"
             "RULE: Strictly use the RESUME as your complete knowledge, skills, and work experience.\n"
@@ -28,6 +28,15 @@ class AgentTemplates:
             'RULE: The response must also be refactored to remove extraneous conversational text such as "Let me know what time works best for a discussion."\n'
             'RULE: Remove any conversational closing statements such as "I look forward to connecting and discussing how my skills in cloud technologies and security can benefit your firm," as these are considered extraneous conversational text.\n'
         )]
+
+    @property
+    def use_template_chatbot_with_thinking(self, content: str = '') -> str:
+        return (
+            f"You are a chat bot talking to a person.\n"
+            f"You will only answer using information provided.\n"
+            f"You must provide an answer.\n"
+            f"You will always give concise and direct answers.\n"
+        )
 
 
 class TrueOrFalseTemplates:

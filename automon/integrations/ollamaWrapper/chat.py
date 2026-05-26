@@ -11,40 +11,52 @@ logger.setLevel(LoggingClient.ERROR)
 class OllamaChat(object):
     """Generator object returned from ollama.chat"""
 
-    def __init__(self, model: str, chat: ollama.chat, messages: list):
-        self.model = model
-        self.chat: ollama.chat = chat
-        self.messages = messages
+    model: str
+    _chat: ollama.chat
 
-        self.chunks = []
+    chunks: list
+
+    def __init__(
+            self,
+            model: str,
+            chat: ollama.chat,
+            messages: list
+    ):
+        self.model = model
+        self._chat = chat
+
+        self._chunks = []
 
     def __repr__(self):
-        return f'[OllamaResponse]'
+        return f'[OllamaChat]'
 
-    def _chunk_content(self, chunk):
-        content = self._chunk_message(chunk=chunk)['content']
-        logger.debug(f'[OllamaChat] :: _chunk_content :: {len(Tokens(content))} tokens')
-        return content
+    @property
+    def chunks(self):
+        for chunk in self._chat:
+            if chunk not in self._chunks:
+                self._chunks.append(chunk)
+        return self._chunks
 
-    def _chunk_message(self, chunk):
-        return chunk['message']
+    @chunks.setter
+    def chunks(self, chunks):
+        self._chunks = chunks
 
-    def content(self):
-        return [message['content'] for message in self.message()]
+    def _content(self, message):
+        return message.content
 
-    def _get_chunks(self):
-        for chunk in self.chat:
-            logger.debug(f'[OllamaChat] :: _get_chunks :: {chunk=}')
-            self.chunks.append(chunk)
-            yield chunk
+    def contents(self) -> list:
+        return [self._content(message) for message in self._messages()]
 
-    def message(self):
-        return [chunk['message'] for chunk in self.chunks]
+    def _message(self, chunk):
+        return chunk.message
+
+    def _messages(self) -> list:
+        return [self._message(chunk) for chunk in self.chunks]
 
     def print_stream(self):
         try:
-            for chunk in self._get_chunks():
-                print(f'{self._chunk_content(chunk=chunk)}', end='', flush=True)
+            for content in self.contents():
+                print(f'{content}', end='', flush=True)
 
         except KeyboardInterrupt:
             print(f"\n:: SYSTEM :: ending transmission. ::")
@@ -53,10 +65,7 @@ class OllamaChat(object):
         print('\n', flush=True)
         return self
 
-    def to_string(self):
-        if not self.chunks:
-            self._get_chunks()
-
-        string = ''.join(self.content())
+    def to_string(self) -> str:
+        string = ''.join(self.contents())
         logger.debug(f'[OllamaChat] :: to_string :: {Tokens(string).count_pretty} tokens')
         return string

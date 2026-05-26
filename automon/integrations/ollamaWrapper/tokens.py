@@ -9,16 +9,18 @@ class Tokens(DictHelper):
     string: str
     _ratio: int
 
-    def __init__(self, string: str = '', ratio: int = 4):
+    def __init__(
+            self,
+            string: str = '',
+            ratio: int = 4
+    ):
         super().__init__()
 
         if not string:
             string = ''
 
-        self.string: str = string
-        self._ratio: int = ratio
-
-        logger.debug(f"[Tokens] :: {string}")
+        self.string = string
+        self._ratio = ratio
 
     def __repr__(self):
         return f"{self.count} tokens"

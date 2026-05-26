@@ -6,19 +6,23 @@ from automon.helpers.osWrapper import environ
 
 class TestOllamaClient(unittest.TestCase):
     def test_chat(self):
-        model = OllamaClient()
+        ollama = OllamaClient()
+        model = ollama.model
 
-        if not model.is_ready() and not environ('RUN'):
+        if not ollama.is_ready():
             return
 
-        model.pull()
+        if not ollama.pull_model(model):
+            return
 
-        model.add_message(
+        ollama.add_prompt(
             "What time is it?"
         )
-        model.chat()
+        ollama.chat()
 
-        model.print_response()
+        ollama.print_response()
+
+        pass
 
 
 if __name__ == '__main__':

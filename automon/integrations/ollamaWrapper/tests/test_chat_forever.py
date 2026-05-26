@@ -19,7 +19,7 @@ class TestOllamaClient(unittest.TestCase):
         model = OllamaClient()
 
         if environ('RUN'):
-            model.chat_forever(system_content=model.use_template_chatbot_with_thinking())
+            model.chat_forever(system_content=model.templates.use_template_chatbot_with_thinking())
 
 
 if __name__ == '__main__':

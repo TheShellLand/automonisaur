@@ -16,8 +16,8 @@ def chr_to_tokens(string: str, ratio: int = 4) -> int:
     return tokens
 
 
-def sum_tokens(strings: list, **kwargs) -> int:
-    count = sum(chr_to_tokens(s["content"], **kwargs) for s in strings)
+def sum_tokens(strings: list[dict], **kwargs) -> int:
+    count = sum(chr_to_tokens(s.get('content'), **kwargs) for s in strings)
 
     logger.debug(f'[tokens] :: {strings=} :: ')
     return count

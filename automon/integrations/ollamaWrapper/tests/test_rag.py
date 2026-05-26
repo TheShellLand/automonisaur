@@ -23,12 +23,12 @@ class TestOllamaClient(unittest.TestCase):
         RAG = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'RAG.txt'), 'r').read()
         QUERY = input('Enter your question: ')
 
-        model.add_message(content=f'You are a USER and a ASSISTANT.')
+        model.add_prompt(content=f'You are a USER and a ASSISTANT.')
 
-        model.add_message(content=f'As the ASSISTANT, you provided the following information to USER: {RAG}')
-        model.add_message(content=f"As the USER, do the following: {QUERY}")
+        model.add_prompt(content=f'As the ASSISTANT, you provided the following information to USER: {RAG}')
+        model.add_prompt(content=f"As the USER, do the following: {QUERY}")
 
-        model.add_message(content=f'As the USER, your replies are in informal tone.')
+        model.add_prompt(content=f'As the USER, your replies are in informal tone.')
 
         model.chat()
         model.print_response()
