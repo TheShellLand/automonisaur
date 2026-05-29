@@ -1,4 +1,4 @@
-from automon import debug_exception
+from automon.helpers.debug import debug_exception
 
 
 def is_true(text: str) -> bool | None:
