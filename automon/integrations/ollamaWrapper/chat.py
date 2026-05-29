@@ -3,6 +3,7 @@ import ollama
 from automon.helpers.loggingWrapper import LoggingClient
 
 from .tokens import Tokens
+from ... import repr_str
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(LoggingClient.ERROR)
@@ -14,48 +15,50 @@ class OllamaChat(object):
     model: str
     _chat: ollama.chat
 
-    chunks: list
-
     def __init__(
             self,
             model: str,
             chat: ollama.chat,
-            messages: list
     ):
         self.model = model
         self._chat = chat
-
         self._chunks = []
+        self._consumed = False
 
     def __repr__(self):
-        return f'[OllamaChat]'
+        return repr_str([
+            f'[OllamaChat]',
+            f'{self.model}',
+            f'{len(self._chunks)} chunks',
+        ])
 
-    @property
     def chunks(self):
-        for chunk in self._chat:
+        iterable = self._chunks if self._consumed else self._chat
+
+        for chunk in iterable:
             if chunk not in self._chunks:
                 self._chunks.append(chunk)
-        return self._chunks
+                yield chunk
 
-    @chunks.setter
-    def chunks(self, chunks):
-        self._chunks = chunks
+        self._consumed = True
 
     def _content(self, message):
         return message.content
 
-    def contents(self) -> list:
-        return [self._content(message) for message in self._messages()]
+    def contents(self):
+        for message in self._messages():
+            yield self._content(message)
 
     def _message(self, chunk):
         return chunk.message
 
-    def _messages(self) -> list:
-        return [self._message(chunk) for chunk in self.chunks]
+    def _messages(self):
+        for chunk in self.chunks():
+            yield self._message(chunk)
 
-    def print_stream(self):
-        response = ''.join(self.contents())
-        print(f'{response}\n', flush=True)
+    def stream(self):
+        for content in self.contents():
+            print(content, end='', flush=True)
         return self
 
     def response(self) -> str:

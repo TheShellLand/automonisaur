@@ -17,7 +17,6 @@ LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').se
 class TestOllamaClient(unittest.TestCase):
     def test_chat(self):
         model = OllamaClient()
-        model.STREAM = True
 
         if not model.is_ready() or not environ('RUN'):
             return
