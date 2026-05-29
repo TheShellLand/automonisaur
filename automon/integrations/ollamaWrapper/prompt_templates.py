@@ -1,24 +1,7 @@
-from automon import lstrip_str
+from automon import Markdown
 
 
-class Format:
-
-    def compact_prompt(self, prompt: str) -> str:
-        raw_template = f"""
-        # SYSTEM RULES
-
-        - Act as a prompt engineer.
-        - Compress the text provided in the PROMPT section to use the absolute minimum number of tokens while preserving 100% of its original meaning, constraints, and intent.
-        - Remove fluff, use concise language, and utilize formatting like Markdown or symbols if it saves space.
-
-        ---
-
-        # PROMPT
-
-        {prompt}
-        """
-
-        return lstrip_str(raw_template)
+class Utils:
 
     def to_markdown(
             self,
@@ -36,12 +19,12 @@ class Format:
         ```
         """
 
-        return lstrip_str(raw_template)
+        return Markdown.lstrip_str(raw_template)
 
 
 class AgentTemplates:
 
-    def agent_machine_job_applicant(self) -> str:
+    def job_applicant(self) -> str:
         raw_template = f"""
         # SYSTEM RULES
         
@@ -71,7 +54,24 @@ class AgentTemplates:
         - Remove any conversational closing statements such as "I look forward to connecting and discussing how my skills in cloud technologies and security can benefit your firm," as these are considered extraneous conversational text.
         """
 
-        return lstrip_str(raw_template)
+        return Markdown.lstrip_str(raw_template)
+
+    def compact_prompt(self, prompt: str) -> str:
+        raw_template = f"""
+        # SYSTEM RULES
+
+        - Act as a prompt engineer.
+        - Compress the text provided in the PROMPT section to use the absolute minimum number of tokens while preserving 100% of its original meaning, constraints, and intent.
+        - Remove fluff, use concise language, and utilize formatting like Markdown or symbols if it saves space.
+
+        ---
+
+        # PROMPT
+
+        {prompt}
+        """
+
+        return Markdown.lstrip_str(raw_template)
 
     def use_template_chatbot_with_thinking(self, content: str = '') -> str:
         raw_template = f"""
@@ -82,7 +82,7 @@ class AgentTemplates:
         - You must provide an answer.
         - You will always give concise and direct answers.
         """
-        return lstrip_str(raw_template)
+        return Markdown.lstrip_str(raw_template)
 
     def use_template_chatbot_with_input(self, input: str, question: str) -> str:
         raw_template = f"""
@@ -115,7 +115,7 @@ class AgentTemplates:
         ```
         """
 
-        return lstrip_str(raw_template)
+        return Markdown.lstrip_str(raw_template)
 
     def use_template_chatbot_with_multi_input(self, input: [dict], question: str) -> str:
         INPUTS = []
@@ -157,7 +157,7 @@ class AgentTemplates:
         {INPUTS}
         """
 
-        return lstrip_str(raw_template)
+        return Markdown.lstrip_str(raw_template)
 
 
 class TrueOrFalseTemplates:
@@ -166,7 +166,7 @@ class TrueOrFalseTemplates:
         raw_template = f"""
         # QUESTION
         
-        Analyze the email data below. Respond with exactly one word: "True" or "False".
+        Analyze the `EMAIL` below. Respond with exactly one word: "True" or "False".
         
         Is the first email from a human? Respond "True" if it is from a real person. Respond "False" if it is an automated message, automated notification, bounce message, or bot.
         
@@ -174,16 +174,19 @@ class TrueOrFalseTemplates:
         
         ---
         
-        # EMAIL DATA
+        # EMAIL
+        
+        ```text
         {email}
+        ```
 """
-        return lstrip_str(raw_template)
+        return Markdown.lstrip_str(raw_template)
 
-    def email_is_rejected(self) -> str:
-        raw_template = """
+    def email_is_rejected(self, email) -> str:
+        raw_template = f"""
         # QUESTION
         
-        Analyze the provided email data below. Respond with exactly one word: "True" or "False". 
+        Analyze the provided `EMAIL` below. Respond with exactly one word: "True" or "False". 
         
         Respond "True" if at least one of these conditions is met:
         - The sender is 'mailer-daemon'
@@ -192,31 +195,47 @@ class TrueOrFalseTemplates:
         - The email body contains the phrase 'Message blocked'
         
         Otherwise, respond "False". Do not include any punctuation, explanations, or other text.
+        
+        ---
+        
+        # EMAIL
+        
+        ```text
+        {email}
+        ```
         """
-        return lstrip_str(raw_template)
+        return Markdown.lstrip_str(raw_template)
 
-    def rules_is_followed(self, rules: str, email: str) -> str:
+    def rules_is_followed(self, rules: str, text: str) -> str:
         raw_template = f"""
         # QUESTION
         
-        Analyze the provided email data below. Respond with exactly one word: "True" or "False". 
+        Analyze the provided `TEXT` below. Respond with exactly one word: "True" or "False". 
         
         Respond "True" if all of the `RULES` were followed. Otherwise, respond "False". 
         Do not include any punctuation, explanations, or other text.
         
+        ---
+        
         # RULES
         
+        ```text
         {rules}
+        ```
         
-        # EMAIL
+        ---
         
-        {email}
+        # TEXT
+        
+        ```text
+        {text}
+        ```
         """
 
-        return lstrip_str(raw_template)
+        return Markdown.lstrip_str(raw_template)
 
 
 class Templates:
     agents = AgentTemplates()
-    format = Format()
+    utils = Utils()
     true_or_false = TrueOrFalseTemplates()
