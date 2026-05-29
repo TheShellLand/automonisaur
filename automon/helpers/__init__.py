@@ -3,7 +3,7 @@ from .debug import debug, debug_exception, debug_str
 from .dictWrapper import DictHelper
 from .encapsulation import encapsulate
 from .loggingWrapper import LoggingClient, INFO, DEBUG, ERROR, CRITICAL
-from .markdown import Chat, Format
+from .markdown import Chat, Format, list_to_markdown, lstrip_str
 from .networking import Networking
 from .regex import Regex
 from .repr import repr_str
