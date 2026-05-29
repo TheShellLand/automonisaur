@@ -54,13 +54,14 @@ class Chat:
         return msg
 
 
-def list_to_markdown(markdowns: list[str]) -> str:
-    return textwrap.dedent(
-        '\n\n---\n\n'.join(markdowns)
-    ).strip()
+class Markdown:
 
+    def list_to_markdown(self, markdowns: list[str]) -> str:
+        return self.lstrip_str(
+            '\n\n---\n\n'.join(markdowns)
+        )
 
-def lstrip_str(text: str) -> str:
-    return textwrap.dedent(
-        '\n'.join(line.lstrip() for line in text.strip().splitlines())
-    )
+    def lstrip_str(self, text: str) -> str:
+        return textwrap.dedent(
+            '\n'.join(line.lstrip() for line in text.strip().splitlines())
+        ).strip()
