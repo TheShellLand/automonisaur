@@ -1,8 +1,8 @@
 import io
 import bs4
 import base64
-import datetime
 import hashlib
+import datetime
 import dateutil.parser
 
 from typing import Self
@@ -871,41 +871,55 @@ class Message(DictHelper):
         if self.raw is not None:
             return base64.urlsafe_b64decode(self.raw).decode()
 
-    def to_prompt(self) -> dict:
-        email = {}
-        email['from'] = self._email_from
-        email['to'] = self._email_to
-        email['subject'] = self._header_subject.value
-        email['date'] = self._date_local_str
-        email['date_epoch'] = self._date_epoch_s
-        email['body'] = None
+    def to_prompt(self) -> str:
+        """email to markdown"""
 
+        body = None
         if self.payload:
             body = self.payload.body
             if body:
                 text = body._data_html_text
                 if text:
-                    email['body'] = text
+                    body = text
             if self.payload.parts:
                 parts = self.payload.parts
                 for part in parts:
                     if part.mimeType == 'text/plain':
-                        email['body'] = part.body._data_html_text
+                        body = part.body._data_html_text
                         break
 
                     if part.mimeType == 'text/html':
-                        email['body'] = part.body._data_html_text
+                        body = part.body._data_html_text
                         break
 
                     more_parts = part.parts
                     for more_part in more_parts:
                         if more_part.mimeType == 'text/plain':
-                            email['body'] = more_part.body._data_html_text
+                            body = more_part.body._data_html_text
                             break
 
-        if email['body'] is None:
-            raise Exception(f'body not found')
-        return email
+        if body is None:
+            raise debug_exception(locals(), f'body not found')
+
+        raw_template = f"""
+        # EMAIL
+        
+        ### EMAIL CONTEXT
+        
+        from: {self._email_from}
+        to: {self._email_to}
+        subject: {self._header_subject.value}
+        date: {self._date_local_str}
+        date epoch: {self._date_epoch_s}
+        
+        ### EMAIL BODY 
+        
+        ```text
+        {body}
+        ```
+        """
+
+        return lstrip_str(raw_template)
 
 
 class MessageAttachments(DictHelper):
@@ -1231,8 +1245,8 @@ class Thread(DictHelper):
         if self.messages:
             return self.messages[-1]
 
-    def to_prompt(self) -> list[dict]:
-        return [{'email': x.to_prompt()} for x in self.messages]
+    def to_prompt(self) -> str:
+        return list_to_markdown([x.to_prompt() for x in self.messages])
 
 
 class ThreadList(DictHelper):
