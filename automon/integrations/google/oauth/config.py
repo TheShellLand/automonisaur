@@ -69,12 +69,12 @@ class GoogleAuthConfig(object):
         return self.scopes
 
     @property
-    def credentials_access_token(self) -> str | None:
+    def _credentials_access_token(self) -> str | None:
         if self.credentials:
             return self.credentials.token
 
     @property
-    def credentials_file(self):
+    def _credentials_file(self):
         if self.GOOGLE_CREDENTIALS_FILE:
             return self._file_to_dict(self.GOOGLE_CREDENTIALS_FILE)
 
@@ -82,50 +82,50 @@ class GoogleAuthConfig(object):
             return self._base64_to_dict(self.GOOGLE_CREDENTIALS_BASE64)
 
     @property
-    def credentials_file_has_refresh_token(self) -> bool:
-        if self.credentials_file_type_oauth2:
-            if 'refresh_token' and 'access_token' in self.credentials_file:
+    def _credentials_file_has_refresh_token(self) -> bool:
+        if self._credentials_file_type_oauth2:
+            if 'refresh_token' and 'access_token' in self._credentials_file:
                 return True
         return False
 
     @property
-    def credentials_file_type(self):
-        if self.credentials_file:
+    def _credentials_file_type(self):
+        if self._credentials_file:
 
-            if 'type' in self.credentials_file:
-                return self.credentials_file['type']
+            if 'type' in self._credentials_file:
+                return self._credentials_file['type']
 
-            if 'installed' in self.credentials_file:
+            if 'installed' in self._credentials_file:
                 return 'oauth2'
 
         raise
 
     @property
-    def credentials_file_type_oauth2(self) -> bool:
-        if self.credentials_file_type == 'oauth2':
+    def _credentials_file_type_oauth2(self) -> bool:
+        if self._credentials_file_type == 'oauth2':
             return True
         return False
 
     @property
-    def credentials_file_type_service_account(self) -> bool:
-        if self.credentials_file_type == 'service_account':
+    def _credentials_file_type_service_account(self) -> bool:
+        if self._credentials_file_type == 'service_account':
             return True
         return False
 
     @property
-    def credentials_file_client_id(self):
+    def _credentials_file_client_id(self):
 
-        if 'client_id' in self.credentials_file:
-            return self.credentials_file['client_id']
+        if 'client_id' in self._credentials_file:
+            return self._credentials_file['client_id']
 
-        if 'installed' in self.credentials_file:
-            return self.credentials_file['installed']['client_id']
+        if 'installed' in self._credentials_file:
+            return self._credentials_file['installed']['client_id']
 
-        raise Exception(f'{self.credentials_file} is not installed')
+        raise Exception(f'{self._credentials_file} is not installed')
 
     def _credentials_pickle_save(self):
 
-        credentials_pickle_save = self.credentials_file_client_id + '.pickle'
+        credentials_pickle_save = self._credentials_file_client_id + '.pickle'
 
         if self.credentials:
             with open(credentials_pickle_save, 'wb') as token:
@@ -142,7 +142,7 @@ class GoogleAuthConfig(object):
 
     def _credentials_pickle_load(self):
 
-        credentials_pickle_load = self.credentials_file_client_id + '.pickle'
+        credentials_pickle_load = self._credentials_file_client_id + '.pickle'
 
         if os.path.exists(credentials_pickle_load):
             with open(credentials_pickle_load, 'rb') as token:
@@ -166,16 +166,16 @@ class GoogleAuthConfig(object):
             return self.credentials
 
         scopes = self.scopes
-        credentials_file = self.credentials_file
+        credentials_file = self._credentials_file
 
         credentials = None
-        if self.credentials_file_type_service_account:
+        if self._credentials_file_type_service_account:
             credentials = self.CredentialsServiceAccountInfo(
                 info=credentials_file,
                 scopes=scopes)
 
-        if self.credentials_file_type_oauth2:
-            if self.credentials_file_has_refresh_token:
+        if self._credentials_file_type_oauth2:
+            if self._credentials_file_has_refresh_token:
                 credentials = self.CredentialsInfo(
                     info=credentials_file,
                     scopes=scopes)
@@ -310,7 +310,7 @@ class GoogleAuthConfig(object):
     def headers(self) -> dict:
         """authentication headers"""
         return {
-            "Authorization": f"Bearer {self.credentials_access_token}"
+            "Authorization": f"Bearer {self._credentials_access_token}"
         }
 
     def is_ready(self) -> bool:
