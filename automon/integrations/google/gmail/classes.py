@@ -919,7 +919,7 @@ class Message(DictHelper):
         ```
         """
 
-        return lstrip_str(raw_template)
+        return Markdown.lstrip_str(raw_template)
 
 
 class MessageAttachments(DictHelper):
@@ -1246,7 +1246,7 @@ class Thread(DictHelper):
             return self.messages[-1]
 
     def to_prompt(self) -> str:
-        return list_to_markdown([x.to_prompt() for x in self.messages])
+        return Markdown.list_to_markdown([x.to_prompt() for x in self.messages])
 
 
 class ThreadList(DictHelper):
