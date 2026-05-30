@@ -10,7 +10,7 @@ import readline
 
 import automon
 
-from automon import debug_exception
+from automon import debug_exception, DictHelper
 import automon.helpers.uuidWrapper
 import automon.helpers.tempfileWrapper
 
@@ -29,17 +29,39 @@ logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
 
+class OllamaOptions(DictHelper):
+    """
+    options={
+        "temperature": 0.0,      # Eliminates randomness for strict adherence
+        "top_p": 0.1,            # Locks the model into the highest probability tokens
+        "num_predict": 1024      # Limits max output length to save processing time
+        "num_ctx": 2048          # default 2048 tokens
+    }
+
+    """
+
+    def __init__(
+            self,
+            temperature: float = None,
+            top_p: float = None,
+            num_predict: int = None,
+            num_ctx: int = None,
+    ):
+        self.temperature = temperature
+        self.top_p = top_p
+        self.num_predict = num_predict
+        self.num_ctx = num_ctx
+
+        super().__init__()
+
+
 class OllamaClient(object):
-    templates = AgentTemplates()
+    templates = Templates()
 
     model: str
-    prompts: list[dict]
-
-    context: tuple[OllamaChat]
-    chat_log: tuple[OllamaChat]
+    messages: list[dict]
 
     _ollama: ollama
-    STREAM: ollama.chat
 
     _max_tokens = {
         'deepseek-r1:14b': 128000,
@@ -49,51 +71,40 @@ class OllamaClient(object):
     def __init__(
             self,
             model: str = 'gemma4:latest',
-            messages: list = [],
-            stream: bool = True
+            host: str = None
     ):
-        self._ollama = ollama
+        self._ollama = ollama.Client(
+            host=host,
+        )
 
         self.model = model
-        self.prompts = messages
-        self.STREAM = stream
+        self.messages = []
 
-        self.context = None
-        self.chat_log = tuple()
-
-        self._ollama_chat: OllamaChat = None
-        self._ollama_list = None
-
-        self._safe_word = None
-        self._chat_session = None
+        self._pickle_session = None
         self._chat_downloads = []
 
-        self._full_chat_log = ''
         self._temp_dir = automon.helpers.tempfileWrapper.Tempfile.get_temp_dir()
 
         self._memory_usage_max = 0
         self._num_ctx = 9000
 
-    @property
-    def _ollama_options(self):
-        return dict(
-            num_ctx=self._num_ctx
+    def _ollama_options(
+            self,
+            temperature: float = None,
+            top_p: float = None,
+            num_predict: int = None,
+            num_ctx: int = None,
+    ) -> OllamaOptions:
+
+        return OllamaOptions(
+            temperature=temperature,
+            top_p=top_p,
+            num_predict=num_predict,
+            num_ctx=num_ctx,
         )
 
     def add_chain(self, content: str, delimiters: str = 'CHAT', **kwargs):
-
-        new_question = f'{content}'
-
-        if self._ollama_chat:
-            chat = self._ollama_chat.to_string()
-            new_question = (
-                f'{content}\n'
-                f'<{delimiters}>{chat}</{delimiters}>'
-            )
-
-        self.add_prompt_followup(content=new_question, **kwargs)
-
-        return self
+        raise debug_exception(locals(), f'depreciated: use OllamaClient.add_prompt instead')
 
     def add_prompt(self, content: str, role: str = 'user'):
 
@@ -111,9 +122,9 @@ class OllamaClient(object):
             "content": str(content)
         }
 
-        self.prompts.append(message)
+        self.messages.append(message)
 
-        total_tokens = sum_tokens(self.prompts)
+        total_tokens = sum_tokens(self.messages)
         model = self.model
         max_tokens = self._max_tokens.get(model)
         if total_tokens > max_tokens:
@@ -129,70 +140,50 @@ class OllamaClient(object):
         return self
 
     def add_prompt_followup(self, **kwargs):
-        self.prompts = []
+        self.messages = []
         self.add_prompt(**kwargs)
 
         return self
 
     def clear_context(self):
-        self.prompts = []
+        self.messages = []
         logger.info(f'[OllamaClient] :: clear_context :: done')
         return self
 
     def chat(
             self,
-            show_profiler: bool = False,
             print_stream: bool = True,
-            options: dict = None,
+            options: OllamaOptions = None,
             **kwargs
-    ):
+    ) -> OllamaChat:
         """send prompt to model"""
-        if not options:
-            options = self._ollama_options
+        if options is None:
+            options = self._ollama_options().to_dict()
 
-        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.prompts):,} total tokens')
+        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.messages):,} total tokens')
 
         chat = self._ollama.chat(
             model=self.model,
-            messages=self.prompts,
-            stream=self.STREAM,
+            messages=self.messages,
+            stream=print_stream,
             options=options,
             **kwargs
         )
-        chat = OllamaChat(model=self.model, chat=chat, messages=self.prompts)
-        self.chat_log = self.chat_log + (chat,)
+        chat = OllamaChat(model=self.model, chat=chat)
         self._ollama_chat = chat
 
-        time_delta = None
         if print_stream:
-            pr = cProfile.Profile()
-            time_start = datetime.datetime.now()
-            pr.enable()
+            print(self.messages[-1])
+            chat.stream()
 
-            chat.print_stream()
-            self._memory_alert_90()
+        self.add_prompt(content=chat.to_string(), role='assistant')
 
-            pr.disable()
-            time_stop = datetime.datetime.now()
-            time_delta = time_stop - time_start
-            time_delta = datetime.timedelta(seconds=time_delta.seconds)
-
-            if show_profiler:
-                pr.print_stats(sort='cumulative')
-
-        if time_delta:
-            logger.debug(f'[OllamaClient] :: chat :: {chat=} :: {time_delta} runtime')
-
-        return self
+        return chat
 
     def chat_forever(self, safe_word: str = None, system_content: str = None):
         """Chat forever until you use your safe word. :) """
 
         self.pickle_load()
-
-        if not safe_word:
-            safe_word = '/pineapples'
-        self._safe_word = safe_word
 
         if system_content:
             self._agent_system_prompt(system_content=system_content)
@@ -260,9 +251,6 @@ class OllamaClient(object):
                 self._agent_help()
                 continue
 
-            if message not in self._full_chat_log:
-                self._full_chat_log += message
-
             self.add_prompt(message).chat()
             self.pickle_save()
 
@@ -271,13 +259,12 @@ class OllamaClient(object):
     @property
     def _chat_response(self):
         try:
-            return self.chat_log[-1].to_string()
+            return self.messages[-1].response()
         except:
             pass
 
     def _agent_clear(self):
-        self.prompts = [self.prompts[0]]
-        self._full_chat_log = ''
+        self.messages = [self.messages[0]]
         print(f":: SYSTEM :: context memory cleared. ::")
 
     def _agent_context(self, message: str = None):
@@ -327,9 +314,7 @@ class OllamaClient(object):
             size = round(file_size / 1024)
             self._chat_downloads.append(dict(url=url, filename=filename, size=f"{size:,} KB"))
             message = f"This is the contents of a file: <{filename}>{download}</{filename}>"
-            if message not in self._full_chat_log:
-                self._full_chat_log += message
-                self.add_prompt(content=message)
+            self.add_prompt(content=message)
 
         logger.info(f'[OllamaClient] :: _download :: done')
         return download, filename
@@ -362,11 +347,11 @@ class OllamaClient(object):
         print(f":: {'/token':20} {'show total tokens.':<30} ::")
 
     def _agent_list(self):
-        if not self.prompts:
+        if not self.messages:
             print(f":: SYSTEM :: no messages ::")
             return
 
-        for m in self.prompts:
+        for m in self.messages:
             role = m['role']
             content = m['content'].strip().splitlines()[0][:200]
             print(f":: SYSTEM :: <{role}> {content} ::")
@@ -403,13 +388,13 @@ class OllamaClient(object):
         print(f":: SYSTEM :: proceeding with no primary directive. ::")
 
     def _agent_token(self):
-        print(f":: SYSTEM :: message has {Tokens(self._full_chat_log).count_pretty} total tokens ::")
+        print(f":: SYSTEM :: message has {sum(self.messages)} total tokens ::")
 
     def get_context_window(self):
         return self._num_ctx
 
     def get_total_tokens(self):
-        return sum_tokens(self.prompts)
+        return sum_tokens(self.messages)
 
     def has_downloaded_models(self, model: str):
 
@@ -461,7 +446,7 @@ class OllamaClient(object):
 
     def pickle_load(self, session_name: str = None):
 
-        chat_session = self._chat_session
+        chat_session = self._pickle_session
 
         if session_name:
             temp = automon.helpers.tempfileWrapper.Tempfile.get_temp_dir()
@@ -474,7 +459,7 @@ class OllamaClient(object):
             return False
 
         with open(chat_session, 'rb') as session:
-            self.prompts = pickle.load(session)
+            self.messages = pickle.load(session)
 
         logger.debug(
             f'[OllamaClient] :: pickle_load :: {chat_session=} :: {os.stat(chat_session).st_size / 1024:.2f} KB')
@@ -484,14 +469,14 @@ class OllamaClient(object):
         if not session_name:
             session_name = automon.helpers.uuidWrapper.Uuid.hex()
 
-        chat_session = self._chat_session
+        chat_session = self._pickle_session
 
         if not chat_session:
             temp = automon.helpers.tempfileWrapper.Tempfile.get_temp_dir()
             chat_session = os.path.join(temp, session_name)
 
         with open(chat_session, 'wb') as session:
-            pickle.dump(self.prompts, session)
+            pickle.dump(self.messages, session)
 
         logger.debug(
             f'[OllamaClient] :: pickle_save :: saved {chat_session=} :: {os.stat(chat_session).st_size / 1024:.2f} KB')
@@ -504,12 +489,8 @@ class OllamaClient(object):
             return True
         return False
 
-    def print_response(self):
-        self._ollama_chat.print_stream()
-        return self
-
     def response(self):
-        return self._ollama_chat.response()
+        return self.messages[-1]
 
     def set_context_window(self, tokens: int):
         tokens = round(tokens)

@@ -29,8 +29,7 @@ class TestOllamaClient(unittest.TestCase):
 
         model.add_prompt(content=f'As the USER, your replies are in informal tone.')
 
-        model.chat()
-        model.print_response()
+        model.chat().print()
 
 
 if __name__ == '__main__':

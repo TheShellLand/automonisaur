@@ -13,12 +13,13 @@ class OllamaChat(object):
     """Generator object returned from ollama.chat"""
 
     model: str
-    _chat: ollama.chat
+    _chat: ollama.ChatResponse
+    _chunks: list[ollama.ChatResponse]
 
     def __init__(
             self,
             model: str,
-            chat: ollama.chat,
+            chat: ollama.ChatResponse,
     ):
         self.model = model
         self._chat = chat
@@ -30,17 +31,21 @@ class OllamaChat(object):
             f'[OllamaChat]',
             f'{self.model}',
             f'{len(self._chunks)} chunks',
+            f'{len(self._chunks)} tokens',
         ])
 
-    def chunks(self):
-        iterable = self._chunks if self._consumed else self._chat
+    def __len__(self):
+        return sum([Tokens(x) for x in self.contents()])
 
-        for chunk in iterable:
-            if chunk not in self._chunks:
+    def chunks(self):
+        for chunk in self._chunks:
+            yield chunk
+
+        if not self._consumed:
+            for chunk in self._chat:
                 self._chunks.append(chunk)
                 yield chunk
-
-        self._consumed = True
+            self._consumed = True
 
     def _content(self, message):
         return message.content
@@ -56,13 +61,17 @@ class OllamaChat(object):
         for chunk in self.chunks():
             yield self._message(chunk)
 
+    def print(self):
+        return self.stream()
+
     def stream(self):
         for content in self.contents():
             print(content, end='', flush=True)
+        print('\n', flush=True)
         return self
 
     def response(self) -> str:
-        return ''.join(self.contents())
+        return self.to_string()
 
     def to_string(self) -> str:
         string = ''.join(self.contents())

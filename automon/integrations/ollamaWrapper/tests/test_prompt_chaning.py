@@ -19,15 +19,16 @@ class TestOllamaClient(unittest.TestCase):
         if not model.is_ready() or not environ('RUN'):
             return
 
-        model.add_chain(
+        model.add_prompt(
             "What are the key features of the XSOAR platform?"
-        ).chat().print_response().add_chain(
+        ).chat().print()
+        model.add_prompt(
             "Create a paragraph, in first person, as if you are writing a resume, "
             "that has a few details on how you used XSOAR to solve large automation problems. "
             "Give a response that is less than 10% chance of being written by ChatGPT. "
             "And display the percentage of it written by ChatGPT. "
             "Use the following information: "
-        ).chat().print_response()
+        ).chat().print()
 
 
 if __name__ == '__main__':

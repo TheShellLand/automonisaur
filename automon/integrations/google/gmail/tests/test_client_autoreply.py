@@ -152,14 +152,14 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
         queue_log.put(f'[processor_email_thread] :: {thread}')
 
-        gmail.clean_drafts(thread)
-
         # resume
         if gmail.is_resume(thread):
             global RESUME
             RESUME = thread
             queue_threads.task_done()
             continue
+
+        gmail.clean_drafts(thread)
 
         # skipped
         if gmail.is_skipped(thread):
@@ -229,7 +229,10 @@ def processor_email_thread(gmail: AutomonGmailClient):
         pass
 
 
-def processor_email_new(gmail: AutomonGmailClient, gemini: GoogleGeminiClient):
+def processor_email_new(
+        gmail: AutomonGmailClient,
+        gemini: GoogleGeminiClient,
+):
     global RESUME
 
     _PROCESSING = True
@@ -245,10 +248,14 @@ def processor_email_new(gmail: AutomonGmailClient, gemini: GoogleGeminiClient):
             id=thread._message_first.id,
             addLabelIds=[labels.processing])
 
-        _resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text
+        resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text
+        resume_prompt = OllamaClient.templates.utils.to_markdown(
+            header='resume',
+            header_level=1,
+            text=resume_str,
+        )
 
-        prompt = thread.to_prompt()
-        prompt.append({'resume': _resume_str})
+        thread_prompt = thread.to_prompt()
 
         response_passed = False
         response = False
@@ -257,21 +264,21 @@ def processor_email_new(gmail: AutomonGmailClient, gemini: GoogleGeminiClient):
             while True:
 
                 try:
-                    if not is_from_human(prompt):
+                    if not is_from_human(thread_prompt):
                         gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
                         break
 
-                    if is_rejected_email(prompt):
+                    if is_rejected_email(thread_prompt):
                         gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
                         break
 
-                    response, model = write_email_reply(prompt)
-                    if is_good_reply(prompts=prompt, response=response):
+                    response, model = write_email_reply(thread_prompt)
+                    if is_good_reply(response=response):
                         response_passed = True
                         break
 
                 except Exception as error:
-                    pass
+                    raise debug_exception(locals(), error)
 
         if response_passed:
             if not gmail.is_skipped(thread):
@@ -308,36 +315,6 @@ def processor_email_new(gmail: AutomonGmailClient, gemini: GoogleGeminiClient):
         time.sleep(0.1)
 
 
-def is_from_human(prompts: list) -> bool:
-    prompts = prompts.copy()
-    prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().email_is_human})
-    response, model = run_llm(prompts=prompts, chat=False)
-    return gemini.response_is_true(response)
-
-
-def is_rejected_email(prompts: list) -> bool:
-    prompts = prompts.copy()
-    prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().email_is_rejected})
-    response, model = run_llm(prompts=prompts, chat=False)
-    return gemini.response_is_true(response)
-
-
-def write_email_reply(prompts: list) -> tuple[str, any]:
-    prompts = prompts.copy()
-    prompts.append({'question': GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant})
-    response, model = run_llm(prompts=prompts, chat=False)
-    return response, model
-
-
-def is_good_reply(prompts: list, response) -> bool:
-    prompts = prompts.copy()
-    prompts.append({'RULES': GoogleGeminiClient._templates.AgentTemplates().agent_machine_job_applicant})
-    prompts.append({'RESPONSE': response})
-    prompts.append({'question': GoogleGeminiClient._templates.TrueOrFalseTemplates().rules_is_followed})
-    response, model = run_llm(prompts)
-    return gemini.response_is_true(response)
-
-
 def processor_draft_send(gmail: AutomonGmailClient):
     while True:
         item: tuple[Thread, Draft] = queue_send.get()
@@ -358,6 +335,40 @@ def processor_draft_send(gmail: AutomonGmailClient):
 
 def processor_email_waiting():
     pass
+
+
+def is_from_human(email: str) -> bool:
+    prompt = OllamaClient.templates.true_or_false.email_is_human(email)
+    response, model = run_llm(prompt=prompt)
+    return is_true(response)
+
+
+def is_rejected_email(email: str) -> bool:
+    prompt = OllamaClient.templates.true_or_false.email_is_rejected(email=email)
+    response, model = run_llm(prompt=prompt)
+    return is_true(response)
+
+
+def write_email_reply(email: str) -> tuple[str, any]:
+    _system = OllamaClient.templates.agents.job_applicant()
+    prompt = Markdown.list_to_markdown([
+        _system,
+        email,
+    ])
+    response, model = run_llm(prompt=prompt)
+    return response, model
+
+
+def is_good_reply(response) -> bool:
+    _rules = OllamaClient.templates.agents.job_applicant()
+    _response = OllamaClient.templates.utils.to_markdown(header='response', text=response)
+
+    prompt = OllamaClient.templates.utils.to_markdown(
+        header='question',
+        text=OllamaClient.templates.true_or_false.rules_is_followed(rules=_rules, text=_response)
+    )
+    response, model = run_llm(prompt=prompt)
+    return is_true(response)
 
 
 def log_printer():
@@ -384,9 +395,9 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
             gemini.add_content(prompt)
 
         if chat:
-            response = gemini.chat().chat_forever().response()
+            response = gemini.chat().chat_forever()
         else:
-            response = gemini.chat().response()
+            response = gemini.chat()
 
         mask = DF['model'] == model
         if mask.any():
@@ -409,31 +420,19 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
         return response, gemini
 
 
-def run_ollama(prompts: list) -> tuple[str, OllamaClient]:
-    ollama = OllamaClient()
+def run_ollama(prompt: str) -> tuple[str, OllamaClient]:
+    ollama = OllamaClient(
+        host='http://192.168.111.175:11434',
+    )
     ollama.set_model('gemma4:latest')
 
     if ollama.is_ready():
-
         # ollama.add_message(role='model', content=ollama.prompts.agent_machine_job_applicant)
 
-        for prompt in prompts:
-            ollama.add_prompt(prompt)
+        ollama.add_prompt(prompt)
 
         ollama.set_context_window(ollama.get_total_tokens() * 1.10)
         response = ollama.chat().response()
-
-        # import re
-        # try:
-        #     think_re = re.compile(r"(<think>.*</think>)", flags=re.DOTALL)
-        #     think_ = think_re.search(response).groups()
-        #     think_ = str(think_).strip()
-        #
-        #     response_re = re.compile(r"<think>.*</think>(.*)", flags=re.DOTALL)
-        #     response_ = response_re.search(response).groups()
-        #     response_ = str(response_[0]).strip()
-        # except:
-        #     raise
 
         return response, ollama
 
@@ -456,7 +455,7 @@ MODEL_API_ERROR_DF = pd.DataFrame(columns=schema.keys()).astype(schema)
 DF = MODEL_API_ERROR_DF
 
 
-def run_llm(prompts: list, chat: bool = False) -> tuple[str, object]:
+def run_llm(prompt: str, chat: bool = False) -> tuple[str, object]:
     global MODEL_ERRORS
     global DF
 
@@ -464,11 +463,12 @@ def run_llm(prompts: list, chat: bool = False) -> tuple[str, object]:
     while True:
 
         if USE_OLLAMA:
-            response, model = run_ollama(prompts=prompts)
+            response, model = run_ollama(prompt=prompt)
             break
 
         try:
             if USE_GEMINI:
+                raise debug_exception(locals(), f'fix prompt to markdown str')
                 response, model = run_gemini(prompts=prompts, chat=chat)
                 break
         except Exception as error:

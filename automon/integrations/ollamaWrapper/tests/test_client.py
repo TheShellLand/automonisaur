@@ -20,8 +20,6 @@ class TestOllamaClient(unittest.TestCase):
         )
         response = ollama.chat().response()
 
-        ollama.print_response()
-
         pass
 
 
