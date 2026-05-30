@@ -3,8 +3,8 @@ from automon import Markdown
 
 class Utils:
 
+    @staticmethod
     def to_markdown(
-            self,
             header: str,
             header_level: int,
             text: str
@@ -24,7 +24,8 @@ class Utils:
 
 class AgentTemplates:
 
-    def job_applicant(self) -> str:
+    @staticmethod
+    def job_applicant() -> str:
         raw_template = f"""
         # SYSTEM RULES
         
@@ -56,7 +57,8 @@ class AgentTemplates:
 
         return Markdown.lstrip_str(raw_template)
 
-    def compact_prompt(self, prompt: str) -> str:
+    @staticmethod
+    def compact_prompt(prompt: str) -> str:
         raw_template = f"""
         # SYSTEM RULES
 
@@ -73,7 +75,8 @@ class AgentTemplates:
 
         return Markdown.lstrip_str(raw_template)
 
-    def use_template_chatbot_with_thinking(self, content: str = '') -> str:
+    @staticmethod
+    def use_template_chatbot_with_thinking(content: str = '') -> str:
         raw_template = f"""
         # SYSTEM RULES
 
@@ -84,7 +87,8 @@ class AgentTemplates:
         """
         return Markdown.lstrip_str(raw_template)
 
-    def use_template_chatbot_with_input(self, input: str, question: str) -> str:
+    @staticmethod
+    def use_template_chatbot_with_input(input: str, question: str) -> str:
         raw_template = f"""
         # SYSTEM RULES
         
@@ -117,7 +121,8 @@ class AgentTemplates:
 
         return Markdown.lstrip_str(raw_template)
 
-    def use_template_chatbot_with_multi_input(self, input: [dict], question: str) -> str:
+    @staticmethod
+    def use_template_chatbot_with_multi_input(input: [dict], question: str) -> str:
         INPUTS = []
         for input_ in input:
             tag = input_['tag']
@@ -162,7 +167,8 @@ class AgentTemplates:
 
 class TrueOrFalseTemplates:
 
-    def email_is_human(self, email: str) -> str:
+    @staticmethod
+    def email_is_human(email: str) -> str:
         raw_template = f"""
         # QUESTION
         
@@ -182,7 +188,8 @@ class TrueOrFalseTemplates:
 """
         return Markdown.lstrip_str(raw_template)
 
-    def email_is_rejected(self, email) -> str:
+    @staticmethod
+    def email_is_rejected(email) -> str:
         raw_template = f"""
         # QUESTION
         
@@ -206,7 +213,8 @@ class TrueOrFalseTemplates:
         """
         return Markdown.lstrip_str(raw_template)
 
-    def rules_is_followed(self, rules: str, text: str) -> str:
+    @staticmethod
+    def rules_is_followed(rules: str, text: str) -> str:
         raw_template = f"""
         # QUESTION
         

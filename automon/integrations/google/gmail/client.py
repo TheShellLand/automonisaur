@@ -798,6 +798,14 @@ class GoogleGmailClient(GoogleAuthClient):
             includeSpamTrash=includeSpamTrash
         ))
 
+        threads._raw_query = dict(
+            q=q,
+            maxResults=maxResults,
+            pageToken=pageToken,
+            labelIds=labelIds,
+            includeSpamTrash=includeSpamTrash
+        )
+
         update_thread = []
         if threads:
 
