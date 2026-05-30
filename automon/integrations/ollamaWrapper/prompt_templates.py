@@ -14,7 +14,7 @@ class Utils:
         raw_template = f"""
         {header_weight} {header.upper()}
 
-        ```
+        ```text
         {text}
         ```
         """
