@@ -229,10 +229,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
         pass
 
 
-def processor_email_new(
-        gmail: AutomonGmailClient,
-        gemini: GoogleGeminiClient,
-):
+def processor_email_new(gmail: AutomonGmailClient):
     global RESUME
 
     _PROCESSING = True
@@ -259,26 +256,29 @@ def processor_email_new(
 
         response_passed = False
         response = False
-        while not response_passed:
+        exit_loop = False
+        while not response_passed or not exit_loop:
 
-            while True:
+            try:
+                if not is_from_human(thread_prompt):
+                    gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                    exit_loop = True
+                    break
 
-                try:
-                    if not is_from_human(thread_prompt):
-                        gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-                        break
+                if is_rejected_email(thread_prompt):
+                    gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                    exit_loop = True
+                    break
 
-                    if is_rejected_email(thread_prompt):
-                        gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-                        break
+                response, model = write_email_reply(thread_prompt)
+                if is_good_reply(response=response):
+                    response_passed = True
+                    exit_loop = True
+                    break
 
-                    response, model = write_email_reply(thread_prompt)
-                    if is_good_reply(response=response):
-                        response_passed = True
-                        break
 
-                except Exception as error:
-                    raise debug_exception(locals(), error)
+            except Exception as error:
+                raise debug_exception(locals(), error)
 
         if response_passed:
             if not gmail.is_skipped(thread):
@@ -334,7 +334,12 @@ def processor_draft_send(gmail: AutomonGmailClient):
 
 
 def processor_email_waiting():
-    pass
+    while True:
+        thread: Thread = queue_waiting.get()
+
+        debug(f'[processor_email_waiting] :: {thread}')
+
+        queue_waiting.task_done()
 
 
 def is_from_human(email: str) -> bool:
@@ -548,7 +553,8 @@ def main():
     threads.add_worker(target=get_resume, args=(gmail,))
 
     threads.add_worker(target=processor_email_thread, args=(gmail,))
-    threads.add_worker(target=processor_email_new, args=(gmail, gemini))
+    threads.add_worker(target=processor_email_new, args=(gmail,))
+    threads.add_worker(target=processor_email_waiting, args=(gmail,))
     threads.add_worker(target=processor_draft_send, args=(gmail,))
     threads.add_worker(target=processor_email_waiting)
 

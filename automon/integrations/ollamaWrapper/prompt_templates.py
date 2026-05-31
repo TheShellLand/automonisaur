@@ -6,8 +6,8 @@ class Utils:
     @staticmethod
     def to_markdown(
             header: str,
-            header_level: int,
-            text: str
+            text: str,
+            header_level: int = 1,
     ) -> str:
         header_weight = '#' * header_level
 
