@@ -55,7 +55,6 @@ class ThreadingClient(object):
             current_thread.result = None
             current_thread.exception = error
             self.queue_error.put(current_thread)
-            # raise Exception(f"[ThreadingClient] :: ERROR :: {error=}")
             raise debug_exception(locals(), error)
 
     def add_worker(self, target: object, args: tuple = None):
@@ -147,15 +146,18 @@ class ThreadingClient(object):
                 thread.start()
                 self.queue_worker.task_done()
 
-                log.debug(f'[ThreadingClient] :: start :: '
-                          f'running :: {thread.name} :: '
-                          f'{thread._target_args} :: '
-                          f'{current_threads_count + 1} threads ({max_threads_limit} max)')
+                log.debug(repr_str([
+                    f'[ThreadingClient] :: start',
+                    f'running :: {thread.name}, '
+                    f'{thread._target_args}',
+                    f'{current_threads_count + 1} threads ({max_threads_limit} max)',
+                ]))
 
-                log.info(
-                    f'[ThreadingClient] :: start :: '
-                    f'{self._current_threads_count} running :: '
-                    f'{self._completed_threads_count} completed')
+                log.info(repr_str([
+                    f'[ThreadingClient] :: start',
+                    f'{self._current_threads_count} running',
+                    f'{self._completed_threads_count} completed',
+                ]))
 
             else:
                 time.sleep(0.1)
