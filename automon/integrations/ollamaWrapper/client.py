@@ -10,9 +10,12 @@ import readline
 
 import automon
 
-from automon import debug_exception, DictHelper
 import automon.helpers.uuidWrapper
 import automon.helpers.tempfileWrapper
+
+from automon.helpers import repr_str
+from automon.helpers.debug import debug_exception
+from automon.helpers.dictWrapper import DictHelper
 
 from automon.integrations.requestsWrapper import RequestsClient
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
@@ -53,6 +56,24 @@ class OllamaOptions(DictHelper):
         self.num_ctx = num_ctx
 
         super().__init__()
+
+
+class OllamaMessage(DictHelper):
+
+    def __init__(self, message: dict):
+        self.role = None
+        self.content = None
+
+        super().__init__(message)
+
+    def __repr__(self):
+        return repr_str([
+            f'{self.role}',
+            f'{self.content}',
+        ])
+
+    def __len__(self):
+        return len(Tokens(self.content))
 
 
 class OllamaClient(object):
@@ -173,7 +194,7 @@ class OllamaClient(object):
         self._ollama_chat = chat
 
         if print_stream:
-            print(self.messages[-1])
+            print(self.messages_pretty[-1])
             chat.stream()
 
         self.add_prompt(content=chat.to_string(), role='assistant')
@@ -421,6 +442,10 @@ class OllamaClient(object):
 
     def list_models(self):
         return self.list().models
+
+    @property
+    def messages_pretty(self):
+        return [OllamaMessage(x) for x in self.messages]
 
     def _memory_alert_90(self) -> bool:
         """Alert when memory usage over 90%"""
