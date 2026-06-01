@@ -93,8 +93,7 @@ class AgentTemplates:
         # SYSTEM RULES
         
         - You are a highly articulate and helpful chat bot. 
-        - Your task is to answer questions using data provided in `DATA`.
-        - Use the information in `INPUT`.
+        - Your task is to answer `QUESTION` using the provided `DATA`.
         
         ### INSTRUCTIONS
         
@@ -112,7 +111,7 @@ class AgentTemplates:
         
         ---
         
-        # INPUT
+        # DATA
         
         ```text
         {input}
@@ -246,4 +245,5 @@ class TrueOrFalseTemplates:
 class Templates:
     agents = AgentTemplates()
     utils = Utils()
+    markdown = Markdown()
     true_or_false = TrueOrFalseTemplates()
