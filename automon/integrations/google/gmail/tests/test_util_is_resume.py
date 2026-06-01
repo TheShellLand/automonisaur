@@ -15,7 +15,7 @@ gmail.config.add_scopes(
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        t = Thread(thread)
+        t = GmailThread(thread)
 
         pass
 

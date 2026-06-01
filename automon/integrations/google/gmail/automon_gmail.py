@@ -9,10 +9,10 @@ from .client import (
     GoogleGmailClient,
     GoogleGmailConfig,
     GmailLabels,
-    Color,
-    Label,
-    Thread,
-    Message,
+    GmailColor,
+    GmailLabel,
+    GmailThread,
+    GmailMessage,
 )
 
 
@@ -24,13 +24,13 @@ class AutomonLabels(GmailLabels):
         self.reset_labels = False
 
         # colors
-        self._color_default = Color(backgroundColor='#653e9b', textColor='#e4d7f5')
+        self._color_default = GmailColor(backgroundColor='#653e9b', textColor='#e4d7f5')
 
-        self._color_green = Color(backgroundColor='#076239', textColor='#b9e4d0')
-        self._color_red = Color(backgroundColor='#cc3a21', textColor='#ffd6a2')
-        self._color_yellow = Color(backgroundColor='#cf8933', textColor='#ffd6a2')
+        self._color_green = GmailColor(backgroundColor='#076239', textColor='#b9e4d0')
+        self._color_red = GmailColor(backgroundColor='#cc3a21', textColor='#ffd6a2')
+        self._color_yellow = GmailColor(backgroundColor='#cf8933', textColor='#ffd6a2')
 
-        self._color_resume = Color(backgroundColor='#b65775', textColor='#ffffff')
+        self._color_resume = GmailColor(backgroundColor='#b65775', textColor='#ffffff')
         self._color_error = self._color_red
         self._color_enabled = self._color_green
         self._color_welcome = self._color_default
@@ -38,52 +38,52 @@ class AutomonLabels(GmailLabels):
         self._color_processing = self._color_yellow
 
         # required
-        self.automon = Label(name='automon', color=self._color_default)
+        self.automon = GmailLabel(name='automon', color=self._color_default)
 
         # allow auto reply
-        self.auto_reply = Label(name='automon/auto reply', color=self._color_default)
+        self.auto_reply = GmailLabel(name='automon/auto reply', color=self._color_default)
 
         # currently processing
-        self.processing = Label(name='automon/:: processing ::', color=self._color_processing)
+        self.processing = GmailLabel(name='automon/:: processing ::', color=self._color_processing)
 
         # welcome
-        self.welcome = Label(name='automon/welcome', color=self._color_welcome)
-        self.help = Label(name='automon/help', color=self._color_welcome)
+        self.welcome = GmailLabel(name='automon/welcome', color=self._color_welcome)
+        self.help = GmailLabel(name='automon/help', color=self._color_welcome)
 
         # resume
-        self.resume = Label(name='automon/resume', color=self._color_resume)
+        self.resume = GmailLabel(name='automon/resume', color=self._color_resume)
 
         # analyze
-        self.analyze = Label(name='automon/analyze', color=self._color_default)
+        self.analyze = GmailLabel(name='automon/analyze', color=self._color_default)
 
         # waiting
-        self.waiting = Label(name='automon/waiting', color=self._color_default)
+        self.waiting = GmailLabel(name='automon/waiting', color=self._color_default)
 
         # skipped
-        self.skipped = Label(name='automon/skipped', color=self._color_default)
+        self.skipped = GmailLabel(name='automon/skipped', color=self._color_default)
 
         # scheduled
-        self.scheduled = Label(name='automon/scheduled', color=self._color_enabled)
+        self.scheduled = GmailLabel(name='automon/scheduled', color=self._color_enabled)
 
         # relevance
-        self.relevant = Label(name='automon/relevant', color=self._color_default)
+        self.relevant = GmailLabel(name='automon/relevant', color=self._color_default)
 
         # remote
-        self.remote = Label(name='automon/remote', color=self._color_default)
+        self.remote = GmailLabel(name='automon/remote', color=self._color_default)
 
         # need user input
-        self.user_action_required = Label(name='automon/user action required', color=self._color_error)
+        self.user_action_required = GmailLabel(name='automon/user action required', color=self._color_error)
 
         # debugging
-        self.debug = Label(name='automon/debug', color=self._color_error)
+        self.debug = GmailLabel(name='automon/debug', color=self._color_error)
 
         # error
-        self.error = Label(name='automon/error', color=self._color_error)
+        self.error = GmailLabel(name='automon/error', color=self._color_error)
 
     def all_labels(self):
         return [
             getattr(self, x) for x in dir(self)
-            if isinstance(getattr(self, x), Label)
+            if isinstance(getattr(self, x), GmailLabel)
             if getattr(self, x).name.startswith('automon')
         ]
 
@@ -141,16 +141,16 @@ class AutomonGmailClient(GoogleGmailClient):
 
         return threading.start()
 
-    def clean_drafts(self, thread: Thread):
+    def clean_drafts(self, thread: GmailThread):
         for message in thread.messages:
             self.delete_draft(message)
 
-    def delete_draft(self, message: Message):
+    def delete_draft(self, message: GmailMessage):
         # delete DRAFT
         if self._labels.draft in message.labelIds:
             return self.messages_trash(id=message.id)
 
-    def delete_extra_data(self, message: Message):
+    def delete_extra_data(self, message: GmailMessage):
         message_str = str(message.to_dict())
 
         delete_regex = r"'data': ('[a-zA-Z0-9-_=]+')"
@@ -196,7 +196,7 @@ class AutomonGmailClient(GoogleGmailClient):
 
         raise Exception(f'[ERROR] :: {resume=}')
 
-    def has_doc_attachment(self, thread: Thread):
+    def has_doc_attachment(self, thread: GmailThread):
         """check if a resume has been sent before"""
         messages = thread._clean_thread
         sent = [x for x in messages if self._labels.sent in x.labelIds]
@@ -212,80 +212,80 @@ class AutomonGmailClient(GoogleGmailClient):
 
         return False
 
-    def is_auto_reply(self, thread: Thread) -> bool:
+    def is_auto_reply(self, thread: GmailThread) -> bool:
         for message in thread.messages:
             if self._labels.auto_reply in message.labelIds:
                 return True
         return False
 
-    def is_debug(self, thread: Thread) -> bool:
+    def is_debug(self, thread: GmailThread) -> bool:
         for message in thread.messages:
             if self._labels.debug in message.labelIds:
                 return True
         return False
 
-    def is_draft(self, message: Message) -> bool:
+    def is_draft(self, message: GmailMessage) -> bool:
         if self._labels.draft in message.labelIds:
             return True
         return False
 
-    def is_resume(self, thread: Thread):
+    def is_resume(self, thread: GmailThread):
         if self._labels.resume in thread._messages_labels:
             return True
         return False
 
-    def is_sent(self, thread: Thread):
+    def is_sent(self, thread: GmailThread):
         if thread._clean_thread_latest is not None:
             if self._labels.sent in thread._clean_thread_latest.labelIds:
                 return True
         return False
 
-    def is_follow_up(self, thread: Thread):
+    def is_follow_up(self, thread: GmailThread):
         if self._labels.auto_reply in thread._messages_labels:
             if self._labels.sent in thread._messages_labels:
                 if thread._message_first._email_from == thread._clean_thread_latest._email_from:
                     return True
         return False
 
-    def is_waiting(self, thread: Thread):
+    def is_waiting(self, thread: GmailThread):
         if thread._clean_thread_latest is not None:
             if self._labels.waiting in thread._clean_thread_latest.labelIds:
                 return True
         return False
 
-    def is_scheduled(self, thread: Thread):
+    def is_scheduled(self, thread: GmailThread):
         if self._labels.scheduled in thread._messages_labels:
             return True
         return False
 
-    def is_analyze(self, thread: Thread):
+    def is_analyze(self, thread: GmailThread):
         if self._labels.analyze in thread._messages_labels:
             return True
         return False
 
-    def is_error(self, thread: Thread):
+    def is_error(self, thread: GmailThread):
         if self._labels.error in thread._messages_labels:
             return True
         return False
 
-    def is_skipped(self, thread: Thread):
+    def is_skipped(self, thread: GmailThread):
         if self._labels.skipped in thread._messages_labels:
             return True
         return False
 
-    def is_new(self, thread: Thread):
+    def is_new(self, thread: GmailThread):
         if thread._clean_thread_latest:
             if self._labels.sent not in thread._messages_labels:
                 return True
         return False
 
-    def is_old(self, thread: Thread):
+    def is_old(self, thread: GmailThread):
         if thread._clean_thread_latest:
             if thread._clean_thread_latest._date_since_now.days >= 3:
                 return True
         return False
 
-    def mark_processing(self, thread: Thread):
+    def mark_processing(self, thread: GmailThread):
         return self.thread_modify(
             id=thread.id,
             addLabelIds=[self._labels.processing]
@@ -293,7 +293,7 @@ class AutomonGmailClient(GoogleGmailClient):
 
     def needs_followup(
             self,
-            thread: Thread,
+            thread: GmailThread,
             days: int = 3
     ) -> bool:
         message = thread._clean_thread_latest
@@ -318,13 +318,13 @@ class AutomonGmailClient(GoogleGmailClient):
 
         return False
 
-    def not_draft_and_trash(self, message: Message) -> bool:
+    def not_draft_and_trash(self, message: GmailMessage) -> bool:
         if (self._labels.draft not in message.labelIds and
                 self._labels.trash not in message.labelIds):
             return True
         return False
 
-    def unmark_processing(self, thread: Thread):
+    def unmark_processing(self, thread: GmailThread):
         return self.thread_modify(
             id=thread.id,
             removeLabelIds=[self._labels.processing]

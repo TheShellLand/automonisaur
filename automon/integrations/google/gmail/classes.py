@@ -14,50 +14,50 @@ logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(INFO)
 
 
-class InternalDateSource:
+class GmailInternalDateSource:
     receivedTime = 'receivedTime'
     dateHeader = 'dateHeader'
 
 
-class UsersSettings:
+class GmailUsersSettings:
     pass
 
 
-class UsersSettingsCseIdentities:
+class GmailUsersSettingsCseIdentities:
     pass
 
 
-class UsersSettingsCseKeypairs:
+class GmailUsersSettingsCseKeypairs:
     pass
 
 
-class UsersSettingsDelegrates:
+class GmailUsersSettingsDelegrates:
     pass
 
 
-class UsersSettingsFilters:
+class GmailUsersSettingsFilters:
     pass
 
 
-class UsersSettingsForwardingAddresses:
+class GmailUsersSettingsForwardingAddresses:
     pass
 
 
-class UsersSettingsSendAs:
+class GmailUsersSettingsSendAs:
     pass
 
 
-class UsersSettingsSendAsSmimeInfo:
+class GmailUsersSettingsSendAsSmimeInfo:
     pass
 
 
-class LabelListVisibility:
+class GmailLabelListVisibility:
     labelShow = 'labelShow'
     labelHide = 'labelHide'
     labelShowIfUnread = 'labelShowIfUnread'
 
 
-class Color(DictHelper):
+class GmailColor(DictHelper):
     """
     JSON representation
 
@@ -95,7 +95,7 @@ class Color(DictHelper):
         return False
 
 
-class EmailAttachment(DictHelper):
+class GmailEmailAttachment(DictHelper):
     bytes: bytes
     filename: str
     mimeType: str
@@ -161,7 +161,7 @@ class EmailAttachment(DictHelper):
         self._encoding = value
 
 
-class Format:
+class GmailFormat:
     minimal = 'minimal'
     full = 'full'
     raw = 'raw'
@@ -174,13 +174,13 @@ class GmailLabels(DictHelper):
         super().__init__()
 
         # gmail default labels
-        self.draft = Label(name='DRAFT', id='DRAFT')
-        self.sent = Label(name='SENT', id='SENT')
-        self.unread = Label(name='UNREAD', id='UNREAD')
-        self.trash = Label(name='TRASH', id='TRASH')
+        self.draft = GmailLabel(name='DRAFT', id='DRAFT')
+        self.sent = GmailLabel(name='SENT', id='SENT')
+        self.unread = GmailLabel(name='UNREAD', id='UNREAD')
+        self.trash = GmailLabel(name='TRASH', id='TRASH')
 
 
-class Header(DictHelper):
+class GmailHeader(DictHelper):
 
     def __init__(self, header: dict = None):
 
@@ -207,7 +207,7 @@ class Header(DictHelper):
         return self.name < other.name
 
 
-class HistoryType(DictHelper):
+class GmailHistoryType(DictHelper):
     """
     {
       "id": string,
@@ -243,24 +243,24 @@ class HistoryType(DictHelper):
         super().__init__()
 
         self.id: str
-        self.messages: Message = None
-        self.messagesAdded: MessageAdded = None
-        self.messagesDeleted: MessageDeleted = None
-        self.labelsAdded: LabelAdded = None
-        self.labelsRemoved: LabelRemoved = None
+        self.messages: GmailMessage = None
+        self.messagesAdded: GmailMessageAdded = None
+        self.messagesDeleted: GmailMessageDeleted = None
+        self.labelsAdded: GmailLabelAdded = None
+        self.labelsRemoved: GmailLabelRemoved = None
 
 
-class MessageListVisibility:
+class GmailMessageListVisibility:
     show = 'show'
     hide = 'hide'
 
 
-class Type:
+class GmailType:
     system: str = 'system'
     user: str = 'user'
 
 
-class Label(DictHelper):
+class GmailLabel(DictHelper):
     """
     {
       "id": string,
@@ -331,23 +331,23 @@ class Label(DictHelper):
 
     id: str
     name: str
-    messageListVisibility: MessageListVisibility
-    labelListVisibility: LabelListVisibility
-    type: Type
+    messageListVisibility: GmailMessageListVisibility
+    labelListVisibility: GmailLabelListVisibility
+    type: GmailType
     messagesTotal: int
     messagesUnread: int
     threadsTotal: int
     threadsUnread: int
-    color: Color
+    color: GmailColor
 
     def __init__(
             self,
             label=None,
             id: str = None,
             name: str = None,
-            color: Color = None,
-            messageListVisibility: MessageListVisibility = MessageListVisibility.show,
-            labelListVisibility: LabelListVisibility = LabelListVisibility.labelShow,
+            color: GmailColor = None,
+            messageListVisibility: GmailMessageListVisibility = GmailMessageListVisibility.show,
+            labelListVisibility: GmailLabelListVisibility = GmailLabelListVisibility.labelShow,
     ):
         self.id = id
         self.name = name
@@ -363,13 +363,13 @@ class Label(DictHelper):
         return str(self.id)
 
     def __eq__(self, other):
-        if isinstance(other, Label):
+        if isinstance(other, GmailLabel):
             if self.id == other.id or self.name == other.name:
                 return True
         return False
 
     def __lt__(self, other):
-        if isinstance(other, Label):
+        if isinstance(other, GmailLabel):
             if self.name is not None:
                 if self.name < other.name:
                     return True
@@ -381,20 +381,20 @@ class Label(DictHelper):
     @property
     def color(self):
         value = self._color
-        self._color = encapsulate(value, Color)
+        self._color = encapsulate(value, GmailColor)
         return self._color
 
     @color.setter
     def color(self, value):
-        self._color = encapsulate(value, Color)
+        self._color = encapsulate(value, GmailColor)
 
     def _enhance(self):
         if hasattr(self, 'color'):
-            self.color = Color().automon_update(self.color)
+            self.color = GmailColor().automon_update(self.color)
 
 
-class LabelList(DictHelper):
-    labels: list[Label]
+class GmailLabelList(DictHelper):
+    labels: list[GmailLabel]
 
     def __init__(self, labels: dict = None):
         self._labels = None
@@ -407,23 +407,23 @@ class LabelList(DictHelper):
     @property
     def labels(self):
         value = self._labels
-        self._labels = encapsulate(value=value, object_class=Label)
+        self._labels = encapsulate(value=value, object_class=GmailLabel)
         return self._labels
 
     @labels.setter
     def labels(self, value):
-        self._labels = encapsulate(value=value, object_class=Label)
+        self._labels = encapsulate(value=value, object_class=GmailLabel)
 
 
-class LabelAdded:
+class GmailLabelAdded:
     pass
 
 
-class LabelRemoved:
+class GmailLabelRemoved:
     pass
 
 
-class MessagePartBody(DictHelper):
+class GmailMessagePartBody(DictHelper):
     """
     {
       "attachmentId": string,
@@ -497,12 +497,12 @@ class MessagePartBody(DictHelper):
                 return self._data_bs4().html.text
 
 
-class MessagePart(DictHelper):
+class GmailMessagePart(DictHelper):
     partId: str
     mimeType: str
     filename: str
-    headers: list[Header]
-    body: MessagePartBody
+    headers: list[GmailHeader]
+    body: GmailMessagePartBody
 
     parts: list[Self]
 
@@ -527,47 +527,47 @@ class MessagePart(DictHelper):
     @property
     def body(self):
         value = self._body
-        self._body = encapsulate(value=value, object_class=MessagePartBody)
+        self._body = encapsulate(value=value, object_class=GmailMessagePartBody)
         return self._body
 
     @body.setter
     def body(self, value):
-        self._body = encapsulate(value=value, object_class=MessagePartBody)
+        self._body = encapsulate(value=value, object_class=GmailMessagePartBody)
 
     @property
     def headers(self):
         value = self._headers
-        self._headers = encapsulate(value=value, object_class=Header)
+        self._headers = encapsulate(value=value, object_class=GmailHeader)
         return self._headers
 
     @headers.setter
     def headers(self, value):
-        self._headers = encapsulate(value=value, object_class=Header)
+        self._headers = encapsulate(value=value, object_class=GmailHeader)
 
     @property
     def parts(self):
         value = self._parts
-        self._parts = encapsulate(value=value, object_class=MessagePart)
+        self._parts = encapsulate(value=value, object_class=GmailMessagePart)
         return self._parts
 
     @parts.setter
     def parts(self, value):
-        self._parts = encapsulate(value=value, object_class=MessagePart)
+        self._parts = encapsulate(value=value, object_class=GmailMessagePart)
 
-    def get_header(self, header: str) -> Header | None:
+    def get_header(self, header: str) -> GmailHeader | None:
         for headers in self.headers:
             if header.lower() in headers.name.lower():
                 return headers
 
 
-class MessagePayload(DictHelper):
+class GmailMessagePayload(DictHelper):
     partId: str
     mimeType: str
     filename: str
-    headers: list[Header]
-    body: MessagePartBody
+    headers: list[GmailHeader]
+    body: GmailMessagePartBody
 
-    parts: list[MessagePart]
+    parts: list[GmailMessagePart]
     size: int
 
     def __init__(self, message: dict = None):
@@ -598,40 +598,40 @@ class MessagePayload(DictHelper):
     @property
     def body(self):
         value = self._body
-        self._body = encapsulate(value=value, object_class=MessagePartBody)
+        self._body = encapsulate(value=value, object_class=GmailMessagePartBody)
         return self._body
 
     @body.setter
     def body(self, value):
-        self._body = encapsulate(value=value, object_class=MessagePartBody)
+        self._body = encapsulate(value=value, object_class=GmailMessagePartBody)
 
     @property
-    def headers(self) -> list[Header]:
+    def headers(self) -> list[GmailHeader]:
         value = self._headers
-        self._headers = encapsulate(value=value, object_class=Header)
+        self._headers = encapsulate(value=value, object_class=GmailHeader)
         return self._headers
 
     @headers.setter
     def headers(self, value):
-        self._headers = encapsulate(value=value, object_class=Header)
+        self._headers = encapsulate(value=value, object_class=GmailHeader)
 
     @property
     def parts(self):
         value = self._parts
-        self._parts = encapsulate(value=value, object_class=MessagePart)
+        self._parts = encapsulate(value=value, object_class=GmailMessagePart)
         return self._parts
 
     @parts.setter
     def parts(self, value):
-        self._parts = encapsulate(value=value, object_class=MessagePart)
+        self._parts = encapsulate(value=value, object_class=GmailMessagePart)
 
-    def get_header(self, header: str) -> Header | None:
+    def get_header(self, header: str) -> GmailHeader | None:
         for headers in self.headers:
             if header.lower() in headers.name.lower():
                 return headers
 
 
-class Message(DictHelper):
+class GmailMessage(DictHelper):
     """
     {
       "id": string,
@@ -653,8 +653,8 @@ class Message(DictHelper):
     historyId: str
     id: str
     internalDate: str
-    labelIds: list[Label]
-    payload: MessagePayload
+    labelIds: list[GmailLabel]
+    payload: GmailMessagePayload
     raw: str
     sizeEstimate: str
     snippet: str
@@ -678,7 +678,7 @@ class Message(DictHelper):
         labels = []
         labels_name = ['SENT', 'DRAFT', 'TRASH']
         for l in self.labelIds:
-            if isinstance(l, Label):
+            if isinstance(l, GmailLabel):
                 if l.name in labels_name:
                     labels.append(l)
 
@@ -694,7 +694,7 @@ class Message(DictHelper):
         ])
 
     def __lt__(self, other):
-        if isinstance(other, Message):
+        if isinstance(other, GmailMessage):
             if self._date_epoch_s < other._date_epoch_s:
                 return True
         return False
@@ -714,10 +714,10 @@ class Message(DictHelper):
         value = self._labelIds.copy()
         for v in value:
             if isinstance(v, str):
-                value = [Label(id=x) for x in value]
+                value = [GmailLabel(id=x) for x in value]
                 break
 
-        self._labelIds = sorted(encapsulate(value, Label))
+        self._labelIds = sorted(encapsulate(value, GmailLabel))
         return self._labelIds
 
     @labelIds.setter
@@ -725,33 +725,33 @@ class Message(DictHelper):
         value = value.copy()
         for v in value:
             if isinstance(v, str):
-                value = [Label(id=x) for x in value]
+                value = [GmailLabel(id=x) for x in value]
                 break
 
-        self._labelIds = sorted(encapsulate(value, Label))
+        self._labelIds = sorted(encapsulate(value, GmailLabel))
 
     @property
     def payload(self):
         value = self._payload
-        self._payload = encapsulate(value, MessagePayload)
+        self._payload = encapsulate(value, GmailMessagePayload)
         return self._payload
 
     @payload.setter
     def payload(self, value):
-        self._payload = encapsulate(value, MessagePayload)
+        self._payload = encapsulate(value, GmailMessagePayload)
 
-    def find_attachment(self, filename=None, mimeType=None) -> MessagePart | None:
+    def find_attachment(self, filename=None, mimeType=None) -> GmailMessagePart | None:
         for attachment in self._attachments:
             if attachment.filename == filename:
                 return attachment
             if attachment.mimeType == mimeType:
                 return attachment
 
-    def find_attachment_docx(self) -> MessagePart | None:
+    def find_attachment_docx(self) -> GmailMessagePart | None:
         return self.find_attachment(mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
     @property
-    def _attachments(self) -> list[MessagePartBody | MessagePart]:
+    def _attachments(self) -> list[GmailMessagePartBody | GmailMessagePart]:
         payloads = []
         if self.payload:
             if self.payload.size:
@@ -762,7 +762,7 @@ class Message(DictHelper):
         return payloads
 
     @property
-    def _attachments_first(self) -> MessagePartBody | MessagePart | None:
+    def _attachments_first(self) -> GmailMessagePartBody | GmailMessagePart | None:
         if self._attachments:
             return self._attachments[0]
 
@@ -850,19 +850,19 @@ class Message(DictHelper):
             return hashlib.md5(self.id.encode()).hexdigest()
 
     @property
-    def _header_from(self) -> Header | None:
+    def _header_from(self) -> GmailHeader | None:
         if self.payload:
             if self.payload.headers:
                 return self.payload.get_header('From')
 
     @property
-    def _header_subject(self) -> Header | None:
+    def _header_subject(self) -> GmailHeader | None:
         if self.payload:
             if self.payload.headers:
                 return self.payload.get_header('Subject')
 
     @property
-    def _header_to(self) -> Header | None:
+    def _header_to(self) -> GmailHeader | None:
         if self.payload:
             if self.payload.headers:
                 return self.payload.get_header('To')
@@ -922,7 +922,7 @@ class Message(DictHelper):
         return Markdown.lstrip_str(raw_template)
 
 
-class MessageAttachments(DictHelper):
+class GmailMessageAttachments(DictHelper):
 
     def __init__(self, attachments: list[dict] = []):
 
@@ -939,34 +939,34 @@ class MessageAttachments(DictHelper):
         return False
 
     @property
-    def attachments(self) -> list[MessagePart] | None:
+    def attachments(self) -> list[GmailMessagePart] | None:
         value = self._attachments
-        self._attachments = encapsulate(value, MessagePart)
+        self._attachments = encapsulate(value, GmailMessagePart)
         return self._attachments
 
     @attachments.setter
     def attachments(self, value):
-        self._attachments = encapsulate(value, MessagePart)
+        self._attachments = encapsulate(value, GmailMessagePart)
 
     @property
-    def _first_attachment(self) -> MessagePart | None:
+    def _first_attachment(self) -> GmailMessagePart | None:
         for part in self.attachments:
             return part
 
     @property
-    def _has_filename(self) -> list[MessagePart]:
+    def _has_filename(self) -> list[GmailMessagePart]:
         return [x for x in self.attachments if x.filename]
 
 
-class MessageAdded:
+class GmailMessageAdded:
     pass
 
 
-class MessageDeleted:
+class GmailMessageDeleted:
     pass
 
 
-class MessageList(DictHelper):
+class GmailMessageList(DictHelper):
     """
     {
       "messages": [
@@ -979,7 +979,7 @@ class MessageList(DictHelper):
     }
     """
 
-    messages: list[Message]
+    messages: list[GmailMessage]
     resultSizeEstimate: str
     nextPageToken: str
 
@@ -1002,16 +1002,16 @@ class MessageList(DictHelper):
         return False
 
     @property
-    def messages(self) -> list[Message]:
-        self._messages = encapsulate(value=self._messages, object_class=Message)
+    def messages(self) -> list[GmailMessage]:
+        self._messages = encapsulate(value=self._messages, object_class=GmailMessage)
         return self._messages
 
     @messages.setter
     def messages(self, value):
-        self._messages = encapsulate(value=value, object_class=Message)
+        self._messages = encapsulate(value=value, object_class=GmailMessage)
 
 
-class Draft(DictHelper):
+class GmailDraft(DictHelper):
     """
     A draft email in the user's mailbox.
 
@@ -1042,14 +1042,14 @@ class Draft(DictHelper):
     The message content of the draft.
     """
     id: str
-    message: Message
+    message: GmailMessage
     snippet: str
 
     def __init__(
             self,
             draft=None,
             id: str = None,
-            message: Message = None
+            message: GmailMessage = None
     ):
         self.id = id
         self._message = message
@@ -1067,17 +1067,17 @@ class Draft(DictHelper):
         ])
 
     @property
-    def message(self) -> Message | None:
+    def message(self) -> GmailMessage | None:
         value = self._message
-        self._message = encapsulate(value=value, object_class=Message)
+        self._message = encapsulate(value=value, object_class=GmailMessage)
         return self._message
 
     @message.setter
     def message(self, value):
-        self._message = encapsulate(value=value, object_class=Message)
+        self._message = encapsulate(value=value, object_class=GmailMessage)
 
 
-class DraftList(DictHelper):
+class GmailDraftList(DictHelper):
     """
     If successful, the response body contains data with the following structure:
 
@@ -1110,7 +1110,7 @@ class DraftList(DictHelper):
     """
 
     def __init__(self, drafts: dict = None):
-        self.drafts: list[Draft] = []
+        self.drafts: list[GmailDraft] = []
         self.nextPageToken: str = None
         self.resultSizeEstimate: int = None
 
@@ -1122,7 +1122,7 @@ class DraftList(DictHelper):
         return str(self)
 
 
-class Thread(DictHelper):
+class GmailThread(DictHelper):
     """
     A collection of messages representing a conversation.
 
@@ -1140,7 +1140,7 @@ class Thread(DictHelper):
 
     id: str
     historyId: str
-    messages: list[Message]
+    messages: list[GmailMessage]
     snippet: str
 
     addLabelIds: list[str]
@@ -1167,7 +1167,7 @@ class Thread(DictHelper):
         ])
 
     def __eq__(self, other):
-        if isinstance(other, Thread):
+        if isinstance(other, GmailThread):
             return self.id == other.id
         return False
 
@@ -1189,19 +1189,19 @@ class Thread(DictHelper):
     @property
     def messages(self):
         value = self._messages
-        self._messages = encapsulate(value, Message)
+        self._messages = encapsulate(value, GmailMessage)
         return self._messages
 
     @messages.setter
     def messages(self, value):
-        self._messages = encapsulate(value, Message)
+        self._messages = encapsulate(value, GmailMessage)
 
     @property
     def _messages_count(self) -> int:
         return len(self.messages)
 
     @property
-    def _clean_thread(self) -> list[Message]:
+    def _clean_thread(self) -> list[GmailMessage]:
         """All messages excluding DRAFT"""
         messages = []
         labels = GmailLabels()
@@ -1213,12 +1213,12 @@ class Thread(DictHelper):
         return messages
 
     @property
-    def _clean_thread_first(self) -> Message | None:
+    def _clean_thread_first(self) -> GmailMessage | None:
         if self._clean_thread:
             return self._clean_thread[0]
 
     @property
-    def _clean_thread_latest(self) -> Message | None:
+    def _clean_thread_latest(self) -> GmailMessage | None:
         if self._clean_thread:
             return self._clean_thread[-1]
 
@@ -1236,12 +1236,12 @@ class Thread(DictHelper):
         return sorted(labels)
 
     @property
-    def _message_first(self) -> Message | None:
+    def _message_first(self) -> GmailMessage | None:
         if self.messages:
             return self.messages[0]
 
     @property
-    def _message_latest(self) -> Message | None:
+    def _message_latest(self) -> GmailMessage | None:
         if self.messages:
             return self.messages[-1]
 
@@ -1249,7 +1249,7 @@ class Thread(DictHelper):
         return Markdown.list_to_markdown([x.to_prompt() for x in self.messages])
 
 
-class ThreadList(DictHelper):
+class GmailThreadList(DictHelper):
     """
     {
       "threads": [
@@ -1262,7 +1262,7 @@ class ThreadList(DictHelper):
     }
     """
 
-    threads: list[Thread]
+    threads: list[GmailThread]
     nextPageToken: str
     resultSizeEstimate: int
 
@@ -1283,10 +1283,10 @@ class ThreadList(DictHelper):
 
     @property
     def threads(self):
-        self._threads = encapsulate(self._threads, Thread)
+        self._threads = encapsulate(self._threads, GmailThread)
         return self._threads
 
     @threads.setter
     def threads(self, value):
         assert isinstance(value, list)
-        self._threads = encapsulate(value, Thread)
+        self._threads = encapsulate(value, GmailThread)

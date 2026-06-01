@@ -11,20 +11,21 @@ from automon.integrations.ollamaWrapper import OllamaClient
 from automon.integrations.google.gemini import GoogleGeminiClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO, debug
 
-queue_threads: Queue[Thread] = UniqueQueue(maxsize=5)
-queue_new: Queue[Thread] = UniqueQueue(maxsize=5)
-queue_send: Queue[tuple[Thread, Draft]] = UniqueQueue()
-queue_skipped: Queue[Thread] = UniqueQueue()
-queue_followup: Queue[Thread] = UniqueQueue()
-queue_waiting: Queue[Thread] = UniqueQueue()
-queue_analyze: Queue[Thread] = UniqueQueue()
-queue_waiting_for_first_call: Queue[Thread] = UniqueQueue()
-queue_waiting_for_interview: Queue[Thread] = UniqueQueue()
+queue_threads: Queue[GmailThread] = UniqueQueue(maxsize=5)
+queue_new: Queue[GmailThread] = UniqueQueue(maxsize=5)
+queue_send: Queue[tuple[GmailThread, GmailDraft]] = UniqueQueue()
+queue_skipped: Queue[GmailThread] = UniqueQueue()
+queue_followup: Queue[GmailThread] = UniqueQueue()
+queue_sent: Queue[GmailThread] = UniqueQueue()
+queue_waiting: Queue[GmailThread] = UniqueQueue()
+queue_analyze: Queue[GmailThread] = UniqueQueue()
+queue_waiting_for_first_call: Queue[GmailThread] = UniqueQueue()
+queue_waiting_for_interview: Queue[GmailThread] = UniqueQueue()
 
-queue_unknown: Queue[Thread] = UniqueQueue()
-query_history: Queue[Thread] = UniqueQueue()
+queue_unknown: Queue[GmailThread] = UniqueQueue()
+query_history: Queue[GmailThread] = UniqueQueue()
 
-queue_error: Queue[Thread] = UniqueQueue()
+queue_error: Queue[GmailThread] = UniqueQueue()
 queue_log: Queue[str] = UniqueQueue()
 
 queues = [
@@ -34,7 +35,8 @@ queues = [
     queue_skipped,
     queue_followup,
     queue_analyze,
-    queue_error,
+    queue_waiting,
+    queue_sent,
     queue_waiting_for_first_call,
     queue_waiting_for_interview,
     queue_unknown,
@@ -42,7 +44,7 @@ queues = [
     queue_log,
 ]
 
-RESUME: Thread = None
+RESUME: GmailThread = None
 
 DEBUG_LEVEL = 2
 DEBUG_ = False
@@ -90,7 +92,9 @@ labels = gmail._labels
 
 def gmail_token_refresher(gmail: AutomonGmailClient):
     while True:
-        gmail.config.refresh_token()
+        if gmail.config.refresh_token():
+            time.sleep(60)
+
         time.sleep(60)
 
 
@@ -188,32 +192,28 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
         # followup
         if gmail.is_sent(thread):
-            if gmail.is_old(thread):
-                queue_followup.put(thread)
-                queue_threads.task_done()
-                queue_log.put(f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads')
-                continue
+            queue_sent.put(thread)
+            queue_threads.task_done()
+            continue
 
-        # waiting
+        # sent
         if gmail.is_sent(thread):
-
-            gmail.messages_modify_automon(
-                id=thread._message_first.id,
-                addLabelIds=[labels.waiting])
 
             thread = gmail.thread_get_automon(id=thread.id)
 
-            if not gmail.is_old(thread):
+            if gmail.is_old(thread):
+                queue_followup.put(thread)
+                queue_threads.task_done()
+                continue
+            else:
                 queue_waiting.put(thread)
                 queue_threads.task_done()
-                queue_log.put(f'[processor_email_thread] :: queue_waiting :: {queue_waiting.qsize()} threads')
                 continue
 
         # new
         if gmail.is_new(thread):
             queue_new.put(thread)
             queue_threads.task_done()
-            queue_log.put(f'[processor_email_thread] :: queue_new :: {queue_new.qsize()} threads :: {thread}')
             continue
 
         queue_unknown.put(thread)
@@ -237,7 +237,7 @@ def processor_email_new(gmail: AutomonGmailClient):
         while RESUME is None:
             time.sleep(1)
 
-        thread: Thread = queue_new.get()
+        thread: GmailThread = queue_new.get()
 
         debug(f'[processor_email_new] :: {thread}')
 
@@ -290,16 +290,7 @@ def processor_email_new(gmail: AutomonGmailClient):
                     draft = draft_create(
                         thread=thread,
                         response=response,
-                        thread_selected=thread,
                         resume_attachment=resume_attachment,
-                    )
-
-                elif gmail.is_follow_up(thread):
-
-                    draft = draft_create(
-                        thread=thread,
-                        response=response,
-                        thread_selected=thread,
                     )
 
                 if draft is not None:
@@ -315,9 +306,27 @@ def processor_email_new(gmail: AutomonGmailClient):
         time.sleep(0.1)
 
 
+def processor_email_sent(gmail: AutomonGmailClient):
+    while True:
+        thread = queue_sent.get()
+        debug(f'[processor_email_sent] :: {queue_sent.qsize()} :: {thread}')
+
+        if gmail.is_old(thread):
+            queue_followup.put(thread)
+            queue_sent.task_done()
+            continue
+
+        gmail.messages_modify_automon(
+            id=thread._message_first.id,
+            addLabelIds=[labels.waiting])
+
+        queue_waiting.put(thread)
+        queue_sent.task_done()
+
+
 def processor_draft_send(gmail: AutomonGmailClient):
     while True:
-        item: tuple[Thread, Draft] = queue_send.get()
+        item: tuple[GmailThread, GmailDraft] = queue_send.get()
         thread, draft = item
 
         if labels.auto_reply in thread._messages_labels:
@@ -333,13 +342,47 @@ def processor_draft_send(gmail: AutomonGmailClient):
         time.sleep(0.1)
 
 
-def processor_email_waiting():
+def processor_email_waiting(gmail: AutomonGmailClient):
     while True:
-        thread: Thread = queue_waiting.get()
+        thread: GmailThread = queue_waiting.get()
 
-        debug(f'[processor_email_waiting] :: {thread}')
+        debug(f'[processor_email_waiting] :: {queue_waiting.qsize()} :: {thread}')
+
+        if gmail.is_old(thread):
+            queue_followup.put(thread)
+            queue_waiting.task_done()
+            continue
 
         queue_waiting.task_done()
+
+
+def processor_email_followup(gmail: AutomonGmailClient):
+    while True:
+        thread: GmailThread = queue_followup.get()
+        debug(f'[processor_email_followup] :: {queue_followup.qsize()} :: {thread}')
+
+        email = thread.to_prompt()
+
+        response, _ = write_email_reply(email)
+
+        draft = None
+        if is_good_reply(response):
+
+            draft = draft_create(
+                thread=thread,
+                response=response,
+            )
+
+            if draft is not None:
+                if labels.auto_reply in thread._messages_labels:
+                    queue_send.put((thread, draft))
+
+        gmail.messages_modify_automon(
+            id=thread.id,
+            addLabelIds=[labels.waiting, labels.unread],
+        )
+
+        queue_followup.task_done()
 
 
 def is_from_human(email: str) -> bool:
@@ -473,7 +516,7 @@ def run_llm(prompt: str, chat: bool = False) -> tuple[str, object]:
 
         try:
             if USE_GEMINI:
-                raise debug_exception(locals(), f'fix prompt to markdown str')
+                raise debug_exception(locals(), f'fix prompt to use markdown')
                 response, model = run_gemini(prompts=prompts, chat=chat)
                 break
         except Exception as error:
@@ -505,34 +548,35 @@ def run_llm(prompt: str, chat: bool = False) -> tuple[str, object]:
 
 
 def draft_create(
-        thread: Thread,
+        thread: GmailThread,
         response: str,
-        thread_selected: Thread,
-        resume_attachment: MessagePart = None,
-) -> Draft:
+        resume_attachment: GmailMessagePart = None,
+) -> GmailDraft:
     if resume_attachment is not None:
         assert resume_attachment.filename
 
-        resume_attachment = gmail.draft_attachment_create(resume_attachment)
+        resume_attachment = [gmail.draft_attachment_create(resume_attachment)]
+    else:
+        resume_attachment = []
 
     to = thread._message_first._header_from.value
     from_ = thread._message_first._header_to.value
 
     # create draft
     body = response
-    subject = "Re: " + thread_selected._message_first._header_subject.value
+    subject = "Re: " + thread._message_first._header_subject.value
     draft = gmail.draft_create(
-        threadId=thread_selected.id,
+        threadId=thread.id,
         draft_to=to,
         draft_from=from_,
         draft_subject=subject,
         draft_body=body,
-        draft_attachments=[resume_attachment]
+        draft_attachments=resume_attachment
     )
     draft_get = gmail.draft_get_automon(id=draft.id)
 
     gmail.messages_modify_automon(
-        id=thread_selected.id,
+        id=thread.id,
         addLabelIds=[labels.unread])
 
     return draft_get
@@ -556,7 +600,8 @@ def main():
     threads.add_worker(target=processor_email_new, args=(gmail,))
     threads.add_worker(target=processor_email_waiting, args=(gmail,))
     threads.add_worker(target=processor_draft_send, args=(gmail,))
-    threads.add_worker(target=processor_email_waiting)
+    threads.add_worker(target=processor_email_sent, args=(gmail,))
+    threads.add_worker(target=processor_email_followup, args=(gmail,))
 
     threads.add_worker(target=log_printer)
 
