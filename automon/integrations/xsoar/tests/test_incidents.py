@@ -13,7 +13,7 @@ class MyTestCase(unittest.TestCase):
     if client.is_ready():
         def test_auth(self):
             id = ''
-            result = self.client.incidents(id=id)
+            result = self.client.incidents_search(id=id)
             pass
 
 

@@ -2,10 +2,6 @@ class V1:
     v1: str = f''
 
 
-class Reports:
-    reports: str = f'/reports'
-
-
 class Files:
     """
     https://cortex-panw.stoplight.io/docs/cortex-xsoar-6/43ko2zqvunjz0-download-file
@@ -628,3 +624,13 @@ class Incidents:
 
 class IncidentResponse:
     pass
+
+
+class Reports:
+    reports: str = f'/reports'
+
+
+class Api:
+    files = Files()
+    incidents = Incidents()
+    reports = Reports()

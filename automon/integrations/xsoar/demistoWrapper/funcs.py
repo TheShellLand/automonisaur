@@ -61,7 +61,7 @@ def executeCommand_getIncidents(command_args) -> [IncidentSearchResponse]:
     assert type(response) == list
     debug(f'[firewall_get_security_rule_incident] :: response :: {json.dumps(response)}', level=3)
 
-    response = [IncidentSearchResponse().update(x) for x in response]
+    response = [IncidentSearchResponse(x) for x in response]
 
     total = [x.Contents['total'] for x in response]
     debug(f'[firewall_get_security_rule_incident] :: response :: {response}', level=2)

@@ -248,7 +248,7 @@ class RequestsClient(object):
         response = self.session.delete(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
 
         if not response:
-            debug_exception(locals(), response)
+            raise debug_exception(locals(), response)
 
         return RequestResponse(response)
 
@@ -274,7 +274,7 @@ class RequestsClient(object):
         response = self.session.get(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
 
         if not response:
-            debug_exception(locals(), response)
+            raise debug_exception(locals(), response)
 
         return RequestResponse(response)
 
@@ -300,7 +300,7 @@ class RequestsClient(object):
         response = self.session.patch(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
 
         if not response:
-            debug_exception(locals(), response)
+            raise debug_exception(locals(), response)
 
         return RequestResponse(response)
 
@@ -326,7 +326,7 @@ class RequestsClient(object):
         response = self.session.post(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
 
         if not response:
-            debug_exception(locals(), response)
+            raise debug_exception(locals(), response)
 
         return RequestResponse(response)
 
@@ -352,7 +352,7 @@ class RequestsClient(object):
         response = self.session.put(url=url, data=data, headers=headers, proxies=self.proxies, **kwargs)
 
         if not response:
-            debug_exception(locals(), response)
+            raise debug_exception(locals(), response)
 
         return RequestResponse(response)
 

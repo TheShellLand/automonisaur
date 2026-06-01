@@ -21,7 +21,7 @@ class MyTestCase(unittest.TestCase):
                 id=id,
                 ids=ids,
                 type=type,
-            )._incidents_search
+            )
             pass
 
 
