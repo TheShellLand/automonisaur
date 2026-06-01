@@ -275,7 +275,7 @@ class AutomonGmailClient(GoogleGmailClient):
 
     def is_new(self, thread: Thread):
         if thread._clean_thread_latest:
-            if self._labels.sent not in thread._clean_thread_latest.labelIds:
+            if self._labels.sent not in thread._messages_labels:
                 return True
         return False
 
