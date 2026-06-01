@@ -17,7 +17,7 @@ class XSOARConfig(object):
             host: str = None,
             api_key: str = None,
             api_key_id: str = None,
-            verify_certs: bool = None,
+            verify_certs: bool = False,
             xsoar_version: int = 6
     ):
         self.host = host or environ('XSOAR_FQDN')

@@ -25,12 +25,14 @@ class XSOARClient(object):
             api_key_id: str = None,
             config: XSOARConfig = None,
             xsoar_version: int = 6,
+            verify_certs: bool = False,
     ):
         self.config = config or XSOARConfig(
             host=host,
             api_key=api_key,
             api_key_id=api_key_id,
-            xsoar_version=xsoar_version
+            xsoar_version=xsoar_version,
+            verify_certs=verify_certs,
         )
         self.api = self.config.api
 
