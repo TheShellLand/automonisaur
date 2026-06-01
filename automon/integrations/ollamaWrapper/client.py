@@ -76,7 +76,7 @@ class OllamaMessage(DictHelper):
         return len(Tokens(self.content))
 
 
-class OllamaClient(object):
+class OllamaClient:
     templates = Templates()
 
     model: str
