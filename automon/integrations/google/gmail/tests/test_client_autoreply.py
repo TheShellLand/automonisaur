@@ -246,6 +246,9 @@ def processor_email_new(gmail: AutomonGmailClient):
             addLabelIds=[labels.processing])
 
         resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text
+        identity = RESUME._message_first._email_from
+        background = resume_str
+
         resume_prompt = OllamaClient.templates.utils.to_markdown(
             header='resume',
             header_level=1,
@@ -270,7 +273,7 @@ def processor_email_new(gmail: AutomonGmailClient):
                     exit_loop = True
                     break
 
-                response, model = write_email_reply(thread_prompt)
+                response, model = write_email_reply(identity=identity, background=background, email=email)
                 if is_good_reply(response=response):
                     response_passed = True
                     exit_loop = True
@@ -363,7 +366,10 @@ def processor_email_followup(gmail: AutomonGmailClient):
 
         email = thread.to_prompt()
 
-        response, _ = write_email_reply(email)
+        identity = RESUME._message_first._email_from
+        background = RESUME._message_first._attachments_first.parts[0].body._data_html_text
+
+        response, _ = write_email_reply(identity=identity, background=background, email=email)
 
         draft = None
         if is_good_reply(response):
@@ -386,7 +392,7 @@ def processor_email_followup(gmail: AutomonGmailClient):
 
 
 def is_from_human(email: str) -> bool:
-    prompt = OllamaClient.templates.true_or_false.email_is_human(email)
+    prompt = OllamaClient.templates.true_or_false.email_is_human(email=email)
     response, model = run_llm(prompt=prompt)
     return is_true(response)
 
@@ -397,10 +403,14 @@ def is_rejected_email(email: str) -> bool:
     return is_true(response)
 
 
-def write_email_reply(email: str) -> tuple[str, any]:
-    _system = OllamaClient.templates.agents.job_applicant()
+def write_email_reply(identity: str, background: str, email: str) -> tuple[str, object]:
     prompt = Markdown.list_to_markdown([
-        _system,
+        OllamaClient.templates.agents.job_applicant(),
+        OllamaClient.templates.agents.your_identity(
+            name=identity,
+            background=background,
+        ),
+        OllamaClient.templates.agents.tasks.email_response(),
         email,
     ])
     response, model = run_llm(prompt=prompt)
