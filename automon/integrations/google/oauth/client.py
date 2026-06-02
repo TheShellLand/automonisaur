@@ -13,7 +13,7 @@ logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
 
-class GoogleAuthClient(object):
+class GoogleAuthClient:
     """Google Auth client"""
 
     def __init__(
