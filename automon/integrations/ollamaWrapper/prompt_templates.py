@@ -1,3 +1,5 @@
+from prompt_toolkit.input.vt100 import raw_mode
+
 from automon import Markdown
 
 
@@ -19,10 +21,23 @@ class Utils:
         ```
         """
 
-        return Markdown.lstrip_str(raw_template)
+        return Markdown.lstrip(raw_template)
+
+
+class AgentTasks:
+    @staticmethod
+    def email_response():
+        raw_template = f"""
+        # TASK
+        
+        Your task is to read the email chain and write a response
+        """
+
+        return Markdown.lstrip(raw_template)
 
 
 class AgentTemplates:
+    tasks = AgentTasks()
 
     @staticmethod
     def job_applicant() -> str:
@@ -55,7 +70,32 @@ class AgentTemplates:
         - Remove any conversational closing statements such as "I look forward to connecting and discussing how my skills in cloud technologies and security can benefit your firm," as these are considered extraneous conversational text.
         """
 
-        return Markdown.lstrip_str(raw_template)
+        return Markdown.lstrip(raw_template)
+
+    @staticmethod
+    def your_identity(
+            name: str,
+            background: str,
+    ) -> str:
+        raw_template = f"""
+        # IDENTITY
+        
+        - You will assume the identity of `NAME`.
+        - You will only use the `BACKGROUND` information as your only source of knowledge.
+        - You will refer to yourself in first person. 
+        - You will ask question and respond in the style, word choice, and behavior of your `BACKGROUND`.
+        
+        ### NAME
+        
+        - You are to assume the identity of `{name}`.`
+        
+        ### BACKGROUND
+        
+        ```text
+        {background}
+        ```
+        """
+        return Markdown.lstrip(raw_template)
 
     @staticmethod
     def compact_prompt(prompt: str) -> str:
@@ -73,7 +113,7 @@ class AgentTemplates:
         {prompt}
         """
 
-        return Markdown.lstrip_str(raw_template)
+        return Markdown.lstrip(raw_template)
 
     @staticmethod
     def use_template_chatbot_with_thinking(content: str = '') -> str:
@@ -85,7 +125,7 @@ class AgentTemplates:
         - You must provide an answer.
         - You will always give concise and direct answers.
         """
-        return Markdown.lstrip_str(raw_template)
+        return Markdown.lstrip(raw_template)
 
     @staticmethod
     def use_template_chatbot_with_input(input: str, question: str) -> str:
@@ -118,7 +158,7 @@ class AgentTemplates:
         ```
         """
 
-        return Markdown.lstrip_str(raw_template)
+        return Markdown.lstrip(raw_template)
 
     @staticmethod
     def use_template_chatbot_with_multi_input(input: [dict], question: str) -> str:
@@ -161,7 +201,7 @@ class AgentTemplates:
         {INPUTS}
         """
 
-        return Markdown.lstrip_str(raw_template)
+        return Markdown.lstrip(raw_template)
 
 
 class TrueOrFalseTemplates:
@@ -185,7 +225,7 @@ class TrueOrFalseTemplates:
         {email}
         ```
 """
-        return Markdown.lstrip_str(raw_template)
+        return Markdown.lstrip(raw_template)
 
     @staticmethod
     def email_is_rejected(email) -> str:
@@ -210,7 +250,7 @@ class TrueOrFalseTemplates:
         {email}
         ```
         """
-        return Markdown.lstrip_str(raw_template)
+        return Markdown.lstrip(raw_template)
 
     @staticmethod
     def rules_is_followed(rules: str, text: str) -> str:
@@ -239,7 +279,7 @@ class TrueOrFalseTemplates:
         ```
         """
 
-        return Markdown.lstrip_str(raw_template)
+        return Markdown.lstrip(raw_template)
 
 
 class Templates:

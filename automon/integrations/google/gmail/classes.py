@@ -919,7 +919,7 @@ class GmailMessage(DictHelper):
         ```
         """
 
-        return Markdown.lstrip_str(raw_template)
+        return Markdown.lstrip(raw_template)
 
 
 class GmailMessageAttachments(DictHelper):

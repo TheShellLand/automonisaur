@@ -58,12 +58,12 @@ class Markdown:
 
     @staticmethod
     def list_to_markdown(markdowns: list[str]) -> str:
-        return Markdown.lstrip_str(
+        return Markdown.lstrip(
             '\n\n---\n\n'.join(markdowns)
         )
 
     @staticmethod
-    def lstrip_str(text: str) -> str:
+    def lstrip(text: str) -> str:
         return textwrap.dedent(
             '\n'.join(line.lstrip() for line in text.strip().splitlines())
         ).strip()
