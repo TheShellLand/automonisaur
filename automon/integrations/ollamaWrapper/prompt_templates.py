@@ -13,7 +13,8 @@ class AgentTasks:
         raw_template = f"""
         # TASK
         
-        Your task is to read the email chain and write a response
+        - Your task is to read the email chain and write a response
+        - Only return the body of the email
         """
 
         return Markdown.lstrip(raw_template)
