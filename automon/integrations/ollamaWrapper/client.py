@@ -148,9 +148,10 @@ class OllamaClient:
 
         self.messages.append(message)
 
-        total_tokens = sum_tokens(self.messages)
+        total_tokens = sum_tokens(self.messages_pretty)
         model = self.model
         max_tokens = self._max_tokens.get(model)
+
         if total_tokens > max_tokens:
             raise debug_exception(locals(), 'too many tokens')
 
@@ -162,12 +163,6 @@ class OllamaClient:
             f'{total_tokens:,} of {max_tokens:,} tokens used :: '
             f'{max_tokens - total_tokens:,} tokens remaining'
         )
-
-        return self
-
-    def add_prompt_followup(self, **kwargs):
-        self.messages = []
-        self.add_prompt(**kwargs)
 
         return self
 
@@ -419,8 +414,8 @@ class OllamaClient:
     def get_context_window(self):
         return self._num_ctx
 
-    def get_total_tokens(self):
-        return sum_tokens(self.messages)
+    def get_total_tokens(self) -> int:
+        return sum_tokens(self.messages_pretty)
 
     def has_downloaded_models(self, model: str):
 
