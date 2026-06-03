@@ -485,11 +485,7 @@ def run_ollama(prompt: str) -> tuple[str, OllamaClient]:
     ollama.set_model('gemma4:latest')
 
     if ollama.is_ready():
-        # ollama.add_message(role='model', content=ollama.prompts.agent_machine_job_applicant)
-
         ollama.add_prompt(prompt)
-
-        ollama.set_context_window(ollama.get_total_tokens() * 1.10)
         response = ollama.chat().response()
 
         return response, ollama
