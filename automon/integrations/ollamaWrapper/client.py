@@ -151,6 +151,8 @@ class OllamaClient:
         if total_tokens > max_tokens:
             raise debug_exception(locals(), 'too many tokens')
 
+        self.set_context_window(int(self.get_total_tokens() * 1.10))
+
         logger.debug(
             f'[OllamaClient] :: '
             f'add_message :: '
