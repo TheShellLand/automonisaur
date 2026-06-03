@@ -59,6 +59,8 @@ class OllamaOptions(DictHelper):
 
 
 class OllamaMessage(DictHelper):
+    role: str
+    content: str
 
     def __init__(self, message: dict):
         self.role = None
@@ -81,8 +83,9 @@ class OllamaClient:
 
     model: str
     messages: list[dict]
+    messages_pretty: list[OllamaMessage]
 
-    _ollama: ollama
+    _ollama: ollama.Client
 
     _max_tokens = {
         'deepseek-r1:14b': 128000,
@@ -181,7 +184,7 @@ class OllamaClient:
         if options is None:
             options = self._ollama_options().to_dict()
 
-        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.messages):,} total tokens')
+        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.messages_pretty):,} total tokens')
 
         chat = self._ollama.chat(
             model=self.model,
@@ -272,14 +275,14 @@ class OllamaClient:
         return
 
     @property
-    def _chat_response(self):
+    def _chat_response(self) -> str | None:
         try:
-            return self.messages[-1].response()
+            return self.messages_pretty[-1].content
         except:
             pass
 
     def _agent_clear(self):
-        self.messages = [self.messages[0]]
+        self.messages = []
         print(f":: SYSTEM :: context memory cleared. ::")
 
     def _agent_context(self, message: str = None):
@@ -366,9 +369,9 @@ class OllamaClient:
             print(f":: SYSTEM :: no messages ::")
             return
 
-        for m in self.messages:
-            role = m['role']
-            content = m['content'].strip().splitlines()[0][:200]
+        for message in self.messages_pretty:
+            role = message.role
+            content = message.content.splitlines[0][:200]
             print(f":: SYSTEM :: <{role}> {content} ::")
 
     def _agent_memory(self):
@@ -403,7 +406,7 @@ class OllamaClient:
         print(f":: SYSTEM :: proceeding with no primary directive. ::")
 
     def _agent_token(self):
-        print(f":: SYSTEM :: message has {sum(self.messages)} total tokens ::")
+        print(f":: SYSTEM :: message has {sum(self.messages_pretty)} total tokens ::")
 
     def get_context_window(self):
         return self._num_ctx
@@ -509,7 +512,7 @@ class OllamaClient:
         return False
 
     def response(self):
-        return self.messages[-1]
+        return self.messages_pretty[-1]
 
     def set_context_window(self, tokens: int):
         tokens = round(tokens)
