@@ -4,24 +4,7 @@ from automon import Markdown
 
 
 class Utils:
-
-    @staticmethod
-    def to_markdown(
-            header: str,
-            text: str,
-            header_level: int = 1,
-    ) -> str:
-        header_weight = '#' * header_level
-
-        raw_template = f"""
-        {header_weight} {header.upper()}
-
-        ```text
-        {text}
-        ```
-        """
-
-        return Markdown.lstrip(raw_template)
+    pass
 
 
 class AgentTasks:
