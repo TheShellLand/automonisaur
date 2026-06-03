@@ -219,7 +219,7 @@ class OllamaClient:
             message = ''
             try:
                 message += input(f"\n$> ")
-                message = message.strip()
+                message = Markdown.lstrip(message)
             except KeyboardInterrupt:
                 self._agent_exit()
                 break
@@ -352,7 +352,7 @@ class OllamaClient:
             print(f":: SYSTEM :: downloaded file {filename} {url} {size} ::")
 
     def _agent_exit(self):
-        print(f":: SYSTEM :: Thank you for chatting. Shutting down. ::")
+        print(f":: SYSTEM :: Thank you for chatting. Terminating. ::")
 
     def _agent_help(self):
         print(f":: {'COMMANDS':20} {'':<30} ::")
