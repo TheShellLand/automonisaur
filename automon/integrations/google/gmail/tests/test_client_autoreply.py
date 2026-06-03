@@ -11,6 +11,12 @@ from automon.integrations.ollamaWrapper import OllamaClient, Markdown
 from automon.integrations.google.gemini import GoogleGeminiClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO, debug
 
+"""
+
+queues
+
+"""
+
 queue_threads: Queue[GmailThread] = UniqueQueue(maxsize=5)
 queue_new: Queue[GmailThread] = UniqueQueue(maxsize=5)
 queue_send: Queue[tuple[GmailThread, GmailDraft]] = UniqueQueue()
@@ -44,7 +50,11 @@ queues = [
     queue_log,
 ]
 
-RESUME: GmailThread = None
+"""
+
+logging settings
+
+"""
 
 DEBUG_LEVEL = 2
 DEBUG_ = False
@@ -72,15 +82,32 @@ else:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(CRITICAL)
 
+"""
+
+llm settings
+
+"""
+
 USE_OLLAMA = True
 USE_GEMINI = False
 CHAT_FOREVER = False
+USE_GPU = True
 
-OLLAMA_HOST = 'http://192.168.111.175:11434'
+if USE_GPU:
+    OLLAMA_HOST = 'http://192.168.111.175:11434'
+else:
+    OLLAMA_HOST = None
 OLLAMA_MODEL = 'gemma4:latest'
 
-gmail = AutomonGmailClient()
 gemini = GoogleGeminiClient()
+
+"""
+
+gmail settings
+
+"""
+
+gmail = AutomonGmailClient()
 
 # gmail.config.add_gmail_scopes()
 gmail.config.add_scopes([
@@ -91,6 +118,7 @@ gmail.config.add_scopes([
 ])
 
 labels = gmail._labels
+RESUME: GmailThread = None
 
 
 def gmail_token_refresher(gmail: AutomonGmailClient):
