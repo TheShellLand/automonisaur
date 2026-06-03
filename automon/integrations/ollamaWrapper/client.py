@@ -201,18 +201,12 @@ class OllamaClient:
 
         return chat
 
-    def chat_forever(self, safe_word: str = None, system_content: str = None):
-        """Chat forever until you use your safe word. :) """
+    def chat_forever(self, system_content: str = None):
 
         self.pickle_load()
 
         if system_content:
             self._agent_system_prompt(system_content=system_content)
-
-        logger.debug(f'[OllamaClient] :: chat_forever :: {safe_word=}')
-        print(
-            f":: INFO :: Remember to say your safe word and the chat experience will end. \n\n"
-            f"Your safe word is: {safe_word}\n")
 
         while True:
 
