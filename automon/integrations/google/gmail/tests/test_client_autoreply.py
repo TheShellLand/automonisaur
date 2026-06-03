@@ -7,7 +7,7 @@ from queue import Queue
 from automon.helpers import *
 from automon.helpers.threadingWrapper import ThreadingClient
 from automon.integrations.google.gmail import *
-from automon.integrations.ollamaWrapper import OllamaClient
+from automon.integrations.ollamaWrapper import OllamaClient, Markdown
 from automon.integrations.google.gemini import GoogleGeminiClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO, debug
 
@@ -75,6 +75,9 @@ else:
 USE_OLLAMA = True
 USE_GEMINI = False
 CHAT_FOREVER = False
+
+OLLAMA_HOST = 'http://192.168.111.175:11434'
+OLLAMA_MODEL = 'gemma4:latest'
 
 gmail = AutomonGmailClient()
 gemini = GoogleGeminiClient()
@@ -249,7 +252,7 @@ def processor_email_new(gmail: AutomonGmailClient):
         identity = RESUME._message_first._email_from
         background = resume_str
 
-        resume_prompt = OllamaClient.templates.utils.to_markdown(
+        resume_prompt = OllamaClient.templates.markdown.str_to_markdown(
             header='resume',
             header_level=1,
             text=resume_str,
@@ -273,7 +276,7 @@ def processor_email_new(gmail: AutomonGmailClient):
                     exit_loop = True
                     break
 
-                response, model = write_email_reply(identity=identity, background=background, email=email)
+                response, model = write_email_reply(identity=identity, background=background, email=thread_prompt)
                 if is_good_reply(response=response):
                     response_passed = True
                     exit_loop = True
@@ -392,40 +395,61 @@ def processor_email_followup(gmail: AutomonGmailClient):
 
 
 def is_from_human(email: str) -> bool:
-    prompt = OllamaClient.templates.true_or_false.email_is_human(email=email)
-    response, model = run_llm(prompt=prompt)
+    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+
+    ollama.add_prompt(
+        ollama.templates.true_or_false.email_is_human(email)
+    )
+
+    response = ollama.chat().response()
     return is_true(response)
 
 
 def is_rejected_email(email: str) -> bool:
-    prompt = OllamaClient.templates.true_or_false.email_is_rejected(email=email)
-    response, model = run_llm(prompt=prompt)
+    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+
+    ollama.add_prompt(
+        OllamaClient.templates.true_or_false.email_is_rejected(email=email),
+    )
+
+    response = ollama.chat().response()
     return is_true(response)
 
 
 def write_email_reply(identity: str, background: str, email: str) -> tuple[str, object]:
-    prompt = Markdown.list_to_markdown([
-        OllamaClient.templates.agents.job_applicant(),
-        OllamaClient.templates.agents.your_identity(
+    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+
+    ollama.add_prompt(
+        ollama.templates.agents.job_applicant(), role='system',
+    ).add_prompt(
+        ollama.templates.agents.your_identity(
             name=identity,
             background=background,
-        ),
-        OllamaClient.templates.agents.tasks.email_response(),
-        email,
-    ])
-    response, model = run_llm(prompt=prompt)
-    return response, model
+        ), role='system',
+    ).add_prompt(
+        OllamaClient.templates.agents.tasks.email_response(), role='user',
+    ).add_prompt(
+        email, role='user'
+    )
+
+    response = ollama.chat().response()
+    return response
 
 
 def is_good_reply(response) -> bool:
-    _rules = OllamaClient.templates.agents.job_applicant()
-    _response = OllamaClient.templates.utils.to_markdown(header='response', text=response)
+    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
-    prompt = OllamaClient.templates.utils.to_markdown(
-        header='question',
-        text=OllamaClient.templates.true_or_false.rules_is_followed(rules=_rules, text=_response)
+    _rules = OllamaClient.templates.agents.job_applicant()
+    _response = OllamaClient.templates.markdown.str_to_markdown(header='response', text=response)
+
+    ollama.add_prompt(
+        Markdown.str_to_markdown(
+            header='question',
+            text=OllamaClient.templates.true_or_false.rules_is_followed(rules=_rules, text=_response)
+        )
     )
-    response, model = run_llm(prompt=prompt)
+
+    response = ollama.chat().response()
     return is_true(response)
 
 
@@ -479,10 +503,7 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
 
 
 def run_ollama(prompt: str) -> tuple[str, OllamaClient]:
-    ollama = OllamaClient(
-        host='http://192.168.111.175:11434',
-    )
-    ollama.set_model('gemma4:latest')
+    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     if ollama.is_ready():
         ollama.add_prompt(prompt)
