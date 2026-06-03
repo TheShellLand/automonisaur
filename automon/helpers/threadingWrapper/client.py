@@ -11,8 +11,14 @@ log.setLevel(automon.helpers.loggingWrapper.DEBUG)
 
 
 class Thread(threading.Thread):
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
-        super().__init__(group, target, name, args, kwargs)
+    def __init__(self, group=None, target=None, name=None, daemon=None, args=(), kwargs={}):
+        super().__init__(
+            group=group,
+            target=target,
+            name=name,
+            daemon=daemon,
+            *args, **kwargs,
+        )
         # Store arguments as public attributes
         self._target = target
         self._target_args = args
