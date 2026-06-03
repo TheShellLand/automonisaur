@@ -124,8 +124,11 @@ class OllamaClient:
             num_ctx=num_ctx,
         )
 
-    def add_chain(self, content: str, delimiters: str = 'CHAT', **kwargs):
+    def add_chain(self, content: str, **kwargs):
         raise debug_exception(locals(), f'depreciated: use OllamaClient.add_prompt instead')
+
+    def add_system_prompt(self, content: str):
+        return self.add_prompt(content=content, role='system')
 
     def add_prompt(self, content: str, role: str = 'user'):
 
