@@ -20,7 +20,7 @@ from automon.helpers.dictWrapper import DictHelper
 from automon.integrations.requestsWrapper import RequestsClient
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO, ERROR
 
-from .chat import OllamaChat
+from .classes import OllamaChat
 from .utils import chr_to_tokens, sum_tokens
 from .tokens import Tokens
 from .prompt_templates import *

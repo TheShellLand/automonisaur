@@ -1,8 +1,10 @@
 from .client import (
     OllamaClient,
     OllamaOptions,
+    OllamaMessage,
 )
 
-from .chat import OllamaChat
-from .utils import *
+from .classes import OllamaChat
 from .tokens import Tokens
+from .utils import chr_to_tokens, sum_tokens
+from .prompt_templates import *
