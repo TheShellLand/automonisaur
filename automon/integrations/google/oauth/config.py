@@ -12,6 +12,7 @@ import google_auth_oauthlib.flow
 import googleapiclient.http
 import googleapiclient.discovery
 
+from automon.helpers import DictHelper
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 from automon.helpers.osWrapper import environ
 
@@ -19,7 +20,7 @@ logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
 
-class GoogleAuthConfig:
+class GoogleAuthConfig(DictHelper):
     """Google Auth config"""
 
     def __init__(
@@ -52,10 +53,7 @@ class GoogleAuthConfig:
                 'https://www.googleapis.com/auth/userinfo.profile',
             ]
 
-        pass
-
-    def __repr__(self):
-        return f'{self.__dict__}'
+        super().__init__()
 
     def __bool__(self):
         return bool(self.credentials)
@@ -325,8 +323,9 @@ class GoogleAuthConfig:
         creds = self.credentials
         Request = google.auth.transport.requests.Request()
 
-        if creds and creds.expired or creds.refresh_token:
-            creds.refresh(Request)
-            return True
+        if creds is not None:
+            if creds and creds.expired or creds.refresh_token:
+                creds.refresh(Request)
+                return True
 
         return False
