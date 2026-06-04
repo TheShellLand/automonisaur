@@ -23,7 +23,7 @@ class RequestResponse(DictHelper):
     text: str
     url: str
 
-    request: requests.sessions.Response
+    request: requests.Request
 
     _bs4: bs4.BeautifulSoup
 
