@@ -17,7 +17,8 @@ class Thread(threading.Thread):
             target=target,
             name=name,
             daemon=daemon,
-            *args, **kwargs,
+            args=args,
+            kwargs=kwargs,
         )
         # Store arguments as public attributes
         self._target = target
