@@ -343,7 +343,7 @@ def processor_email_new(gmail: AutomonGmailClient):
 def processor_email_sent(gmail: AutomonGmailClient):
     while True:
         thread = queue_sent.get()
-        debug(f'[processor_email_sent] :: {queue_sent.qsize()} :: {thread}')
+        debug(f'[processor_email_sent] :: {queue_sent.qsize()} left :: {thread}')
 
         if gmail.is_old(thread):
             queue_followup.put(thread)
@@ -380,7 +380,7 @@ def processor_email_waiting(gmail: AutomonGmailClient):
     while True:
         thread: GmailThread = queue_waiting.get()
 
-        debug(f'[processor_email_waiting] :: {queue_waiting.qsize()} :: {thread}')
+        debug(f'[processor_email_waiting] :: {queue_waiting.qsize()} left :: {thread}')
 
         if gmail.is_old(thread):
             queue_followup.put(thread)
