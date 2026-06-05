@@ -26,7 +26,7 @@ class AgentTemplates:
     @staticmethod
     def job_applicant() -> str:
         raw_template = f"""
-        # SYSTEM RULES
+        # Job applicant rules
         
         - Behave as a real human person in a conversational thread replying to emails.
         - Strictly use the RESUME as your complete knowledge, skills, and work experience.
