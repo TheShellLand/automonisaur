@@ -224,11 +224,11 @@ class OllamaClient:
             if not message:
                 continue
 
-            if '/exit' in message:
+            if '/exit' in message.lower():
                 self._agent_exit()
-                break
+                return self
 
-            if '/clear' in message:
+            if '/clear' in message.lower():
                 self._agent_clear()
                 continue
 
@@ -236,7 +236,7 @@ class OllamaClient:
                 self._agent_context(message=message)
                 continue
 
-            if '/downloads' in message:
+            if '/downloads' in message.lower():
                 self._agent_downloads()
                 continue
 
@@ -244,28 +244,28 @@ class OllamaClient:
                 self._agent_download(message=message)
                 continue
 
-            if '/list' in message:
+            if '/list' in message.lower():
                 self._agent_list()
                 continue
 
-            if '/memory' in message:
+            if '/memory' in message.lower():
                 self._agent_memory()
                 continue
 
-            if '/summary' in message:
+            if '/summary' in message.lower():
                 self._agent_summary()
                 continue
 
-            if '/system' in message[:len('/system')]:
+            if '/system' in message.lower()[:len('/system')]:
                 system_content = message[len('/system'):]
                 self._agent_system_prompt(system_content=system_content)
                 continue
 
-            if '/token' in message:
+            if '/token' in message.lower():
                 self._agent_token()
                 continue
 
-            if '/?' in message:
+            if '/?' in message.lower():
                 self._agent_help()
                 continue
 
