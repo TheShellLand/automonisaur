@@ -32,7 +32,7 @@ queue_unknown: Queue[GmailThread] = UniqueQueue()
 query_history: Queue[GmailThread] = UniqueQueue()
 
 queue_error: Queue[GmailThread] = UniqueQueue()
-queue_log: Queue[str] = UniqueQueue()
+queue_log: Queue[tuple[str, int]] = UniqueQueue()
 
 queues = [
     queue_threads,
@@ -56,7 +56,7 @@ logging settings
 
 """
 
-DEBUG_LEVEL = 2
+DEBUG_LEVEL = 1
 DEBUG_ = False
 DEFAULT_LEVEL = CRITICAL
 
@@ -154,14 +154,14 @@ def get_threads(gmail: AutomonGmailClient):
                 pageToken=nextPageToken,
                 labelIds=query,
             )
-            queue_log.put(f'[get_threads] :: {query} :: {thread_search}')
+            queue_log.put((f'[get_threads] :: {query} :: {thread_search}', 3))
 
             for thread in thread_search.threads:
 
                 if thread not in query_history.queue:
                     query_history.put(thread)
                     queue_threads.put(thread)
-                    queue_log.put(f'[get_threads] :: {query_history.qsize()} total')
+                    queue_log.put((f'[get_threads] :: {query_history.qsize()} processed', 3))
 
             nextPageToken = thread_search.nextPageToken
 
@@ -185,7 +185,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
     while True:
         thread = queue_threads.get()
 
-        queue_log.put(f'[processor_email_thread] :: {thread}')
+        queue_log.put((f'[processor_email_thread] :: {thread}', 2))
 
         # resume
         if gmail.is_resume(thread):
@@ -200,21 +200,21 @@ def processor_email_thread(gmail: AutomonGmailClient):
         if gmail.is_skipped(thread):
             queue_skipped.put(thread)
             queue_threads.task_done()
-            queue_log.put(f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads')
+            queue_log.put((f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads', 2))
             continue
 
         # error
         if gmail.is_error(thread):
             queue_error.put(thread)
             queue_threads.task_done()
-            queue_log.put(f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads')
+            queue_log.put((f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads', 2))
             continue
 
         # analyze
         if gmail.is_analyze(thread):
             queue_analyze.put(thread)
             queue_threads.task_done()
-            queue_log.put(f'[processor_email_thread] :: queue_analyze :: {queue_analyze.qsize()} threads')
+            queue_log.put((f'[processor_email_thread] :: queue_analyze :: {queue_analyze.qsize()} threads', 2))
             continue
 
         # scheduled
@@ -248,7 +248,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
             continue
 
         queue_unknown.put(thread)
-        queue_log.put(f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads :: {thread}')
+        queue_log.put((f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads :: {thread}', 2))
 
         gmail.messages_modify_automon(
             id=thread._message_first.id,
@@ -354,7 +354,6 @@ def processor_email_sent(gmail: AutomonGmailClient):
             id=thread._message_first.id,
             addLabelIds=[labels.waiting])
 
-        queue_waiting.put(thread)
         queue_sent.task_done()
 
 
@@ -483,8 +482,11 @@ def is_good_reply(response) -> bool:
 
 def log_printer():
     while True:
-        log = queue_log.get()
-        debug(log)
+        log, level = queue_log.get()
+
+        if level <= DEBUG_LEVEL:
+            debug(log)
+
         queue_log.task_done()
 
 
