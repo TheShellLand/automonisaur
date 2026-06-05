@@ -1282,7 +1282,7 @@ class GmailThreadList(DictHelper):
         return False
 
     @property
-    def threads(self):
+    def threads(self) -> list[GmailThread]:
         self._threads = encapsulate(self._threads, GmailThread)
         return self._threads
 
