@@ -92,6 +92,7 @@ llm settings
 USE_OLLAMA = True
 USE_GEMINI = False
 CHAT_FOREVER = False
+CHAT_STREAM = True 
 USE_GPU = True
 
 if USE_GPU:
@@ -463,7 +464,7 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, obj
         role=AgentRole.USER, content=thread.to_prompt()
     )
 
-    response = ollama.chat(print_stream=False).response()
+    response = ollama.chat(print_stream=CHAT_STREAM).response()
     return response, ollama
 
 
@@ -484,7 +485,7 @@ def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, 
         role=AgentRole.USER, content=thread.to_prompt()
     )
 
-    response = ollama.chat(print_stream=False).response()
+    response = ollama.chat(print_stream=CHAT_STREAM).response()
     return response, ollama
 
 
@@ -502,7 +503,7 @@ def is_good_reply(response) -> bool:
         )
     )
 
-    response = ollama.chat(print_stream=False).response()
+    response = ollama.chat(print_stream=CHAT_STREAM).response()
     return is_true(response)
 
 
@@ -563,7 +564,7 @@ def run_ollama(prompt: str) -> tuple[str, OllamaClient]:
 
     if ollama.is_ready():
         ollama.add_prompt(prompt)
-        response = ollama.chat(print_stream=False).response()
+        response = ollama.chat(print_stream=CHAT_STREAM).response()
 
         return response, ollama
 
