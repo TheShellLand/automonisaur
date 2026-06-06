@@ -270,7 +270,7 @@ def processor_email_new(gmail: AutomonGmailClient):
 
         thread: GmailThread = queue_new.get()
 
-        debug(f'[processor_email_new] :: {thread}')
+        queue_log.put((f'[processor_email_new] :: {thread}', 2))
 
         gmail.messages_modify_automon(
             id=thread._message_first.id,
@@ -369,7 +369,7 @@ def processor_draft_send(gmail: AutomonGmailClient):
                 id=thread._message_first.id,
                 addLabelIds=[labels.unread])
 
-            debug(f'[processor_draft_send] :: sent :: {draft_sent}')
+            queue_log.put((f'[processor_draft_send] :: sent :: {draft_sent}', 2))
 
         queue_send.task_done()
         time.sleep(0.1)
@@ -379,7 +379,7 @@ def processor_email_waiting(gmail: AutomonGmailClient):
     while True:
         thread: GmailThread = queue_waiting.get()
 
-        debug(f'[processor_email_waiting] :: {queue_waiting.qsize()} left :: {thread}')
+        queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} left :: {thread}', 2))
 
         if gmail.is_old(thread):
             queue_followup.put(thread)
@@ -392,14 +392,14 @@ def processor_email_waiting(gmail: AutomonGmailClient):
 def processor_email_followup(gmail: AutomonGmailClient):
     while True:
         thread: GmailThread = queue_followup.get()
-        debug(f'[processor_email_followup] :: {queue_followup.qsize()} :: {thread}')
+        queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} :: {thread}', 2))
 
         email = thread.to_prompt()
 
         identity = RESUME._message_first._email_from
         background = RESUME._message_first._attachments_first.parts[0].body._data_html_text
 
-        response, _ = write_email_reply(identity=identity, background=background, email=email)
+        response, ollama = write_email_reply(identity=identity, background=background, email=email)
 
         draft = None
         if is_good_reply(response):
@@ -461,7 +461,7 @@ def write_email_reply(identity: str, background: str, email: str) -> tuple[str, 
     )
 
     response = ollama.chat().response()
-    return response
+    return response, ollama
 
 
 def is_good_reply(response) -> bool:
