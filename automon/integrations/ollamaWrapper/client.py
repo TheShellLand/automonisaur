@@ -197,7 +197,7 @@ class OllamaClient:
         self._ollama_chat = chat
 
         if print_stream:
-            # print(self.messages_pretty[-1])
+            print(self.messages_pretty[-1])
             chat.stream()
 
         self.add_prompt(content=chat.to_string(), role='assistant')

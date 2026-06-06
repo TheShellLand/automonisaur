@@ -324,7 +324,7 @@ class GoogleAuthConfig(DictHelper):
         Request = google.auth.transport.requests.Request()
 
         if creds is not None:
-            if creds and creds.expired or creds.refresh_token:
+            if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request)
                 return True
 
