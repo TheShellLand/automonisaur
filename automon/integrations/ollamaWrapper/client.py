@@ -133,7 +133,7 @@ class OllamaClient:
     def add_system_prompt(self, content: str):
         return self.add_prompt(content=content, role='system')
 
-    def add_prompt(self, content: str, role: str = 'user'):
+    def add_prompt(self, content: str, role: str = AgentRole.USER):
 
         tokens = Tokens(content)
 
@@ -193,11 +193,14 @@ class OllamaClient:
             options=options,
             **kwargs
         )
-        chat = OllamaChat(model=self.model, chat=chat)
+        chat = OllamaChat(
+            model=self.model,
+            chat=chat,
+            stream=print_stream
+        )
         self._ollama_chat = chat
 
         if print_stream:
-            print(self.messages_pretty[-1])
             chat.stream()
 
         self.add_prompt(content=chat.to_string(), role='assistant')

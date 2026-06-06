@@ -20,11 +20,13 @@ class OllamaChat(object):
             self,
             model: str,
             chat: ollama.ChatResponse,
+            stream: bool = None,
     ):
         self.model = model
         self._chat = chat
         self._chunks = []
         self._consumed = False
+        self._stream = stream
 
     def __repr__(self):
         return repr_str([
@@ -37,7 +39,7 @@ class OllamaChat(object):
     def __len__(self):
         return sum([Tokens(x) for x in self.contents()])
 
-    def chunks(self):
+    def chunks(self) -> ollama.ChatResponse:
         for chunk in self._chunks:
             yield chunk
 
@@ -74,6 +76,9 @@ class OllamaChat(object):
         return self.to_string()
 
     def to_string(self) -> str:
+        if not self._stream:
+            return self._chat.message.content
+
         string = ''.join(self.contents())
         tokens = Tokens(string)
         logger.debug(f'[OllamaChat] :: to_string :: {tokens.count_pretty} tokens')
