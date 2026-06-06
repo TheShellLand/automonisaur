@@ -5,6 +5,7 @@ import time
 from queue import Queue
 
 from automon.helpers import *
+from automon.integrations.ollamaWrapper import *
 from automon.helpers.threadingWrapper import ThreadingClient
 from automon.integrations.google.gmail import *
 from automon.integrations.ollamaWrapper import OllamaClient, Markdown
@@ -288,6 +289,13 @@ def processor_email_new(gmail: AutomonGmailClient):
 
         thread_prompt = thread.to_prompt()
 
+        human = HumanAgent(
+            content=OllamaClient.templates.agents.your_identity(
+                name=identity,
+                background=background
+            )
+        )
+
         response_passed = False
         response = False
         exit_loop = False
@@ -304,7 +312,7 @@ def processor_email_new(gmail: AutomonGmailClient):
                     exit_loop = True
                     break
 
-                response, model = write_email_reply(identity=identity, background=background, email=thread_prompt)
+                response, model = write_email_reply(identity=human, email=thread_prompt)
                 if is_good_reply(response=response):
                     response_passed = True
                     exit_loop = True
@@ -399,7 +407,14 @@ def processor_email_followup(gmail: AutomonGmailClient):
         identity = RESUME._message_first._email_from
         background = RESUME._message_first._attachments_first.parts[0].body._data_html_text
 
-        response, ollama = write_email_reply(identity=identity, background=background, email=email)
+        human = HumanAgent(
+            content=OllamaClient.templates.agents.your_identity(
+                name=identity,
+                background=background
+            )
+        )
+
+        response, ollama = write_email_followup(identity=human, email=email)
 
         draft = None
         if is_good_reply(response):
@@ -436,28 +451,46 @@ def is_rejected_email(email: str) -> bool:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
-        OllamaClient.templates.true_or_false.email_is_rejected(email=email),
+        content=OllamaClient.templates.true_or_false.email_is_rejected(email=email),
     )
 
     response = ollama.chat().response()
     return is_true(response)
 
 
-def write_email_reply(identity: str, background: str, email: str) -> tuple[str, object]:
+def write_email_reply(identity: Identity, email: str) -> tuple[str, object]:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
         role='system', content=ollama.templates.agents.job_applicant()
     ).add_prompt(
-        role='system',
-        content=ollama.templates.agents.your_identity(
-            name=identity,
-            background=background
-        )
+        role=identity.role,
+        content=identity.content
     ).add_prompt(
-        role='user', content=OllamaClient.templates.agents.tasks.email_response()
+        role='system', content=OllamaClient.templates.agents.tasks.email_response()
     ).add_prompt(
         role='user', content=email
+    )
+
+    response = ollama.chat().response()
+    return response, ollama
+
+
+def write_email_followup(identity: Identity, email: str) -> tuple[str, object]:
+    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+
+    ollama.add_prompt(
+        role=identity.role,
+        content=identity.content
+    ).add_prompt(
+        role='system',
+        content=Markdown.str_to_markdown(
+            header='email followup instructions',
+            text='it appears there has not been an email response. write a response looking for an update.'
+        )
+    ).add_prompt(
+        role='user',
+        content=email
     )
 
     response = ollama.chat().response()
@@ -471,7 +504,8 @@ def is_good_reply(response) -> bool:
     _response = OllamaClient.templates.markdown.str_to_markdown(header='response', text=response)
 
     ollama.add_prompt(
-        Markdown.str_to_markdown(
+        role='system',
+        content=Markdown.str_to_markdown(
             header='question',
             text=OllamaClient.templates.true_or_false.rules_is_followed(rules=_rules, text=_response)
         )
