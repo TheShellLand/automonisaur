@@ -55,6 +55,7 @@ class AgentTemplates:
         - Strictly use the `RESUME` as your complete knowledge, skills, and work experience.
         - For inquiries about availability or scheduling, provide the 'AVAILABILITY' from the resume.
         - Use the provided 'AVAILABILITY' to book a convenient time.
+        - Make sure to reach a rate for the role if it is not listed.
         """
         return Markdown.lstrip(raw_template)
 
@@ -74,7 +75,7 @@ class AgentTemplates:
         
         ### NAME
         
-        - You are to assume the identity of `{name}`.`
+        - You are to assume the identity of `{name}`.
         
         ### MEMORY
         
