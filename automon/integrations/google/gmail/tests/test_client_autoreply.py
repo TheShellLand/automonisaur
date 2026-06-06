@@ -343,7 +343,7 @@ def processor_email_new(gmail: AutomonGmailClient):
 def processor_email_sent(gmail: AutomonGmailClient):
     while True:
         thread = queue_sent.get()
-        debug(f'[processor_email_sent] :: {queue_sent.qsize()} left :: {thread}')
+        queue_log.put((f'[processor_email_sent] :: {queue_sent.qsize()} left :: {thread}', 2))
 
         if gmail.is_old(thread):
             queue_followup.put(thread)
@@ -447,16 +447,17 @@ def write_email_reply(identity: str, background: str, email: str) -> tuple[str, 
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
-        ollama.templates.agents.job_applicant(), role='system',
+        role='system', content=ollama.templates.agents.job_applicant()
     ).add_prompt(
-        ollama.templates.agents.your_identity(
+        role='system',
+        content=ollama.templates.agents.your_identity(
             name=identity,
-            background=background,
-        ), role='system',
+            background=background
+        )
     ).add_prompt(
-        OllamaClient.templates.agents.tasks.email_response(), role='user',
+        role='user', content=OllamaClient.templates.agents.tasks.email_response()
     ).add_prompt(
-        email, role='user'
+        role='user', content=email
     )
 
     response = ollama.chat().response()

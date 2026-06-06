@@ -13,8 +13,9 @@ class AgentTasks:
         raw_template = f"""
         # TASK
         
-        - Your task is to read the email chain and write a response
-        - Only return the body of the email
+        - Your task is to read the email chain and write a response.
+        - Only return the body of the email.
+        - answer all questions asked relevant to what you know.
         """
 
         return Markdown.lstrip(raw_template)
@@ -43,13 +44,11 @@ class AgentTemplates:
         - Eliminate the subject line from the response.
         - Remove any greetings or acknowledgments.
         - Ensure no apologies or justifications are present.
-        - Provide the AVAILABILITY link as the contact method when the sender explicitly asks for a meeting or a call.
         - Eliminate the subject line from the email response.
         - Remove any greetings or acknowledgments from the email.
         - Ensure no apologies or justifications are present in the email.
         - For inquiries about availability or scheduling, provide the 'AVAILABILITY' link from the resume.
         - Use the provided 'AVAILABILITY' link to book a convenient time.
-        - Prioritize the use of the 'AVAILABILITY' link over any other method of communicating availability.
         - The response must also be refactored to remove extraneous conversational text such as "Let me know what time works best for a discussion."
         - Remove any conversational closing statements such as "I look forward to connecting and discussing how my skills in cloud technologies and security can benefit your firm," as these are considered extraneous conversational text.
         """
