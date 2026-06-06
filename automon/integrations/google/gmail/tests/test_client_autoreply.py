@@ -228,12 +228,6 @@ def processor_email_thread(gmail: AutomonGmailClient):
             queue_threads.task_done()
             continue
 
-        # followup
-        if gmail.is_sent(thread):
-            queue_sent.put(thread)
-            queue_threads.task_done()
-            continue
-
         # sent
         if gmail.is_sent(thread):
 
@@ -248,7 +242,8 @@ def processor_email_thread(gmail: AutomonGmailClient):
                 queue_threads.task_done()
                 continue
 
-        else:
+        # followup
+        if gmail.is_follow_up(thread):
             queue_followup.put(thread)
             queue_threads.task_done()
             continue

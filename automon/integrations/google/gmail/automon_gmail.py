@@ -241,8 +241,8 @@ class AutomonGmailClient(GoogleGmailClient):
         return False
 
     def is_follow_up(self, thread: GmailThread):
-        if self._labels.auto_reply in thread._messages_labels:
-            if self._labels.sent in thread._messages_labels:
+        if self._labels.sent in thread._messages_labels:
+            if self._labels.sent not in thread._clean_thread_latest.labelIds:
                 if thread._message_first._email_from == thread._clean_thread_latest._email_from:
                     return True
         return False
