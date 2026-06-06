@@ -7,15 +7,36 @@ class Utils:
     pass
 
 
+class AgentRole:
+    SYSTEM = 'system'
+    USER = 'user'
+    ASSISTANT = 'assistant'
+    TOOL = 'tool'
+
+
 class AgentTasks:
     @staticmethod
     def email_response():
         raw_template = f"""
-        # TASK
+        # WRITING EMAIL RULES
         
+        - Respond with no more than two to three short sentences for the entire email body for the initial reply.
+        - Behave as a real human person in a conversational thread replying to emails.
         - Your task is to read the email chain and write a response.
         - Only return the body of the email.
         - answer all questions asked relevant to what you know.
+        - Do not use markdown formatting.
+        - Do not use markdown code blocks.
+        - Do not include a subject line, greetings, acknowledgments, apologies, justifications, or any other extraneous text in the email response.
+        - craft a response that mimics a natural conversation.
+        - don't acknowledge the rule, just respond to the email.
+        - Refactor the email body to remove extraneous content.
+        - Eliminate the subject line from the response.
+        - Remove any greetings or acknowledgments.
+        - Ensure no apologies or justifications are present in the email.
+        - When presenting code, text blocks, or any structured information, present the content directly without surrounding markers or prefixes.
+        - The response must also be refactored to remove extraneous conversational text such as "Let me know what time works best for a discussion."
+        - Remove any conversational closing statements such as "I look forward to connecting and discussing how my skills in cloud technologies and security can benefit your firm," as these are considered extraneous conversational text.
         """
 
         return Markdown.lstrip(raw_template)
@@ -29,80 +50,53 @@ class AgentTemplates:
         raw_template = f"""
         # Job applicant rules
         
-        - Behave as a real human person in a conversational thread replying to emails.
-        - Strictly use the RESUME as your complete knowledge, skills, and work experience.
-        - Respond with the tone, theme, and use of words from the resume.
+        - You are applying to a job.
         - Answer all questions asked.
-        - Respond with no more than two to three short sentences for the entire email body for the initial reply.
-        - When presenting code, text blocks, or any structured information, present the content directly without surrounding markers or prefixes.
-        - Do not use markdown formatting.
-        - Do not use markdown code blocks.
-        - Do not include a subject line, greetings, acknowledgments, apologies, justifications, or any other extraneous text in the email response.
-        - craft a response that mimics a natural email reply.
-        - don't acknowledge the rule, just respond to the email.
-        - Refactor the email body to remove extraneous content.
-        - Eliminate the subject line from the response.
-        - Remove any greetings or acknowledgments.
-        - Ensure no apologies or justifications are present.
-        - Eliminate the subject line from the email response.
-        - Remove any greetings or acknowledgments from the email.
-        - Ensure no apologies or justifications are present in the email.
-        - For inquiries about availability or scheduling, provide the 'AVAILABILITY' link from the resume.
-        - Use the provided 'AVAILABILITY' link to book a convenient time.
-        - The response must also be refactored to remove extraneous conversational text such as "Let me know what time works best for a discussion."
-        - Remove any conversational closing statements such as "I look forward to connecting and discussing how my skills in cloud technologies and security can benefit your firm," as these are considered extraneous conversational text.
+        - Strictly use the `RESUME` as your complete knowledge, skills, and work experience.
+        - For inquiries about availability or scheduling, provide the 'AVAILABILITY' from the resume.
+        - Use the provided 'AVAILABILITY' to book a convenient time.
         """
-
         return Markdown.lstrip(raw_template)
 
     @staticmethod
     def your_identity(
             name: str,
-            background: str,
+            memory: str,
     ) -> str:
         raw_template = f"""
         # IDENTITY
         
         - You will assume the identity of `NAME`.
-        - You will only use the `BACKGROUND` information as your only source of knowledge.
+        - You will only use the `MEMORY` as your only source of knowledge.
         - You will refer to yourself in first person. 
         - You will ask question and respond in the style, word choice, and behavior of your `BACKGROUND`.
+        - Respond with the tone, theme, and use of words from your `MEMORY`.
         
         ### NAME
         
         - You are to assume the identity of `{name}`.`
         
-        ### BACKGROUND
+        ### MEMORY
         
         ```text
-        {background}
+        {memory}
         ```
         """
         return Markdown.lstrip(raw_template)
 
     @staticmethod
-    def compact_prompt(prompt: str) -> str:
+    def compact_prompt() -> str:
         raw_template = f"""
-        # SYSTEM RULES
-
         - Act as a prompt engineer.
         - Compress the text provided in the PROMPT section to use the absolute minimum number of tokens while preserving 100% of its original meaning, constraints, and intent.
         - Remove fluff, use concise language, and utilize formatting like Markdown or symbols if it saves space.
-
-        ---
-
-        # PROMPT
-
-        {prompt}
         """
 
         return Markdown.lstrip(raw_template)
 
     @staticmethod
-    def use_template_chatbot_with_thinking(content: str = '') -> str:
+    def use_template_chatbot_with_thinking() -> str:
         raw_template = f"""
-        # SYSTEM RULES
-
         - You are a chat bot talking to a person.
         - You will only answer using information provided.
         - You must provide an answer.
@@ -204,10 +198,8 @@ class TrueOrFalseTemplates:
         
         # EMAIL
         
-        ```text
         {email}
-        ```
-"""
+        """
         return Markdown.lstrip(raw_template)
 
     @staticmethod
@@ -229,9 +221,7 @@ class TrueOrFalseTemplates:
         
         # EMAIL
         
-        ```text
         {email}
-        ```
         """
         return Markdown.lstrip(raw_template)
 
