@@ -287,8 +287,6 @@ def processor_email_new(gmail: AutomonGmailClient):
             text=resume_str,
         )
 
-        thread_prompt = thread.to_prompt()
-
         human = HumanAgent(
             name=identity,
             memory=background,
@@ -300,17 +298,17 @@ def processor_email_new(gmail: AutomonGmailClient):
         while not response_passed or not exit_loop:
 
             try:
-                if not is_from_human(thread_prompt):
+                if not is_from_human(thread):
                     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
                     exit_loop = True
                     break
 
-                if is_rejected_email(thread_prompt):
+                if is_rejected_email(thread):
                     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
                     exit_loop = True
                     break
 
-                response, model = write_email_reply(identity=human, email=thread_prompt)
+                response, model = write_email_reply(identity=human, thread=thread)
                 if is_good_reply(response=response):
                     response_passed = True
                     exit_loop = True
@@ -400,8 +398,6 @@ def processor_email_followup(gmail: AutomonGmailClient):
         thread: GmailThread = queue_followup.get()
         queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} :: {thread}', 2))
 
-        email = thread.to_prompt()
-
         identity = RESUME._message_first._email_from
         background = RESUME._message_first._attachments_first.parts[0].body._data_html_text
 
@@ -410,7 +406,7 @@ def processor_email_followup(gmail: AutomonGmailClient):
             memory=background,
         )
 
-        response, ollama = write_email_followup(identity=human, email=email)
+        response, ollama = write_email_followup(identity=human, thread=thread)
 
         draft = None
         if is_good_reply(response):
@@ -432,29 +428,29 @@ def processor_email_followup(gmail: AutomonGmailClient):
         queue_followup.task_done()
 
 
-def is_from_human(email: str) -> bool:
+def is_from_human(thread: GmailThread) -> bool:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
-        ollama.templates.true_or_false.email_is_human(email)
+        ollama.templates.true_or_false.email_is_human(thread.to_prompt())
     )
 
     response = ollama.chat(print_stream=True).response()
     return is_true(response)
 
 
-def is_rejected_email(email: str) -> bool:
+def is_rejected_email(thread: GmailThread) -> bool:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
-        content=OllamaClient.templates.true_or_false.email_is_rejected(email=email),
+        content=OllamaClient.templates.true_or_false.email_is_rejected(email=thread.to_prompt()),
     )
 
     response = ollama.chat(print_stream=True).response()
     return is_true(response)
 
 
-def write_email_reply(identity: Identity, email: str) -> tuple[str, object]:
+def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, object]:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
@@ -464,14 +460,14 @@ def write_email_reply(identity: Identity, email: str) -> tuple[str, object]:
     ).add_prompt(
         role=AgentRole.SYSTEM, content=identity.content
     ).add_prompt(
-        role=AgentRole.USER, content=email
+        role=AgentRole.USER, content=thread.to_prompt()
     )
 
     response = ollama.chat(print_stream=False).response()
     return response, ollama
 
 
-def write_email_followup(identity: Identity, email: str) -> tuple[str, object]:
+def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, object]:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
@@ -485,7 +481,7 @@ def write_email_followup(identity: Identity, email: str) -> tuple[str, object]:
             text='it appears there has not been an email response. write a response looking for an update.'
         )
     ).add_prompt(
-        role=AgentRole.USER, content=email
+        role=AgentRole.USER, content=thread.to_prompt()
     )
 
     response = ollama.chat(print_stream=False).response()
