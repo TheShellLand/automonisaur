@@ -475,10 +475,10 @@ def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, 
     ).add_prompt(
         role=AgentRole.SYSTEM, content=identity.content
     ).add_prompt(
-        role=AgentRole.USER,
+        role=AgentRole.SYSTEM,
         content=Markdown.str_to_markdown(
             header='email followup instructions',
-            text='it appears there has not been an email response. write a response looking for an update.'
+            text='Reply back to email sender.'
         )
     ).add_prompt(
         role=AgentRole.USER, content=thread.to_prompt()
