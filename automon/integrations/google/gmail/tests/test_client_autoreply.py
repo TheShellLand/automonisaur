@@ -222,6 +222,12 @@ def processor_email_thread(gmail: AutomonGmailClient):
         if gmail.is_scheduled(thread):
             pass
 
+        # new
+        if gmail.is_new(thread):
+            queue_new.put(thread)
+            queue_threads.task_done()
+            continue
+
         # followup
         if gmail.is_sent(thread):
             queue_sent.put(thread)
@@ -242,9 +248,8 @@ def processor_email_thread(gmail: AutomonGmailClient):
                 queue_threads.task_done()
                 continue
 
-        # new
-        if gmail.is_new(thread):
-            queue_new.put(thread)
+        else:
+            queue_followup.put(thread)
             queue_threads.task_done()
             continue
 
@@ -290,10 +295,8 @@ def processor_email_new(gmail: AutomonGmailClient):
         thread_prompt = thread.to_prompt()
 
         human = HumanAgent(
-            content=OllamaClient.templates.agents.your_identity(
-                name=identity,
-                background=background
-            )
+            name=identity,
+            memory=background,
         )
 
         response_passed = False
@@ -408,10 +411,8 @@ def processor_email_followup(gmail: AutomonGmailClient):
         background = RESUME._message_first._attachments_first.parts[0].body._data_html_text
 
         human = HumanAgent(
-            content=OllamaClient.templates.agents.your_identity(
-                name=identity,
-                background=background
-            )
+            name=identity,
+            memory=background,
         )
 
         response, ollama = write_email_followup(identity=human, email=email)
@@ -443,7 +444,7 @@ def is_from_human(email: str) -> bool:
         ollama.templates.true_or_false.email_is_human(email)
     )
 
-    response = ollama.chat().response()
+    response = ollama.chat(print_stream=True).response()
     return is_true(response)
 
 
@@ -454,7 +455,7 @@ def is_rejected_email(email: str) -> bool:
         content=OllamaClient.templates.true_or_false.email_is_rejected(email=email),
     )
 
-    response = ollama.chat().response()
+    response = ollama.chat(print_stream=True).response()
     return is_true(response)
 
 
@@ -462,17 +463,16 @@ def write_email_reply(identity: Identity, email: str) -> tuple[str, object]:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
-        role='system', content=ollama.templates.agents.job_applicant()
+        role=AgentRole.SYSTEM, content=ollama.templates.agents.job_applicant()
     ).add_prompt(
-        role=identity.role,
-        content=identity.content
+        role=AgentRole.SYSTEM, content=OllamaClient.templates.agents.tasks.email_response()
     ).add_prompt(
-        role='system', content=OllamaClient.templates.agents.tasks.email_response()
+        role=AgentRole.SYSTEM, content=identity.content
     ).add_prompt(
-        role='user', content=email
+        role=AgentRole.USER, content=email
     )
 
-    response = ollama.chat().response()
+    response = ollama.chat(print_stream=False).response()
     return response, ollama
 
 
@@ -480,20 +480,20 @@ def write_email_followup(identity: Identity, email: str) -> tuple[str, object]:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
-        role=identity.role,
-        content=identity.content
+        role=AgentRole.SYSTEM, content=AgentTasks.email_response()
     ).add_prompt(
-        role='system',
+        role=AgentRole.SYSTEM, content=identity.content
+    ).add_prompt(
+        role=AgentRole.USER,
         content=Markdown.str_to_markdown(
             header='email followup instructions',
             text='it appears there has not been an email response. write a response looking for an update.'
         )
     ).add_prompt(
-        role='user',
-        content=email
+        role=AgentRole.USER, content=email
     )
 
-    response = ollama.chat().response()
+    response = ollama.chat(print_stream=False).response()
     return response, ollama
 
 
@@ -504,14 +504,14 @@ def is_good_reply(response) -> bool:
     _response = OllamaClient.templates.markdown.str_to_markdown(header='response', text=response)
 
     ollama.add_prompt(
-        role='system',
+        role=AgentRole.SYSTEM,
         content=Markdown.str_to_markdown(
             header='question',
             text=OllamaClient.templates.true_or_false.rules_is_followed(rules=_rules, text=_response)
         )
     )
 
-    response = ollama.chat().response()
+    response = ollama.chat(print_stream=False).response()
     return is_true(response)
 
 
@@ -572,7 +572,7 @@ def run_ollama(prompt: str) -> tuple[str, OllamaClient]:
 
     if ollama.is_ready():
         ollama.add_prompt(prompt)
-        response = ollama.chat().response()
+        response = ollama.chat(print_stream=False).response()
 
         return response, ollama
 
