@@ -1059,7 +1059,7 @@ class GmailDraft(DictHelper):
 
     def __repr__(self):
         return repr_str([
-            self.id[-4:],
+            self.id,
             self.message._email_from,
             self.message._email_to,
             self.message._header_subject.value,

@@ -57,7 +57,7 @@ logging settings
 
 """
 
-DEBUG_LEVEL = 1
+DEBUG_LEVEL = 2
 DEBUG_ = False
 DEFAULT_LEVEL = CRITICAL
 
@@ -187,7 +187,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
     while True:
         thread = queue_threads.get()
 
-        queue_log.put((f'[processor_email_thread] :: {thread}', 2))
+        queue_log.put((f'[processor_email_thread] :: {thread}', 3))
 
         # resume
         if gmail.is_resume(thread):
@@ -397,7 +397,7 @@ def processor_email_waiting(gmail: AutomonGmailClient):
 def processor_email_followup(gmail: AutomonGmailClient):
     while True:
         thread: GmailThread = queue_followup.get()
-        queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} :: {thread}', 2))
+        queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} left :: {thread}', 2))
 
         identity = RESUME._message_first._email_from
         background = RESUME._message_first._attachments_first.parts[0].body._data_html_text
