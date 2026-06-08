@@ -93,7 +93,7 @@ USE_OLLAMA = True
 USE_GEMINI = False
 CHAT_FOREVER = False
 CHAT_STREAM = True
-USE_GPU = False
+USE_GPU = True
 
 if USE_GPU:
     OLLAMA_HOST = 'http://192.168.111.175:11434'
@@ -464,7 +464,8 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, obj
         role=AgentRole.USER, content=thread.to_prompt()
     )
 
-    response = ollama.chat(print_stream=CHAT_STREAM).response()
+    chat = ollama.chat(print_stream=CHAT_STREAM)
+    response = chat.response()
     return response, ollama
 
 
@@ -485,7 +486,8 @@ def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, 
         role=AgentRole.USER, content=thread.to_prompt()
     )
 
-    response = ollama.chat(print_stream=CHAT_STREAM).response()
+    chat = ollama.chat(print_stream=CHAT_STREAM)
+    response = chat.response()
     return response, ollama
 
 
