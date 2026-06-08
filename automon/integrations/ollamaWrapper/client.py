@@ -219,7 +219,7 @@ class OllamaClient:
 
             message = ''
             try:
-                message += input(f"\n$> ")
+                message += input(f"\n>>> ")
                 message = Markdown.lstrip(message)
             except KeyboardInterrupt:
                 self._agent_exit()
