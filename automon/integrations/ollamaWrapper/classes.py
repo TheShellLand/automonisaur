@@ -1,5 +1,6 @@
 import ollama
 
+from datetime import timedelta
 from automon.helpers.loggingWrapper import LoggingClient
 
 from .tokens import Tokens
@@ -29,15 +30,35 @@ class OllamaChat(object):
         self._stream = stream
 
     def __repr__(self):
+
+        load_time = self._to_seconds_str(self._load_duration)
+
+        read_time = self._to_seconds_str(self._prompt_eval_duration)
+        read_tokens = self._prompt_eval_count
+
+        think_time = self._to_seconds_str(self._eval_duration)
+        think_tokens = self._eval_count
+
+        total_time = self._to_seconds_str(self._total_duration)
+        total_tks = read_tokens + think_tokens
+
+        write_tokens = len(self)
+
+        reason = self._done_reason
+
         return repr_str([
-            f'[OllamaChat]',
             f'{self.model}',
+            f'{write_tokens} tokens',
+            f'total ({total_time}/{total_tks:,} T)',
+            f'read ({read_time}/{read_tokens:,} T)',
+            f'think ({think_time}/{think_tokens:,} T)',
+            f'load ({load_time})',
             f'{len(self._chunks)} chunks',
-            f'{len(self._chunks)} tokens',
+            f'{reason=}',
         ])
 
     def __len__(self):
-        return sum([Tokens(x) for x in self.contents()])
+        return sum([len(Tokens(x)) for x in self.contents()])
 
     def chunks(self) -> ollama.ChatResponse:
         for chunk in self._chunks:
@@ -83,3 +104,65 @@ class OllamaChat(object):
         tokens = Tokens(string)
         logger.debug(f'[OllamaChat] :: to_string :: {tokens.count_pretty} tokens')
         return string
+
+    def _to_seconds(self, nanoseconds: int) -> timedelta | None:
+        if nanoseconds is not None:
+            return nanoseconds / 1_000_000_000
+
+    def _to_seconds_str(self, nanoseconds: int) -> str | None:
+        if nanoseconds is not None:
+            return f'{self._to_seconds(nanoseconds):.2f}s'
+
+    def _to_human_time(self, nanoseconds: int) -> timedelta | None:
+        if nanoseconds is not None:
+            return timedelta(nanoseconds=nanoseconds)
+
+    @property
+    def _done_reason(self) -> str:
+        """The reason the generation finished (e.g., 'stop', 'length')."""
+        if self._chunks:
+            return self._chunks[-1].done_reason
+
+    @property
+    def _eval_count(self) -> int:
+        """The number of tokens evaluated during the generation phase.
+        Only the new words/tokens the AI created for you.
+        """
+        if self._chunks:
+            return self._chunks[-1].eval_count
+
+    @property
+    def _eval_duration(self) -> int:
+        """The duration of evaluation in nanoseconds.
+        How fast is the model generating new text
+        """
+        if self._chunks:
+            return self._chunks[-1].eval_duration
+
+    @property
+    def _load_duration(self) -> int:
+        """The time taken to load the model into memory, in nanoseconds."""
+        if self._chunks:
+            return self._chunks[-1].load_duration
+
+    @property
+    def _prompt_eval_count(self) -> int:
+        """The number of tokens evaluated in the initial prompt.
+        System prompts, history, and your current question.
+        """
+        if self._chunks:
+            return self._chunks[-1].prompt_eval_count
+
+    @property
+    def _prompt_eval_duration(self) -> int:
+        """The duration spent evaluating the input prompt, in nanoseconds.
+        How fast did the system ingest my input
+        """
+        if self._chunks:
+            return self._chunks[-1].prompt_eval_duration
+
+    @property
+    def _total_duration(self) -> int:
+        """The total request time (prompt + generation) in nanoseconds."""
+        if self._chunks:
+            return self._chunks[-1].total_duration

@@ -898,7 +898,7 @@ class GmailMessage(DictHelper):
                             body = more_part.body._data_html_text
                             break
 
-        if body is None:
+        if body is None and self.snippet is None:
             raise debug_exception(locals(), f'body not found')
 
         raw_template = f"""
