@@ -92,14 +92,14 @@ llm settings
 USE_OLLAMA = True
 USE_GEMINI = False
 CHAT_FOREVER = False
-CHAT_STREAM = True 
-USE_GPU = True
+CHAT_STREAM = True
+USE_GPU = False
 
 if USE_GPU:
     OLLAMA_HOST = 'http://192.168.111.175:11434'
 else:
     OLLAMA_HOST = None
-OLLAMA_MODEL = 'gemma4:latest'
+OLLAMA_MODEL = 'gemma4:12b'
 
 gemini = GoogleGeminiClient()
 
