@@ -71,6 +71,7 @@ class OllamaMessage(DictHelper):
     def __repr__(self):
         return repr_str([
             f'{self.role}',
+            f'{len(self):,} tokens',
             f'{self.content}',
         ])
 
@@ -112,6 +113,15 @@ class OllamaClient:
 
         self._memory_usage_max = 0
         self._num_ctx = 9000
+
+    def __repr__(self):
+        return repr_str([
+            f'{self.model}',
+            f'{len(self):,} tokens',
+        ])
+
+    def __len__(self):
+        return sum(self.messages_pretty)
 
     def _ollama_options(
             self,
@@ -199,6 +209,7 @@ class OllamaClient:
             chat=chat,
             stream=print_stream
         )
+
         self._ollama_chat = chat
 
         if print_stream:
