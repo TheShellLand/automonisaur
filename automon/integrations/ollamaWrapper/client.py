@@ -90,6 +90,7 @@ class OllamaClient:
     _max_tokens = {
         'deepseek-r1:14b': 128000,
         'gemma4:latest': 256000,
+        'gemma4:12b': 256000,
     }
 
     def __init__(
@@ -153,7 +154,7 @@ class OllamaClient:
 
         total_tokens = sum_tokens(self.messages_pretty)
         model = self.model
-        max_tokens = self._max_tokens.get(model)
+        max_tokens = self._max_tokens.get(model, 20000)
 
         if total_tokens > max_tokens:
             raise debug_exception(locals(), 'too many tokens')
