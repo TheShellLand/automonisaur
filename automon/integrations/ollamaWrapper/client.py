@@ -196,7 +196,10 @@ class OllamaClient:
     ) -> OllamaChat:
         """send prompt to model"""
         if options is None:
-            options = self._ollama_options().to_dict()
+            max_tokens = self.get_total_tokens() * 2
+            options = self._ollama_options(
+                num_ctx=max_tokens,
+            ).to_dict()
 
         logger.debug(f'[OllamaClient] :: chat :: {options=} :: {self}')
 
