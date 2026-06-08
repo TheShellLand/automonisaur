@@ -75,6 +75,9 @@ class OllamaMessage(DictHelper):
             f'{self.content}',
         ])
 
+    def __add__(self, other) -> int:
+        return sum(len(self) + len(other))
+
     def __len__(self):
         return len(Tokens(self.content))
 
@@ -121,7 +124,7 @@ class OllamaClient:
         ])
 
     def __len__(self):
-        return sum(self.messages_pretty)
+        return sum(len(x) for x in self.messages_pretty)
 
     def _ollama_options(
             self,
@@ -209,7 +212,7 @@ class OllamaClient:
             chat=chat,
             stream=print_stream
         )
-
+        chat.prompts = self.messages_pretty
         self._ollama_chat = chat
 
         if print_stream:
