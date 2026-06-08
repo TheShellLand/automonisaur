@@ -124,7 +124,7 @@ class OllamaClient:
         ])
 
     def __len__(self):
-        return sum(len(x) for x in self.messages_pretty)
+        return sum_tokens(self.messages_pretty)
 
     def _ollama_options(
             self,
@@ -198,7 +198,7 @@ class OllamaClient:
         if options is None:
             options = self._ollama_options().to_dict()
 
-        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {sum_tokens(self.messages_pretty):,} total tokens')
+        logger.debug(f'[OllamaClient] :: chat :: {options=} :: {self}')
 
         chat = self._ollama.chat(
             model=self.model,
