@@ -476,7 +476,7 @@ def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, 
     ).add_prompt(
         role=AgentRole.SYSTEM, content=identity.content
     ).add_prompt(
-        role=AgentRole.SYSTEM,
+        role=AgentRole.USER,
         content=Markdown.str_to_markdown(
             header='email followup instructions',
             text='Reply back to email sender.'
