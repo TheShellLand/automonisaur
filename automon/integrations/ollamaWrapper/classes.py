@@ -31,17 +31,17 @@ class OllamaChat(object):
 
     def __repr__(self):
 
-        load_time = self._to_seconds_str(self._load_duration)
+        load_time = self._load_time
 
-        read_time = self._to_seconds_str(self._prompt_eval_duration)
-        read_tokens = self._prompt_eval_count
+        read_time = self._read_time
+        read_tokens = self._read_tokens
 
-        think_time = self._to_seconds_str(self._eval_duration)
-        think_tokens = self._eval_count
+        think_time = self._think_time
+        think_tokens = self._think_tokens
 
-        total_time = self._to_seconds_str(self._total_duration)
-        total_time_s = self._to_seconds(self._total_duration)
-        total_tks = read_tokens + think_tokens
+        total_time = self._total_time
+        total_time_s = self._total_time_seconds
+        total_tokens = self._total_tokens
 
         write_tokens = len(self)
 
@@ -50,8 +50,8 @@ class OllamaChat(object):
         return repr_str([
             f'{self.model}',
             f'{write_tokens} tokens',
-            f'{total_tks / total_time_s :,.0f} T/s',
-            f'total ({total_time}/{total_tks:,} T)',
+            f'{total_tokens / total_time_s :,.0f} T/s',
+            f'total ({total_time}/{total_tokens:,} T)',
             f'read ({read_time}/{read_tokens:,} T)',
             f'think ({think_time}/{think_tokens:,} T)',
             f'load ({load_time})',
@@ -120,6 +120,34 @@ class OllamaChat(object):
             return timedelta(nanoseconds=nanoseconds)
 
     @property
+    def _load_time(self) -> str:
+        return self._to_seconds_str(self._load_duration)
+
+    @property
+    def _read_time(self) -> str:
+        self._to_seconds_str(self._prompt_eval_duration)
+
+    @property
+    def _read_tokens(self) -> int:
+        return self._prompt_eval_count
+
+    @property
+    def _think_time(self) -> str:
+        return self._to_seconds_str(self._eval_duration)
+
+    @property
+    def _think_tokens(self) -> int:
+        return self._eval_count
+
+    @property
+    def _total_time(self) -> str:
+        return self._to_seconds_str(self._total_duration)
+
+    @property
+    def _total_time_seconds(self) -> int:
+        return self._to_seconds(self._total_duration)
+
+    @property
     def _done(self) -> bool:
         if self._chunks:
             return self._chunks[-1].done
@@ -173,3 +201,9 @@ class OllamaChat(object):
         """The total request time (prompt + generation) in nanoseconds."""
         if self._chunks:
             return self._chunks[-1].total_duration
+
+    @property
+    def _total_tokens(self) -> int:
+        if all([self._prompt_eval_count is not None, self._eval_count is not None]):
+            return sum([self._prompt_eval_count, self._eval_count])
+        return 0
