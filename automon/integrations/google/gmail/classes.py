@@ -446,7 +446,7 @@ class GmailMessagePartBody(DictHelper):
 
     def __repr__(self):
         return repr_str([
-            self._data_hash(),
+            self._data_hash,
             f'{self.size / 1024:,.2f} KB',
         ])
 
@@ -472,7 +472,7 @@ class GmailMessagePartBody(DictHelper):
     @property
     def _data_html_text(self) -> str | None:
         if self.data:
-            return self._html_text()
+            return self._html_text
 
     @property
     def _data_decoded(self) -> str | None:
@@ -482,19 +482,22 @@ class GmailMessagePartBody(DictHelper):
             except:
                 pass
 
+    @property
     def _data_hash(self):
         if self.data:
             return hashlib.md5(self.data.encode()).hexdigest()
 
+    @property
     def _data_bs4(self) -> bs4.BeautifulSoup | None:
         decoded = self._data_base64decoded
         if decoded:
             return bs4.BeautifulSoup(decoded)
 
+    @property
     def _html_text(self) -> str | None:
-        if self._data_bs4():
-            if self._data_bs4().html:
-                return self._data_bs4().html.text
+        if self._data_bs4:
+            if self._data_bs4.html:
+                return self._data_bs4.html.text
 
 
 class GmailMessagePart(DictHelper):
@@ -902,8 +905,6 @@ class GmailMessage(DictHelper):
             raise debug_exception(locals(), f'body not found')
 
         raw_template = f"""
-        # EMAIL
-        
         ### EMAIL CONTEXT
         
         from: {self._email_from}
