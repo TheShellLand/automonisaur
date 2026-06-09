@@ -403,6 +403,8 @@ def processor_email_waiting(gmail: AutomonGmailClient):
         queue_waiting.put(thread)
         queue_waiting.task_done()
 
+        time.sleep(60)
+
 
 def processor_email_followup(gmail: AutomonGmailClient):
     while True:
