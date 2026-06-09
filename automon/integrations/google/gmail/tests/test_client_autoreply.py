@@ -454,15 +454,10 @@ def is_rejected_email(thread: GmailThread) -> bool:
 def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, object]:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
-    ollama.add_prompt(
-        role=AgentRole.SYSTEM, content=ollama.templates.agents.job_applicant()
-    ).add_prompt(
-        role=AgentRole.SYSTEM, content=OllamaClient.templates.agents.tasks.email_response()
-    ).add_prompt(
-        role=AgentRole.SYSTEM, content=identity.content
-    ).add_prompt(
-        role=AgentRole.USER, content=thread.to_prompt()
-    )
+    ollama.add_system_prompt(content=ollama.templates.agents.job_applicant())
+    ollama.add_system_prompt(content=OllamaClient.templates.agents.tasks.email_response())
+    ollama.add_system_prompt(content=identity.content)
+    ollama.add_prompt(content=thread.to_prompt())
 
     chat = ollama.chat(print_stream=CHAT_STREAM)
     response = chat.response()
@@ -472,19 +467,14 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, obj
 def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, object]:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
+    ollama.add_system_prompt(content=AgentTasks.email_response())
+    ollama.add_system_prompt(content=identity.content)
     ollama.add_prompt(
-        role=AgentRole.SYSTEM, content=AgentTasks.email_response()
-    ).add_prompt(
-        role=AgentRole.SYSTEM, content=identity.content
-    ).add_prompt(
-        role=AgentRole.USER,
         content=Markdown.str_to_markdown(
             header='email followup instructions',
             text='Reply back to email sender.'
-        )
-    ).add_prompt(
-        role=AgentRole.USER, content=thread.to_prompt()
-    )
+        ))
+    ollama.add_prompt(content=thread.to_prompt())
 
     chat = ollama.chat(print_stream=CHAT_STREAM)
     response = chat.response()
@@ -497,8 +487,7 @@ def is_good_reply(response) -> bool:
     _rules = OllamaClient.templates.agents.job_applicant()
     _response = OllamaClient.templates.markdown.str_to_markdown(header='response', text=response)
 
-    ollama.add_prompt(
-        role=AgentRole.SYSTEM,
+    ollama.add_system_prompt(
         content=Markdown.str_to_markdown(
             header='question',
             text=OllamaClient.templates.true_or_false.rules_is_followed(rules=_rules, text=_response)
