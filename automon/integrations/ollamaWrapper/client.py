@@ -62,7 +62,7 @@ class OllamaMessage(DictHelper):
     role: str
     content: str
 
-    def __init__(self, message: dict):
+    def __init__(self, message: dict = None):
         self.role = None
         self.content = None
 
@@ -144,10 +144,14 @@ class OllamaClient:
     def add_chain(self, content: str, **kwargs):
         raise debug_exception(locals(), f'depreciated: use OllamaClient.add_prompt instead')
 
-    def add_system_prompt(self, content: str):
+    def add_system_prompt(self, content: str | OllamaMessage, **kwargs):
+        if isinstance(content, OllamaMessage):
+            content = content.content
         return self.add_prompt(content=content, role='system')
 
-    def add_prompt(self, content: str, role: str = AgentRole.USER):
+    def add_prompt(self, content: str | OllamaMessage, role: str = AgentRole.USER):
+        if isinstance(content, OllamaMessage):
+            content = content.content
 
         tokens = Tokens(content)
 
