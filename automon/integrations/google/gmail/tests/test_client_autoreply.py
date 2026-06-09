@@ -1,6 +1,7 @@
 import unittest
 
 import time
+import random
 
 from queue import Queue
 
@@ -102,7 +103,17 @@ if USE_GPU:
     OLLAMA_HOST = 'http://192.168.111.175:11434'
 else:
     OLLAMA_HOST = None
+
 OLLAMA_MODEL = 'gemma4:12b'
+OLLAMA_HOSTS = [
+    'http://192.168.111.175:11434',
+    None
+]
+
+
+def random_ollama_host():
+    return random.choice(OLLAMA_HOSTS)
+
 
 gemini = GoogleGeminiClient()
 
@@ -312,7 +323,7 @@ def processor_email_new(gmail: AutomonGmailClient):
                     exit_loop = True
                     break
 
-                response, model = write_email_reply(identity=human, thread=thread)
+                response, ollama = write_email_reply(identity=human, thread=thread)
                 if is_good_reply(response=response):
                     response_passed = True
                     exit_loop = True
@@ -320,7 +331,7 @@ def processor_email_new(gmail: AutomonGmailClient):
 
 
             except Exception as error:
-                ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+                ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
                 ollama.add_system_prompt(content=human)
                 ollama.add_prompt(thread.to_prompt())
                 ollama.chat_forever()
@@ -341,7 +352,7 @@ def processor_email_new(gmail: AutomonGmailClient):
 
                 if draft is not None:
                     if labels.auto_reply in thread._messages_labels:
-                        queue_send.put((thread, draft))
+                        queue_send.put((thread, draft, ollama))
 
                         gmail.messages_modify_automon(
                             id=thread._message_first.id,
@@ -349,7 +360,6 @@ def processor_email_new(gmail: AutomonGmailClient):
                             addLabelIds=[labels.waiting])
 
         queue_new.task_done()
-        time.sleep(0.1)
 
 
 def processor_email_sent(gmail: AutomonGmailClient):
@@ -453,7 +463,7 @@ def processor_token_counter():
 
 
 def is_from_human(thread: GmailThread) -> bool:
-    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+    ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
         ollama.templates.true_or_false.email_is_human(thread.to_prompt())
@@ -464,7 +474,7 @@ def is_from_human(thread: GmailThread) -> bool:
 
 
 def is_rejected_email(thread: GmailThread) -> bool:
-    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+    ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(
         content=OllamaClient.templates.true_or_false.email_is_rejected(email=thread.to_prompt()),
@@ -474,8 +484,8 @@ def is_rejected_email(thread: GmailThread) -> bool:
     return is_true(response)
 
 
-def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, object]:
-    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, OllamaClient]:
+    ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     ollama.add_system_prompt(content=ollama.templates.agents.job_applicant())
     ollama.add_system_prompt(content=OllamaClient.templates.agents.tasks.email_response())
@@ -490,7 +500,7 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, obj
 
 
 def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, OllamaClient]:
-    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+    ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     ollama.add_system_prompt(content=AgentTasks.email_response())
     ollama.add_system_prompt(content=identity.content)
@@ -509,7 +519,7 @@ def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, 
 
 
 def is_good_reply(response) -> bool:
-    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+    ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     _rules = OllamaClient.templates.agents.job_applicant()
     _response = OllamaClient.templates.markdown.str_to_markdown(header='response', text=response)
@@ -581,7 +591,7 @@ def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClie
 
 
 def run_ollama(prompt: str) -> tuple[str, OllamaClient]:
-    ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+    ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     if ollama.is_ready():
         ollama.add_prompt(prompt)
