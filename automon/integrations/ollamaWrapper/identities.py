@@ -1,9 +1,12 @@
 from .tokens import Tokens
 from .prompt_templates import *
+from .client import OllamaMessage
 
 
-class Identity:
+class Identity(OllamaMessage):
     def __init__(self, content: str = ''):
+        super().__init__()
+
         self.role: str = AgentRole.SYSTEM
         self._content: str = content
 
