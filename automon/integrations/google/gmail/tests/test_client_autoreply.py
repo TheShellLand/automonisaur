@@ -317,6 +317,10 @@ def processor_email_new(gmail: AutomonGmailClient):
 
 
             except Exception as error:
+                ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
+                ollama.add_system_prompt(content=human)
+                ollama.add_prompt(thread.to_prompt())
+                ollama.chat_forever()
                 raise debug_exception(locals(), error)
 
         if response_passed:
