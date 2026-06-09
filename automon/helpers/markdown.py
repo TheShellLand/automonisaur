@@ -64,6 +64,9 @@ class Markdown:
 
     @staticmethod
     def lstrip(text: str) -> str:
+        if text is None:
+            return
+
         return textwrap.dedent(
             '\n'.join(line.lstrip() for line in text.strip().splitlines())
         ).strip()
