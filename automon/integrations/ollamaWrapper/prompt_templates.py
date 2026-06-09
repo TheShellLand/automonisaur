@@ -191,7 +191,9 @@ class TrueOrFalseTemplates:
         
         Analyze the `EMAIL` below. Respond with exactly one word: "True" or "False".
         
-        Is the first email from a human? Respond "True" if it is from a real person. Respond "False" if it is an automated message, automated notification, bounce message, or bot.
+        Is the first email from a human? Respond "True" if it is 
+        from a real person. Respond "False" if it is an automated 
+        message, automated notification, bounce message, or bot.
         
         Do not include any punctuation, explanations, or other text.
         
@@ -204,25 +206,40 @@ class TrueOrFalseTemplates:
         return Markdown.lstrip(raw_template)
 
     @staticmethod
-    def email_is_rejected(email) -> str:
+    def email_is_job() -> str:
         raw_template = f"""
         # QUESTION
         
-        Analyze the provided `EMAIL` below. Respond with exactly one word: "True" or "False". 
+        Analyze the `EMAIL` below. Respond with exactly one word: "True" or "False".
+        
+        Respond "True" if all of these conditions is met:
+        - Does the sender use an official company-specific 
+          email domain that matches the signature's brand name.
+        - Does the message include a detailed job description 
+          with specific technologies and locations rather than 
+          vague promises?
+        
+        Otherwise, respond "False". Do not include any punctuation, explanations, or other text.
+        """
+        return Markdown.lstrip(raw_template)
+
+    @staticmethod
+    def email_is_rejected() -> str:
+        raw_template = f"""
+        # QUESTION
+        
+        Analyze the provided `EMAIL` below. Respond with exactly 
+        one word: "True" or "False". 
         
         Respond "True" if at least one of these conditions is met:
         - The sender is 'mailer-daemon'
         - The sender is 'Mail Delivery Subsystem'
-        - The email body contains the phrase 'recipient address rejected'
+        - The email body contains the phrase 'recipient address 
+          rejected'
         - The email body contains the phrase 'Message blocked'
         
-        Otherwise, respond "False". Do not include any punctuation, explanations, or other text.
-        
-        ---
-        
-        # EMAIL
-        
-        {email}
+        Otherwise, respond "False". Do not include any punctuation,
+        explanations, or other text.
         """
         return Markdown.lstrip(raw_template)
 
