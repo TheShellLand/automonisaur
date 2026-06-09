@@ -151,6 +151,7 @@ def get_threads(gmail: AutomonGmailClient):
         query_sequence = [
             [labels.automon, labels.error],
             [labels.automon, labels.processing],
+            [labels.automon, labels.followup],
             [labels.automon, labels.analyze],
             [labels.automon, labels.waiting],
             [labels.automon],
@@ -237,23 +238,17 @@ def processor_email_thread(gmail: AutomonGmailClient):
             queue_threads.task_done()
             continue
 
-        # sent
-        if gmail.is_sent(thread):
-
-            thread = gmail.thread_get_automon(id=thread.id)
-
-            if gmail.is_old(thread):
-                queue_followup.put(thread)
-                queue_threads.task_done()
-                continue
-            else:
-                queue_waiting.put(thread)
-                queue_threads.task_done()
-                continue
-
         # followup
         if gmail.is_follow_up(thread):
             queue_followup.put(thread)
+            queue_threads.task_done()
+            continue
+
+        # sent
+        if gmail.is_sent(thread):
+            thread = gmail.thread_get_automon(id=thread.id)
+
+            queue_sent.put(thread)
             queue_threads.task_done()
             continue
 
@@ -348,10 +343,10 @@ def processor_email_new(gmail: AutomonGmailClient):
                     if labels.auto_reply in thread._messages_labels:
                         queue_send.put((thread, draft))
 
-        gmail.messages_modify_automon(
-            id=thread._message_first.id,
-            removeLabelIds=[labels.processing],
-            addLabelIds=[labels.waiting])
+                        gmail.messages_modify_automon(
+                            id=thread._message_first.id,
+                            removeLabelIds=[labels.processing],
+                            addLabelIds=[labels.waiting])
 
         queue_new.task_done()
         time.sleep(0.1)
@@ -367,10 +362,7 @@ def processor_email_sent(gmail: AutomonGmailClient):
             queue_sent.task_done()
             continue
 
-        gmail.messages_modify_automon(
-            id=thread._message_first.id,
-            addLabelIds=[labels.waiting])
-
+        queue_waiting.put(thread)
         queue_sent.task_done()
 
 
@@ -395,20 +387,27 @@ def processor_draft_send(gmail: AutomonGmailClient):
 def processor_email_waiting(gmail: AutomonGmailClient):
     while True:
         thread: GmailThread = queue_waiting.get()
+        thread = gmail.thread_get_automon(thread.id)
 
         queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} left :: {thread}', 2))
 
-        if gmail.is_old(thread):
+        if gmail.is_follow_up(thread):
             queue_followup.put(thread)
             queue_waiting.task_done()
             continue
 
+        gmail.messages_modify_automon(
+            id=thread.id,
+            addLabelIds=[labels.waiting])
+
+        queue_waiting.put(thread)
         queue_waiting.task_done()
 
 
 def processor_email_followup(gmail: AutomonGmailClient):
     while True:
         thread: GmailThread = queue_followup.get()
+
         queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} left :: {thread}', 2))
 
         identity = RESUME._message_first._email_from
@@ -433,10 +432,10 @@ def processor_email_followup(gmail: AutomonGmailClient):
                 if labels.auto_reply in thread._messages_labels:
                     queue_send.put((thread, draft, ollama))
 
-        gmail.messages_modify_automon(
-            id=thread.id,
-            addLabelIds=[labels.waiting, labels.unread],
-        )
+                    gmail.messages_modify_automon(
+                        id=thread.id,
+                        addLabelIds=[labels.waiting, labels.unread],
+                    )
 
         queue_followup.task_done()
 
@@ -485,7 +484,6 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, obj
     response = chat.response()
 
     queue_tokens.put(chat._total_tokens)
-
     return response, ollama
 
 
@@ -505,7 +503,6 @@ def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, 
     response = chat.response()
 
     queue_tokens.put(chat._total_tokens)
-
     return response, ollama
 
 
@@ -526,7 +523,6 @@ def is_good_reply(response) -> bool:
     response = chat.response()
 
     queue_tokens.put(chat._total_tokens)
-
     return is_true(response)
 
 
