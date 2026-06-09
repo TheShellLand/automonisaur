@@ -35,6 +35,8 @@ query_history: Queue[GmailThread] = UniqueQueue()
 queue_error: Queue[GmailThread] = UniqueQueue()
 queue_log: Queue[tuple[str, int]] = UniqueQueue()
 
+queue_tokens: Queue[int] = Queue()
+
 queues = [
     queue_threads,
     queue_new,
@@ -49,6 +51,7 @@ queues = [
     queue_unknown,
     queue_error,
     queue_log,
+    queue_tokens,
 ]
 
 """
@@ -103,6 +106,8 @@ OLLAMA_MODEL = 'gemma4:12b'
 
 gemini = GoogleGeminiClient()
 
+TOTAL_TOKENS = 0
+
 """
 
 gmail settings
@@ -125,8 +130,11 @@ RESUME: GmailThread = None
 
 def gmail_token_refresher(gmail: AutomonGmailClient):
     while True:
-        if gmail.config.refresh_token():
-            time.sleep(60)
+        try:
+            if gmail.config.refresh_token():
+                time.sleep(60)
+        except Exception as error:
+            queue_log.put((f'[gmail_token_refresher] :: ERROR :: {error=}', 1))
 
         time.sleep(60)
 
@@ -433,6 +441,16 @@ def processor_email_followup(gmail: AutomonGmailClient):
         queue_followup.task_done()
 
 
+def processor_token_counter():
+    while True:
+        tokens: int = queue_tokens.get()
+
+        global TOTAL_TOKENS
+        TOTAL_TOKENS += tokens
+
+        queue_tokens.task_done()
+
+
 def is_from_human(thread: GmailThread) -> bool:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
@@ -465,6 +483,9 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, obj
 
     chat = ollama.chat(print_stream=CHAT_STREAM)
     response = chat.response()
+
+    queue_tokens.put(chat._total_tokens)
+
     return response, ollama
 
 
@@ -482,6 +503,9 @@ def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, 
 
     chat = ollama.chat(print_stream=CHAT_STREAM)
     response = chat.response()
+
+    queue_tokens.put(chat._total_tokens)
+
     return response, ollama
 
 
@@ -498,7 +522,11 @@ def is_good_reply(response) -> bool:
         )
     )
 
-    response = ollama.chat(print_stream=CHAT_STREAM).response()
+    chat = ollama.chat(print_stream=CHAT_STREAM)
+    response = chat.response()
+
+    queue_tokens.put(chat._total_tokens)
+
     return is_true(response)
 
 
@@ -683,10 +711,11 @@ def main():
     threads.add_worker(target=processor_email_followup, args=(gmail,))
 
     threads.add_worker(target=log_printer)
+    threads.add_worker(target=processor_token_counter)
 
     threads.add_worker(target=gmail_token_refresher, args=(gmail,))
 
-    threads.start()
+    threads.start(max_threads=len(queues))
 
 
 class MyTestCase(unittest.TestCase):
