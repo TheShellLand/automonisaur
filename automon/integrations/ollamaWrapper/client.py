@@ -216,6 +216,7 @@ class OllamaClient:
             stream=print_stream
         )
         chat.prompts = self.messages_pretty
+        chat.options = options
         self._ollama_chat = chat
 
         if print_stream:
@@ -223,6 +224,7 @@ class OllamaClient:
 
         self.add_prompt(content=chat.to_string(), role='assistant')
 
+        print(chat)
         return chat
 
     def chat_forever(self, system_content: str = None):
