@@ -59,6 +59,9 @@ class AutomonLabels(GmailLabels):
         # waiting
         self.waiting = GmailLabel(name='automon/waiting', color=self._color_default)
 
+        # followup
+        self.followup = GmailLabel(name='automon/followup', color=self._color_default)
+
         # skipped
         self.skipped = GmailLabel(name='automon/skipped', color=self._color_default)
 
@@ -241,10 +244,19 @@ class AutomonGmailClient(GoogleGmailClient):
         return False
 
     def is_follow_up(self, thread: GmailThread):
+        if self._labels.followup in thread._messages_labels:
+            return True
+
+        if self.is_old(thread):
+            return True
+
         if self._labels.sent in thread._messages_labels:
             if self._labels.sent not in thread._clean_thread_latest.labelIds:
                 if thread._message_first._email_from == thread._clean_thread_latest._email_from:
-                    return True
+
+                    if self.is_old(thread):
+                        return True
+
         return False
 
     def is_waiting(self, thread: GmailThread):
