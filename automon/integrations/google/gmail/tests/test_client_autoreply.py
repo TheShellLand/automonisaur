@@ -97,18 +97,13 @@ USE_OLLAMA = True
 USE_GEMINI = False
 CHAT_FOREVER = False
 CHAT_STREAM = True
-USE_GPU = True
-
-if USE_GPU:
-    OLLAMA_HOST = 'http://192.168.111.175:11434'
-else:
-    OLLAMA_HOST = None
 
 OLLAMA_MODEL = 'gemma4:12b'
 OLLAMA_HOSTS = [
     'http://192.168.111.175:11434',
-    None
+
 ]
+OLLAMA_HOST_GPU = 'http://192.168.111.175:11434'
 
 
 def random_ollama_host():
@@ -273,8 +268,6 @@ def processor_email_thread(gmail: AutomonGmailClient):
         queue_threads.task_done()
         time.sleep(0.1)
 
-        pass
-
 
 def processor_email_new(gmail: AutomonGmailClient):
     global RESUME
@@ -313,7 +306,7 @@ def processor_email_new(gmail: AutomonGmailClient):
         while not response_passed or not exit_loop:
 
             try:
-                if not is_from_human(thread):
+                if not is_job_email(thread):
                     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
                     exit_loop = True
                     break
@@ -332,7 +325,7 @@ def processor_email_new(gmail: AutomonGmailClient):
 
             except Exception as error:
                 ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
-                ollama.add_system_prompt(content=human)
+                ollama.add_system_prompt(human)
                 ollama.add_prompt(thread.to_prompt())
                 ollama.chat_forever()
                 raise debug_exception(locals(), error)
@@ -462,35 +455,34 @@ def processor_token_counter():
         queue_tokens.task_done()
 
 
-def is_from_human(thread: GmailThread) -> bool:
+def is_job_email(thread: GmailThread) -> bool:
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
-    ollama.add_prompt(
-        ollama.templates.true_or_false.email_is_human(thread.to_prompt())
-    )
+    ollama.add_prompt(thread.to_prompt())
+    ollama.add_prompt(ollama.templates.true_or_false.email_is_job())
 
-    response = ollama.chat(print_stream=True).response()
+    response = ollama.chat(print_stream=CHAT_STREAM).response()
     return is_true(response)
 
 
 def is_rejected_email(thread: GmailThread) -> bool:
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
-    ollama.add_prompt(
-        content=OllamaClient.templates.true_or_false.email_is_rejected(email=thread.to_prompt()),
-    )
+    ollama.add_prompt(thread.to_prompt())
+    ollama.add_prompt(OllamaClient.templates.true_or_false.email_is_rejected())
 
-    response = ollama.chat(print_stream=True).response()
+    response = ollama.chat(print_stream=CHAT_STREAM).response()
     return is_true(response)
 
 
 def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, OllamaClient]:
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
-    ollama.add_system_prompt(content=ollama.templates.agents.job_applicant())
-    ollama.add_system_prompt(content=OllamaClient.templates.agents.tasks.email_response())
-    ollama.add_system_prompt(content=identity.content)
-    ollama.add_prompt(content=thread.to_prompt())
+    ollama.add_system_prompt(AgentTemplates.job_applicant())
+    ollama.add_system_prompt(AgentTasks.email_response())
+    ollama.add_system_prompt(identity.content)
+    ollama.add_prompt(thread.to_prompt())
+    ollama.add_prompt(f'Write a reply to the email.')
 
     chat = ollama.chat(print_stream=CHAT_STREAM)
     response = chat.response()
@@ -502,14 +494,10 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, Oll
 def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, OllamaClient]:
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
-    ollama.add_system_prompt(content=AgentTasks.email_response())
-    ollama.add_system_prompt(content=identity.content)
-    ollama.add_prompt(
-        content=Markdown.str_to_markdown(
-            header='email followup instructions',
-            text='Reply back to email sender.'
-        ))
-    ollama.add_prompt(content=thread.to_prompt())
+    ollama.add_system_prompt(AgentTasks.email_response())
+    ollama.add_system_prompt(identity.content)
+    ollama.add_prompt(thread.to_prompt())
+    ollama.add_prompt(f'Reply back to the email sender.')
 
     chat = ollama.chat(print_stream=CHAT_STREAM)
     response = chat.response()
@@ -525,7 +513,7 @@ def is_good_reply(response) -> bool:
     _response = OllamaClient.templates.markdown.str_to_markdown(header='response', text=response)
 
     ollama.add_system_prompt(
-        content=Markdown.str_to_markdown(
+        Markdown.str_to_markdown(
             header='question',
             text=OllamaClient.templates.true_or_false.rules_is_followed(rules=_rules, text=_response)
         )
