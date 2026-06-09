@@ -40,21 +40,23 @@ class OllamaChat(object):
         think_tokens = self._eval_count
 
         total_time = self._to_seconds_str(self._total_duration)
+        total_time_s = self._to_seconds(self._total_duration)
         total_tks = read_tokens + think_tokens
 
         write_tokens = len(self)
 
-        reason = self._done_reason
+        done_reason = self._done_reason
 
         return repr_str([
             f'{self.model}',
             f'{write_tokens} tokens',
+            f'{total_tks / total_time_s :,.0f} T/s',
             f'total ({total_time}/{total_tks:,} T)',
             f'read ({read_time}/{read_tokens:,} T)',
             f'think ({think_time}/{think_tokens:,} T)',
             f'load ({load_time})',
             f'{len(self._chunks)} chunks',
-            f'{reason=}',
+            f'{done_reason=}',
         ])
 
     def __len__(self):
@@ -105,7 +107,7 @@ class OllamaChat(object):
         logger.debug(f'[OllamaChat] :: to_string :: {tokens.count_pretty} tokens')
         return string
 
-    def _to_seconds(self, nanoseconds: int) -> timedelta | None:
+    def _to_seconds(self, nanoseconds: int) -> float | None:
         if nanoseconds is not None:
             return nanoseconds / 1_000_000_000
 
@@ -116,6 +118,11 @@ class OllamaChat(object):
     def _to_human_time(self, nanoseconds: int) -> timedelta | None:
         if nanoseconds is not None:
             return timedelta(nanoseconds=nanoseconds)
+
+    @property
+    def _done(self) -> bool:
+        if self._chunks:
+            return self._chunks[-1].done
 
     @property
     def _done_reason(self) -> str:
