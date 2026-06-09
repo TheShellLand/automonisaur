@@ -20,7 +20,7 @@ queues
 
 queue_threads: Queue[GmailThread] = UniqueQueue(maxsize=5)
 queue_new: Queue[GmailThread] = UniqueQueue(maxsize=5)
-queue_send: Queue[tuple[GmailThread, GmailDraft]] = UniqueQueue()
+queue_send: Queue[tuple[GmailThread, GmailDraft, OllamaClient]] = UniqueQueue()
 queue_skipped: Queue[GmailThread] = UniqueQueue()
 queue_followup: Queue[GmailThread] = UniqueQueue()
 queue_sent: Queue[GmailThread] = UniqueQueue()
@@ -368,8 +368,8 @@ def processor_email_sent(gmail: AutomonGmailClient):
 
 def processor_draft_send(gmail: AutomonGmailClient):
     while True:
-        item: tuple[GmailThread, GmailDraft] = queue_send.get()
-        thread, draft = item
+        item: tuple[GmailThread, GmailDraft, OllamaClient] = queue_send.get()
+        thread, draft, OllamaClient = item
 
         if labels.auto_reply in thread._messages_labels:
             draft_sent = gmail.draft_send(draft=draft)
@@ -423,7 +423,7 @@ def processor_email_followup(gmail: AutomonGmailClient):
 
             if draft is not None:
                 if labels.auto_reply in thread._messages_labels:
-                    queue_send.put((thread, draft))
+                    queue_send.put((thread, draft, ollama))
 
         gmail.messages_modify_automon(
             id=thread.id,
@@ -468,7 +468,7 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, obj
     return response, ollama
 
 
-def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, object]:
+def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, OllamaClient]:
     ollama = OllamaClient(host=OLLAMA_HOST).set_model(OLLAMA_MODEL)
 
     ollama.add_system_prompt(content=AgentTasks.email_response())
