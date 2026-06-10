@@ -458,8 +458,7 @@ def processor_token_counter():
 def is_job_email(thread: GmailThread) -> bool:
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
-    ollama.add_prompt(thread.to_prompt())
-    ollama.add_prompt(ollama.templates.true_or_false.email_is_job())
+    ollama.add_prompt(ollama.templates.true_or_false.email_is_job(thread.to_prompt()))
 
     response = ollama.chat(print_stream=CHAT_STREAM).response()
     return is_true(response)
@@ -468,8 +467,7 @@ def is_job_email(thread: GmailThread) -> bool:
 def is_rejected_email(thread: GmailThread) -> bool:
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
-    ollama.add_prompt(thread.to_prompt())
-    ollama.add_prompt(OllamaClient.templates.true_or_false.email_is_rejected())
+    ollama.add_prompt(OllamaClient.templates.true_or_false.email_is_rejected(thread.to_prompt()))
 
     response = ollama.chat(print_stream=CHAT_STREAM).response()
     return is_true(response)
@@ -479,8 +477,8 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, Oll
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     ollama.add_system_prompt(AgentTemplates.job_applicant())
-    ollama.add_system_prompt(AgentTasks.email_response())
-    ollama.add_system_prompt(identity.content)
+    ollama.add_system_prompt(AgentTasks.write_email())
+    ollama.add_system_prompt(identity)
     ollama.add_prompt(thread.to_prompt())
     ollama.add_prompt(f'Write a reply to the email.')
 
@@ -494,8 +492,8 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, Oll
 def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, OllamaClient]:
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
-    ollama.add_system_prompt(AgentTasks.email_response())
-    ollama.add_system_prompt(identity.content)
+    ollama.add_system_prompt(AgentTasks.write_email())
+    ollama.add_system_prompt(identity)
     ollama.add_prompt(thread.to_prompt())
     ollama.add_prompt(f'Reply back to the email sender.')
 
@@ -509,15 +507,10 @@ def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, 
 def is_good_reply(response) -> bool:
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
-    _rules = OllamaClient.templates.agents.job_applicant()
-    _response = OllamaClient.templates.markdown.str_to_markdown(header='response', text=response)
-
-    ollama.add_system_prompt(
-        Markdown.str_to_markdown(
-            header='question',
-            text=OllamaClient.templates.true_or_false.rules_is_followed(rules=_rules, text=_response)
-        )
-    )
+    ollama.add_prompt(OllamaClient.templates.true_or_false.rules_is_followed(
+        rules=OllamaClient.templates.agents.tasks.write_email(),
+        text=response
+    ))
 
     chat = ollama.chat(print_stream=CHAT_STREAM)
     response = chat.response()
