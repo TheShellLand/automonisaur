@@ -125,7 +125,7 @@ class OllamaChat(object):
 
     @property
     def _read_time(self) -> str:
-        self._to_seconds_str(self._prompt_eval_duration)
+        return self._to_seconds_str(self._prompt_eval_duration)
 
     @property
     def _read_tokens(self) -> int:
