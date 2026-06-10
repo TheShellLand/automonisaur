@@ -16,7 +16,7 @@ class AgentRole:
 
 class AgentTasks:
     @staticmethod
-    def email_response():
+    def write_email():
         raw_template = f"""
         # WRITING EMAIL RULES
         
@@ -187,30 +187,36 @@ class TrueOrFalseTemplates:
     @staticmethod
     def email_is_human(email: str) -> str:
         raw_template = f"""
+        # EMAIL
+        
+        {email}
+        
+        ---
+        
         # QUESTION
         
-        Analyze the `EMAIL` below. Respond with exactly one word: "True" or "False".
+        Analyze the `EMAIL`. Respond with exactly one word: "True" or "False".
         
         Is the first email from a human? Respond "True" if it is 
         from a real person. Respond "False" if it is an automated 
         message, automated notification, bounce message, or bot.
         
         Do not include any punctuation, explanations, or other text.
-        
-        ---
-        
-        # EMAIL
-        
-        {email}
         """
         return Markdown.lstrip(raw_template)
 
     @staticmethod
-    def email_is_job() -> str:
+    def email_is_job(email: str) -> str:
         raw_template = f"""
+        # EMAIL
+        
+        {email}
+        
+        ---
+        
         # QUESTION
         
-        Analyze the `EMAIL` below. Respond with exactly one word: "True" or "False".
+        Analyze the `EMAIL`. Respond with exactly one word: "True" or "False".
         
         Respond "True" if all of these conditions is met:
         - Does the sender use an official company-specific 
@@ -219,16 +225,23 @@ class TrueOrFalseTemplates:
           with specific technologies and locations rather than 
           vague promises?
         
-        Otherwise, respond "False". Do not include any punctuation, explanations, or other text.
+        Otherwise, respond "False". Do not include any punctuation, 
+        explanations, or other text.
         """
         return Markdown.lstrip(raw_template)
 
     @staticmethod
-    def email_is_rejected() -> str:
+    def email_is_rejected(email: str) -> str:
         raw_template = f"""
+        # EMAIL
+        
+        {email}
+        
+        ---
+        
         # QUESTION
         
-        Analyze the provided `EMAIL` below. Respond with exactly 
+        Analyze the provided `EMAIL`. Respond with exactly 
         one word: "True" or "False". 
         
         Respond "True" if at least one of these conditions is met:
@@ -246,15 +259,6 @@ class TrueOrFalseTemplates:
     @staticmethod
     def rules_is_followed(rules: str, text: str) -> str:
         raw_template = f"""
-        # QUESTION
-        
-        Analyze the provided `TEXT` below. Respond with exactly one word: "True" or "False". 
-        
-        Respond "True" if all of the `RULES` were followed. Otherwise, respond "False". 
-        Do not include any punctuation, explanations, or other text.
-        
-        ---
-        
         # RULES
         
         ```text
@@ -268,6 +272,15 @@ class TrueOrFalseTemplates:
         ```text
         {text}
         ```
+        
+        ---
+        
+        # QUESTION
+        
+        Analyze the provided `TEXT`. Respond with exactly one word: "True" or "False". 
+        
+        Respond "True" if all of the `RULES` were followed. Otherwise, respond "False". 
+        Do not include any punctuation, explanations, or other text.
         """
 
         return Markdown.lstrip(raw_template)
