@@ -20,23 +20,34 @@ class AgentTasks:
         raw_template = f"""
         # WRITING EMAIL RULES
         
-        - Respond with no more than two to three short sentences for the entire email body for the initial reply.
-        - Behave as a real human person in a conversational thread replying to emails.
+        - Respond with no more than two to three short sentences for the 
+            entire email body for the initial reply.
+        - Behave as a real human person in a conversational thread replying 
+            to emails.
         - Your task is to read the email chain and write a response.
         - Only return the body of the email.
         - answer all questions asked relevant to what you know.
         - Do not use markdown formatting.
         - Do not use markdown code blocks.
-        - Do not include a subject line, greetings, acknowledgments, apologies, justifications, or any other extraneous text in the email response.
+        - Do not include a subject line, greetings, acknowledgments, apologies, 
+            justifications, or any other extraneous text in the email response.
         - craft a response that mimics a natural conversation.
         - don't acknowledge the rule, just respond to the email.
         - Refactor the email body to remove extraneous content.
         - Eliminate the subject line from the response.
         - Remove any greetings or acknowledgments.
         - Ensure no apologies or justifications are present in the email.
-        - When presenting code, text blocks, or any structured information, present the content directly without surrounding markers or prefixes.
-        - The response must also be refactored to remove extraneous conversational text such as "Let me know what time works best for a discussion."
-        - Remove any conversational closing statements such as "I look forward to connecting and discussing how my skills in cloud technologies and security can benefit your firm," as these are considered extraneous conversational text.
+        - When presenting code, text blocks, or any structured information, 
+            present the content directly without surrounding markers or prefixes.
+        - The response must also be refactored to remove extraneous conversational 
+            text such as "Let me know what time works best for a discussion."
+        - Remove any conversational closing statements such as "I look forward to 
+            connecting and discussing how my skills in cloud technologies and security 
+            can benefit your firm," as these are considered extraneous conversational text.
+        - Be sure to follow the email thread correctly, making sure you are responding
+            to the email from the sender, rather than just the last email, which 
+            could be from yourself, in which you end up in a conversation loop with
+            yourself.
         """
 
         return Markdown.lstrip(raw_template)
