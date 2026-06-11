@@ -159,7 +159,7 @@ class GoogleGmailClient(GoogleAuthClient):
         response = self._requests.post(api, headers=self.config.headers, json=data).to_dict()
         return GmailDraft(response)
 
-    def draft_attachment_create(self, attachment: GmailMessagePart):
+    def draft_attachment_create(self, attachment: GmailMessagePayload):
         return GmailEmailAttachment(
             bytes_=attachment.body._data_base64decoded,
             filename=attachment.filename,
@@ -415,7 +415,7 @@ class GoogleGmailClient(GoogleAuthClient):
     def messages_attachments_get(
             self,
             messageId: str,
-            attachmentId: str) -> GmailMessagePartBody:
+            attachmentId: str) -> GmailMessagePayloadBody:
         """
         Gets the specified message attachment.
 
@@ -445,7 +445,7 @@ class GoogleGmailClient(GoogleAuthClient):
         response = self._requests.get(api, headers=self.config.headers)
 
         if response:
-            attachments = GmailMessagePartBody(response.to_dict())
+            attachments = GmailMessagePayloadBody(response.to_dict())
             logger.debug(f"[GoogleGmailClient] :: messages_attachments_get :: {attachments=}")
         else:
             raise Exception(f"[GoogleGmailClient] :: messages_attachments_get :: error :: {response=}")

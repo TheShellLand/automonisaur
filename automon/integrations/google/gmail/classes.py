@@ -423,7 +423,7 @@ class GmailLabelRemoved:
     pass
 
 
-class GmailMessagePartBody(DictHelper):
+class GmailMessagePayloadBody(DictHelper):
     """
     {
       "attachmentId": string,
@@ -451,7 +451,7 @@ class GmailMessagePartBody(DictHelper):
         ])
 
     def __bool__(self):
-        if self.size:
+        if self.size is not None:
             if self.size > 0:
                 return True
         if self.data:
@@ -500,85 +500,19 @@ class GmailMessagePartBody(DictHelper):
                 return self._data_bs4.html.text
 
 
-class GmailMessagePart(DictHelper):
-    partId: str
-    mimeType: str
-    filename: str
-    headers: list[GmailHeader]
-    body: GmailMessagePartBody
-
-    parts: list[Self]
-
-    def __init__(self, part: dict = None):
-
-        self.partId = None
-        self.mimeType = None
-        self.filename = None
-        self._headers = []
-        self._body = None
-
-        self._parts = []
-
-        super().__init__(part)
-
-    def __repr__(self):
-        return repr_str([
-            self.filename,
-            self.mimeType,
-        ])
-
-    @property
-    def body(self):
-        value = self._body
-        self._body = encapsulate(value=value, object_class=GmailMessagePartBody)
-        return self._body
-
-    @body.setter
-    def body(self, value):
-        self._body = encapsulate(value=value, object_class=GmailMessagePartBody)
-
-    @property
-    def headers(self):
-        value = self._headers
-        self._headers = encapsulate(value=value, object_class=GmailHeader)
-        return self._headers
-
-    @headers.setter
-    def headers(self, value):
-        self._headers = encapsulate(value=value, object_class=GmailHeader)
-
-    @property
-    def parts(self):
-        value = self._parts
-        self._parts = encapsulate(value=value, object_class=GmailMessagePart)
-        return self._parts
-
-    @parts.setter
-    def parts(self, value):
-        self._parts = encapsulate(value=value, object_class=GmailMessagePart)
-
-    def get_header(self, header: str) -> GmailHeader | None:
-        for headers in self.headers:
-            if header.lower() in headers.name.lower():
-                return headers
-
-
 class GmailMessagePayload(DictHelper):
-    partId: str
-    mimeType: str
+    body: GmailMessagePayloadBody
     filename: str
     headers: list[GmailHeader]
-    body: GmailMessagePartBody
-
-    parts: list[GmailMessagePart]
-    size: int
+    mimeType: str
+    partId: str
+    parts: list[Self]
 
     def __init__(self, message: dict = None):
 
         self._body = None
         self._headers = []
         self._parts = []
-        self.size = None
 
         super().__init__(message)
 
@@ -586,14 +520,10 @@ class GmailMessagePayload(DictHelper):
         return repr_str([
             self.filename,
             self.mimeType,
-            f"{self.size} B",
+            self.body,
         ])
 
     def __bool__(self):
-        if self.size is not None and self.size > 0:
-            return True
-        if self.parts:
-            return True
         if self.body:
             return True
         return False
@@ -601,12 +531,12 @@ class GmailMessagePayload(DictHelper):
     @property
     def body(self):
         value = self._body
-        self._body = encapsulate(value=value, object_class=GmailMessagePartBody)
+        self._body = encapsulate(value=value, object_class=GmailMessagePayloadBody)
         return self._body
 
     @body.setter
     def body(self, value):
-        self._body = encapsulate(value=value, object_class=GmailMessagePartBody)
+        self._body = encapsulate(value=value, object_class=GmailMessagePayloadBody)
 
     @property
     def headers(self) -> list[GmailHeader]:
@@ -621,12 +551,12 @@ class GmailMessagePayload(DictHelper):
     @property
     def parts(self):
         value = self._parts
-        self._parts = encapsulate(value=value, object_class=GmailMessagePart)
+        self._parts = encapsulate(value=value, object_class=GmailMessagePayload)
         return self._parts
 
     @parts.setter
     def parts(self, value):
-        self._parts = encapsulate(value=value, object_class=GmailMessagePart)
+        self._parts = encapsulate(value=value, object_class=GmailMessagePayload)
 
     def get_header(self, header: str) -> GmailHeader | None:
         for headers in self.headers:
@@ -734,7 +664,7 @@ class GmailMessage(DictHelper):
         self._labelIds = sorted(encapsulate(value, GmailLabel))
 
     @property
-    def payload(self):
+    def payload(self) -> GmailMessagePayload:
         value = self._payload
         self._payload = encapsulate(value, GmailMessagePayload)
         return self._payload
@@ -743,29 +673,34 @@ class GmailMessage(DictHelper):
     def payload(self, value):
         self._payload = encapsulate(value, GmailMessagePayload)
 
-    def find_attachment(self, filename=None, mimeType=None) -> GmailMessagePart | None:
+    def find_attachment(self, filename=None, mimeType=None) -> GmailMessagePayload | None:
         for attachment in self._attachments:
             if attachment.filename == filename:
                 return attachment
             if attachment.mimeType == mimeType:
                 return attachment
 
-    def find_attachment_docx(self) -> GmailMessagePart | None:
+    def find_attachment_docx(self) -> GmailMessagePayload | None:
         return self.find_attachment(mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
     @property
-    def _attachments(self) -> list[GmailMessagePartBody | GmailMessagePart]:
-        payloads = []
-        if self.payload:
-            if self.payload.size:
-                payloads.append(self.payload.body)
-            if self.payload.parts:
-                for parts in self.payload.parts:
-                    payloads.append(parts)
+    def _attachments(self) -> list[GmailMessagePayload]:
+        def recursive_get_attachments(attachment):
+            nested_payloads = []
+            if isinstance(attachment, GmailMessagePayload):
+                if attachment:
+                    nested_payloads.append(attachment)
+                if attachment.parts:
+                    for part in attachment.parts:
+                        nested_payloads.extend(recursive_get_attachments(part))
+
+            return nested_payloads
+
+        payloads = recursive_get_attachments(self.payload)
         return payloads
 
     @property
-    def _attachments_first(self) -> GmailMessagePartBody | GmailMessagePart | None:
+    def _attachments_first(self) -> GmailMessagePayload | None:
         if self._attachments:
             return self._attachments[0]
 
@@ -854,19 +789,19 @@ class GmailMessage(DictHelper):
 
     @property
     def _header_from(self) -> GmailHeader | None:
-        if self.payload:
+        if self.payload is not None:
             if self.payload.headers:
                 return self.payload.get_header('From')
 
     @property
     def _header_subject(self) -> GmailHeader | None:
-        if self.payload:
+        if self.payload is not None:
             if self.payload.headers:
                 return self.payload.get_header('Subject')
 
     @property
     def _header_to(self) -> GmailHeader | None:
-        if self.payload:
+        if self.payload is not None:
             if self.payload.headers:
                 return self.payload.get_header('To')
 
@@ -878,28 +813,14 @@ class GmailMessage(DictHelper):
         """email to markdown"""
 
         body = None
-        if self.payload:
-            body = self.payload.body
-            if body:
-                text = body._data_html_text
-                if text:
-                    body = text
-            if self.payload.parts:
-                parts = self.payload.parts
-                for part in parts:
-                    if part.mimeType == 'text/plain':
-                        body = part.body._data_html_text
-                        break
+        for attachment in self._attachments:
+            if attachment.mimeType == 'text/plain':
+                body = attachment.body._data_html_text
+                break
 
-                    if part.mimeType == 'text/html':
-                        body = part.body._data_html_text
-                        break
-
-                    more_parts = part.parts
-                    for more_part in more_parts:
-                        if more_part.mimeType == 'text/plain':
-                            body = more_part.body._data_html_text
-                            break
+            if attachment.mimeType == 'text/html':
+                body = attachment.body._data_html_text
+                break
 
         if body is None and self.snippet is None:
             raise debug_exception(locals(), f'body not found')
@@ -912,6 +833,7 @@ class GmailMessage(DictHelper):
         subject: {self._header_subject.value}
         date: {self._date_local_str}
         date epoch: {self._date_epoch_s}
+        tags: {self.labelIds}
         
         ### EMAIL BODY 
         
@@ -940,22 +862,22 @@ class GmailMessageAttachments(DictHelper):
         return False
 
     @property
-    def attachments(self) -> list[GmailMessagePart] | None:
+    def attachments(self) -> list[GmailMessagePayload] | None:
         value = self._attachments
-        self._attachments = encapsulate(value, GmailMessagePart)
+        self._attachments = encapsulate(value, GmailMessagePayload)
         return self._attachments
 
     @attachments.setter
     def attachments(self, value):
-        self._attachments = encapsulate(value, GmailMessagePart)
+        self._attachments = encapsulate(value, GmailMessagePayload)
 
     @property
-    def _first_attachment(self) -> GmailMessagePart | None:
+    def _first_attachment(self) -> GmailMessagePayload | None:
         for part in self.attachments:
             return part
 
     @property
-    def _has_filename(self) -> list[GmailMessagePart]:
+    def _has_filename(self) -> list[GmailMessagePayload]:
         return [x for x in self.attachments if x.filename]
 
 
