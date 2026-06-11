@@ -100,7 +100,8 @@ CHAT_STREAM = True
 
 OLLAMA_MODEL = 'gemma4:12b'
 OLLAMA_HOSTS = [
-    'http://192.168.111.175:11434',
+    # 'http://192.168.111.175:11434',
+    None
 
 ]
 OLLAMA_HOST_GPU = 'http://192.168.111.175:11434'
@@ -206,8 +207,6 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
         # resume
         if gmail.is_resume(thread):
-            global RESUME
-            RESUME = thread
             queue_threads.task_done()
             continue
 
@@ -427,9 +426,12 @@ def processor_email_followup(gmail: AutomonGmailClient):
         draft = None
         if is_good_reply(response):
 
+            resume_attachment = RESUME._message_first.find_attachment_docx()
+
             draft = draft_create(
                 thread=thread,
                 response=response,
+                resume_attachment=resume_attachment,
             )
 
             if draft is not None:
@@ -645,9 +647,7 @@ def draft_create(
     if resume_attachment is not None:
         assert resume_attachment.filename
 
-        resume_attachment = [gmail.draft_attachment_create(resume_attachment)]
-    else:
-        resume_attachment = []
+    resume_attachment = [gmail.draft_attachment_create(resume_attachment)]
 
     to = thread._message_first._header_from.value
     from_ = thread._message_first._header_to.value
