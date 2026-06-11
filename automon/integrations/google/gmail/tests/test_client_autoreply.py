@@ -285,7 +285,7 @@ def processor_email_new(gmail: AutomonGmailClient):
             id=thread._message_first.id,
             addLabelIds=[labels.processing])
 
-        resume_str = RESUME._message_first._attachments_first.parts[0].body._data_html_text
+        resume_str = RESUME._message_first._attachments_first.body._data_html_text
         identity = RESUME._message_first._email_from
         background = resume_str
 
@@ -350,7 +350,7 @@ def processor_email_new(gmail: AutomonGmailClient):
                         gmail.messages_modify_automon(
                             id=thread._message_first.id,
                             removeLabelIds=[labels.processing],
-                            addLabelIds=[labels.waiting])
+                        )
 
         queue_new.task_done()
 
@@ -378,13 +378,12 @@ def processor_draft_send(gmail: AutomonGmailClient):
             draft_sent = gmail.draft_send(draft=draft)
 
             gmail.messages_modify_automon(
-                id=thread._message_first.id,
+                id=thread.id,
                 addLabelIds=[labels.unread])
 
             queue_log.put((f'[processor_draft_send] :: sent :: {draft_sent}', 2))
 
         queue_send.task_done()
-        time.sleep(0.1)
 
 
 def processor_email_waiting(gmail: AutomonGmailClient):
@@ -416,7 +415,7 @@ def processor_email_followup(gmail: AutomonGmailClient):
         queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} left :: {thread}', 2))
 
         identity = RESUME._message_first._email_from
-        background = RESUME._message_first._attachments_first.parts[0].body._data_html_text
+        background = RESUME._message_first._attachments_first.body._data_html_text
 
         human = HumanAgent(
             name=identity,
@@ -436,11 +435,6 @@ def processor_email_followup(gmail: AutomonGmailClient):
             if draft is not None:
                 if labels.auto_reply in thread._messages_labels:
                     queue_send.put((thread, draft, ollama))
-
-                    gmail.messages_modify_automon(
-                        id=thread.id,
-                        addLabelIds=[labels.waiting, labels.unread],
-                    )
 
         queue_followup.task_done()
 
@@ -646,7 +640,7 @@ def run_llm(prompt: str, chat: bool = False) -> tuple[str, object]:
 def draft_create(
         thread: GmailThread,
         response: str,
-        resume_attachment: GmailMessagePart = None,
+        resume_attachment: GmailMessagePayload = None,
 ) -> GmailDraft:
     if resume_attachment is not None:
         assert resume_attachment.filename
