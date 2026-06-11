@@ -514,7 +514,7 @@ class GoogleGmailClient(GoogleAuthClient):
         # update attachments
         payload = []
         payload_parts = []
-        if message.payload:
+        if message.payload is not None:
             payload_parts = message.payload.parts
 
         for part in payload_parts:
