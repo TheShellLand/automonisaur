@@ -235,6 +235,14 @@ class TrueOrFalseTemplates:
         - Does the message include a detailed job description 
           with specific technologies and locations rather than 
           vague promises?
+        - Does the text mention a specific job title or level? 
+          (e.g., "Technical Lead," "Senior Engineer," "Project Manager").
+        - Does the text mention specific technical skills, tools, or 
+          industry expertise relevant to a professional role? (e.g., 
+          "Python," "Automation," "Product Development").
+        - Is the sender a recruiter/hiring entity asking for a follow-up 
+          meeting or expressing interest in the candidate's background? 
+          (e.g., "I’d love to discuss it further," "set up a time to chat").
         
         Otherwise, respond "False". Do not include any punctuation, 
         explanations, or other text.
