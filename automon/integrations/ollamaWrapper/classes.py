@@ -50,7 +50,7 @@ class OllamaChat(object):
         return repr_str([
             f'{self.model}',
             f'{write_tokens} tokens',
-            f'{total_tokens / total_time_s :,.0f} T/s',
+            f'{think_tokens / self._think_time_seconds :,.0f} T/s',
             f'total ({total_time}/{total_tokens:,} T)',
             f'read ({read_time}/{read_tokens:,} T)',
             f'think ({think_time}/{think_tokens:,} T)',
@@ -134,6 +134,10 @@ class OllamaChat(object):
     @property
     def _think_time(self) -> str:
         return self._to_seconds_str(self._eval_duration)
+
+    @property
+    def _think_time_seconds(self) -> float:
+        return self._to_seconds(self._eval_duration)
 
     @property
     def _think_tokens(self) -> int:
