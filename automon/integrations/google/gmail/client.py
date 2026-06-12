@@ -14,6 +14,8 @@ import email.mime.base
 import mimetypes
 import googleapiclient.discovery
 
+from email.utils import formataddr
+
 import automon
 import automon.helpers
 import automon.helpers.tempfileWrapper
@@ -77,10 +79,14 @@ class GoogleGmailClient(GoogleAuthClient):
             **kwargs,
     ) -> GmailDraft:
         """Creates a new draft with the DRAFT label."""
+
         if raw:
             raw = base64.urlsafe_b64encode(raw.encode()).decode()
         else:
             if isinstance(draft_to, str):
+                _name, _email = draft_to.split("<")
+                _email = _email.replace(">", '')
+                draft_to = formataddr((_name, _email))
                 draft_to = [draft_to]
 
             if isinstance(draft_cc, str):
@@ -156,7 +162,7 @@ class GoogleGmailClient(GoogleAuthClient):
         message = GmailMessage({'raw': raw, 'threadId': threadId})
         data = GmailDraft(message=message).to_dict()
 
-        response = self._requests.post(api, headers=self.config.headers, json=data).to_dict()
+        response = self._requests.post(api, headers=self.config.headers, json=data)
         return GmailDraft(response)
 
     def draft_attachment_create(self, attachment: GmailMessagePayload):
