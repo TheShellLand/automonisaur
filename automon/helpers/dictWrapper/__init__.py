@@ -52,6 +52,9 @@ class DictHelper(dict):
         if update is None:
             return self
 
+        if isinstance(update, DictHelper):
+            update = update.to_dict()
+
         if isinstance(update, str):
             return self._update_json(update)
 
