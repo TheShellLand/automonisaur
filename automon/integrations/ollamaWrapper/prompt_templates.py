@@ -230,11 +230,15 @@ class TrueOrFalseTemplates:
         Analyze the `EMAIL`. Respond with exactly one word: "True" or "False".
         
         Respond "True" if all of these conditions is met:
+        
         - Does the sender use an official company-specific 
           email domain that matches the signature's brand name.
         - Does the message include a detailed job description 
           with specific technologies and locations rather than 
           vague promises?
+        
+        Respond "True" if any of these conditions is met:
+        
         - Does the text mention a specific job title or level? 
           (e.g., "Technical Lead," "Senior Engineer," "Project Manager").
         - Does the text mention specific technical skills, tools, or 
@@ -243,6 +247,8 @@ class TrueOrFalseTemplates:
         - Is the sender a recruiter/hiring entity asking for a follow-up 
           meeting or expressing interest in the candidate's background? 
           (e.g., "I’d love to discuss it further," "set up a time to chat").
+        - Does the messages containing specific job descriptions, required 
+          skills, and project details as valid professional recruitment outreach?
         
         Otherwise, respond "False". Do not include any punctuation, 
         explanations, or other text.
