@@ -249,7 +249,10 @@ class TrueOrFalseTemplates:
           (e.g., "I’d love to discuss it further," "set up a time to chat").
         - Does the messages containing specific job descriptions, required 
           skills, and project details as valid professional recruitment outreach?
-        
+        - Does it includes a specific job title, information on employment terms 
+          (such as location, contract type, or duration), and a detailed list of 
+          required skills or professional qualifications?
+
         Otherwise, respond "False". Do not include any punctuation, 
         explanations, or other text.
         """
