@@ -84,9 +84,10 @@ class GoogleGmailClient(GoogleAuthClient):
             raw = base64.urlsafe_b64encode(raw.encode()).decode()
         else:
             if isinstance(draft_to, str):
-                _name, _email = draft_to.split("<")
-                _email = _email.replace(">", '')
-                draft_to = formataddr((_name, _email))
+                if '<' in draft_to:
+                    _name, _email = draft_to.split("<")
+                    _email = _email.replace(">", '')
+                    draft_to = formataddr((_name, _email))
                 draft_to = [draft_to]
 
             if isinstance(draft_cc, str):
