@@ -253,9 +253,15 @@ class TrueOrFalseTemplates:
           (such as location, contract type, or duration), and a detailed list of 
           required skills or professional qualifications?
         - Does the email describe a professional job opportunity or a specific 
-          role (e.g., "Technical Lead") and offer to discuss details for potential hiring?
-        - Does the email contain keywords related to job titles, employment opportunities, 
-          or professional role invitations? 
+          role (e.g., "Technical Lead") and offer to discuss details for 
+          potential hiring?
+        - Does the email contain keywords related to job titles, employment 
+          opportunities, or professional role invitations? 
+        - Does the email contain information about job openings, list required 
+          professional skills/experience, or request a candidate's resume?
+        - Does the email contains a specific job title, a designated work 
+          location, and a request for a resume or contact information in 
+          response to a recruitment inquiry?
 
         Otherwise, respond "False". Do not include any punctuation, 
         explanations, or other text.
