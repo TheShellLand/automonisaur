@@ -20,7 +20,7 @@ class MyTestCase(unittest.TestCase):
                 query=query,
                 id=id,
                 ids=ids,
-                type=type,
+                type_=type,
             )
             pass
 

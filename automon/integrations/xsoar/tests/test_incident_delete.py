@@ -19,7 +19,7 @@ class MyTestCase(unittest.TestCase):
 
             while True:
                 incidents_search = self.client.incidents_search(
-                    type=type,
+                    type_=type,
                 )
                 incidents_search = incidents_search.get('data')
 

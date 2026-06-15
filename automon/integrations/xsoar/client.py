@@ -183,13 +183,13 @@ class XSOARClient(object):
             id: int | str = None,
             ids: list = None,
             name: list = None,
-            type: list = None,
+            type_: list = None,
             body: dict = None,
     ):
 
         api = self.api.incidents.search_incident
 
-        if query or id or ids or name or type:
+        if query or id or ids or name or type_:
             if body:
                 raise Exception(f'[XSOARClient] :: incidents :: ERROR :: `body` arg must be used by itself')
 
@@ -201,7 +201,7 @@ class XSOARClient(object):
             incident['filter']['query'] = query
 
         if id:
-            assert type(id) is str or int, f'[XSOARClient] :: incidents_search :: ERROR :: id is not str or int'
+            assert isinstance(id, str or int), f'[XSOARClient] :: incidents_search :: ERROR :: id is not str or int'
             incident['filter']['id'] = [str(id)]
 
         if ids:
@@ -210,8 +210,8 @@ class XSOARClient(object):
         if name:
             incident['filter']['name'] = name
 
-        if type:
-            incident['filter']['type'] = type
+        if type_:
+            incident['filter']['type'] = type_
 
         if body:
             incident = body
