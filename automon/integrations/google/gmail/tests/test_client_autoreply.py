@@ -99,12 +99,11 @@ CHAT_FOREVER = False
 CHAT_STREAM = True
 
 OLLAMA_MODEL = 'gemma4:12b'
-OLLAMA_HOSTS = [
-    # 'http://192.168.111.175:11434',
-    None
-
-]
 OLLAMA_HOST_GPU = 'http://192.168.111.175:11434'
+OLLAMA_HOSTS = [
+    OLLAMA_HOST_GPU,
+    # None,
+]
 
 
 def random_ollama_host():
