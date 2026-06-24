@@ -683,6 +683,9 @@ class GmailMessage(DictHelper):
     def find_attachment_docx(self) -> GmailMessagePayload | None:
         return self.find_attachment(mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
+    def find_attachment_pdf(self) -> GmailMessagePayload | None:
+        return self.find_attachment(mimeType='application/pdf')
+
     @property
     def _attachments(self) -> list[GmailMessagePayload]:
         def recursive_get_attachments(attachment):
