@@ -602,7 +602,7 @@ class GmailMessage(DictHelper):
         self._payload = None
         self.raw = None
         self.sizeEstimate = None
-        self.snippet = None
+        self._snippet = None
         self.threadId = None
 
         super().__init__(message)
@@ -679,6 +679,9 @@ class GmailMessage(DictHelper):
                 return attachment
             if attachment.mimeType == mimeType:
                 return attachment
+
+    def find_attachment_plain(self) -> GmailMessagePayload | None:
+        return self.find_attachment(mimeType='text/plain')
 
     def find_attachment_docx(self) -> GmailMessagePayload | None:
         return self.find_attachment(mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
@@ -811,6 +814,16 @@ class GmailMessage(DictHelper):
     def _raw_decoded(self) -> str | None:
         if self.raw is not None:
             return base64.urlsafe_b64decode(self.raw).decode()
+
+    @property
+    def snippet(self) -> str | None:
+        if self._snippet is not None:
+            return self._snippet
+        return self.find_attachment_plain()
+
+    @snippet.setter
+    def snippet(self, value):
+        self._snippet = value
 
     def to_prompt(self) -> str:
         """email to markdown"""
