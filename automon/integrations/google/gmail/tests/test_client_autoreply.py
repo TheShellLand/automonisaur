@@ -134,6 +134,7 @@ gmail.config.add_scopes([
 
 labels = gmail._labels
 RESUME: GmailThread = None
+RESUME_ATTACHMENT = None
 
 
 def gmail_token_refresher(gmail: AutomonGmailClient):
@@ -189,6 +190,8 @@ def get_threads(gmail: AutomonGmailClient):
 
 def get_resume(gmail: AutomonGmailClient):
     global RESUME
+    global RESUME_ATTACHMENT
+
     while RESUME is None:
         threads = gmail.thread_list_automon(
             maxResults=1,
@@ -198,6 +201,7 @@ def get_resume(gmail: AutomonGmailClient):
         for thread in threads.threads:
             if gmail.is_resume(thread):
                 RESUME = thread
+                RESUME_ATTACHMENT = thread._message_first.find_attachment_pdf()
 
 
 def processor_email_thread(gmail: AutomonGmailClient):
@@ -335,7 +339,7 @@ def processor_email_new(gmail: AutomonGmailClient):
                 draft = None
 
                 if gmail.is_new(thread):
-                    resume_attachment = RESUME._message_first.find_attachment_docx()
+                    resume_attachment = RESUME_ATTACHMENT
 
                     draft = draft_create(
                         thread=thread,
@@ -427,7 +431,7 @@ def processor_email_followup(gmail: AutomonGmailClient):
         draft = None
         if is_good_reply(response):
 
-            resume_attachment = RESUME._message_first.find_attachment_docx()
+            resume_attachment = RESUME_ATTACHMENT
 
             draft = draft_create(
                 thread=thread,
