@@ -310,15 +310,15 @@ def processor_email_new(gmail: AutomonGmailClient):
         while not response_passed or not exit_loop:
 
             try:
-                if not is_job_email(thread):
-                    gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-                    exit_loop = True
-                    break
+                # if not is_job_email(thread):
+                #     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                #     exit_loop = True
+                #     break
 
-                if is_rejected_email(thread):
-                    gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-                    exit_loop = True
-                    break
+                # if is_rejected_email(thread):
+                #     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                #     exit_loop = True
+                #     break
 
                 response, ollama = write_email_reply(identity=human, thread=thread)
                 if is_good_reply(response=response):
@@ -663,6 +663,7 @@ def draft_create(
     draft = gmail.draft_create(
         threadId=thread.id,
         draft_to=to,
+        draft_cc='djaw.contact@gmail.com',
         draft_from=from_,
         draft_subject=subject,
         draft_body=body,
@@ -686,22 +687,22 @@ def main():
 
     threads = ThreadingClient()
 
-    threads.add_worker(target=gmail.create_labels)
+    threads.add_worker(target=gmail.create_labels, raise_exception=False)
 
-    threads.add_worker(target=get_threads, args=(gmail,))
-    threads.add_worker(target=get_resume, args=(gmail,))
+    threads.add_worker(target=get_threads, args=(gmail,), raise_exception=False)
+    threads.add_worker(target=get_resume, args=(gmail,), raise_exception=False)
 
-    threads.add_worker(target=processor_email_thread, args=(gmail,))
-    threads.add_worker(target=processor_email_new, args=(gmail,))
-    threads.add_worker(target=processor_email_waiting, args=(gmail,))
-    threads.add_worker(target=processor_draft_send, args=(gmail,))
-    threads.add_worker(target=processor_email_sent, args=(gmail,))
-    threads.add_worker(target=processor_email_followup, args=(gmail,))
+    threads.add_worker(target=processor_email_thread, args=(gmail,), raise_exception=False)
+    threads.add_worker(target=processor_email_new, args=(gmail,), raise_exception=False)
+    threads.add_worker(target=processor_email_waiting, args=(gmail,), raise_exception=False)
+    threads.add_worker(target=processor_draft_send, args=(gmail,), raise_exception=False)
+    threads.add_worker(target=processor_email_sent, args=(gmail,), raise_exception=False)
+    threads.add_worker(target=processor_email_followup, args=(gmail,), raise_exception=False)
 
     threads.add_worker(target=log_printer)
     threads.add_worker(target=processor_token_counter)
 
-    threads.add_worker(target=gmail_token_refresher, args=(gmail,))
+    threads.add_worker(target=gmail_token_refresher, args=(gmail,), raise_exception=False)
 
     threads.start(max_threads=len(queues))
 
