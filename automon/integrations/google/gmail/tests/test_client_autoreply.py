@@ -416,6 +416,10 @@ def processor_email_followup(gmail: AutomonGmailClient):
     while True:
         thread: GmailThread = queue_followup.get()
 
+        gmail.messages_modify_automon(
+            id=thread.id,
+            removeLabelIds=[labels.waiting])
+
         queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} left :: {thread}', 2))
 
         identity = RESUME._message_first._email_from
