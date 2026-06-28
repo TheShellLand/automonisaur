@@ -52,7 +52,7 @@ class ThreadingClient(object):
 
         self.exit_event = threading.Event()
 
-    def _thread_wrapper(self, target, args, raise_exception=True):
+    def _thread_wrapper(self, target, args):
         current_thread = threading.current_thread()
 
         try:
@@ -70,9 +70,7 @@ class ThreadingClient(object):
             current_thread.result = None
             current_thread.exception = error
             self.queue_error.put(current_thread)
-
-            if raise_exception:
-                raise debug_exception(locals(), error)
+            raise debug_exception(locals(), error)
 
     def add_worker(
             self,
@@ -83,8 +81,8 @@ class ThreadingClient(object):
         if args is not None:
             assert type(args) is tuple
 
-        self.queue_worker.put((target, args, raise_exception))
-        log.debug(f'[ThreadingClient] :: add_worker :: {target=} :: {args=} :: {raise_exception=}')
+        self.queue_worker.put((target, args))
+        log.debug(f'[ThreadingClient] :: add_worker :: {target=} :: {args=}')
         return self
 
     def decrease_global_threads_max(self):
@@ -154,12 +152,12 @@ class ThreadingClient(object):
 
             if self.queue_worker.qsize() > 0 and current_threads_count < max_threads_limit:
 
-                function, args, raise_exception = self.queue_worker.get()
+                function, args = self.queue_worker.get()
 
                 # thread = Thread(target=function, args=args)
                 thread = Thread(
                     target=self._thread_wrapper,
-                    args=(function, args, raise_exception),
+                    args=(function, args),
                     name=getattr(function, '__name__')
                 )
 

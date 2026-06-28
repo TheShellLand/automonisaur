@@ -154,38 +154,43 @@ def automon_init(client: AutomonGmailClient):
 
 def get_threads(gmail: AutomonGmailClient):
     while True:
-        while not gmail.is_ready():
+        try:
+
+            while not gmail.is_ready():
+                time.sleep(0.1)
+
+            query_sequence = [
+                [labels.automon, labels.error],
+                [labels.automon, labels.processing],
+                [labels.automon, labels.followup],
+                [labels.automon, labels.analyze],
+                [labels.automon, labels.waiting],
+                [labels.automon],
+            ]
+
+            nextPageToken = None
+
+            for query in query_sequence:
+                thread_search = gmail.thread_list_automon(
+                    # maxResults=1,
+                    pageToken=nextPageToken,
+                    labelIds=query,
+                )
+                queue_log.put((f'[get_threads] :: {query} :: {thread_search}', 3))
+
+                for thread in thread_search.threads:
+
+                    if thread not in query_history.queue:
+                        query_history.put(thread)
+                        queue_threads.put(thread)
+                        queue_log.put((f'[get_threads] :: {query_history.qsize()} processed', 3))
+
+                nextPageToken = thread_search.nextPageToken
+
             time.sleep(0.1)
 
-        query_sequence = [
-            [labels.automon, labels.error],
-            [labels.automon, labels.processing],
-            [labels.automon, labels.followup],
-            [labels.automon, labels.analyze],
-            [labels.automon, labels.waiting],
-            [labels.automon],
-        ]
-
-        nextPageToken = None
-
-        for query in query_sequence:
-            thread_search = gmail.thread_list_automon(
-                # maxResults=1,
-                pageToken=nextPageToken,
-                labelIds=query,
-            )
-            queue_log.put((f'[get_threads] :: {query} :: {thread_search}', 3))
-
-            for thread in thread_search.threads:
-
-                if thread not in query_history.queue:
-                    query_history.put(thread)
-                    queue_threads.put(thread)
-                    queue_log.put((f'[get_threads] :: {query_history.qsize()} processed', 3))
-
-            nextPageToken = thread_search.nextPageToken
-
-        time.sleep(0.1)
+        except Exception as error:
+            queue_log.put((f'[get_threads] :: ERROR :: {error=}', 1))
 
 
 def get_resume(gmail: AutomonGmailClient):
@@ -206,71 +211,76 @@ def get_resume(gmail: AutomonGmailClient):
 
 def processor_email_thread(gmail: AutomonGmailClient):
     while True:
-        thread = queue_threads.get()
+        try:
+            thread = queue_threads.get()
 
-        queue_log.put((f'[processor_email_thread] :: {thread}', 3))
+            queue_log.put((f'[processor_email_thread] :: {thread}', 3))
 
-        # resume
-        if gmail.is_resume(thread):
+            # resume
+            if gmail.is_resume(thread):
+                queue_threads.task_done()
+                continue
+
+            gmail.clean_drafts(thread)
+
+            # skipped
+            if gmail.is_skipped(thread):
+                queue_skipped.put(thread)
+                queue_threads.task_done()
+                queue_log.put((f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads', 2))
+                continue
+
+            # error
+            if gmail.is_error(thread):
+                queue_error.put(thread)
+                queue_threads.task_done()
+                queue_log.put((f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads', 2))
+                continue
+
+            # analyze
+            if gmail.is_analyze(thread):
+                queue_analyze.put(thread)
+                queue_threads.task_done()
+                queue_log.put((f'[processor_email_thread] :: queue_analyze :: {queue_analyze.qsize()} threads', 2))
+                continue
+
+            # scheduled
+            if gmail.is_scheduled(thread):
+                pass
+
+            # new
+            if gmail.is_new(thread):
+                queue_new.put(thread)
+                queue_threads.task_done()
+                continue
+
+            # followup
+            if gmail.is_follow_up(thread):
+                queue_followup.put(thread)
+                queue_threads.task_done()
+                continue
+
+            # sent
+            if gmail.is_sent(thread):
+                thread = gmail.thread_get_automon(id=thread.id)
+
+                queue_sent.put(thread)
+                queue_threads.task_done()
+                continue
+
+            queue_unknown.put(thread)
+            queue_log.put(
+                (f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads :: {thread}', 2))
+
+            gmail.messages_modify_automon(
+                id=thread._message_first.id,
+                removeLabelIds=[labels.processing])
+
             queue_threads.task_done()
-            continue
+            time.sleep(0.1)
 
-        gmail.clean_drafts(thread)
-
-        # skipped
-        if gmail.is_skipped(thread):
-            queue_skipped.put(thread)
-            queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads', 2))
-            continue
-
-        # error
-        if gmail.is_error(thread):
-            queue_error.put(thread)
-            queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads', 2))
-            continue
-
-        # analyze
-        if gmail.is_analyze(thread):
-            queue_analyze.put(thread)
-            queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_analyze :: {queue_analyze.qsize()} threads', 2))
-            continue
-
-        # scheduled
-        if gmail.is_scheduled(thread):
-            pass
-
-        # new
-        if gmail.is_new(thread):
-            queue_new.put(thread)
-            queue_threads.task_done()
-            continue
-
-        # followup
-        if gmail.is_follow_up(thread):
-            queue_followup.put(thread)
-            queue_threads.task_done()
-            continue
-
-        # sent
-        if gmail.is_sent(thread):
-            thread = gmail.thread_get_automon(id=thread.id)
-
-            queue_sent.put(thread)
-            queue_threads.task_done()
-            continue
-
-        queue_unknown.put(thread)
-        queue_log.put((f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads :: {thread}', 2))
-
-        gmail.messages_modify_automon(
-            id=thread._message_first.id,
-            removeLabelIds=[labels.processing])
-
-        queue_threads.task_done()
-        time.sleep(0.1)
+        except Exception as error:
+            queue_log.put((f'[processor_email_thread] :: ERROR :: {error=}', 1))
 
 
 def processor_email_new(gmail: AutomonGmailClient):
@@ -278,186 +288,210 @@ def processor_email_new(gmail: AutomonGmailClient):
 
     _PROCESSING = True
     while _PROCESSING:
-        while RESUME is None:
-            time.sleep(1)
+        try:
+            while RESUME is None:
+                time.sleep(1)
 
-        thread: GmailThread = queue_new.get()
+            thread: GmailThread = queue_new.get()
 
-        queue_log.put((f'[processor_email_new] :: {thread}', 2))
+            queue_log.put((f'[processor_email_new] :: {thread}', 2))
 
-        gmail.messages_modify_automon(
-            id=thread._message_first.id,
-            addLabelIds=[labels.processing])
+            gmail.messages_modify_automon(
+                id=thread._message_first.id,
+                addLabelIds=[labels.processing])
 
-        resume_str = RESUME._message_first._attachments_first.body._data_html_text
-        identity = RESUME._message_first._email_from
-        background = resume_str
+            resume_str = RESUME._message_first._attachments_first.body._data_html_text
+            identity = RESUME._message_first._email_from
+            background = resume_str
 
-        resume_prompt = OllamaClient.templates.markdown.str_to_markdown(
-            header='resume',
-            header_level=1,
-            text=resume_str,
-        )
+            resume_prompt = OllamaClient.templates.markdown.str_to_markdown(
+                header='resume',
+                header_level=1,
+                text=resume_str,
+            )
 
-        human = HumanAgent(
-            name=identity,
-            memory=background,
-        )
+            human = HumanAgent(
+                name=identity,
+                memory=background,
+            )
 
-        response_passed = False
-        response = False
-        exit_loop = False
-        while not response_passed or not exit_loop:
+            response_passed = False
+            response = False
+            exit_loop = False
+            while not response_passed or not exit_loop:
 
-            try:
-                # if not is_job_email(thread):
-                #     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-                #     exit_loop = True
-                #     break
+                try:
+                    # if not is_job_email(thread):
+                    #     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                    #     exit_loop = True
+                    #     break
 
-                # if is_rejected_email(thread):
-                #     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-                #     exit_loop = True
-                #     break
+                    # if is_rejected_email(thread):
+                    #     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
+                    #     exit_loop = True
+                    #     break
 
-                response, ollama = write_email_reply(identity=human, thread=thread)
-                if is_good_reply(response=response):
-                    response_passed = True
-                    exit_loop = True
-                    break
+                    response, ollama = write_email_reply(identity=human, thread=thread)
+                    if is_good_reply(response=response):
+                        response_passed = True
+                        exit_loop = True
+                        break
 
 
-            except Exception as error:
-                ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
-                ollama.add_system_prompt(human)
-                ollama.add_prompt(thread.to_prompt())
-                ollama.chat_forever()
-                raise debug_exception(locals(), error)
+                except Exception as error:
+                    ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
+                    ollama.add_system_prompt(human)
+                    ollama.add_prompt(thread.to_prompt())
+                    ollama.chat_forever()
+                    raise debug_exception(locals(), error)
 
-        if response_passed:
-            if not gmail.is_skipped(thread):
-                draft = None
+            if response_passed:
+                if not gmail.is_skipped(thread):
+                    draft = None
 
-                if gmail.is_new(thread):
-                    resume_attachment = RESUME_ATTACHMENT
+                    if gmail.is_new(thread):
+                        resume_attachment = RESUME_ATTACHMENT
 
-                    draft = draft_create(
-                        thread=thread,
-                        response=response,
-                        resume_attachment=resume_attachment,
-                    )
+                        draft = draft_create(
+                            thread=thread,
+                            response=response,
+                            resume_attachment=resume_attachment,
+                        )
+
+                    if draft is not None:
+                        if labels.auto_reply in thread._messages_labels:
+                            queue_send.put((thread, draft, ollama))
+
+                            gmail.messages_modify_automon(
+                                id=thread._message_first.id,
+                                removeLabelIds=[labels.processing],
+                            )
+
+            queue_new.task_done()
+
+        except Exception as error:
+            queue_log.put((f'[processor_email_new] :: ERROR :: {error=}', 1))
+
+
+def processor_email_sent(gmail: AutomonGmailClient):
+    while True:
+        try:
+            thread = queue_sent.get()
+            queue_log.put((f'[processor_email_sent] :: {queue_sent.qsize()} left :: {thread}', 2))
+
+            if gmail.is_old(thread):
+                queue_followup.put(thread)
+                queue_sent.task_done()
+                continue
+
+            queue_waiting.put(thread)
+            queue_sent.task_done()
+
+        except Exception as error:
+            queue_log.put((f'[processor_email_sent] :: ERROR :: {error=}', 1))
+
+
+def processor_draft_send(gmail: AutomonGmailClient):
+    while True:
+        try:
+            item: tuple[GmailThread, GmailDraft, OllamaClient] = queue_send.get()
+            thread, draft, OllamaClient = item
+
+            if labels.auto_reply in thread._messages_labels:
+                draft_sent = gmail.draft_send(draft=draft)
+
+                gmail.messages_modify_automon(
+                    id=thread.id,
+                    addLabelIds=[labels.unread])
+
+                queue_log.put((f'[processor_draft_send] :: sent :: {draft_sent}', 2))
+
+            queue_send.task_done()
+
+        except Exception as error:
+            queue_log.put((f'[processor_draft_send] :: ERROR :: {error=}', 1))
+
+
+def processor_email_waiting(gmail: AutomonGmailClient):
+    while True:
+        try:
+            thread: GmailThread = queue_waiting.get()
+            thread = gmail.thread_get_automon(thread.id)
+
+            queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} left :: {thread}', 2))
+
+            if gmail.is_follow_up(thread):
+                queue_followup.put(thread)
+                queue_waiting.task_done()
+                continue
+
+            gmail.messages_modify_automon(
+                id=thread.id,
+                addLabelIds=[labels.waiting])
+
+            queue_waiting.put(thread)
+            queue_waiting.task_done()
+
+            time.sleep(60)
+
+        except Exception as error:
+            queue_log.put((f'[processor_email_waiting] :: ERROR :: {error=}', 1))
+
+
+def processor_email_followup(gmail: AutomonGmailClient):
+    while True:
+        try:
+            thread: GmailThread = queue_followup.get()
+
+            gmail.messages_modify_automon(
+                id=thread.id,
+                removeLabelIds=[labels.waiting])
+
+            queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} left :: {thread}', 2))
+
+            identity = RESUME._message_first._email_from
+            background = RESUME._message_first._attachments_first.body._data_html_text
+
+            human = HumanAgent(
+                name=identity,
+                memory=background,
+            )
+
+            response, ollama = write_email_followup(identity=human, thread=thread)
+
+            draft = None
+            if is_good_reply(response):
+
+                resume_attachment = RESUME_ATTACHMENT
+
+                draft = draft_create(
+                    thread=thread,
+                    response=response,
+                    resume_attachment=resume_attachment,
+                )
 
                 if draft is not None:
                     if labels.auto_reply in thread._messages_labels:
                         queue_send.put((thread, draft, ollama))
 
-                        gmail.messages_modify_automon(
-                            id=thread._message_first.id,
-                            removeLabelIds=[labels.processing],
-                        )
+            queue_followup.task_done()
 
-        queue_new.task_done()
-
-
-def processor_email_sent(gmail: AutomonGmailClient):
-    while True:
-        thread = queue_sent.get()
-        queue_log.put((f'[processor_email_sent] :: {queue_sent.qsize()} left :: {thread}', 2))
-
-        if gmail.is_old(thread):
-            queue_followup.put(thread)
-            queue_sent.task_done()
-            continue
-
-        queue_waiting.put(thread)
-        queue_sent.task_done()
-
-
-def processor_draft_send(gmail: AutomonGmailClient):
-    while True:
-        item: tuple[GmailThread, GmailDraft, OllamaClient] = queue_send.get()
-        thread, draft, OllamaClient = item
-
-        if labels.auto_reply in thread._messages_labels:
-            draft_sent = gmail.draft_send(draft=draft)
-
-            gmail.messages_modify_automon(
-                id=thread.id,
-                addLabelIds=[labels.unread])
-
-            queue_log.put((f'[processor_draft_send] :: sent :: {draft_sent}', 2))
-
-        queue_send.task_done()
-
-
-def processor_email_waiting(gmail: AutomonGmailClient):
-    while True:
-        thread: GmailThread = queue_waiting.get()
-        thread = gmail.thread_get_automon(thread.id)
-
-        queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} left :: {thread}', 2))
-
-        if gmail.is_follow_up(thread):
-            queue_followup.put(thread)
-            queue_waiting.task_done()
-            continue
-
-        gmail.messages_modify_automon(
-            id=thread.id,
-            addLabelIds=[labels.waiting])
-
-        queue_waiting.put(thread)
-        queue_waiting.task_done()
-
-        time.sleep(60)
-
-
-def processor_email_followup(gmail: AutomonGmailClient):
-    while True:
-        thread: GmailThread = queue_followup.get()
-
-        gmail.messages_modify_automon(
-            id=thread.id,
-            removeLabelIds=[labels.waiting])
-
-        queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} left :: {thread}', 2))
-
-        identity = RESUME._message_first._email_from
-        background = RESUME._message_first._attachments_first.body._data_html_text
-
-        human = HumanAgent(
-            name=identity,
-            memory=background,
-        )
-
-        response, ollama = write_email_followup(identity=human, thread=thread)
-
-        draft = None
-        if is_good_reply(response):
-
-            resume_attachment = RESUME_ATTACHMENT
-
-            draft = draft_create(
-                thread=thread,
-                response=response,
-                resume_attachment=resume_attachment,
-            )
-
-            if draft is not None:
-                if labels.auto_reply in thread._messages_labels:
-                    queue_send.put((thread, draft, ollama))
-
-        queue_followup.task_done()
+        except Exception as error:
+            queue_log.put((f'[processor_email_followup] :: ERROR :: {error=}', 1))
 
 
 def processor_token_counter():
     while True:
-        tokens: int = queue_tokens.get()
+        try:
+            tokens: int = queue_tokens.get()
 
-        global TOTAL_TOKENS
-        TOTAL_TOKENS += tokens
+            global TOTAL_TOKENS
+            TOTAL_TOKENS += tokens
 
-        queue_tokens.task_done()
+            queue_tokens.task_done()
+
+        except Exception as error:
+            queue_log.put((f'[processor_token_counter] :: ERROR :: {error=}', 1))
 
 
 def is_job_email(thread: GmailThread) -> bool:
@@ -691,22 +725,22 @@ def main():
 
     threads = ThreadingClient()
 
-    threads.add_worker(target=gmail.create_labels, raise_exception=False)
+    threads.add_worker(target=gmail.create_labels)
 
-    threads.add_worker(target=get_threads, args=(gmail,), raise_exception=False)
-    threads.add_worker(target=get_resume, args=(gmail,), raise_exception=False)
+    threads.add_worker(target=get_threads, args=(gmail,))
+    threads.add_worker(target=get_resume, args=(gmail,))
 
-    threads.add_worker(target=processor_email_thread, args=(gmail,), raise_exception=False)
-    threads.add_worker(target=processor_email_new, args=(gmail,), raise_exception=False)
-    threads.add_worker(target=processor_email_waiting, args=(gmail,), raise_exception=False)
-    threads.add_worker(target=processor_draft_send, args=(gmail,), raise_exception=False)
-    threads.add_worker(target=processor_email_sent, args=(gmail,), raise_exception=False)
-    threads.add_worker(target=processor_email_followup, args=(gmail,), raise_exception=False)
+    threads.add_worker(target=processor_email_thread, args=(gmail,))
+    threads.add_worker(target=processor_email_new, args=(gmail,))
+    threads.add_worker(target=processor_email_waiting, args=(gmail,))
+    threads.add_worker(target=processor_draft_send, args=(gmail,))
+    threads.add_worker(target=processor_email_sent, args=(gmail,))
+    threads.add_worker(target=processor_email_followup, args=(gmail,))
 
     threads.add_worker(target=log_printer)
     threads.add_worker(target=processor_token_counter)
 
-    threads.add_worker(target=gmail_token_refresher, args=(gmail,), raise_exception=False)
+    threads.add_worker(target=gmail_token_refresher, args=(gmail,))
 
     threads.start(max_threads=len(queues))
 
