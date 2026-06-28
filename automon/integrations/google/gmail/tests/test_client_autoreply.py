@@ -155,7 +155,6 @@ def automon_init(client: AutomonGmailClient):
 def get_threads(gmail: AutomonGmailClient):
     while True:
         try:
-
             while not gmail.is_ready():
                 time.sleep(0.1)
 
@@ -191,6 +190,7 @@ def get_threads(gmail: AutomonGmailClient):
 
         except Exception as error:
             queue_log.put((f'[get_threads] :: ERROR :: {error=}', 1))
+            time.sleep(60)
 
 
 def get_resume(gmail: AutomonGmailClient):
@@ -281,6 +281,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
         except Exception as error:
             queue_log.put((f'[processor_email_thread] :: ERROR :: {error=}', 1))
+            time.sleep(60)
 
 
 def processor_email_new(gmail: AutomonGmailClient):
@@ -371,6 +372,7 @@ def processor_email_new(gmail: AutomonGmailClient):
 
         except Exception as error:
             queue_log.put((f'[processor_email_new] :: ERROR :: {error=}', 1))
+            time.sleep(60)
 
 
 def processor_email_sent(gmail: AutomonGmailClient):
@@ -389,6 +391,7 @@ def processor_email_sent(gmail: AutomonGmailClient):
 
         except Exception as error:
             queue_log.put((f'[processor_email_sent] :: ERROR :: {error=}', 1))
+            time.sleep(60)
 
 
 def processor_draft_send(gmail: AutomonGmailClient):
@@ -410,6 +413,7 @@ def processor_draft_send(gmail: AutomonGmailClient):
 
         except Exception as error:
             queue_log.put((f'[processor_draft_send] :: ERROR :: {error=}', 1))
+            time.sleep(60)
 
 
 def processor_email_waiting(gmail: AutomonGmailClient):
@@ -436,6 +440,7 @@ def processor_email_waiting(gmail: AutomonGmailClient):
 
         except Exception as error:
             queue_log.put((f'[processor_email_waiting] :: ERROR :: {error=}', 1))
+            time.sleep(60)
 
 
 def processor_email_followup(gmail: AutomonGmailClient):
@@ -478,6 +483,7 @@ def processor_email_followup(gmail: AutomonGmailClient):
 
         except Exception as error:
             queue_log.put((f'[processor_email_followup] :: ERROR :: {error=}', 1))
+            time.sleep(60)
 
 
 def processor_token_counter():
@@ -492,6 +498,7 @@ def processor_token_counter():
 
         except Exception as error:
             queue_log.put((f'[processor_token_counter] :: ERROR :: {error=}', 1))
+            time.sleep(60)
 
 
 def is_job_email(thread: GmailThread) -> bool:
