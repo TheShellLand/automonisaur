@@ -211,9 +211,9 @@ def get_resume(gmail: AutomonGmailClient):
 
 def processor_email_thread(gmail: AutomonGmailClient):
     while True:
-        try:
-            thread = queue_threads.get()
+        thread = queue_threads.get()
 
+        try:
             queue_log.put((f'[processor_email_thread] :: {thread}', 3))
 
             # resume
@@ -280,6 +280,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
             time.sleep(0.1)
 
         except Exception as error:
+            queue_threads.put(thread)
             queue_log.put((f'[processor_email_thread] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
@@ -289,12 +290,12 @@ def processor_email_new(gmail: AutomonGmailClient):
 
     _PROCESSING = True
     while _PROCESSING:
+        while RESUME is None:
+            time.sleep(5)
+
+        thread: GmailThread = queue_new.get()
+
         try:
-            while RESUME is None:
-                time.sleep(1)
-
-            thread: GmailThread = queue_new.get()
-
             queue_log.put((f'[processor_email_new] :: {thread}', 2))
 
             gmail.messages_modify_automon(
@@ -371,14 +372,16 @@ def processor_email_new(gmail: AutomonGmailClient):
             queue_new.task_done()
 
         except Exception as error:
+            queue_new.put(thread)
             queue_log.put((f'[processor_email_new] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
 
 def processor_email_sent(gmail: AutomonGmailClient):
     while True:
+        thread = queue_sent.get()
+
         try:
-            thread = queue_sent.get()
             queue_log.put((f'[processor_email_sent] :: {queue_sent.qsize()} left :: {thread}', 2))
 
             if gmail.is_old(thread):
@@ -390,16 +393,17 @@ def processor_email_sent(gmail: AutomonGmailClient):
             queue_sent.task_done()
 
         except Exception as error:
+            queue_sent.put(thread)
             queue_log.put((f'[processor_email_sent] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
 
 def processor_draft_send(gmail: AutomonGmailClient):
     while True:
-        try:
-            item: tuple[GmailThread, GmailDraft, OllamaClient] = queue_send.get()
-            thread, draft, OllamaClient = item
+        item: tuple[GmailThread, GmailDraft, OllamaClient] = queue_send.get()
+        thread, draft, OllamaClient = item
 
+        try:
             if labels.auto_reply in thread._messages_labels:
                 draft_sent = gmail.draft_send(draft=draft)
 
@@ -412,14 +416,16 @@ def processor_draft_send(gmail: AutomonGmailClient):
             queue_send.task_done()
 
         except Exception as error:
+            queue_sent.put((thread, draft, OllamaClient))
             queue_log.put((f'[processor_draft_send] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
 
 def processor_email_waiting(gmail: AutomonGmailClient):
     while True:
+        thread: GmailThread = queue_waiting.get()
+
         try:
-            thread: GmailThread = queue_waiting.get()
             thread = gmail.thread_get_automon(thread.id)
 
             queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} left :: {thread}', 2))
@@ -439,15 +445,16 @@ def processor_email_waiting(gmail: AutomonGmailClient):
             time.sleep(60)
 
         except Exception as error:
+            queue_waiting.put(thread)
             queue_log.put((f'[processor_email_waiting] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
 
 def processor_email_followup(gmail: AutomonGmailClient):
     while True:
-        try:
-            thread: GmailThread = queue_followup.get()
+        thread: GmailThread = queue_followup.get()
 
+        try:
             gmail.messages_modify_automon(
                 id=thread.id,
                 removeLabelIds=[labels.waiting])
@@ -482,21 +489,23 @@ def processor_email_followup(gmail: AutomonGmailClient):
             queue_followup.task_done()
 
         except Exception as error:
+            queue_followup.put(thread)
             queue_log.put((f'[processor_email_followup] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
 
 def processor_token_counter():
+    global TOTAL_TOKENS
+
     while True:
+        tokens: int = queue_tokens.get()
+
         try:
-            tokens: int = queue_tokens.get()
-
-            global TOTAL_TOKENS
             TOTAL_TOKENS += tokens
-
             queue_tokens.task_done()
 
         except Exception as error:
+            queue_tokens.put(tokens)
             queue_log.put((f'[processor_token_counter] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
