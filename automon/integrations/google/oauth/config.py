@@ -82,7 +82,7 @@ class GoogleAuthConfig(DictHelper):
     @property
     def _credentials_file_has_refresh_token(self) -> bool:
         if self._credentials_file_type_oauth2:
-            if 'refresh_token' and 'access_token' in self._credentials_file:
+            if 'refresh_token' in self._credentials_file and 'access_token' in self._credentials_file:
                 return True
         return False
 
