@@ -99,7 +99,7 @@ CHAT_FOREVER = False
 CHAT_STREAM = True
 
 OLLAMA_MODEL = 'gemma4:12b'
-OLLAMA_HOST_GPU_5070fe = 'http://192.168.111.175:11434'
+OLLAMA_HOST_GPU_5070fe = 'http://100.116.243.98:11434'
 OLLAMA_HOST_GPU_1080ti = 'http://100.120.42.82:11434'
 
 OLLAMA_HOSTS = [
@@ -141,7 +141,8 @@ def gmail_token_refresher(gmail: AutomonGmailClient):
     while True:
         try:
             if gmail.config.refresh_token():
-                time.sleep(60)
+                queue_log.put((f'[gmail_token_refresher] :: refreshed', 1))
+                time.sleep(60 * 5)
         except Exception as error:
             queue_log.put((f'[gmail_token_refresher] :: ERROR :: {error=}', 1))
 
