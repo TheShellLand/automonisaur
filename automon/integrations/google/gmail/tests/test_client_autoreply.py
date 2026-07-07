@@ -63,7 +63,7 @@ logging settings
 
 DEBUG_LEVEL = 2
 DEBUG_ = False
-DEFAULT_LEVEL = CRITICAL
+DEFAULT_LEVEL = DEBUG
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
@@ -155,10 +155,11 @@ def automon_init(client: AutomonGmailClient):
 
 def get_threads(gmail: AutomonGmailClient):
     while True:
-        try:
-            while not gmail.is_ready():
-                time.sleep(0.1)
 
+        while not gmail.is_ready():
+            time.sleep(0.1)
+
+        try:
             query_sequence = [
                 [labels.automon, labels.error],
                 [labels.automon, labels.processing],
@@ -198,6 +199,9 @@ def get_resume(gmail: AutomonGmailClient):
     global RESUME
     global RESUME_ATTACHMENT
 
+    while not gmail.is_ready():
+        time.sleep(0.1)
+
     while RESUME is None:
         threads = gmail.thread_list_automon(
             maxResults=1,
@@ -212,6 +216,10 @@ def get_resume(gmail: AutomonGmailClient):
 
 def processor_email_thread(gmail: AutomonGmailClient):
     while True:
+
+        while not gmail.is_ready():
+            time.sleep(0.1)
+
         thread = queue_threads.get()
 
         try:
@@ -281,7 +289,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
             time.sleep(0.1)
 
         except Exception as error:
-            queue_threads.put(thread)
+            # queue_threads.put(thread)
             queue_log.put((f'[processor_email_thread] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
@@ -291,6 +299,10 @@ def processor_email_new(gmail: AutomonGmailClient):
 
     _PROCESSING = True
     while _PROCESSING:
+
+        while not gmail.is_ready():
+            time.sleep(0.1)
+
         while RESUME is None:
             time.sleep(5)
 
@@ -373,13 +385,17 @@ def processor_email_new(gmail: AutomonGmailClient):
             queue_new.task_done()
 
         except Exception as error:
-            queue_new.put(thread)
+            # queue_new.put(thread)
             queue_log.put((f'[processor_email_new] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
 
 def processor_email_sent(gmail: AutomonGmailClient):
     while True:
+
+        while not gmail.is_ready():
+            time.sleep(0.1)
+
         thread = queue_sent.get()
 
         try:
@@ -394,13 +410,17 @@ def processor_email_sent(gmail: AutomonGmailClient):
             queue_sent.task_done()
 
         except Exception as error:
-            queue_sent.put(thread)
+            # queue_sent.put(thread)
             queue_log.put((f'[processor_email_sent] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
 
 def processor_draft_send(gmail: AutomonGmailClient):
     while True:
+
+        while not gmail.is_ready():
+            time.sleep(0.1)
+
         item: tuple[GmailThread, GmailDraft, OllamaClient] = queue_send.get()
         thread, draft, OllamaClient = item
 
@@ -417,13 +437,17 @@ def processor_draft_send(gmail: AutomonGmailClient):
             queue_send.task_done()
 
         except Exception as error:
-            queue_sent.put((thread, draft, OllamaClient))
+            # queue_sent.put((thread, draft, OllamaClient))
             queue_log.put((f'[processor_draft_send] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
 
 def processor_email_waiting(gmail: AutomonGmailClient):
     while True:
+
+        while not gmail.is_ready():
+            time.sleep(0.1)
+
         thread: GmailThread = queue_waiting.get()
 
         try:
@@ -446,13 +470,17 @@ def processor_email_waiting(gmail: AutomonGmailClient):
             time.sleep(60)
 
         except Exception as error:
-            queue_waiting.put(thread)
+            # queue_waiting.put(thread)
             queue_log.put((f'[processor_email_waiting] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
 
 def processor_email_followup(gmail: AutomonGmailClient):
     while True:
+
+        while not gmail.is_ready():
+            time.sleep(0.1)
+
         thread: GmailThread = queue_followup.get()
 
         try:
@@ -490,7 +518,7 @@ def processor_email_followup(gmail: AutomonGmailClient):
             queue_followup.task_done()
 
         except Exception as error:
-            queue_followup.put(thread)
+            # queue_followup.put(thread)
             queue_log.put((f'[processor_email_followup] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
@@ -506,7 +534,7 @@ def processor_token_counter():
             queue_tokens.task_done()
 
         except Exception as error:
-            queue_tokens.put(tokens)
+            # queue_tokens.put(tokens)
             queue_log.put((f'[processor_token_counter] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
