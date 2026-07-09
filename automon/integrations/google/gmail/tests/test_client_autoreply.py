@@ -19,22 +19,21 @@ queues
 
 """
 
-queue_threads: Queue[GmailThread] = UniqueQueue(maxsize=5)
-queue_new: Queue[GmailThread] = UniqueQueue(maxsize=5)
-queue_send: Queue[tuple[GmailThread, GmailDraft, OllamaClient]] = UniqueQueue()
-queue_skipped: Queue[GmailThread] = UniqueQueue()
-queue_followup: Queue[GmailThread] = UniqueQueue()
-queue_sent: Queue[GmailThread] = UniqueQueue()
-queue_waiting: Queue[GmailThread] = UniqueQueue()
-queue_analyze: Queue[GmailThread] = UniqueQueue()
-queue_waiting_for_first_call: Queue[GmailThread] = UniqueQueue()
-queue_waiting_for_interview: Queue[GmailThread] = UniqueQueue()
+queue_threads: Queue[GmailThread] = Queue(maxsize=5)
+queue_new: Queue[GmailThread] = Queue(maxsize=5)
+queue_send: Queue[tuple[GmailThread, GmailDraft, OllamaClient]] = Queue()
+queue_skipped: Queue[GmailThread] = Queue()
+queue_followup: Queue[GmailThread] = Queue()
+queue_sent: Queue[GmailThread] = Queue()
+queue_waiting: Queue[GmailThread] = Queue()
+queue_analyze: Queue[GmailThread] = Queue()
+queue_waiting_for_first_call: Queue[GmailThread] = Queue()
+queue_waiting_for_interview: Queue[GmailThread] = Queue()
 
-queue_unknown: Queue[GmailThread] = UniqueQueue()
-query_history: Queue[GmailThread] = UniqueQueue()
+queue_unknown: Queue[GmailThread] = Queue()
 
-queue_error: Queue[GmailThread] = UniqueQueue()
-queue_log: Queue[tuple[str, int]] = UniqueQueue()
+queue_error: Queue[GmailThread] = Queue()
+queue_log: Queue[tuple[str, int]] = Queue()
 
 queue_tokens: Queue[int] = Queue()
 
@@ -180,11 +179,8 @@ def get_threads(gmail: AutomonGmailClient):
                 queue_log.put((f'[get_threads] :: {query} :: {thread_search}', 3))
 
                 for thread in thread_search.threads:
-
-                    if thread not in query_history.queue:
-                        query_history.put(thread)
-                        queue_threads.put(thread)
-                        queue_log.put((f'[get_threads] :: {query_history.qsize()} processed', 3))
+                    queue_threads.put(thread)
+                    queue_log.put((f'[get_threads] :: {queue_threads.qsize()} processed', 3))
 
                 nextPageToken = thread_search.nextPageToken
 
@@ -437,7 +433,7 @@ def processor_draft_send(gmail: AutomonGmailClient):
             queue_send.task_done()
 
         except Exception as error:
-            # queue_sent.put((thread, draft, OllamaClient))
+            queue_sent.put((thread, draft, OllamaClient))
             queue_log.put((f'[processor_draft_send] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
