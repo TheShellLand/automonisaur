@@ -208,6 +208,7 @@ def get_resume(gmail: AutomonGmailClient):
             if gmail.is_resume(thread):
                 RESUME = thread
                 RESUME_ATTACHMENT = thread._message_first.find_attachment_pdf()
+                queue_log.put((f'[get_resume] :: {thread} :: {RESUME}', 3))
 
 
 def processor_email_thread(gmail: AutomonGmailClient):
