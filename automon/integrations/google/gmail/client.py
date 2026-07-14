@@ -76,6 +76,7 @@ class GoogleGmailClient(GoogleAuthClient):
             draft_bc: list[str] | str = [],
             draft_body: str = '',
             draft_attachments: list[GmailEmailAttachment] = [],
+            include_original: bool = True,
             **kwargs,
     ) -> GmailDraft:
         """Creates a new draft with the DRAFT label."""
