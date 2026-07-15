@@ -1206,7 +1206,7 @@ class GmailThread(DictHelper):
             return self.messages[-1]
 
     def to_prompt(self) -> str:
-        return Markdown.list_to_markdown([x.to_prompt() for x in self.messages])
+        return Markdown.list_to_markdown([x.to_prompt() for x in self._clean_thread])
 
 
 class GmailThreadList(DictHelper):
