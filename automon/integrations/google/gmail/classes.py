@@ -841,7 +841,7 @@ class GmailMessage(DictHelper):
     def to_reply(self, body: str) -> str:
 
         original_date = self._date_local_str
-        original_sender = self._header_from
+        original_sender = self._header_from.value
         original_body = self._email_body()
 
         quoted_original = "\n".join(f"> {line}" for line in original_body.splitlines())

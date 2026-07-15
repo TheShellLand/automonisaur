@@ -11,10 +11,9 @@ import email.mime.multipart
 import email.mime.image
 import email.mime.audio
 import email.mime.base
+import email.utils
 import mimetypes
 import googleapiclient.discovery
-
-from email.utils import formataddr
 
 import automon
 import automon.helpers
@@ -88,7 +87,7 @@ class GoogleGmailClient(GoogleAuthClient):
                 if '<' in draft_to:
                     _name, _email = draft_to.split("<")
                     _email = _email.replace(">", '')
-                    draft_to = formataddr((_name, _email))
+                    draft_to = email.utils.formataddr((_name, _email))
                 draft_to = [draft_to]
 
             if isinstance(draft_cc, str):
