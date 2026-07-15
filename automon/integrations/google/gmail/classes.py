@@ -788,6 +788,19 @@ class GmailMessage(DictHelper):
 
             return email
 
+    def _email_body(self) -> str | None:
+        body = None
+        for attachment in self._attachments:
+            if attachment.mimeType == 'text/plain':
+                body = attachment.body._data_html_text
+                break
+
+            if attachment.mimeType == 'text/html':
+                body = attachment.body._data_html_text
+                break
+
+        return body
+
     @property
     def _hash_md5(self) -> str | None:
         if self.id is not None:
@@ -825,18 +838,26 @@ class GmailMessage(DictHelper):
     def snippet(self, value):
         self._snippet = value
 
+    def to_reply(self, body: str) -> str:
+
+        original_date = self._date_local_str
+        original_sender = self._header_from
+        original_body = self._email_body()
+
+        quoted_original = "\n".join(f"> {line}" for line in original_body.splitlines())
+
+        reply = (
+            f"{body}\n\n"
+            f"On {original_date}, {original_sender} wrote:\n"
+            f"{quoted_original}"
+        )
+
+        return reply
+
     def to_prompt(self) -> str:
         """email to markdown"""
 
-        body = None
-        for attachment in self._attachments:
-            if attachment.mimeType == 'text/plain':
-                body = attachment.body._data_html_text
-                break
-
-            if attachment.mimeType == 'text/html':
-                body = attachment.body._data_html_text
-                break
+        body = self._email_body()
 
         if body is None and self.snippet is None:
             raise debug_exception(locals(), f'body not found')

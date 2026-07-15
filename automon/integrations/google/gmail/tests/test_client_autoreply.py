@@ -747,7 +747,8 @@ def draft_create(
         draft_from=from_,
         draft_subject=subject,
         draft_body=body,
-        draft_attachments=resume_attachment
+        draft_attachments=resume_attachment,
+        include_original = thread._clean_thread_latest
     )
     draft_get = gmail.draft_get_automon(id=draft.id)
 

@@ -76,7 +76,7 @@ class GoogleGmailClient(GoogleAuthClient):
             draft_bc: list[str] | str = [],
             draft_body: str = '',
             draft_attachments: list[GmailEmailAttachment] = [],
-            include_original: bool = True,
+            include_original: GmailMessage = None,
             **kwargs,
     ) -> GmailDraft:
         """Creates a new draft with the DRAFT label."""
@@ -103,6 +103,9 @@ class GoogleGmailClient(GoogleAuthClient):
             email_build['To'] = ', '.join(draft_to)
             email_build['Cc'] = ', '.join(draft_cc)
             email_build['Bc'] = ', '.join(draft_bc)
+
+            if include_original:
+                draft_body = include_original.to_reply(draft_body)
 
             draft_body = email.mime.text.MIMEText(draft_body)
             email_build.attach(draft_body)
