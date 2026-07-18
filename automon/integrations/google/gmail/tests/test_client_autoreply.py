@@ -748,7 +748,7 @@ def draft_create(
         draft_subject=subject,
         draft_body=body,
         draft_attachments=resume_attachment,
-        include_original = thread._clean_thread_latest
+        include_original=thread._clean_thread_latest
     )
     draft_get = gmail.draft_get_automon(id=draft.id)
 
@@ -790,7 +790,7 @@ def main():
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        gmail.get_user_info()
+        gmail.login()
 
         while gmail.is_ready():
             main()

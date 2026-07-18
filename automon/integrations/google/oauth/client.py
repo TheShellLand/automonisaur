@@ -33,7 +33,6 @@ class GoogleAuthClient:
 
         self.user_info: dict = {}
 
-
     def __repr__(self):
         return f'{self.__dict__}'
 
@@ -128,6 +127,9 @@ class GoogleAuthClient:
             always_use_jwt_access=always_use_jwt_access,
             **kwargs,
         )
+
+    def login(self):
+        return self.get_user_info()
 
     def get_user_info(self) -> dict:
         """return user account"""
