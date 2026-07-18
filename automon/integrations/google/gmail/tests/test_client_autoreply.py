@@ -790,6 +790,8 @@ def main():
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
+        gmail.get_user_info()
+
         while gmail.is_ready():
             main()
         pass
