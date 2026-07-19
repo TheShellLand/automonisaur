@@ -29,6 +29,9 @@ def debug_exception(error_context=None, log=None) -> Exception:
         error_context = '\n'.join(error_context)
 
     if log is not None:
-        return Exception(f'\n\n{log=}\n\n{error_context}\n\n{tb}')
+        raise Exception(f'{log=}\n\n{error_context}')
 
-    return Exception(f'\n\n{error_context}\n\n{tb}')
+    if tb is not None:
+        raise Exception(f'{error_context}\n\n{tb}')
+
+    raise Exception(f'{error_context}')
