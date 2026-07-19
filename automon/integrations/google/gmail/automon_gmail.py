@@ -292,9 +292,11 @@ class AutomonGmailClient(GoogleGmailClient):
         return False
 
     def is_old(self, thread: GmailThread):
-        if thread._clean_thread_latest:
-            if thread._clean_thread_latest._date_since_now.days >= 3:
-                return True
+        latest = thread._clean_thread_latest
+        if latest:
+            if latest._date_since_now is not None:
+                if latest._date_since_now.days >= 3:
+                    return True
         return False
 
     def mark_processing(self, thread: GmailThread):
