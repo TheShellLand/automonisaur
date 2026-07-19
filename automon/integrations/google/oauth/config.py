@@ -40,7 +40,7 @@ class GoogleAuthConfig(DictHelper):
         self.GOOGLE_CREDENTIALS_BASE64: str = (GOOGLE_CREDENTIALS_BASE64 or
                                                environ('GOOGLE_CREDENTIALS_BASE64'))
 
-        self.credentials: google.oauth2.credentials.Credentials | None = None
+        self.credentials: google.oauth2.credentials.Credentials = None
 
         if self.GOOGLE_CREDENTIALS_FILE:
             if not os.path.exists(self.GOOGLE_CREDENTIALS_FILE):
@@ -153,13 +153,13 @@ class GoogleAuthConfig(DictHelper):
 
         return False
 
-    def Credentials(self, save_creds: bool = False, reauth: bool = False) -> google.oauth2.credentials.Credentials:
+    def Credentials(self, save_creds: bool = True) -> google.oauth2.credentials.Credentials:
         """return Google Credentials object"""
 
         if save_creds:
             self._credentials_pickle_load()
 
-        if self.credentials and not self.credentials.expired and not reauth:
+        if bool(self.credentials and self.credentials.expired and self.credentials.refresh_token is not None):
             self.refresh_token()
             return self.credentials
 

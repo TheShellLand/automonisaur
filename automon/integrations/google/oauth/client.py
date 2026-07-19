@@ -67,7 +67,6 @@ class GoogleAuthClient:
 
         if hasattr(creds, 'refresh_token'):
             creds.refresh(Request)
-            logger.info(f'[GoogleAuthClient] :: auth :: oauth :: token refresh :: {getattr(creds, "refresh_token")}')
             return True
 
         # TODO: add google flow() authentication
@@ -136,7 +135,7 @@ class GoogleAuthClient:
         service = self.service(
             serviceName='oauth2',
             version='v2',
-            credentials=self.config.credentials,
+            credentials=self.config.Credentials(),
             num_retries=30)
 
         user_info = service.userinfo().get().execute()

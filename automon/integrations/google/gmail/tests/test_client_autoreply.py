@@ -62,7 +62,7 @@ logging settings
 
 DEBUG_LEVEL = 2
 DEBUG_ = False
-DEFAULT_LEVEL = DEBUG
+DEFAULT_LEVEL = ERROR
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
@@ -764,7 +764,9 @@ def main():
     global gmail
 
     while not gmail.is_ready():
-        time.sleep(1)
+        time.sleep(10)
+
+    gmail.login()
 
     threads = ThreadingClient()
 
@@ -790,8 +792,6 @@ def main():
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        gmail.login()
-
         while gmail.is_ready():
             main()
         pass
