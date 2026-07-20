@@ -96,8 +96,6 @@ class GoogleAuthConfig(DictHelper):
             if 'installed' in self._credentials_file:
                 return 'oauth2'
 
-        raise
-
     @property
     def _credentials_file_type_oauth2(self) -> bool:
         if self._credentials_file_type == 'oauth2':
@@ -325,7 +323,7 @@ class GoogleAuthConfig(DictHelper):
 
         if creds is not None:
             if creds and creds.refresh_token:
-            # if creds and creds.expired and creds.refresh_token:
+                # if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request)
                 return True
 
