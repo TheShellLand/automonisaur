@@ -767,6 +767,7 @@ def main():
         time.sleep(10)
 
     gmail.login()
+    gmail.config.Credentials()
 
     threads = ThreadingClient()
 
