@@ -422,14 +422,17 @@ def processor_draft_send(gmail: AutomonGmailClient):
         thread, draft, OllamaClient = item
 
         try:
-            if labels.auto_reply in thread._messages_labels:
-                draft_sent = gmail.draft_send(draft=draft)
+            thread = gmail.thread_get_automon(thread.id)
 
-                gmail.messages_modify_automon(
-                    id=thread.id,
-                    addLabelIds=[labels.unread])
+            if gmail.is_old(thread):
+                if labels.auto_reply in thread._messages_labels:
+                    draft_sent = gmail.draft_send(draft=draft)
 
-                queue_log.put((f'[processor_draft_send] :: sent :: {draft_sent}', 2))
+                    gmail.messages_modify_automon(
+                        id=thread.id,
+                        addLabelIds=[labels.unread])
+
+                    queue_log.put((f'[processor_draft_send] :: sent :: {draft_sent}', 2))
 
             queue_send.task_done()
 
@@ -743,7 +746,7 @@ def draft_create(
     draft = gmail.draft_create(
         threadId=thread.id,
         draft_to=to,
-        draft_cc='djaw.contact@gmail.com',
+        draft_cc='dianajaw@gmail.com',
         draft_from=from_,
         draft_subject=subject,
         draft_body=body,
