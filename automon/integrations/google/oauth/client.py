@@ -63,10 +63,9 @@ class GoogleAuthClient:
         """authenticate web token"""
 
         creds = self.config.Credentials()
-        Request = google.auth.transport.requests.Request()
 
         if hasattr(creds, 'refresh_token'):
-            creds.refresh(Request)
+            self.config.refresh_token()
             return True
 
         # TODO: add google flow() authentication
@@ -81,8 +80,9 @@ class GoogleAuthClient:
     def is_ready(self) -> bool:
         """Check if authenticated to make requests"""
         try:
-            if self.authenticate():
-                return True
+            if self.config.is_ready():
+                if self.authenticate():
+                    return True
         except:
             pass
         return False

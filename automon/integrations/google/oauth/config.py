@@ -311,7 +311,7 @@ class GoogleAuthConfig(DictHelper):
 
     def is_ready(self) -> bool:
         """return True if credentials are ready to use"""
-        return bool(self.GOOGLE_CREDENTIALS_FILE or self.GOOGLE_CREDENTIALS_BASE64)
+        return bool(self.GOOGLE_CREDENTIALS_FILE or self.GOOGLE_CREDENTIALS_BASE64 and self.refresh_token())
 
     def refresh_token(self) -> bool:
         """refresh token

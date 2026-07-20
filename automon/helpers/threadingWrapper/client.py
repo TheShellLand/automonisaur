@@ -70,7 +70,7 @@ class ThreadingClient(object):
             current_thread.result = None
             current_thread.exception = error
             self.queue_error.put(current_thread)
-            raise debug_exception(locals(), error)
+            raise Exception(error)
 
     def add_worker(
             self,

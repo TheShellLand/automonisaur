@@ -89,6 +89,9 @@ class GmailColor(DictHelper):
 
         super().__init__(color)
 
+    def __repr__(self):
+        return f'backgroundColor={self.backgroundColor} textColor={self.textColor}'
+
     def __bool__(self):
         if self.backgroundColor and self.textColor:
             return True
