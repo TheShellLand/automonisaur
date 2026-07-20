@@ -69,7 +69,7 @@ LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.client').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.utils').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.chat').setLevel(DEFAULT_LEVEL)
-LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(CRITICAL)
+LoggingClient.logging.getLogger('automon.integrations.requestsWrapper.client').setLevel(ERROR)
 LoggingClient.logging.getLogger('automon.integrations.google.oauth.config').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.api').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.integrations.google.gemini.config').setLevel(DEFAULT_LEVEL)
@@ -84,7 +84,7 @@ if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
 else:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
-    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(CRITICAL)
+    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(ERROR)
 
 """
 
