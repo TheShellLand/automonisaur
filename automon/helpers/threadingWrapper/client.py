@@ -33,8 +33,6 @@ class Thread(threading.Thread):
         self._target_args = args
         self._target_kwargs = kwargs
 
-        log.debug(f"[Thread] :: {target=} :: {args=} :: {kwargs=}")
-
     def __repr__(self):
         return f'[Thread] :: {self.name} :: {self._target_args}'
 
@@ -66,11 +64,10 @@ class ThreadingClient(object):
             current_thread.exception = None
             self.queue_completed.put(current_thread)
         except Exception as error:
-            log.error(f"[ThreadingClient] :: ERROR :: {error=}")
             current_thread.result = None
             current_thread.exception = error
             self.queue_error.put(current_thread)
-            raise Exception(error)
+            raise error
 
     def add_worker(
             self,
@@ -171,12 +168,6 @@ class ThreadingClient(object):
                     f'running :: {thread.name}, '
                     f'{thread._target_args}',
                     f'{current_threads_count + 1} threads ({max_threads_limit} max)',
-                ]))
-
-                log.info(repr_str([
-                    f'[ThreadingClient] :: start',
-                    f'{self._current_threads_count} running',
-                    f'{self._completed_threads_count} completed',
                 ]))
 
             else:
