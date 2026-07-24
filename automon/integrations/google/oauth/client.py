@@ -115,7 +115,7 @@ class GoogleAuthClient:
             developerKey=developerKey,
             model=model,
             requestBuilder=requestBuilder or googleapiclient.http.HttpRequest,
-            credentials=credentials or self.config.Credentials(),
+            credentials=credentials or self.config.credentials,
             cache_discovery=cache_discovery,
             cache=cache,
             client_options=client_options,
@@ -128,14 +128,15 @@ class GoogleAuthClient:
         )
 
     def login(self):
-        return self.get_user_info()
+        if self.authenticate():
+            self.get_user_info()
 
     def get_user_info(self) -> dict:
         """return user account"""
         service = self.service(
             serviceName='oauth2',
             version='v2',
-            credentials=self.config.Credentials(),
+            credentials=self.config.credentials,
             num_retries=30)
 
         user_info = service.userinfo().get().execute()

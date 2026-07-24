@@ -156,7 +156,7 @@ def get_threads(gmail: AutomonGmailClient):
     while True:
 
         while not gmail.is_ready():
-            time.sleep(0.1)
+            time.sleep(120)
 
         try:
             query_sequence = [
@@ -215,7 +215,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
     while True:
 
         while not gmail.is_ready():
-            time.sleep(0.1)
+            time.sleep(120)
 
         thread = queue_threads.get()
 
@@ -298,7 +298,7 @@ def processor_email_new(gmail: AutomonGmailClient):
     while _PROCESSING:
 
         while not gmail.is_ready():
-            time.sleep(0.1)
+            time.sleep(120)
 
         while RESUME is None:
             time.sleep(5)
@@ -391,7 +391,7 @@ def processor_email_sent(gmail: AutomonGmailClient):
     while True:
 
         while not gmail.is_ready():
-            time.sleep(0.1)
+            time.sleep(120)
 
         thread = queue_sent.get()
 
@@ -416,7 +416,7 @@ def processor_draft_send(gmail: AutomonGmailClient):
     while True:
 
         while not gmail.is_ready():
-            time.sleep(0.1)
+            time.sleep(120)
 
         item: tuple[GmailThread, GmailDraft, OllamaClient] = queue_send.get()
         thread, draft, OllamaClient = item
@@ -446,7 +446,7 @@ def processor_email_waiting(gmail: AutomonGmailClient):
     while True:
 
         while not gmail.is_ready():
-            time.sleep(0.1)
+            time.sleep(120)
 
         thread: GmailThread = queue_waiting.get()
 
@@ -479,7 +479,7 @@ def processor_email_followup(gmail: AutomonGmailClient):
     while True:
 
         while not gmail.is_ready():
-            time.sleep(0.1)
+            time.sleep(120)
 
         thread: GmailThread = queue_followup.get()
 
@@ -766,11 +766,8 @@ def main():
     global gemini
     global gmail
 
-    while not gmail.is_ready():
-        time.sleep(10)
-
-    gmail.login()
-    gmail.config.Credentials()
+    # gmail.login()
+    # gmail.config.Credentials()
 
     threads = ThreadingClient()
 
@@ -796,7 +793,10 @@ def main():
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        while gmail.is_ready():
+        if not gmail.is_ready():
+            gmail.login()
+
+        if gmail.is_ready():
             main()
         pass
 

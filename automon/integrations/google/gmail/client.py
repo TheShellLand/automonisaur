@@ -293,13 +293,13 @@ class GoogleGmailClient(GoogleAuthClient):
         )
         return self._requests.get(api, headers=self.config.headers, params=params).to_dict()
 
-    # def is_ready(self, save_creds=True):
-    #     if self.config.is_ready():
-    #         if self.user_info:
-    #             if self.config.Credentials():
-    #                 return True
-    #     logger.error(f"[GoogleGmailClient] :: is_ready :: ERROR :: not ready")
-    #     return False
+    def is_ready(self, save_creds=True):
+        if self.config.is_ready():
+            if self.config.credentials:
+                if self.user_info_email:
+                    return True
+        logger.error(f"[GoogleGmailClient] :: is_ready :: ERROR :: not ready")
+        return False
 
     def labels_create(
             self,
