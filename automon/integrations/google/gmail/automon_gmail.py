@@ -46,21 +46,8 @@ class AutomonLabels(GmailLabels):
         # currently processing
         self.processing = GmailLabel(name='automon/:: processing ::', color=self._color_processing)
 
-        # welcome
-        self.welcome = GmailLabel(name='automon/welcome', color=self._color_welcome)
-        self.help = GmailLabel(name='automon/help', color=self._color_welcome)
-
         # resume
         self.resume = GmailLabel(name='automon/resume', color=self._color_resume)
-
-        # analyze
-        self.analyze = GmailLabel(name='automon/analyze', color=self._color_default)
-
-        # waiting
-        self.waiting = GmailLabel(name='automon/waiting', color=self._color_default)
-
-        # followup
-        self.followup = GmailLabel(name='automon/followup', color=self._color_default)
 
         # skipped
         self.skipped = GmailLabel(name='automon/skipped', color=self._color_default)
@@ -70,12 +57,6 @@ class AutomonLabels(GmailLabels):
 
         # relevance
         self.relevant = GmailLabel(name='automon/relevant', color=self._color_default)
-
-        # remote
-        self.remote = GmailLabel(name='automon/remote', color=self._color_default)
-
-        # need user input
-        self.user_action_required = GmailLabel(name='automon/user action required', color=self._color_error)
 
         # debugging
         self.debug = GmailLabel(name='automon/debug', color=self._color_error)
@@ -244,9 +225,6 @@ class AutomonGmailClient(GoogleGmailClient):
         return False
 
     def is_follow_up(self, thread: GmailThread):
-        if self._labels.followup in thread._messages_labels:
-            return True
-
         if self.is_old(thread):
             return True
 
@@ -259,19 +237,8 @@ class AutomonGmailClient(GoogleGmailClient):
 
         return False
 
-    def is_waiting(self, thread: GmailThread):
-        if thread._clean_thread_latest is not None:
-            if self._labels.waiting in thread._clean_thread_latest.labelIds:
-                return True
-        return False
-
     def is_scheduled(self, thread: GmailThread):
         if self._labels.scheduled in thread._messages_labels:
-            return True
-        return False
-
-    def is_analyze(self, thread: GmailThread):
-        if self._labels.analyze in thread._messages_labels:
             return True
         return False
 

@@ -162,9 +162,6 @@ def get_threads(gmail: AutomonGmailClient):
             query_sequence = [
                 [labels.automon, labels.error],
                 [labels.automon, labels.processing],
-                [labels.automon, labels.followup],
-                [labels.automon, labels.analyze],
-                [labels.automon, labels.waiting],
                 [labels.automon],
             ]
 
@@ -460,10 +457,6 @@ def processor_email_waiting(gmail: AutomonGmailClient):
                 queue_waiting.task_done()
                 continue
 
-            gmail.messages_modify_automon(
-                id=thread.id,
-                addLabelIds=[labels.waiting])
-
             queue_waiting.put(thread)
             queue_waiting.task_done()
 
@@ -484,10 +477,6 @@ def processor_email_followup(gmail: AutomonGmailClient):
         thread: GmailThread = queue_followup.get()
 
         try:
-            gmail.messages_modify_automon(
-                id=thread.id,
-                removeLabelIds=[labels.waiting])
-
             queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} left :: {thread}', 2))
 
             identity = RESUME._message_first._email_from
