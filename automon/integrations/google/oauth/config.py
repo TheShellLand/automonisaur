@@ -72,12 +72,14 @@ class GoogleAuthConfig(DictHelper):
             return self.credentials.token
 
     @property
-    def _credentials_file(self):
+    def _credentials_file(self) -> dict:
         if self.GOOGLE_CREDENTIALS_FILE:
             return self._file_to_dict(self.GOOGLE_CREDENTIALS_FILE)
 
         if self.GOOGLE_CREDENTIALS_BASE64:
             return self._base64_to_dict(self.GOOGLE_CREDENTIALS_BASE64)
+
+        return {}
 
     @property
     def _credentials_file_has_refresh_token(self) -> bool:

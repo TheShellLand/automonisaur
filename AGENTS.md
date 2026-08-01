@@ -4,3 +4,5 @@
 The following loops must be ensured to exist:
 - Every hour, create a descriptive git commit using git diff (including a [component] prefix depending on what code was changed).
 
+## git tasks 
+use git diff to create a descriptive git commit
