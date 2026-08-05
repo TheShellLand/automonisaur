@@ -57,6 +57,7 @@ class GoogleAuthClient:
         if self.authenticate_service_account():
             return True
 
+        logger.error(f"[GoogleAuthClient] :: authenticate :: ERROR")
         return False
 
     def authenticate_oauth(self) -> bool:
@@ -129,7 +130,8 @@ class GoogleAuthClient:
 
     def login(self):
         if self.authenticate():
-            self.get_user_info()
+            if self.get_user_info():
+                logger.debug(f"[GoogleAuthClient] :: login :: SUCCESS")
 
     def get_user_info(self) -> dict:
         """return user account"""

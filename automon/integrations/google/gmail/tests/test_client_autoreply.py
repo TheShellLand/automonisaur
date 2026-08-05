@@ -62,7 +62,7 @@ logging settings
 
 DEBUG_LEVEL = 2
 DEBUG_ = False
-DEFAULT_LEVEL = DEBUG
+DEFAULT_LEVEL = ERROR
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
