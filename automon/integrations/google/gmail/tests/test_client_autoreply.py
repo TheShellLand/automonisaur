@@ -169,7 +169,7 @@ def get_threads(gmail: AutomonGmailClient):
 
             for query in query_sequence:
                 thread_search = gmail.thread_list_automon(
-                    maxResults=3,
+                    # maxResults=3,
                     pageToken=nextPageToken,
                     labelIds=query,
                 )
