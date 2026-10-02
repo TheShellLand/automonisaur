@@ -456,6 +456,7 @@ class GoogleGmailClient(GoogleAuthClient):
 
         if response:
             attachments = GmailMessagePayloadBody(response.to_dict())
+            attachments.attachmentId = attachmentId
             logger.debug(f"[GoogleGmailClient] :: messages_attachments_get :: {attachments=}")
         else:
             raise Exception(f"[GoogleGmailClient] :: messages_attachments_get :: error :: {response=}")
