@@ -140,6 +140,9 @@ class GoogleAuthConfig(DictHelper):
 
     def _credentials_pickle_load(self):
 
+        if not self._credentials_file:
+            return False
+
         credentials_pickle_load = self._credentials_file_client_id + '.pickle'
 
         if os.path.exists(credentials_pickle_load):

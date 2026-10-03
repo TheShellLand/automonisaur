@@ -132,6 +132,8 @@ class GoogleAuthClient:
         if self.authenticate():
             if self.get_user_info():
                 logger.debug(f"[GoogleAuthClient] :: login :: SUCCESS")
+                return True
+        raise Exception(f"[GoogleAuthClient] :: login :: FAILED")
 
     def get_user_info(self) -> dict:
         """return user account"""
