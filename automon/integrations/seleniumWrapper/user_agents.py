@@ -10,55 +10,71 @@ logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
 
 
-def public_site_useragents():
+class UserAgent(object):
+    # Most Common Desktop Useragents
+    desktop_most_common_useragents = None
+
+    # Most Common Mobile Useragents
+    mobile_most_common_useragents = None
+
+    # Most Common Bot User Agents
+    bot_most_common_useragents = None
+
+    # Latest Windows Desktop Useragents
+    desktop_latest_windows_useragents = None
+
+    # Latest Mac OS X Desktop Useragents
+    desktop_latest_macosx_useragents = None
+
+    # Latest Linux Desktop Useragents
+    desktop_latest_linux_useragents = None
+
+    # Latest iPhone Useragents
+    mobile_latest_iphone_useragents = None
+
+    # Latest iPod Useragents
+    ipod_latest_useragents = None
+
+    # Latest iPad Useragents
+    ipad_latest_useragents = None
+
+    # Latest Android Mobile Useragents
+    mobile_latest_android_useragents = None
+
+    # Latest Tablet Useragents
+    tablet_latest_useragents = None
+
+
+def public_site_useragents() -> UserAgent:
+    """
+    tables
+    ===
+    Most Common Desktop User Agents
+    Most Common Mobile User Agents
+    Most Common Tablet User Agents
+    Most Common Bot User Agents
+
+    """
     url = 'https://www.useragents.me/'
     proxies_table = automon.integrations.requestsWrapper.RequestsClient(url)
     proxies_table = proxies_table.get()
 
     proxies_tables = pandas.read_html(io.StringIO(proxies_table.text))
 
-    # Most Common Desktop Useragents
-    desktop_most_common_useragents = proxies_tables[0]
+    user_agent = UserAgent()
+    user_agent.desktop_latest_linux_useragents = proxies_tables[0]
+    user_agent.mobile_most_common_useragents = proxies_tables[1]
+    user_agent.desktop_latest_windows_useragents = None
+    user_agent.desktop_latest_macosx_useragents = None
+    user_agent.desktop_latest_linux_useragents = None
+    user_agent.mobile_latest_iphone_useragents = None
+    user_agent.ipod_latest_useragents = None
+    user_agent.ipad_latest_useragents = None
+    user_agent.mobile_latest_android_useragents = None
+    user_agent.tablet_latest_useragents = proxies_tables[2]
+    user_agent.bot_most_common_useragents = proxies_tables[3]
 
-    # Most Common Mobile Useragents
-    mobile_most_common_useragents = proxies_tables[1]
-
-    # Latest Windows Desktop Useragents
-    desktop_latest_windows_useragents = proxies_tables[2]
-
-    # Latest Mac OS X Desktop Useragents
-    desktop_latest_macosx_useragents = proxies_tables[3]
-
-    # Latest Linux Desktop Useragents
-    desktop_latest_linux_useragents = proxies_tables[4]
-
-    # Latest iPhone Useragents
-    mobile_latest_iphone_useragents = proxies_tables[5]
-
-    # Latest iPod Useragents
-    ipod_latest_useragents = proxies_tables[6]
-
-    # Latest iPad Useragents
-    ipad_latest_useragents = proxies_tables[7]
-
-    # Latest Android Mobile Useragents
-    mobile_latest_android_useragents = proxies_tables[8]
-
-    # Latest Tablet Useragents
-    tablet_latest_useragents = proxies_tables[9]
-
-    return dict(
-        desktop_most_common_useragents=desktop_most_common_useragents,
-        mobile_most_common_useragents=mobile_most_common_useragents,
-        desktop_latest_windows_useragents=desktop_latest_windows_useragents,
-        desktop_latest_macosx_useragents=desktop_latest_macosx_useragents,
-        desktop_latest_linux_useragents=desktop_latest_linux_useragents,
-        mobile_latest_iphone_useragents=mobile_latest_iphone_useragents,
-        ipod_latest_useragents=ipod_latest_useragents,
-        ipad_latest_useragents=ipad_latest_useragents,
-        mobile_latest_android_useragents=mobile_latest_android_useragents,
-        tablet_latest_useragents=tablet_latest_useragents,
-    )
+    return user_agent
 
 
 class SeleniumUserAgentBuilder:
@@ -239,33 +255,36 @@ class SeleniumUserAgentBuilder:
             self.public_agents = public_site_useragents()
 
         if useragent_type == 'desktop-common':
-            return self.public_agents['desktop_most_common_useragents'].sample()['useragent'].item()
+            return self.public_agents.desktop_most_common_useragents.sample()['useragent'].item()
 
         if useragent_type == 'mobile-common':
-            return self.public_agents['mobile_most_common_useragents'].sample()['useragent'].item()
+            return self.public_agents.mobile_most_common_useragents.sample()['useragent'].item()
+
+        if useragent_type == 'bot-common':
+            return self.public_agents.bot_most_common_useragents.sample()['useragent'].item()
 
         if useragent_type == 'windows-latest':
-            return self.public_agents['desktop_latest_windows_useragents'].sample()['useragent'].item()
+            return self.public_agents.desktop_latest_windows_useragents.sample()['useragent'].item()
 
         if useragent_type == 'macosx-latest':
-            return self.public_agents['desktop_latest_macosx_useragents'].sample()['useragent'].item()
+            return self.public_agents.desktop_latest_macosx_useragents.sample()['useragent'].item()
 
         if useragent_type == 'linux-latest':
-            return self.public_agents['desktop_latest_linux_useragents'].sample()['useragent'].item()
+            return self.public_agents.desktop_latest_linux_useragents.sample()['useragent'].item()
 
         if useragent_type == 'iphone':
-            return self.public_agents['mobile_latest_iphone_useragents'].sample()['useragent'].item()
+            return self.public_agents.mobile_latest_iphone_useragents.sample()['useragent'].item()
 
         if useragent_type == 'ipod':
-            return self.public_agents['ipod_latest_useragents'].sample()['useragent'].item()
+            return self.public_agents.ipod_latest_useragents.sample()['useragent'].item()
 
         if useragent_type == 'ipad':
-            return self.public_agents['ipad_latest_useragents'].sample()['useragent'].item()
+            return self.public_agents.ipad_latest_useragents.sample()['useragent'].item()
 
         if useragent_type == 'android':
-            return self.public_agents['mobile_latest_android_useragents'].sample()['useragent'].item()
+            return self.public_agents.mobile_latest_android_useragents.sample()['useragent'].item()
 
         if useragent_type == 'tablet':
-            return self.public_agents['tablet_latest_useragents'].sample()['useragent'].item()
+            return self.public_agents.tablet_latest_useragents.sample()['useragent'].item()
 
         raise Exception(f'[SeleniumUserAgentBuilder] :: ERROR :: useragent_type not found :: {useragent_type=}')
