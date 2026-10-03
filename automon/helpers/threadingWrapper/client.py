@@ -38,8 +38,6 @@ class Thread(threading.Thread):
 
 
 class ThreadingClient(object):
-    _global_threads_max: int = 1
-    _global_threads_max_lock: threading.Lock = threading.Lock()
 
     def __init__(self):
         self.queue_worker: queue.Queue = queue.Queue()
@@ -47,6 +45,7 @@ class ThreadingClient(object):
         self.queue_error: queue.Queue = queue.Queue()
 
         self.threads_list: list[Thread] = []
+        self.threads_max: int = 1
 
         self.exit_event = threading.Event()
 
@@ -54,7 +53,7 @@ class ThreadingClient(object):
         current_thread = threading.current_thread()
 
         try:
-            log.debug(f"[ThreadingClient] :: wrapper :: {current_thread.name} :: {target=} :: {args=}")
+            # log.debug(f"[ThreadingClient] :: wrapper :: {current_thread.name} :: {target=} :: {args=}")
             if args is not None:
                 result = target(*args)
             else:
@@ -82,25 +81,23 @@ class ThreadingClient(object):
         log.debug(f'[ThreadingClient] :: add_worker :: {target=} :: {args=}')
         return self
 
-    def decrease_global_threads_max(self):
+    def decrease_threads_max(self):
         """drops to 25%"""
-        with ThreadingClient._global_threads_max_lock:
-            old_value = ThreadingClient._global_threads_max
-            new_value = int(ThreadingClient._global_threads_max * 0.25)
+        old_value = self.threads_max
+        new_value = int(old_value * 0.25)
 
-            if new_value > 0:
-                ThreadingClient._global_threads_max = new_value
+        if new_value > 0:
+            self.threads_max = new_value
 
         log.debug(f'[ThreadingClient] :: global_threads_max :: {old_value} -> {new_value}')
         return self
 
-    def increase_global_threads_max(self):
+    def increase_threads_max(self):
         """doubles every worker completed"""
-        with ThreadingClient._global_threads_max_lock:
-            old_value = ThreadingClient._global_threads_max
-            new_value = int(ThreadingClient._global_threads_max * 2)
+        old_value = self.threads_max
+        new_value = int(old_value * 2)
 
-            ThreadingClient._global_threads_max = new_value
+        self.threads_max = new_value
 
         log.debug(f'[ThreadingClient] :: global_threads_max :: {old_value} -> {new_value}')
         return self
@@ -136,18 +133,14 @@ class ThreadingClient(object):
         if max_threads is None:
             max_threads = self.queue_worker.qsize()
 
-        with ThreadingClient._global_threads_max_lock:
-            ThreadingClient._global_threads_max = max_threads
+        self.threads_max = max_threads
 
         while not self.is_done():
 
             self.threads_list = [t for t in self.threads_list if t.is_alive()]
             current_threads_count = len(self.threads_list)
 
-            with ThreadingClient._global_threads_max_lock:
-                max_threads_limit = ThreadingClient._global_threads_max
-
-            if self.queue_worker.qsize() > 0 and current_threads_count < max_threads_limit:
+            if self.queue_worker.qsize() > 0 and current_threads_count < self.threads_max:
 
                 function, args = self.queue_worker.get()
 
@@ -167,7 +160,7 @@ class ThreadingClient(object):
                     f'[ThreadingClient] :: start',
                     f'running :: {thread.name}, '
                     f'{thread._target_args}',
-                    f'{current_threads_count + 1} threads ({max_threads_limit} max)',
+                    f'{current_threads_count + 1} threads ({self.threads_max} max)',
                 ]))
 
             else:
