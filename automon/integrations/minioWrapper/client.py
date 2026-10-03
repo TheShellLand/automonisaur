@@ -58,8 +58,11 @@ class MinioClient(object):
 
             # if not self._sessionExpired() or self.client.list_buckets():
             if not self._is_ready:
-                if self.client.list_buckets():
-                    self._is_ready = True
+                try:
+                    if self.client.list_buckets():
+                        self._is_ready = True
+                except Exception as error:
+                    return False
 
             if self._is_ready:
                 return func(self, *args, **kwargs)
