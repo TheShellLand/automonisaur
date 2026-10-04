@@ -61,8 +61,8 @@ logging settings
 """
 
 DEBUG_LEVEL = 2
-DEBUG_ = False
-DEFAULT_LEVEL = ERROR
+DEBUG_ = True
+DEFAULT_LEVEL = DEBUG
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
@@ -84,7 +84,7 @@ if DEBUG_:
     LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
 else:
     LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
-    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(ERROR)
+    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(INFO)
 
 """
 
@@ -97,12 +97,13 @@ USE_GEMINI = False
 CHAT_FOREVER = False
 CHAT_STREAM = True
 
-OLLAMA_MODEL = 'gemma4:12b'
-OLLAMA_HOST_GPU_5070fe = 'http://100.116.243.98:11434'
+OLLAMA_MODEL = 'igorls/gemma-4-12B-it-heretic-GGUF'
+OLLAMA_HOST_GPU_5070fe = 'http://100.84.90.51:11434/v1'
 OLLAMA_HOST_GPU_1080ti = 'http://100.120.42.82:11434'
 
 OLLAMA_HOSTS = [
-    OLLAMA_HOST_GPU_1080ti,
+    # OLLAMA_HOST_GPU_1080ti,
+    OLLAMA_HOST_GPU_5070fe,
     # None,
 ]
 
@@ -777,16 +778,14 @@ def main():
 
     threads.add_worker(target=gmail_token_refresher, args=(gmail,))
 
-    threads.start(max_threads=len(queues))
+    threads.start()
 
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        if not gmail.is_ready():
-            gmail.login()
-
         if gmail.is_ready():
             main()
+
         pass
 
 
