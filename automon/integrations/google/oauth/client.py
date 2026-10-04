@@ -83,7 +83,8 @@ class GoogleAuthClient:
         try:
             if self.config.is_ready():
                 if self.authenticate():
-                    return True
+                    if self.get_user_info():
+                        return True
         except:
             pass
         return False
@@ -127,13 +128,6 @@ class GoogleAuthClient:
             always_use_jwt_access=always_use_jwt_access,
             **kwargs,
         )
-
-    def login(self):
-        if self.authenticate():
-            if self.get_user_info():
-                logger.debug(f"[GoogleAuthClient] :: login :: SUCCESS")
-                return True
-        raise Exception(f"[GoogleAuthClient] :: login :: FAILED")
 
     def get_user_info(self) -> dict:
         """return user account"""
