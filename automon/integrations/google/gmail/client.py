@@ -295,9 +295,11 @@ class GoogleGmailClient(GoogleAuthClient):
 
     def is_ready(self, save_creds=True):
         if self.config.is_ready():
-            if self.config.credentials:
-                if self.user_info_email:
-                    return True
+            if self.config.Credentials() is not None:
+                if self.config.credentials:
+                    if self.get_user_info():
+                        if self.user_info_email:
+                            return True
         logger.error(f"[GoogleGmailClient] :: is_ready :: ERROR :: not ready")
         return False
 
