@@ -158,7 +158,7 @@ class ThreadingClient(object):
 
                 log.debug(repr_str([
                     f'[ThreadingClient] :: start',
-                    f'running :: {thread.name}, '
+                    f'running :: {thread.name}',
                     f'{thread._target_args}',
                     f'{current_threads_count + 1} threads ({self.threads_max} max)',
                 ]))
