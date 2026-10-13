@@ -691,7 +691,7 @@ def draft_create(
     )
     draft_get = gmail.draft_get_automon(id=draft.id)
 
-    gmail.messages_modify_automon(
+    gmail.thread_modify_automon(
         id=thread.id,
         addLabelIds=[labels.unread])
 
