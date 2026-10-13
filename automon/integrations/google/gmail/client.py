@@ -61,8 +61,7 @@ class GoogleGmailClient(GoogleAuthClient):
 
     @property
     def _userId(self):
-        if self.user_info_email:
-            return self.user_info_email
+        return self.user_info_email()
 
     def draft_create(
             self,
@@ -296,9 +295,9 @@ class GoogleGmailClient(GoogleAuthClient):
     def is_ready(self, save_creds=True):
         if self.config.is_ready():
             if self.config.Credentials() is not None:
-                if self.config.credentials:
+                if self.config.credentials is not None:
                     if self.get_user_info():
-                        if self.user_info_email:
+                        if self.user_info_email():
                             return True
         logger.error(f"[GoogleGmailClient] :: is_ready :: ERROR :: not ready")
         return False

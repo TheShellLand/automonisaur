@@ -623,10 +623,10 @@ class GmailMessage(DictHelper):
             self._date_since_now_str,
             self._email_from,
             self._email_to,
+            f'{len(self.labelIds)} labels',
             self._header_subject,
-            self.labelIds,
             self._date_utc_str,
-            self.snippet,
+            # self.snippet,
         ])
 
     def __lt__(self, other):

@@ -160,7 +160,7 @@ class ThreadingClient(object):
                     f'[ThreadingClient] :: start',
                     f'running :: {thread.name}',
                     f'{thread._target_args}',
-                    f'{current_threads_count + 1} threads ({self.threads_max} max)',
+                    f'{current_threads_count + 1} total threads ({self.threads_max} max)',
                 ]))
 
             else:

@@ -33,8 +33,8 @@ class GoogleAuthClient:
 
         self.user_info: dict = {}
 
-    def __repr__(self):
-        return f'{self.__dict__}'
+    # def __repr__(self):
+    #     return f'{self.__dict__}'
 
     # @classmethod
     # def execute(cls, func):
@@ -141,8 +141,9 @@ class GoogleAuthClient:
         self.user_info = user_info
         return user_info
 
-    @property
+    # @property
     def user_info_email(self) -> str:
         if self.user_info:
             return self.user_info['email']
+        raise Exception('user_info missing')
         return ''
