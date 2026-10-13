@@ -136,4 +136,4 @@ dmypy.json
 .pyre/
 
 env-export.sh
-.pi/
+.DS_Store
