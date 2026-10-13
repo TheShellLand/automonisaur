@@ -1,6 +1,7 @@
+import time
 import queue
 import threading
-import time
+import traceback
 
 import automon
 
@@ -61,11 +62,14 @@ class ThreadingClient(object):
 
             current_thread.result = result
             current_thread.exception = None
+            current_thread.traceback = None
             self.queue_completed.put(current_thread)
         except Exception as error:
             current_thread.result = None
             current_thread.exception = error
+            current_thread.traceback = traceback.format_exc()
             self.queue_error.put(current_thread)
+            self.exit_event.set()
             raise error
 
     def add_worker(
@@ -137,6 +141,9 @@ class ThreadingClient(object):
 
         while not self.is_done():
 
+            if self.exit_event.is_set():
+                break
+
             self.threads_list = [t for t in self.threads_list if t.is_alive()]
             current_threads_count = len(self.threads_list)
 
@@ -171,6 +178,11 @@ class ThreadingClient(object):
 
         for thread in self.threads_list:
             thread.join()
+
+        if self.queue_error.qsize() > 0:
+            failed_thread = self.queue_error.get()
+            raise Exception(
+                f"Master process stopping due to worker failure in {failed_thread} : {failed_thread.exception}")
 
         return self
 
