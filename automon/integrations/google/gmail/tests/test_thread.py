@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.google.gmail import GoogleGmailClient
+from automon.integrations.google.gmail.client import GoogleGmailClient
 from automon import LoggingClient, ERROR, DEBUG, CRITICAL, INFO
 
 LoggingClient.logging.getLogger('httpx').setLevel(ERROR)

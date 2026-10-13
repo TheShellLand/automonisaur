@@ -7,7 +7,7 @@ from queue import Queue
 
 from automon.helpers import *
 from automon.integrations.ollamaWrapper import *
-from automon.helpers.threadingWrapper import ThreadingClient
+from automon.helpers.threadingWrapper.client import ThreadingClient
 from automon.integrations.google.gmail import *
 from automon.integrations.ollamaWrapper import OllamaClient, Markdown
 from automon.integrations.google.gemini import GoogleGeminiClient
@@ -60,7 +60,7 @@ logging settings
 
 """
 
-DEBUG_LEVEL = 2
+DEBUG_LEVEL = 3
 DEBUG_ = True
 DEFAULT_LEVEL = DEBUG
 
@@ -528,6 +528,8 @@ def processor_token_counter():
             queue_log.put((f'[processor_token_counter] :: ERROR :: {error=}', 1))
             time.sleep(60)
 
+        time.sleep(0.1)
+
 
 def is_job_email(thread: GmailThread) -> bool:
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
@@ -756,12 +758,9 @@ def main():
     global gemini
     global gmail
 
-    # gmail.login()
-    # gmail.config.Credentials()
-
     threads = ThreadingClient()
 
-    threads.add_worker(target=gmail.create_labels)
+    threads.add_worker(target=gmail.create_labels, args=(gmail,))
 
     threads.add_worker(target=get_threads, args=(gmail,))
     threads.add_worker(target=get_resume, args=(gmail,))

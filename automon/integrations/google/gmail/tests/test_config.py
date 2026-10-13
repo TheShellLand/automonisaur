@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.google.gmail import GoogleGmailConfig
+from automon.integrations.google.gmail.config import GoogleGmailConfig
 
 
 class MyTestCase(unittest.TestCase):

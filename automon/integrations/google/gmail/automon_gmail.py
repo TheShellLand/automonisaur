@@ -1,7 +1,7 @@
 import re
 import datetime
 import dateutil.parser
-from automon.helpers.threadingWrapper import ThreadingClient
+from automon.helpers.threadingWrapper.client import ThreadingClient
 
 from automon.helpers import *
 
@@ -89,12 +89,12 @@ class AutomonGmailClient(GoogleGmailClient):
         ]
         return self.config.add_gmail_scopes(scopes=scopes)
 
-    def create_labels(self):
+    def create_labels(self, *args, **kwargs) -> GmailLabel:
         """create all automon labels"""
         labels = self._labels
         labels.reset_labels = True
 
-        def init_automon_labels(label, reset_labels):
+        def init_automon_labels(label, reset_labels, *args, **kwargs):
 
             id = label.id
             name = label.name
@@ -121,7 +121,7 @@ class AutomonGmailClient(GoogleGmailClient):
         threading = ThreadingClient()
 
         for label in labels.all_labels():
-            threading.add_worker(target=init_automon_labels, args=(label, labels.reset_labels))
+            threading.add_worker(target=init_automon_labels, args=(label, labels.reset_labels, self))
 
         return threading.start()
 
