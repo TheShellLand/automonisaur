@@ -142,7 +142,7 @@ def gmail_token_refresher(gmail: AutomonGmailClient):
         if gmail.config.expired:
             if gmail.is_ready():
                 queue_log.put((f'[gmail_token_refresher] :: refreshed', 1))
-                time.sleep(60 * 5)
+                time.sleep(60 * 60 * 3)
 
         time.sleep(60)
 
@@ -702,7 +702,7 @@ def main():
     global gemini
     global gmail
 
-    threads = ThreadingClient()
+    threads = ThreadingClient('main')
 
     # gmail.create_labels()
 
@@ -723,7 +723,7 @@ def main():
 
     threads.add_worker(target=gmail_token_refresher, args=(gmail,))
 
-    threads.start()
+    threads.start(20)
 
 
 class MyTestCase(unittest.TestCase):

@@ -18,11 +18,11 @@ import googleapiclient.discovery
 import automon
 import automon.helpers
 import automon.helpers.tempfileWrapper
-import automon.helpers.threadingWrapper
 
 from automon.helpers.loggingWrapper import LoggingClient, DEBUG
-from automon.integrations.requestsWrapper import RequestsClient
 from automon.integrations.google.oauth import GoogleAuthClient
+from automon.integrations.requestsWrapper import RequestsClient
+from automon.helpers.threadingWrapper.client import ThreadingClient
 
 from ..gmail import classes
 from ..gmail import utils
@@ -601,7 +601,7 @@ class GoogleGmailClient(GoogleAuthClient):
             message.automon_update(self.messages_get_automon(id=message.id))
             return message
 
-        threading = automon.helpers.threadingWrapper.ThreadingClient()
+        threading = ThreadingClient('messages_list_automon')
 
         for message in messages.messages:
             threading.add_worker(target=update_message, args=(message,))
@@ -718,7 +718,7 @@ class GoogleGmailClient(GoogleAuthClient):
             message.automon_update(get_message)
             return message
 
-        threading = automon.helpers.threadingWrapper.ThreadingClient()
+        threading = ThreadingClient('thread_get_automon')
 
         for message in thread.messages:
 

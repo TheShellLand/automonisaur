@@ -40,7 +40,9 @@ class Thread(threading.Thread):
 
 class ThreadingClient(object):
 
-    def __init__(self):
+    def __init__(self, parent_thread=None):
+        self.parent_thread = parent_thread
+
         self.queue_worker: queue.Queue = queue.Queue()
         self.queue_completed: queue.Queue = queue.Queue()
         self.queue_error: queue.Queue = queue.Queue()
@@ -82,7 +84,13 @@ class ThreadingClient(object):
             assert type(args) is tuple
 
         self.queue_worker.put((target, args))
-        log.debug(f'[ThreadingClient] :: add_worker :: {target=} :: {args=}')
+        log.debug(repr_str([
+            f'[ThreadingClient]',
+            self.parent_thread,
+            f'add_worker',
+            f'{target=}',
+            f'{args=}'
+        ]))
         return self
 
     def decrease_threads_max(self):
@@ -93,7 +101,12 @@ class ThreadingClient(object):
         if new_value > 0:
             self.threads_max = new_value
 
-        log.debug(f'[ThreadingClient] :: global_threads_max :: {old_value} -> {new_value}')
+        log.debug(repr_str([
+            f'[ThreadingClient]',
+            self.parent_thread,
+            f'global_threads_max',
+            f'{old_value} -> {new_value}'
+        ]))
         return self
 
     def increase_threads_max(self):
@@ -103,7 +116,13 @@ class ThreadingClient(object):
 
         self.threads_max = new_value
 
-        log.debug(f'[ThreadingClient] :: global_threads_max :: {old_value} -> {new_value}')
+        log.debug(repr_str([
+            f'[ThreadingClient]',
+            self.parent_thread,
+            f'global_threads_max',
+            f'{old_value} -> {new_value}'
+
+        ]))
         return self
 
     def is_done(self):
@@ -119,7 +138,12 @@ class ThreadingClient(object):
         # 1. Process all successfully completed threads first
         while self.queue_completed.qsize() > 0:
             result = self.queue_completed.get()
-            log.debug(f'[ThreadingClient] :: results :: {result}')
+            log.debug(repr_str([
+                f'[ThreadingClient]',
+                self.parent_thread,
+                f'results',
+                f'{result}'
+            ]))
             self.queue_completed.task_done()
             yield result
 
@@ -127,8 +151,18 @@ class ThreadingClient(object):
         while self.queue_error.qsize() > 0:
             result = self.queue_error.get()
             if result.exception:
-                log.warning(f"[ThreadingClient] :: ERROR :: {result.exception=}")
-            log.debug(f'[ThreadingClient] :: results (error) :: {result}')
+                log.warning(repr_str([
+                    f"[ThreadingClient]",
+                    self.parent_thread,
+                    f'ERROR',
+                    f"{result.exception=}"
+                ]))
+            log.debug(repr_str([
+                f'[ThreadingClient]',
+                self.parent_thread,
+                f'results (error)',
+                f'{result}'
+            ]))
             self.queue_error.task_done()
             yield result
 
@@ -164,7 +198,9 @@ class ThreadingClient(object):
                 self.queue_worker.task_done()
 
                 log.debug(repr_str([
-                    f'[ThreadingClient] :: start',
+                    f'[ThreadingClient]',
+                    self.parent_thread,
+                    'start',
                     f'running :: {thread.name}',
                     f'{thread._target_args}',
                     f'{current_threads_count + 1} total threads ({self.threads_max} max)',

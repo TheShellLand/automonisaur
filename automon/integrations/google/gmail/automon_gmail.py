@@ -118,7 +118,7 @@ class AutomonGmailClient(GoogleGmailClient):
                         labels_get_by_name
                     )
 
-        threading = ThreadingClient()
+        threading = ThreadingClient('create_labels')
 
         for label in labels.all_labels():
             threading.add_worker(target=init_automon_labels, args=(label, labels.reset_labels, self))
