@@ -821,9 +821,32 @@ class GoogleGmailClient(GoogleAuthClient):
     def thread_modify(
             self,
             id: str,
+            addLabelIds: list[str] = None,
+            removeLabelIds: list[str] = None
+    ) -> dict:
+
+        api = UsersThread(self._userId).modify(id=id)
+
+        if len(addLabelIds) > 100 or len(removeLabelIds) > 100:
+            raise Exception(
+                f"[GoogleGmailClient] :: messages_modify :: ERROR :: "
+                f"{len(addLabelIds)=} {len(removeLabelIds)=} > 100")
+
+        data = {
+            "addLabelIds": addLabelIds,
+            "removeLabelIds": removeLabelIds
+        }
+        response = self._requests.post(api, headers=self.config.headers, json=data).to_dict()
+
+        return response
+
+    def thread_modify_automon(
+            self,
+            id: str,
             addLabelIds: list[GmailLabel] = None,
             removeLabelIds: list[GmailLabel] = None
     ) -> GmailThread:
+        """Enhanced `thread_modify`"""
 
         addLabelIds = list(addLabelIds) if addLabelIds is not None else []
         removeLabelIds = list(removeLabelIds) if removeLabelIds is not None else []
@@ -831,19 +854,12 @@ class GoogleGmailClient(GoogleAuthClient):
         addLabelIds = [self.labels_get_automon(l).id for l in addLabelIds]
         removeLabelIds = [self.labels_get_automon(l).id for l in removeLabelIds]
 
-        if len(addLabelIds) > 100 or len(removeLabelIds) > 100:
-            raise Exception(
-                f"[GoogleGmailClient] :: messages_modify :: ERROR :: "
-                f"{len(addLabelIds)=} {len(removeLabelIds)=} > 100")
+        response = self.thread_modify(
+            id=id,
+            addLabelIds=addLabelIds,
+            removeLabelIds=removeLabelIds
+        )
 
-        api = UsersThread(self._userId).modify(id=id)
-
-        data = {
-            "addLabelIds": addLabelIds,
-            "removeLabelIds": removeLabelIds
-        }
-
-        response = self._requests.post(api, headers=self.config.headers, json=data).to_dict()
         return GmailThread(response)
 
     def thread_trash(self, id: str) -> GmailThread:

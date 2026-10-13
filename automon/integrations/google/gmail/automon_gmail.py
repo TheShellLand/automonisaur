@@ -267,7 +267,7 @@ class AutomonGmailClient(GoogleGmailClient):
         return False
 
     def mark_processing(self, thread: GmailThread):
-        return self.thread_modify(
+        return self.thread_modify_automon(
             id=thread.id,
             addLabelIds=[self._labels.processing]
         )
@@ -306,7 +306,7 @@ class AutomonGmailClient(GoogleGmailClient):
         return False
 
     def unmark_processing(self, thread: GmailThread):
-        return self.thread_modify(
+        return self.thread_modify_automon(
             id=thread.id,
             removeLabelIds=[self._labels.processing]
         )
