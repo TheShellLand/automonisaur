@@ -318,6 +318,12 @@ class GoogleAuthConfig(DictHelper):
         """return True if credentials are ready to use"""
         return bool(self.GOOGLE_CREDENTIALS_FILE or self.GOOGLE_CREDENTIALS_BASE64)
 
+    @property
+    def expired(self):
+        if self.credentials is not None:
+            if hasattr(self.credentials, "expired"):
+                return self.credentials.expired
+
     def refresh_token(self) -> bool:
         """refresh token
         keep this in config
@@ -327,9 +333,12 @@ class GoogleAuthConfig(DictHelper):
         Request = google.auth.transport.requests.Request()
 
         if creds is not None:
-            if creds and creds.refresh_token:
+            if creds and creds.refresh_token and creds.expired:
                 # if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request)
+                return True
+
+            if not creds.expired:
                 return True
 
         return False
