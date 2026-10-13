@@ -292,17 +292,6 @@ class GoogleGmailClient(GoogleAuthClient):
         )
         return self._requests.get(api, headers=self.config.headers, params=params).to_dict()
 
-    def is_ready(self, save_creds=True):
-        if self.config.is_ready():
-            if self.config.Credentials() is not None:
-                if self.config.credentials is not None:
-                    if self.config.refresh_token():
-                        if self.get_user_info():
-                            if self.user_info_email():
-                                return True
-        logger.error(f"[GoogleGmailClient] :: is_ready :: ERROR :: not ready")
-        return False
-
     def labels_create(
             self,
             name: str,
@@ -618,7 +607,7 @@ class GoogleGmailClient(GoogleAuthClient):
             threading.add_worker(target=update_message, args=(message,))
             # update_message(message)
 
-        threading.start()
+        threading.start(max_threads=5)
 
         return messages
 

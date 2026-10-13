@@ -191,7 +191,8 @@ class GoogleAuthConfig(DictHelper):
             raise Exception(f"[GoogleAuthConfig] :: Credentials :: ERROR :: not authenticated")
 
         if save_creds:
-            self.refresh_token()
+            if self.expired:
+                self.refresh_token()
             self._credentials_pickle_save()
 
         self.credentials = credentials
@@ -336,6 +337,7 @@ class GoogleAuthConfig(DictHelper):
             if creds and creds.refresh_token and creds.expired:
                 # if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request)
+                # self.credentials = creds
                 return True
 
             if not creds.expired:

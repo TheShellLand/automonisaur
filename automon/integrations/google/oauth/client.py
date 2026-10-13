@@ -82,11 +82,24 @@ class GoogleAuthClient:
         """Check if authenticated to make requests"""
         try:
             if self.config.is_ready():
-                if self.authenticate():
-                    if self.get_user_info():
+                if self.config.credentials is not None:
+                    if not self.config.expired:
+                        if self.get_user_info():
+                            if self.user_info_email():
+                                return True
+
+                    elif self.config.expired:
+                        if self.config.refresh_token():
+                            if self.is_ready():
+                                return True
+
+                elif self.config.Credentials() is not None:
+                    if self.is_ready():
                         return True
+
         except:
             pass
+        logger.error(f"[GoogleAuthClient] :: is_ready :: ERROR :: not ready")
         return False
 
     def service(
