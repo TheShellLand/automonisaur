@@ -1,4 +1,5 @@
 .idea/
+.pi/
 env.sh
 env-export.sh
 *.json
