@@ -61,7 +61,6 @@ logging settings
 """
 
 DEBUG_LEVEL = 3
-DEBUG_ = True
 DEFAULT_LEVEL = ERROR
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
@@ -79,12 +78,6 @@ LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').se
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.tokens').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEFAULT_LEVEL)
 
-if DEBUG_:
-    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(DEBUG)
-    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(DEBUG)
-else:
-    LoggingClient.logging.getLogger('automon.integrations.google.gemini.client').setLevel(INFO)
-    LoggingClient.logging.getLogger('automon.integrations.google.gmail.client').setLevel(INFO)
 
 """
 
