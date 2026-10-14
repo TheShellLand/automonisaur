@@ -62,7 +62,7 @@ logging settings
 
 DEBUG_LEVEL = 3
 DEBUG_ = True
-DEFAULT_LEVEL = DEBUG
+DEFAULT_LEVEL = ERROR
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
@@ -272,8 +272,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
 def processor_email_new(gmail: AutomonGmailClient):
     global RESUME
 
-    _PROCESSING = True
-    while _PROCESSING:
+    while True:
 
         while not gmail.is_ready():
             time.sleep(120)
@@ -393,7 +392,7 @@ def processor_draft_send(gmail: AutomonGmailClient):
             if labels.auto_reply in thread._messages_labels:
                 draft_sent = gmail.draft_send(draft=draft)
 
-                gmail.messages_modify_automon(
+                gmail.thread_modify_automon(
                     id=thread.id,
                     addLabelIds=[labels.unread])
 

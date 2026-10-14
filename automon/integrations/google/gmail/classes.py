@@ -791,7 +791,7 @@ class GmailMessage(DictHelper):
 
             return email
 
-    def _email_body(self) -> str | None:
+    def _email_body(self) -> str:
         body = None
         for attachment in self._attachments:
             if attachment.mimeType == 'text/plain':
@@ -802,6 +802,8 @@ class GmailMessage(DictHelper):
                 body = attachment.body._data_html_text
                 break
 
+        if body is None:
+            body = ''
         return body
 
     @property

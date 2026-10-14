@@ -46,6 +46,9 @@ class HumanAgent(Identity):
             memory=Markdown.lstrip(memory),
         )
 
+        if name is None:
+            raise ValueError('Human agent name cannot be None')
+
 
 class RecruiterAgent(Identity):
     def __init__(self):
