@@ -1,78 +1,87 @@
 import os
+import queue
 
-try:
-    import opentelemetry
-    import queue
+import opentelemetry
 
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import SimpleSpanProcessor, BatchSpanProcessor
-    from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter as OTLPSpanExporterHTTP
-    from opentelemetry.trace import set_tracer_provider, get_tracer, get_tracer_provider, get_current_span
-except Exception:
-    import queue
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor, BatchSpanProcessor
+from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter as OTLPSpanExporterHTTP
+from opentelemetry.trace import set_tracer_provider, get_tracer, get_tracer_provider, get_current_span
 
-
-    class TracerProvider:
-        def add_span_processor(self, *args, **kwargs):
-            pass
-
-
-    class SimpleSpanProcessor:
-        def __init__(self, *args, **kwargs):
-            pass
-
-
-    class BatchSpanProcessor:
-        def __init__(self, *args, **kwargs):
-            pass
-
-
-    class InMemorySpanExporter:
-        def __init__(self, *args, **kwargs):
-            pass
-
-        def get_finished_spans(self):
-            return []
-
-        def clear(self):
-            pass
-
-
-    class OTLPSpanExporter:
-        def __init__(self, *args, **kwargs):
-            pass
-
-
-    class OTLPSpanExporterHTTP:
-        def __init__(self, *args, **kwargs):
-            pass
-
-
-    def set_tracer_provider(*args, **kwargs):
-        pass
-
-
-    def get_tracer(*args, **kwargs):
-        pass
-
-
-    def get_current_span(*args, **kwargs):
-        return None
-
-
-    class _DummyTrace:
-        get_current_span = staticmethod(get_current_span)
-        set_tracer_provider = staticmethod(set_tracer_provider)
-        get_tracer = staticmethod(get_tracer)
-
-
-    class _DummyOtel:
-        trace = _DummyTrace()
-
-
-    opentelemetry = _DummyOtel()
+# try:
+#     import opentelemetry
+#
+#     from opentelemetry.sdk.trace import TracerProvider
+#     from opentelemetry.sdk.trace.export import SimpleSpanProcessor, BatchSpanProcessor
+#     from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+#     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+#     from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter as OTLPSpanExporterHTTP
+#     from opentelemetry.trace import set_tracer_provider, get_tracer, get_tracer_provider, get_current_span
+# except Exception:
+#     import queue
+#
+#
+#     class TracerProvider:
+#         def add_span_processor(self, *args, **kwargs):
+#             pass
+#
+#
+#     class SimpleSpanProcessor:
+#         def __init__(self, *args, **kwargs):
+#             pass
+#
+#
+#     class BatchSpanProcessor:
+#         def __init__(self, *args, **kwargs):
+#             pass
+#
+#
+#     class InMemorySpanExporter:
+#         def __init__(self, *args, **kwargs):
+#             pass
+#
+#         def get_finished_spans(self):
+#             return []
+#
+#         def clear(self):
+#             pass
+#
+#
+#     class OTLPSpanExporter:
+#         def __init__(self, *args, **kwargs):
+#             pass
+#
+#
+#     class OTLPSpanExporterHTTP:
+#         def __init__(self, *args, **kwargs):
+#             pass
+#
+#
+#     def set_tracer_provider(*args, **kwargs):
+#         pass
+#
+#
+#     def get_tracer(*args, **kwargs):
+#         pass
+#
+#
+#     def get_current_span(*args, **kwargs):
+#         return None
+#
+#
+#     class _DummyTrace:
+#         get_current_span = staticmethod(get_current_span)
+#         set_tracer_provider = staticmethod(set_tracer_provider)
+#         get_tracer = staticmethod(get_tracer)
+#
+#
+#     class _DummyOtel:
+#         trace = _DummyTrace()
+#
+#
+#     opentelemetry = _DummyOtel()
 
 from automon.helpers.networking import Networking
 from automon.helpers.osWrapper import environ, environ_set
@@ -80,6 +89,8 @@ from automon.helpers.loggingWrapper import LoggingClient, DEBUG, INFO
 
 logger = LoggingClient.logging.getLogger(__name__)
 logger.setLevel(DEBUG)
+
+os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
 
 
 class OpenTelemetryConfig(object):
@@ -113,7 +124,7 @@ class OpenTelemetryConfig(object):
             return {
                 'Authorization': f"{Networking.quote(self.OTEL_EXPORTER_OTLP_TOKEN)}"
             }
-        return self.OTEL_EXPORTER_OTLP_HEADERS
+        return None
 
     @property
     def endpoint(self):

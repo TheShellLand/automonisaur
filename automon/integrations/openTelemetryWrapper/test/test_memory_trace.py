@@ -1,6 +1,6 @@
 import unittest
 
-from automon.integrations.openTelemetryWrapper import OpenTelemetryConfig
+from automon.integrations.openTelemetryWrapper.config import OpenTelemetryConfig
 
 
 class MyTestCase(unittest.TestCase):
