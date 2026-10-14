@@ -12,8 +12,6 @@ class MyTestCase(unittest.TestCase):
     def test_log(self):
         if self.client.is_ready():
 
-            self.client_tracer.config.test()
-
             spans = self.client_tracer.to_datadog()
             for span in spans:
 

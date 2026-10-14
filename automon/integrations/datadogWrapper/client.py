@@ -18,7 +18,7 @@ class DatadogClientRest(object):
         if self.config.is_ready():
             if self.validate():
                 return True
-        logger.error(f'client not ready')
+        return False
 
     def log(self, ddsource: str, hostname: str, service: str, message: str, ddtags: str = 'env:test,version:0.1'):
         url = V2(self.config.host_log).api.logs.endpoint
