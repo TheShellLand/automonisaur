@@ -76,6 +76,7 @@ class OpenTelemetryConfig(object):
 
         self.opentelemetry = opentelemetry
         self.provider = TracerProvider()
+        self.exporter = None
 
         self.tracer: opentelemetry.trace.Tracer = None
 
@@ -101,47 +102,64 @@ class OpenTelemetryConfig(object):
         exporter = InMemorySpanExporter()
         span_processor = SimpleSpanProcessor(exporter)
 
-        self.provider.add_span_processor(span_processor)
-        set_tracer_provider(self.provider)
+        provider = self.provider
+        provider.add_span_processor(span_processor)
+        set_tracer_provider(provider)
 
-        self.tracer = get_tracer(__name__)
+        tracer = get_tracer(__name__)
 
-        logger.debug(f"enable_memory_processor :: {self.tracer=} :: {__name__=}")
+        self.exporter = exporter
+        self.tracer = tracer
+
+        logger.debug(f"enable_memory_processor :: {tracer=} :: {__name__=}")
         logger.info(f"enable_memory_processor :: done")
         return self
 
     def enable_batch_processor_grpc(self):
         """Enable external endpoint exporter"""
-        exporter = OTLPSpanExporter(endpoint=self.endpoint,
-                                    insecure=self.insecure,
-                                    headers=self.headers
-                                    )
+        exporter = OTLPSpanExporter(
+            endpoint=self.endpoint,
+            insecure=self.insecure,
+            headers=self.headers
+        )
         span_processor = BatchSpanProcessor(exporter)
 
-        self.provider.add_span_processor(span_processor)
-        opentelemetry.trace.set_tracer_provider(self.provider)
+        provider = self.provider
+        provider.add_span_processor(span_processor)
+        set_tracer_provider(provider)
 
-        self.tracer = get_tracer(__name__)
+        tracer = get_tracer(__name__)
+
+        self.exporter = exporter
+        self.tracer = tracer
+
         logger.info(f"enable_batch_processor :: done")
         return self
 
     def enable_batch_processor_http(self):
         """Enable external endpoint exporter"""
-        exporter = OTLPSpanExporterHTTP(endpoint=self.endpoint,
-                                        headers=self.headers
-                                        )
+        exporter = OTLPSpanExporterHTTP(
+            endpoint=self.endpoint,
+            headers=self.headers
+        )
         span_processor = BatchSpanProcessor(exporter)
 
-        self.provider.add_span_processor(span_processor)
-        opentelemetry.trace.set_tracer_provider(self.provider)
+        provider = self.provider
+        provider.add_span_processor(span_processor)
+        set_tracer_provider(provider)
 
-        self.tracer = get_tracer(__name__)
+        tracer = get_tracer(__name__)
+
+        self.exporter = exporter
+        self.tracer = tracer
+
         logger.info(f"enable_batch_processor :: done")
         return self
 
-    # def clear(self):
-    #     logger.debug('clear')
-    #     return self.memory_processor.clear()
+    def clear(self):
+        if self.exporter is not None:
+            if hasattr(self.exporter, 'clear'):
+                return self.exporter.clear()
 
     @property
     def get_current_span(self):
@@ -153,12 +171,14 @@ class OpenTelemetryConfig(object):
         logger.error(f"No tracers enabled")
         return False
 
-    # def get_finished_spans(self):
-    #     logger.debug('get_finished_spans')
-    #     return self.memory_processor.get_finished_spans()
+    def get_finished_spans(self) -> list:
+        if self.exporter is not None:
+            if hasattr(self.exporter, 'get_finished_spans'):
+                return self.exporter.get_finished_spans()
+        return []
 
-    # def pop_finished_spans(self):
-    #     """ideal is to lock, pop spans, and clear"""
-    #     spans = self.get_finished_spans()
-    #     clear = self.clear()
-    #     return spans
+    def pop_finished_spans(self):
+        """ideal is to lock, pop spans, and clear"""
+        spans = list(self.get_finished_spans())
+        self.clear()
+        return spans
