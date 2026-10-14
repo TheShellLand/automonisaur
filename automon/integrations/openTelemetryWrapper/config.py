@@ -113,7 +113,7 @@ class OpenTelemetryConfig(object):
             return {
                 'Authorization': f"{Networking.quote(self.OTEL_EXPORTER_OTLP_TOKEN)}"
             }
-        return None
+        return self.OTEL_EXPORTER_OTLP_HEADERS
 
     @property
     def endpoint(self):
