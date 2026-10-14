@@ -94,12 +94,13 @@ os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
 
 
 class OpenTelemetryConfig(object):
-    def __init__(self,
-                 endpoint: str = None,
-                 endpoint_traces: str = None,
-                 insecure: bool = False,
-                 token: str = None
-                 ):
+    def __init__(
+            self,
+            endpoint: str = None,
+            endpoint_traces: str = None,
+            insecure: bool = False,
+            token: str = None
+    ):
         self.OTEL_EXPORTER_OTLP_ENDPOINT = endpoint or environ('OTEL_EXPORTER_OTLP_ENDPOINT')
         self.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = endpoint_traces or environ('OTEL_EXPORTER_OTLP_TRACES_ENDPOINT')
         self.OTEL_EXPORTER_OTLP_HEADERS = environ('OTEL_EXPORTER_OTLP_HEADERS')
