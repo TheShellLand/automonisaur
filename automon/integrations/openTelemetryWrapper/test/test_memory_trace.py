@@ -15,6 +15,8 @@ class MyTestCase(unittest.TestCase):
                     trace_child.add_event('BBBBBBBB')
                     trace_child.add_event('CCCCCCCC')
 
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()

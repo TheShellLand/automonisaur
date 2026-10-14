@@ -217,3 +217,6 @@ class OpenTelemetryConfig(object):
         spans = list(self.get_finished_spans())
         self.clear()
         return spans
+
+    def show_finished_spans(self):
+        return self.pop_finished_spans()
