@@ -58,9 +58,6 @@ class AutomonLabels(GmailLabels):
         # relevance
         self.relevant = GmailLabel(name='automon/relevant', color=self._color_default)
 
-        # debugging
-        self.debug = GmailLabel(name='automon/debug', color=self._color_error)
-
         # error
         self.error = GmailLabel(name='automon/error', color=self._color_error)
 

@@ -9,11 +9,11 @@ try:
     from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter as OTLPSpanExporterHTTP
-    from opentelemetry.trace import set_tracer_provider, get_tracer
+    from opentelemetry.trace import set_tracer_provider, get_tracer, get_tracer_provider
 except:
     class TracerProvider:
 
-        def add_span_processor(self, *args, **kwrags):
+        def add_span_processor(self, *args, **kwargs):
             pass
 
 
@@ -23,7 +23,7 @@ except:
 
 
     class BatchSpanProcessor:
-        def __init__(self, *args, **kwrags):
+        def __init__(self, *args, **kwargs):
             pass
 
 
@@ -77,7 +77,7 @@ class OpenTelemetryConfig(object):
         self.opentelemetry = opentelemetry
         self.provider = TracerProvider()
 
-        self.tracer = None
+        self.tracer: opentelemetry.trace.Tracer = None
 
         self.queue_consumer = queue.Queue()
         self.queue_producer = queue.Queue()
@@ -105,6 +105,8 @@ class OpenTelemetryConfig(object):
         set_tracer_provider(self.provider)
 
         self.tracer = get_tracer(__name__)
+
+        logger.debug(f"enable_memory_processor :: {self.tracer=} :: {__name__=}")
         logger.info(f"enable_memory_processor :: done")
         return self
 
@@ -146,7 +148,7 @@ class OpenTelemetryConfig(object):
         return opentelemetry.trace.get_current_span()
 
     def is_ready(self):
-        if self.tracer:
+        if self.tracer is not None:
             return True
         logger.error(f"No tracers enabled")
         return False
@@ -160,12 +162,3 @@ class OpenTelemetryConfig(object):
     #     spans = self.get_finished_spans()
     #     clear = self.clear()
     #     return spans
-
-    def test(self):
-        with self.tracer.start_as_current_span(name="rootSpan") as trace_root:
-            trace_root.add_event('AAAAAAAA')
-            with self.tracer.start_as_current_span(name="childSpan") as trace_child:
-                trace_child.add_event('AAAAAAAA')
-                trace_child.add_event('BBBBBBBB')
-
-        return True

@@ -12,10 +12,7 @@ class MyTestCase(unittest.TestCase):
     config.enable_batch_processor_grpc()
 
     def test_client(self):
-        if self.config.is_ready():
-            self.assertTrue(
-                self.config.test()
-            )
+        self.assertTrue(self.config.is_ready())
 
 
 if __name__ == '__main__':
