@@ -4,8 +4,8 @@
 
 cd "$(dirname $0)"; set -xe
 
-python3 -m pip uninstall automonisaur -y
-python3 -m pip install -e ./
+python3 -m pip uninstall --break-system-packages automonisaur -y
+python3 -m pip install --break-system-packages -e ./
 
 set +x
 
