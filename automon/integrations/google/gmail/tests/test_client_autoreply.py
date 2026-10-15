@@ -78,7 +78,6 @@ LoggingClient.logging.getLogger('opentelemetry.instrumentation.instrumentor').se
 LoggingClient.logging.getLogger('automon.integrations.ollamaWrapper.tokens').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('automon.helpers.threadingWrapper.client').setLevel(DEFAULT_LEVEL)
 
-
 """
 
 llm settings
@@ -135,7 +134,7 @@ def gmail_token_refresher(gmail: AutomonGmailClient):
         if gmail.config.expired:
             if gmail.is_ready():
                 queue_log.put((f'[gmail_token_refresher] :: refreshed', 1))
-                time.sleep(60 * 60 * 3)
+                time.sleep(60 * 60)
 
         time.sleep(60)
 
@@ -323,7 +322,7 @@ def processor_email_new(gmail: AutomonGmailClient):
                 ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
                 ollama.add_system_prompt(human)
                 ollama.add_prompt(thread.to_prompt())
-                ollama.chat_forever()
+                # ollama.chat_forever()
                 raise debug_exception(locals(), error)
 
         if response_passed:
