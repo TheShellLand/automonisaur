@@ -206,13 +206,14 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
         thread = queue_threads.get()
 
-        queue_log.put((f'[processor_email_thread] :: {thread}', DEBUG))
+        # queue_log.put((f'[processor_email_thread] :: {thread}', DEBUG))
 
         # resume
         if gmail.is_resume(thread):
             global RESUME
             RESUME = thread
             queue_threads.task_done()
+            queue_log.put((f'[processor_email_thread] :: RESUME :: {thread}', INFO))
             continue
 
         gmail.clean_drafts(thread)
@@ -239,12 +240,14 @@ def processor_email_thread(gmail: AutomonGmailClient):
         if gmail.is_new(thread):
             queue_new.put(thread)
             queue_threads.task_done()
+            queue_log.put((f'[processor_email_thread] :: queue_new :: {queue_new.qsize()} threads', INFO))
             continue
 
         # followup
         if gmail.is_follow_up(thread):
             queue_followup.put(thread)
             queue_threads.task_done()
+            queue_log.put((f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads', INFO))
             continue
 
         # sent
@@ -253,6 +256,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
             queue_sent.put(thread)
             queue_threads.task_done()
+            queue_log.put((f'[processor_email_thread] :: queue_sent :: {queue_sent.qsize()} threads', INFO))
             continue
 
         queue_unknown.put(thread)
