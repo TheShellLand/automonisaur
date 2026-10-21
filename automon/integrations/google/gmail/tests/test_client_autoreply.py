@@ -352,10 +352,10 @@ def processor_email_new(gmail: AutomonGmailClient):
                     if labels.auto_reply in thread._messages_labels:
                         queue_send.put((thread, draft, ollama))
 
-                        gmail.messages_modify_automon(
-                            id=thread._message_first.id,
-                            removeLabelIds=[labels.processing],
-                        )
+        gmail.messages_modify_automon(
+            id=thread._message_first.id,
+            removeLabelIds=[labels.processing],
+        )
 
         queue_new.task_done()
 
