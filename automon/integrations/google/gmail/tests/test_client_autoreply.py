@@ -20,7 +20,7 @@ queues
 """
 
 queue_threads: Queue[GmailThread] = Queue(maxsize=5)
-queue_new: Queue[GmailThread] = Queue(maxsize=5)
+queue_new: Queue[GmailThread] = Queue(maxsize=100)
 queue_send: Queue[tuple[GmailThread, GmailDraft, OllamaClient]] = Queue()
 queue_skipped: Queue[GmailThread] = Queue()
 queue_followup: Queue[GmailThread] = Queue()
@@ -195,6 +195,8 @@ def get_resume(gmail: AutomonGmailClient):
                 RESUME_ATTACHMENT = thread._message_first.find_attachment_pdf()
                 queue_log.put((f'[get_resume] :: {thread} :: {RESUME}', DEBUG))
 
+        time.sleep(60)
+
 
 def processor_email_thread(gmail: AutomonGmailClient):
     while True:
@@ -208,6 +210,8 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
         # resume
         if gmail.is_resume(thread):
+            global RESUME
+            RESUME = thread
             queue_threads.task_done()
             continue
 
