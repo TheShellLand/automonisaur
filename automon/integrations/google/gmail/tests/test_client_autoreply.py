@@ -222,14 +222,14 @@ def processor_email_thread(gmail: AutomonGmailClient):
         if gmail.is_skipped(thread):
             queue_skipped.put(thread)
             queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads', INFO))
+            queue_log.put((f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads :: {thread}', INFO))
             continue
 
         # error
         if gmail.is_error(thread):
             queue_error.put(thread)
             queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads', ERROR))
+            queue_log.put((f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads :: {thread}', ERROR))
             continue
 
         # scheduled
@@ -240,14 +240,14 @@ def processor_email_thread(gmail: AutomonGmailClient):
         if gmail.is_new(thread):
             queue_new.put(thread)
             queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_new :: {queue_new.qsize()} threads', INFO))
+            queue_log.put((f'[processor_email_thread] :: queue_new :: {queue_new.qsize()} threads :: {thread}', INFO))
             continue
 
         # followup
         if gmail.is_follow_up(thread):
             queue_followup.put(thread)
             queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads', INFO))
+            queue_log.put((f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads :: {thread}', INFO))
             continue
 
         # sent
@@ -256,7 +256,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
             queue_sent.put(thread)
             queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_sent :: {queue_sent.qsize()} threads', INFO))
+            queue_log.put((f'[processor_email_thread] :: queue_sent :: {queue_sent.qsize()} threads :: {thread}', INFO))
             continue
 
         queue_unknown.put(thread)
