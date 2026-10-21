@@ -60,8 +60,8 @@ logging settings
 
 """
 
-DEBUG_LEVEL = 3
-DEFAULT_LEVEL = ERROR
+DEBUG_LEVEL = INFO
+DEFAULT_LEVEL = INFO
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
 LoggingClient.logging.getLogger('httpcore').setLevel(DEFAULT_LEVEL)
@@ -89,7 +89,9 @@ USE_GEMINI = False
 CHAT_FOREVER = False
 CHAT_STREAM = True
 
-OLLAMA_MODEL = 'igorls/gemma-4-12B-it-heretic-GGUF'
+OLLAMA_MODEL = 'local'
+# OLLAMA_MODEL = 'gemma4:12b'
+# OLLAMA_MODEL = 'igorls/gemma-4-12B-it-heretic-GGUF'
 OLLAMA_HOST_GPU_5070fe = 'http://100.84.90.51:11434/v1'
 OLLAMA_HOST_GPU_1080ti = 'http://100.120.42.82:11434'
 
@@ -133,7 +135,7 @@ def gmail_token_refresher(gmail: AutomonGmailClient):
     while True:
         if gmail.config.expired:
             if gmail.is_ready():
-                queue_log.put((f'[gmail_token_refresher] :: refreshed', 1))
+                queue_log.put((f'[gmail_token_refresher] :: refreshed', INFO))
                 time.sleep(60 * 60)
 
         time.sleep(60)
@@ -163,11 +165,11 @@ def get_threads(gmail: AutomonGmailClient):
                 pageToken=nextPageToken,
                 labelIds=query,
             )
-            queue_log.put((f'[get_threads] :: {query} :: {thread_search}', 3))
+            queue_log.put((f'[get_threads] :: {query} :: {thread_search}', DEBUG))
 
             for thread in thread_search.threads:
                 queue_threads.put(thread)
-                queue_log.put((f'[get_threads] :: {queue_threads.qsize()} processed', 3))
+                queue_log.put((f'[get_threads] :: {queue_threads.qsize()} processed', INFO))
 
             nextPageToken = thread_search.nextPageToken
 
@@ -191,7 +193,7 @@ def get_resume(gmail: AutomonGmailClient):
             if gmail.is_resume(thread):
                 RESUME = thread
                 RESUME_ATTACHMENT = thread._message_first.find_attachment_pdf()
-                queue_log.put((f'[get_resume] :: {thread} :: {RESUME}', 3))
+                queue_log.put((f'[get_resume] :: {thread} :: {RESUME}', DEBUG))
 
 
 def processor_email_thread(gmail: AutomonGmailClient):
@@ -202,7 +204,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
         thread = queue_threads.get()
 
-        queue_log.put((f'[processor_email_thread] :: {thread}', 3))
+        queue_log.put((f'[processor_email_thread] :: {thread}', DEBUG))
 
         # resume
         if gmail.is_resume(thread):
@@ -215,14 +217,14 @@ def processor_email_thread(gmail: AutomonGmailClient):
         if gmail.is_skipped(thread):
             queue_skipped.put(thread)
             queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads', 2))
+            queue_log.put((f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads', INFO))
             continue
 
         # error
         if gmail.is_error(thread):
             queue_error.put(thread)
             queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads', 2))
+            queue_log.put((f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads', ERROR))
             continue
 
         # scheduled
@@ -251,7 +253,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
         queue_unknown.put(thread)
         queue_log.put(
-            (f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads :: {thread}', 2))
+            (f'[processor_email_thread] :: queue_unknown :: {queue_unknown.qsize()} threads :: {thread}', INFO))
 
         gmail.messages_modify_automon(
             id=thread._message_first.id,
@@ -274,7 +276,7 @@ def processor_email_new(gmail: AutomonGmailClient):
 
         thread: GmailThread = queue_new.get()
 
-        queue_log.put((f'[processor_email_new] :: {thread}', 2))
+        queue_log.put((f'[processor_email_new] :: {thread}', DEBUG))
 
         gmail.messages_modify_automon(
             id=thread._message_first.id,
@@ -358,7 +360,7 @@ def processor_email_sent(gmail: AutomonGmailClient):
 
         thread = queue_sent.get()
 
-        queue_log.put((f'[processor_email_sent] :: {queue_sent.qsize()} left :: {thread}', 2))
+        queue_log.put((f'[processor_email_sent] :: {queue_sent.qsize()} left :: {thread}', INFO))
 
         if gmail.is_old(thread):
             queue_followup.put(thread)
@@ -388,7 +390,7 @@ def processor_draft_send(gmail: AutomonGmailClient):
                     id=thread.id,
                     addLabelIds=[labels.unread])
 
-                queue_log.put((f'[processor_draft_send] :: sent :: {draft_sent}', 2))
+                queue_log.put((f'[processor_draft_send] :: sent :: {draft_sent}', DEBUG))
 
         queue_send.task_done()
 
@@ -403,7 +405,7 @@ def processor_email_waiting(gmail: AutomonGmailClient):
 
         thread = gmail.thread_get_automon(thread.id)
 
-        queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} left :: {thread}', 2))
+        queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} left :: {thread}', INFO))
 
         if gmail.is_follow_up(thread):
             queue_followup.put(thread)
@@ -424,7 +426,7 @@ def processor_email_followup(gmail: AutomonGmailClient):
 
         thread: GmailThread = queue_followup.get()
 
-        queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} left :: {thread}', 2))
+        queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} left :: {thread}', INFO))
 
         identity = RESUME._message_first._email_from
         background = RESUME._message_first._attachments_first.body._data_html_text
