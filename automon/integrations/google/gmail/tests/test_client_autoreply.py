@@ -19,7 +19,7 @@ queues
 
 """
 
-queue_threads: Queue[GmailThread] = Queue(maxsize=5)
+queue_threads: Queue[GmailThread] = Queue(maxsize=100)
 queue_new: Queue[GmailThread] = Queue(maxsize=100)
 queue_send: Queue[tuple[GmailThread, GmailDraft, OllamaClient]] = Queue()
 queue_skipped: Queue[GmailThread] = Queue()
@@ -169,7 +169,7 @@ def get_threads(gmail: AutomonGmailClient):
 
             for thread in thread_search.threads:
                 queue_threads.put(thread)
-                queue_log.put((f'[get_threads] :: {queue_threads.qsize()} processed', INFO))
+                queue_log.put((f'[get_threads] :: {queue_threads.qsize()} threads', INFO))
 
             nextPageToken = thread_search.nextPageToken
 
