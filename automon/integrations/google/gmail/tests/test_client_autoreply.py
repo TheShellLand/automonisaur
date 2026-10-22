@@ -92,12 +92,12 @@ CHAT_STREAM = True
 OLLAMA_MODEL = 'local'
 # OLLAMA_MODEL = 'gemma4:12b'
 # OLLAMA_MODEL = 'igorls/gemma-4-12B-it-heretic-GGUF'
-OLLAMA_HOST_GPU_5070fe = 'http://100.84.90.51:11434/v1'
+OLLAMA_HOST_GPU_5070fe = 'http://100.84.90.51:11434'
 OLLAMA_HOST_GPU_1080ti = 'http://100.120.42.82:11434'
 
 OLLAMA_HOSTS = [
     OLLAMA_HOST_GPU_1080ti,
-    # OLLAMA_HOST_GPU_5070fe,
+    OLLAMA_HOST_GPU_5070fe,
     # None,
 ]
 
@@ -222,14 +222,16 @@ def processor_email_thread(gmail: AutomonGmailClient):
         if gmail.is_skipped(thread):
             queue_skipped.put(thread)
             queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads :: {thread}', INFO))
+            queue_log.put(
+                (f'[processor_email_thread] :: queue_skipped :: {queue_skipped.qsize()} threads :: {thread}', INFO))
             continue
 
         # error
         if gmail.is_error(thread):
             queue_error.put(thread)
             queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads :: {thread}', ERROR))
+            queue_log.put(
+                (f'[processor_email_thread] :: queue_error :: {queue_error.qsize()} threads :: {thread}', ERROR))
             continue
 
         # scheduled
@@ -247,7 +249,8 @@ def processor_email_thread(gmail: AutomonGmailClient):
         if gmail.is_follow_up(thread):
             queue_followup.put(thread)
             queue_threads.task_done()
-            queue_log.put((f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads :: {thread}', INFO))
+            queue_log.put(
+                (f'[processor_email_thread] :: queue_followup :: {queue_followup.qsize()} threads :: {thread}', INFO))
             continue
 
         # sent
