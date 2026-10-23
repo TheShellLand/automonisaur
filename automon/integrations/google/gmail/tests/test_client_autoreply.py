@@ -361,6 +361,7 @@ def processor_email_new(gmail: AutomonGmailClient):
         )
 
         queue_new.task_done()
+        time.sleep(0.1)
 
 
 def processor_email_sent(gmail: AutomonGmailClient):
@@ -380,6 +381,8 @@ def processor_email_sent(gmail: AutomonGmailClient):
 
         queue_waiting.put(thread)
         queue_sent.task_done()
+
+        time.sleep(0.1)
 
 
 def processor_draft_send(gmail: AutomonGmailClient):
@@ -404,6 +407,8 @@ def processor_draft_send(gmail: AutomonGmailClient):
                 queue_log.put((f'[processor_draft_send] :: sent :: {draft_sent}', DEBUG))
 
         queue_send.task_done()
+
+        time.sleep(0.1)
 
 
 def processor_email_waiting(gmail: AutomonGmailClient):

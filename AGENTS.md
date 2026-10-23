@@ -1,6 +1,12 @@
-# Agents
+# AGENTS.md
 
 Source ~/venv/automonisaur/bin/activate before running Python code if it exists.
 
-## git tasks 
-- create a descriptive git commit using git diff (including a [component] prefix depending on what code was changed).
+# Git Tasks when commiting changes
+
+- create a descriptive git commit using git diff 
+- use the following specific format for all commits:
+
+  [name of the code library] [Descriptive primary action/sentence]
+
+  [A detailed description or paragraph explaining exactly what was changed and why.]
