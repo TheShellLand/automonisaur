@@ -19,7 +19,7 @@ queues
 
 """
 
-queue_threads: Queue[GmailThread] = Queue(maxsize=100)
+queue_threads: Queue[GmailThread] = Queue(maxsize=10)
 queue_new: Queue[GmailThread] = Queue(maxsize=100)
 queue_send: Queue[tuple[GmailThread, GmailDraft, OllamaClient]] = Queue()
 queue_skipped: Queue[GmailThread] = Queue()
