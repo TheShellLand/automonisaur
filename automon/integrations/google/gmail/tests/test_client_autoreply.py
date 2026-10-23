@@ -297,11 +297,11 @@ def processor_email_new(gmail: AutomonGmailClient):
         identity = RESUME._message_first._email_from
         background = resume_str
 
-        resume_prompt = OllamaClient.templates.markdown.str_to_markdown(
-            header='resume',
-            header_level=1,
-            text=resume_str,
-        )
+        # resume_prompt = OllamaClient.templates.markdown.str_to_markdown(
+        #     header='resume',
+        #     header_level=1,
+        #     text=resume_str,
+        # )
 
         human = HumanAgent(
             name=identity,

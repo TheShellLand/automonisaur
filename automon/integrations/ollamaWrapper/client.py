@@ -105,6 +105,7 @@ class OllamaClient:
         self._ollama = ollama.Client(
             host=host,
         )
+        self._ollama_host = host
 
         self.model = model
         self.messages = []
