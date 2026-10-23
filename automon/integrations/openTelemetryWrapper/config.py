@@ -219,19 +219,5 @@ class OpenTelemetryConfig(object):
         self.clear()
         return spans
 
-    def print_trace_tree(self):
-        \"\"\"Prints an ASCII tree representation of the finished spans to stdout.\"\"\"
-        spans = self.get_finished_spans()
-        if not spans:
-            print(\"No finished spans found.\")
-            return
-
-        # Build a map from span ID (or anything unique) for lookups if possible.
-        # Since different versions of OpenTelemetry might use differents attributes, 2019-long search? No, keep it simple and robust.
-        span_map = {}
-        for s in spans:
-            # Some trace objects have .context which contains the info or direct siblings like parent_id/parent_span_id
-            pass
-
     def show_finished_spans(self):
         return self.pop_finished_spans()
