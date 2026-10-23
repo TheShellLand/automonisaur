@@ -91,9 +91,13 @@ class GoogleGmailClient(GoogleAuthClient):
 
             if isinstance(draft_cc, str):
                 draft_cc = [draft_cc]
+            else:
+                draft_cc = []
 
             if isinstance(draft_bc, str):
                 draft_bc = [draft_bc]
+            else:
+                draft_bc = []
 
             email_build = email.mime.multipart.MIMEMultipart()
             email_build['Subject'] = draft_subject

@@ -696,7 +696,7 @@ def draft_create(
     draft = gmail.draft_create(
         threadId=thread.id,
         draft_to=to,
-        draft_cc='dianajaw@gmail.com',
+        draft_cc='',
         draft_from=from_,
         draft_subject=subject,
         draft_body=body,
