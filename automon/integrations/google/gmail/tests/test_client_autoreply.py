@@ -480,6 +480,8 @@ def processor_token_counter():
 
 
 def is_job_email(thread: GmailThread) -> bool:
+    queue_log.put((f'[is_job_email] :: {thread}', INFO))
+
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(ollama.templates.true_or_false.email_is_job(thread.to_prompt()))
@@ -489,6 +491,8 @@ def is_job_email(thread: GmailThread) -> bool:
 
 
 def is_rejected_email(thread: GmailThread) -> bool:
+    queue_log.put((f'[is_rejected_email] :: {thread}', INFO))
+
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     ollama.add_prompt(OllamaClient.templates.true_or_false.email_is_rejected(thread.to_prompt()))
@@ -498,6 +502,8 @@ def is_rejected_email(thread: GmailThread) -> bool:
 
 
 def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, OllamaClient]:
+    queue_log.put((f'[write_email_reply] :: {thread}', INFO))
+
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     ollama.add_system_prompt(AgentTemplates.job_applicant())
@@ -514,6 +520,8 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, Oll
 
 
 def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, OllamaClient]:
+    queue_log.put((f'[write_email_followup] :: {thread}', INFO))
+
     ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
 
     ollama.add_system_prompt(AgentTasks.write_email())
@@ -672,6 +680,8 @@ def draft_create(
         response: str,
         resume_attachment: GmailMessagePayload = None,
 ) -> GmailDraft:
+    queue_log.put((f'[draft_create] :: {thread}', INFO))
+
     if resume_attachment is not None:
         assert resume_attachment.filename
 
