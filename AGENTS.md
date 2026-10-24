@@ -1,29 +1,32 @@
 # AGENTS.md
 
-Source ~/venv/automonisaur/bin/activate before running Python code if it exists.
+## Python environment
 
-# Git Tasks when commiting changes
+Before running Python code, source `~/venv/automonisaur/bin/activate` if it exists.
 
-- When executing git commands via shell, ensure multi-line messages are passed with actual line breaks (e.g., using real
-  multiline string blocks) rather than literal "\\n" escapes which will be rendered literally in commit logs.
+## Git commits
 
-- create a descriptive git commit using git diff
-- use this specific format for all commits:
+- Review `git diff` to write a descriptive commit message explaining what changed and why.
+- When passing multiline commit messages through the shell, use actual line breaks rather than literal `\n` escapes.
+- Use the following format for regular commits. Version bump commits use the format in the next section.
 
-  [component] [Descriptive primary action/sentence]
+```text
+[component] Descriptive primary action or sentence
 
-  [A detailed description or paragraph explaining exactly what was changed and why.]
-
-- use these rules when told to increment code version number:
-    - read file setup.py
-    - get `version` number
-    - version number is formated as: MAJOR.MINOR.PATCH
-    - increment PATCH by one
-    - get all commits up until the last version number and group commits by `[component]`
-    - tag the new commit with the new `version` number
-    - use this specific format for commiting a new code version number:
-
+A detailed description explaining exactly what changed and why.
 ```
+
+## Version bumps
+
+When instructed to increment the code version:
+
+1. Read the current `version` in `setup.py`. The format is `MAJOR.MINOR.PATCH`.
+2. Increment `PATCH` by one and update `setup.py`.
+3. Collect commits since the previous version and group them by `[component]` for the change log.
+4. Commit the version bump using the format below.
+5. Tag the new commit with the new version number.
+
+```text
 {version}
 
 Change log:
