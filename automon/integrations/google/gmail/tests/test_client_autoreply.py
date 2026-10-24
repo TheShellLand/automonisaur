@@ -20,7 +20,7 @@ queues
 """
 
 queue_threads: Queue[GmailThread] = Queue(maxsize=10)
-queue_new: Queue[GmailThread] = Queue(maxsize=100)
+queue_new: Queue[GmailThread] = Queue(maxsize=30)
 queue_send: Queue[tuple[GmailThread, GmailDraft, OllamaClient]] = Queue()
 queue_skipped: Queue[GmailThread] = Queue()
 queue_followup: Queue[GmailThread] = Queue()
@@ -136,7 +136,6 @@ def gmail_token_refresher(gmail: AutomonGmailClient):
         if gmail.config.expired:
             if gmail.is_ready():
                 queue_log.put((f'[gmail_token_refresher] :: refreshed', INFO))
-                time.sleep(60 * 60)
 
         time.sleep(60)
 
@@ -731,6 +730,7 @@ def main():
     threads.add_worker(target=get_resume, args=(gmail,))
 
     threads.add_worker(target=processor_email_thread, args=(gmail,))
+    threads.add_worker(target=processor_email_new, args=(gmail,))
     threads.add_worker(target=processor_email_new, args=(gmail,))
     threads.add_worker(target=processor_email_waiting, args=(gmail,))
     threads.add_worker(target=processor_draft_send, args=(gmail,))
