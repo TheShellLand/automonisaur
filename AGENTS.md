@@ -16,12 +16,13 @@ Source ~/venv/automonisaur/bin/activate before running Python code if it exists.
   - get `version` number
   - version number is formated as: MAJOR.MINOR.PATCH
   - increment PATCH by one
-  - tag the commit with the new `version` number
+  - get all commits up until the last version number and group commits by `[component]`
+  - tag the new commit with the new `version` number
   - use this specific format for commiting a new code version number: 
 ```
 {version}
 
 Change log:
 
-{get all commits up until the last version number and group commits by [component]}
+{list of grouped commits}
 ```
