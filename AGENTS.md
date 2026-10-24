@@ -15,6 +15,7 @@ Source ~/venv/automonisaur/bin/activate before running Python code if it exists.
   - read file setup.py
   - get `version` number
   - version number is formated as: MAJOR.MINOR.PATCH
+  - tag the commit with the new `version` number
 
 - use this specific format for commiting a new code version number: 
 ```

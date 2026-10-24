@@ -1128,7 +1128,7 @@ class GmailThread(DictHelper):
             f'{self._messages_count} messages',
             self._message_first._date_since_now_str,
             self._message_first._header_subject,
-            self._messages_labels,
+            # self._messages_labels,
         ])
 
     def __eq__(self, other):

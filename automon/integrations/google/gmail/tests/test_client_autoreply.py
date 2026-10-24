@@ -205,7 +205,7 @@ def get_resume(gmail: AutomonGmailClient):
 def processor_email_thread(gmail: AutomonGmailClient):
     while True:
 
-        thread = queue_threads.get()
+        thread: GmailThread = queue_threads.get()
 
         try:
 
@@ -260,7 +260,7 @@ def processor_email_thread(gmail: AutomonGmailClient):
 
             # sent
             if gmail.is_sent(thread):
-                thread = gmail.thread_get_automon(id=thread.id)
+                thread: GmailThread = gmail.thread_get_automon(id=thread.id)
 
                 queue_sent.put(thread)
                 queue_threads.task_done()
@@ -381,7 +381,7 @@ def processor_email_new(gmail: AutomonGmailClient):
 def processor_email_sent(gmail: AutomonGmailClient):
     while True:
 
-        thread = queue_sent.get()
+        thread: GmailThread = queue_sent.get()
 
         try:
 
@@ -412,7 +412,7 @@ def processor_draft_send(gmail: AutomonGmailClient):
 
             thread, draft, OllamaClient = item
 
-            thread = gmail.thread_get_automon(thread.id)
+            thread: GmailThread = gmail.thread_get_automon(thread.id)
 
             if gmail.is_old(thread):
                 if labels.auto_reply in thread._messages_labels:
@@ -441,7 +441,7 @@ def processor_email_waiting(gmail: AutomonGmailClient):
 
         try:
 
-            thread = gmail.thread_get_automon(thread.id)
+            thread: GmailThread = gmail.thread_get_automon(thread.id)
 
             queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} threads :: {thread}', INFO))
 
