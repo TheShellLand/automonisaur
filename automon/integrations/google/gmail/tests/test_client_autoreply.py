@@ -97,7 +97,7 @@ OLLAMA_HOST_GPU_1080ti = 'http://100.120.42.82:11434'
 
 OLLAMA_HOSTS = [
     OLLAMA_HOST_GPU_1080ti,
-    OLLAMA_HOST_GPU_5070fe,
+    # OLLAMA_HOST_GPU_5070fe,
     # None,
 ]
 
@@ -371,7 +371,7 @@ def processor_email_sent(gmail: AutomonGmailClient):
 
         thread = queue_sent.get()
 
-        queue_log.put((f'[processor_email_sent] :: {queue_sent.qsize()} left :: {thread}', INFO))
+        queue_log.put((f'[processor_email_sent] :: {queue_sent.qsize()} threads :: {thread}', INFO))
 
         if gmail.is_old(thread):
             queue_followup.put(thread)
@@ -420,7 +420,7 @@ def processor_email_waiting(gmail: AutomonGmailClient):
 
         thread = gmail.thread_get_automon(thread.id)
 
-        queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} left :: {thread}', INFO))
+        queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} threads :: {thread}', INFO))
 
         if gmail.is_follow_up(thread):
             queue_followup.put(thread)
@@ -441,7 +441,7 @@ def processor_email_followup(gmail: AutomonGmailClient):
 
         thread: GmailThread = queue_followup.get()
 
-        queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} left :: {thread}', INFO))
+        queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} threads :: {thread}', INFO))
 
         identity = RESUME._message_first._email_from
         background = RESUME._message_first._attachments_first.body._data_html_text
