@@ -18,20 +18,30 @@ A detailed description explaining exactly what changed and why.
 
 ## Version bumps
 
-When instructed to increment the code version:
+When asked to bump the version, create a patch release:
 
-1. Read the current `version` in `setup.py`. The format is `MAJOR.MINOR.PATCH`.
-2. Increment `PATCH` by one and update `setup.py`.
-3. Collect commits since the previous version and group them by `[component]` for the change log.
-4. Commit the version bump using the format below.
-5. Tag the new commit with the new version number.
+1. Read `version` in `setup.py` as `MAJOR.MINOR.PATCH` and identify its matching Git tag.
+2. Collect commits from that tag through `HEAD`, excluding the tagged release commit. Group them by their
+   `[component]` prefix, preserving component names. Put commits without a prefix under `[Other]`.
+3. Increment `PATCH` by one in `setup.py`, leaving `MAJOR` and `MINOR` unchanged.
+4. Review the diff and commit only the version change using the message format below. Include each collected
+   commit's short hash and a readable summary under its component heading.
+5. Tag the new commit with the exact new version, without a `v` prefix.
+6. Verify that `setup.py`, the commit message, and the tag agree on the new version, and that the tag points to
+   the release commit. Report the version, commit hash, and remaining working-tree changes.
+
+Use actual line breaks in the commit message, preferably with `git commit -F <message-file>`:
 
 ```text
 {version}
 
 Change log:
 
-{list of grouped commits}
+[component]
+- {short-hash} {commit summary}
+
+[another component]
+- {short-hash} {commit summary}
 ```
 
 # Shared Agent Instructions
