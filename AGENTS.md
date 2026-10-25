@@ -34,41 +34,16 @@ Change log:
 {list of grouped commits}
 ```
 
-# Skills
+# Shared Agent Instructions
 
-Reusable agent skills may be available in the current directory or installed in `/SKILLS`, an absolute directory
-separate from the project repository.
+Before performing any task, check whether the `/SKILLS` directory and `/SKILLS/AGENTS.md` file exist.
+If both exist, read and follow `/SKILLS/AGENTS.md` in addition to this project's instructions.
+`/SKILLS` is an absolute path to the shared skills Git repository, separate from this project. Do not check for
+a `.git` folder before using it.
 
-Before performing a task:
+When the shared instructions are available, follow them for updating `/SKILLS` and discovering and using relevant skills
+on every task,
+even if those instructions or skills were read during an earlier task. If updating `/SKILLS` changes its
+`AGENTS.md`, read the updated file before continuing.
 
-1. If `/SKILLS` exists, run `git -C /SKILLS pull --rebase` before searching for or reading skills and before doing the task.
-   This is required for every task, including commit requests, even when the skill files are already available
-   locally or were read during an earlier task. Local availability does not establish that the skills are current.
-   Do not skip the command to save time or because the task seems possible with cached instructions.
-   If the command fails, report the failure; do not claim the update succeeded. Continue using local skills unless
-   the failure prevents completing the task correctly.
-2. Recursively search the current directory for `SKILL.md` files. Also search `/SKILLS` recursively if that directory
-   exists.
-3. Use the skills' frontmatter names and descriptions to identify skills relevant to the task.
-4. Read and follow the applicable skills before proceeding. Resolve their relative references from the directory
-   containing the skill's `SKILL.md`.
-
-Load only relevant skills and supporting references. If no skill applies, proceed with the task using the project's
-instructions and available tools.
-
-Best: `/SKILLS` exists, so run `git -C /SKILLS pull --rebase`, then discover and read the applicable skill, then do the task.
-Avoid: read an existing local skill and skip the pull because its contents seem sufficient to complete the request.
-
-Before preparing or making a Git commit, find and read the `write-git-commit-messages` skill in the locations above, if
-available.
-
-## Terminal Command Rules
-
-- Run Bash scripts with `bash /path/to/script.sh`, not `./script.sh` or a bare script path. For POSIX shell
-  scripts, use `sh /path/to/script.sh`. Use the script's required interpreter explicitly, including in Git editor
-  commands. Do not rely on executable permissions or shebang execution, or use `chmod +x` as a workaround.
-- Keep each terminal execution call on one line.
-- Never use literal `\n` sequences or escaped newlines to separate commands.
-- Use `&&` when the next command requires the previous command to succeed.
-- Use `;` only when commands should run independently.
-- For multiline scripts or content, use a file-writing tool, then execute the saved file.
+If either the directory or file is missing, continue using this project's instructions and available tools.
