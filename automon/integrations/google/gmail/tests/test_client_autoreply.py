@@ -410,6 +410,8 @@ def processor_draft_send(gmail: AutomonGmailClient):
 
         try:
 
+            queue_log.put((f'[processor_draft_send] :: {queue_send.qsize()} threads :: {thread}', INFO))
+
             thread, draft, OllamaClient = item
 
             thread: GmailThread = gmail.thread_get_automon(thread.id)
