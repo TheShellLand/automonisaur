@@ -173,7 +173,7 @@ def get_threads(gmail: AutomonGmailClient):
 
             for thread in thread_search.threads:
                 queue_threads.put(thread)
-                queue_log.put((f'[get_threads] :: {queue_threads.qsize()} threads', INFO))
+                queue_log.put((f'[get_threads] :: queue_threads :: {queue_threads.qsize()} threads', INFO))
 
             nextPageToken = thread_search.nextPageToken
 
@@ -361,6 +361,9 @@ def processor_email_new(gmail: AutomonGmailClient):
 
                     if draft is not None:
                         if labels.auto_reply in thread._messages_labels:
+                            queue_log.put(
+                                (f'[processor_email_new] :: queue_send :: {queue_send.qsize()} threads :: {thread}',
+                                 DEBUG))
                             queue_send.put((thread, draft, ollama))
 
             gmail.messages_modify_automon(
@@ -385,7 +388,7 @@ def processor_email_sent(gmail: AutomonGmailClient):
 
         try:
 
-            queue_log.put((f'[processor_email_sent] :: {queue_sent.qsize()} threads :: {thread}', INFO))
+            queue_log.put((f'[processor_email_sent] :: queue_sent :: {queue_sent.qsize()} threads :: {thread}', INFO))
 
             if gmail.is_old(thread):
                 queue_followup.put(thread)
@@ -410,7 +413,7 @@ def processor_draft_send(gmail: AutomonGmailClient):
 
         try:
 
-            queue_log.put((f'[processor_draft_send] :: {queue_send.qsize()} threads :: {thread}', INFO))
+            queue_log.put((f'[processor_draft_send] :: queue_send :: {queue_send.qsize()} threads :: {thread}', INFO))
 
             thread, draft, OllamaClient = item
 
@@ -445,7 +448,8 @@ def processor_email_waiting(gmail: AutomonGmailClient):
 
             thread: GmailThread = gmail.thread_get_automon(thread.id)
 
-            queue_log.put((f'[processor_email_waiting] :: {queue_waiting.qsize()} threads :: {thread}', INFO))
+            queue_log.put(
+                (f'[processor_email_waiting] :: queue_waiting :: {queue_waiting.qsize()} threads :: {thread}', INFO))
 
             if gmail.is_follow_up(thread):
                 queue_followup.put(thread)
@@ -470,7 +474,8 @@ def processor_email_followup(gmail: AutomonGmailClient):
 
         try:
 
-            queue_log.put((f'[processor_email_followup] :: {queue_followup.qsize()} threads :: {thread}', INFO))
+            queue_log.put(
+                (f'[processor_email_followup] :: queue_followup :: {queue_followup.qsize()} threads :: {thread}', INFO))
 
             identity = RESUME._message_first._email_from
             background = RESUME._message_first._attachments_first.body._data_html_text
@@ -495,6 +500,9 @@ def processor_email_followup(gmail: AutomonGmailClient):
 
                 if draft is not None:
                     if labels.auto_reply in thread._messages_labels:
+                        queue_log.put(
+                            (f'[processor_email_followup] :: queue_send :: {queue_send.qsize()} threads :: {thread}',
+                             DEBUG))
                         queue_send.put((thread, draft, ollama))
 
         except Exception as error:
