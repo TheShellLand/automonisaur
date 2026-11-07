@@ -601,7 +601,7 @@ def log_printer():
     while True:
         log, level = queue_log.get()
 
-        if level <= DEBUG_LEVEL:
+        if level >= DEBUG_LEVEL:
             debug(log)
 
         queue_log.task_done()
