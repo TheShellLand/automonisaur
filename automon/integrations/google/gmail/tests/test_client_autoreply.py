@@ -410,12 +410,11 @@ def processor_draft_send(gmail: AutomonGmailClient):
     while True:
 
         item: tuple[GmailThread, GmailDraft, OllamaClient] = queue_send.get()
+        thread, draft, OllamaClient = item
 
         try:
 
             queue_log.put((f'[processor_draft_send] :: queue_send :: {queue_send.qsize()} threads :: {thread}', INFO))
-
-            thread, draft, OllamaClient = item
 
             thread: GmailThread = gmail.thread_get_automon(thread.id)
 
@@ -443,10 +442,9 @@ def processor_email_waiting(gmail: AutomonGmailClient):
     while True:
 
         thread: GmailThread = queue_waiting.get()
+        thread: GmailThread = gmail.thread_get_automon(thread.id)
 
         try:
-
-            thread: GmailThread = gmail.thread_get_automon(thread.id)
 
             queue_log.put(
                 (f'[processor_email_waiting] :: queue_waiting :: {queue_waiting.qsize()} threads :: {thread}', INFO))

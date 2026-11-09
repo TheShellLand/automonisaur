@@ -11,16 +11,28 @@ At the start of every task, select one shared skills directory:
    git clone https://github.com/TheShellLand/SKILLS.git /tmp/SKILLS
    ```
 
-Both paths are absolute and separate from this project. Reuse an existing directory without overwriting it or
-checking for a `.git` folder before running Git commands against it. In the steps below, `<skills-directory>` means
-the selected path. Treat references to `/SKILLS` in shared instructions as references to that path, including update
-and discovery steps.
+Both paths are absolute and separate from this project. Reuse an existing
+directory without overwriting it or checking for a `.git` folder before running Git commands against it. In the steps
+below, `<skills-directory>` means the selected path. Treat references to `/SKILLS` in shared instructions as references
+to that path, including update and discovery steps.
 
 ## Prepare and execute each task
 
 Perform this workflow once per task, even if instructions or skills were read during an earlier task:
 
 1. Run `git -C <skills-directory> pull --rebase` before searching for or reading skills.
+   If the selected directory is `/tmp/SKILLS` and the pull fails, report the failure and initialize Git in the
+   existing directory. Add the repository as `origin`, fetch all remotes, pull `main` with upstream tracking,
+   then run `git pull`:
+
+   ```sh
+   git -C /tmp/SKILLS init && git -C /tmp/SKILLS remote add origin https://github.com/TheShellLand/SKILLS.git && git -C /tmp/SKILLS fetch --all && git -C /tmp/SKILLS pull --set-upstream origin main && git -C /tmp/SKILLS pull
+   ```
+
+   If `origin` already exists, verify its URL and use `git -C /tmp/SKILLS remote set-url origin
+   https://github.com/TheShellLand/SKILLS.git` if needed, then continue with the fetch and pulls.
+   Apply this recovery only to `/tmp/SKILLS`; preserve the directory and its files. If recovery fails, follow
+   the preparation-failure guidance below.
 2. Read and follow the selected directory's updated `AGENTS.md` in addition to this project's instructions.
 3. Recursively discover `SKILL.md` files in both the current project and the selected shared directory.
 4. Inspect skill names and descriptions, then read each applicable skill and its required references before
@@ -31,7 +43,8 @@ Perform this workflow once per task, even if instructions or skills were read du
 
 ## Handle preparation failures
 
-If cloning or updating fails, report the failure and continue with available local skills unless the failure prevents
+If cloning or updating fails (after attempting the required recovery for a failed pull in `/tmp/SKILLS`), report
+the failure and continue with available local skills unless the failure prevents
 completing the task correctly. If the selected directory's `AGENTS.md` is missing, report that and continue using
 this project's instructions and available tools. Do not silently skip required steps or claim full compliance when
 a requirement could not be completed.
