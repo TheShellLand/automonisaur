@@ -89,7 +89,7 @@ USE_GEMINI = False
 CHAT_FOREVER = False
 CHAT_STREAM = True
 
-OLLAMA_MODEL = 'local'
+OLLAMA_MODEL = 'gemma4:12b'
 # OLLAMA_MODEL = 'gemma4:12b'
 # OLLAMA_MODEL = 'igorls/gemma-4-12B-it-heretic-GGUF'
 OLLAMA_HOST_GPU_5070fe = 'http://100.84.90.51:11434'
