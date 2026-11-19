@@ -304,9 +304,8 @@ def processor_email_new(gmail: AutomonGmailClient):
                 id=thread._message_first.id,
                 addLabelIds=[labels.processing])
 
-            resume_str = RESUME._message_first._attachments_first.body._data_html_text
             identity = RESUME._message_first._email_from
-            background = resume_str
+            background = RESUME._message_first._attachments_first.body._data_html_text
 
             # resume_prompt = OllamaClient.templates.markdown.str_to_markdown(
             #     header='resume',
