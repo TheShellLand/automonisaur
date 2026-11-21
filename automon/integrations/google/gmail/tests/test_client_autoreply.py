@@ -794,3 +794,5 @@ class MyTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+# set -a; source env.sh; pytest -s automon/integrations/google/gmail/tests/test_client_autoreply.py
