@@ -157,7 +157,7 @@ class GoogleGeminiClient(object):
             model_ = model_.name.split('/')[-1]
             if model_ == model:
                 return True
-        raise debug_exception(locals(), f'{api}/{model} not found')
+        raise debug_exception(f'{api}/{model} not found')
 
     def add_content(self, prompt: str, role: str = 'user'):
         if not isinstance(prompt, str):

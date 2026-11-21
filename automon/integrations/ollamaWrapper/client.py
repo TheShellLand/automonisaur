@@ -143,7 +143,7 @@ class OllamaClient:
         )
 
     def add_chain(self, content: str, **kwargs):
-        raise debug_exception(locals(), f'depreciated: use OllamaClient.add_prompt instead')
+        raise debug_exception(f'depreciated: use OllamaClient.add_prompt instead')
 
     def add_system_prompt(self, content: str | OllamaMessage, **kwargs):
         if isinstance(content, OllamaMessage):
@@ -175,7 +175,7 @@ class OllamaClient:
         max_tokens = self._max_tokens.get(model, 20000)
 
         if total_tokens > max_tokens:
-            raise debug_exception(locals(), 'too many tokens')
+            raise debug_exception('too many tokens')
 
         self.set_context_window(int(self.get_total_tokens() * 1.10))
 
@@ -459,7 +459,7 @@ class OllamaClient:
             if self.has_downloaded_models(self.model):
                 return True
         except Exception as error:
-            raise debug_exception(locals(), error)
+            raise debug_exception(error)
 
         return False
 

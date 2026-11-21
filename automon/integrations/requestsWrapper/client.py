@@ -70,7 +70,7 @@ class RequestResponse(DictHelper):
             ]
             msg = ' :: '.join([str(x) for x in msg])
 
-        raise debug_exception(locals(), msg)
+        raise debug_exception(msg)
 
     @property
     def content(self) -> bytes:

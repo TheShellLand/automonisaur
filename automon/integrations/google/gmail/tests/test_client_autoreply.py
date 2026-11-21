@@ -687,7 +687,7 @@ def run_llm(prompt: str, chat: bool = False) -> tuple[str, object]:
 
         try:
             if USE_GEMINI:
-                raise debug_exception(locals(), f'fix prompt to use markdown')
+                raise debug_exception(f'fix prompt to use markdown')
                 response, model = run_gemini(prompts=prompts, chat=chat)
                 break
         except Exception as error:

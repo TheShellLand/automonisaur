@@ -30,7 +30,7 @@ class PanoramaSecurityRule:
             incident_name = f'{self.DeviceGroup} :: {self.Name}'.upper()
             return incident_name
 
-        raise debug_exception(locals(), 'no incident name')
+        raise debug_exception('no incident name')
 
     def automon_get_smax_from_description(self) -> str:
         import re

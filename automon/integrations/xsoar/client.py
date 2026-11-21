@@ -61,7 +61,7 @@ class XSOARClient(object):
         if response:
             return response
 
-        raise debug_exception(locals(), 'get failed')
+        raise debug_exception('get failed')
 
     def _post(
             self,
@@ -89,7 +89,7 @@ class XSOARClient(object):
         if status_code == 201:
             return response
 
-        raise debug_exception(locals(), 'post failed')
+        raise debug_exception('post failed')
 
     def download_file(self, entryid: str):
 
@@ -98,7 +98,7 @@ class XSOARClient(object):
         if file:
             return file
 
-        raise debug_exception(locals(), 'download_file failed')
+        raise debug_exception('download_file failed')
 
     def incident_create(
             self,
@@ -112,7 +112,7 @@ class XSOARClient(object):
 
         if name or type:
             if body:
-                raise debug_exception(locals(), '`body` arg must be used by itself')
+                raise debug_exception('`body` arg must be used by itself')
 
         incident = {}
 
@@ -146,7 +146,7 @@ class XSOARClient(object):
             incident = Incident(incident)
             return incident
 
-        raise debug_exception(locals(), 'failed to create incident')
+        raise debug_exception('failed to create incident')
 
     def incident_delete(self, id: str = None, ids: list = None, body: dict = None):
 
@@ -175,7 +175,7 @@ class XSOARClient(object):
             incident['data'] = [Incident(x) for x in incident['data']]
             return incident
 
-        raise debug_exception(locals(), 'failed to delete incident')
+        raise debug_exception('failed to delete incident')
 
     def incidents_search(
             self,
@@ -222,7 +222,7 @@ class XSOARClient(object):
             incidents['data'] = [Incident(x) for x in incidents.get('data')]
             return incidents
 
-        raise debug_exception(locals(), 'failed to search incidents')
+        raise debug_exception('failed to search incidents')
 
     def playbook_search(self):
         return self

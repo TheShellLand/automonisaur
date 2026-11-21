@@ -778,7 +778,8 @@ class GmailMessage(DictHelper):
         automon_header_from = self._header_from
         if automon_header_from:
             email = automon_header_from.value
-            email = Regex().config_ignorecase().re_email().search(email).group()
+            email = Regex().config_ignorecase().re_email().search(email)
+            email = email.group() if email.group() else None
 
             return email
 
@@ -787,7 +788,8 @@ class GmailMessage(DictHelper):
         automon_header_to = self._header_to
         if automon_header_to:
             email = automon_header_to.value
-            email = Regex().config_ignorecase().re_email().search(email).group()
+            email = Regex().config_ignorecase().re_email().search(email)
+            email = email.group() if email.group() else None
 
             return email
 
@@ -865,7 +867,7 @@ class GmailMessage(DictHelper):
         body = self._email_body()
 
         if body is None and self.snippet is None:
-            raise debug_exception(locals(), f'body not found')
+            raise debug_exception(f'body not found')
 
         raw_template = f"""
         ### EMAIL CONTEXT
