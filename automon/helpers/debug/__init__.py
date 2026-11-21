@@ -1,4 +1,5 @@
 import os
+import inspect
 import traceback
 
 
@@ -17,21 +18,39 @@ def debug_str(log_list: list):
     return ' :: '.join(log_list)
 
 
-def debug_exception(error_context=None, log=None) -> Exception:
+def debug_exception(log=None) -> Exception:
+    frame = inspect.currentframe()
+
     try:
+        caller_frame = frame.f_back
+        error_context = caller_frame.f_locals.copy()
+
+        context = [
+            f'[CONTEXT] {key}={value!r}'
+            for key, value in error_context.items()
+        ]
+
+        context = '\n'.join(context)
         tb = traceback.format_exc()
-    except:
-        tb = None
 
-    if error_context is not None:
-        error_context = [(k, v) for k, v in error_context.items()]
-        error_context = [f'[CONTEXT] {k}={v}' for k, v in error_context]
-        error_context = '\n'.join(error_context)
+        if log is not None:
+            raise Exception(
+                f'\n\nlog={log!r}'
+                f'\n\n{context}'
+                f'\n\n{tb}'
+            )
 
-    if log is not None:
-        raise Exception(f'{log=}\n\n{error_context}')
+        raise Exception(
+            f'\n\n{context}'
+            f'\n\n{tb}'
+        )
 
-    if tb is not None:
-        raise Exception(f'{error_context}\n\n{tb}')
+    finally:
+        del frame
 
-    raise Exception(f'{error_context}')
+
+def debug_locals():
+    frame = inspect.currentframe()
+    caller_frame = frame.f_back
+    error_context = caller_frame.f_locals.copy()
+    return error_context

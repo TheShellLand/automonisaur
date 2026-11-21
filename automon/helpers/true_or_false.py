@@ -6,7 +6,7 @@ def is_true(text: str) -> bool | None:
         return True
     if 'false' in str(text).lower():
         return False
-    # raise debug_exception(locals(), 'neither true or false')
+    # raise debug_exception('neither true or false')
 
 
 def is_false(text: str) -> bool | None:
@@ -14,4 +14,4 @@ def is_false(text: str) -> bool | None:
         return True
     if 'true' in str(text).lower():
         return False
-    # raise debug_exception(locals(), 'neither true or false')
+    # raise debug_exception('neither true or false')
