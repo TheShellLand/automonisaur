@@ -172,12 +172,21 @@ class GoogleGmailClient(GoogleAuthClient):
         response = self._requests.post(api, headers=self.config.headers, json=data)
         return GmailDraft(response)
 
-    def draft_attachment_create(self, attachment: GmailMessagePayload):
-        return GmailEmailAttachment(
-            bytes_=attachment.body._data_base64decoded,
-            filename=attachment.filename,
-            mimeType=attachment.mimeType
-        )
+    def draft_attachment_create(
+            self,
+            attachment: [GmailMessagePayload, GmailEmailAttachment]
+    ) -> GmailEmailAttachment:
+        if isinstance(attachment, GmailMessagePayload):
+            return GmailEmailAttachment(
+                bytes_=attachment.body._data_base64decoded,
+                filename=attachment.filename,
+                mimeType=attachment.mimeType
+            )
+
+        if isinstance(attachment, GmailEmailAttachment):
+            return attachment
+
+        raise debug_exception(f'unknown attachment: {attachment}')
 
     def draft_delete(self, id: str):
         """Immediately and permanently deletes the specified draft."""

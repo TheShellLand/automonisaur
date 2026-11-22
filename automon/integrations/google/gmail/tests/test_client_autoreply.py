@@ -1,5 +1,6 @@
 import unittest
 
+import json
 import time
 import random
 
@@ -60,7 +61,7 @@ logging settings
 
 """
 
-DEBUG_LEVEL = INFO
+DEBUG_LEVEL = DEBUG
 DEFAULT_LEVEL = INFO
 
 LoggingClient.logging.getLogger('httpx').setLevel(DEFAULT_LEVEL)
@@ -128,7 +129,6 @@ gmail.config.add_scopes([
 
 labels = gmail._labels
 RESUME: GmailThread = None
-RESUME_ATTACHMENT = None
 
 
 def gmail_token_refresher(gmail: AutomonGmailClient):
@@ -182,7 +182,6 @@ def get_threads(gmail: AutomonGmailClient):
 
 def get_resume(gmail: AutomonGmailClient):
     global RESUME
-    global RESUME_ATTACHMENT
 
     while not gmail.is_ready():
         time.sleep(0.1)
@@ -196,7 +195,6 @@ def get_resume(gmail: AutomonGmailClient):
         for thread in threads.threads:
             if gmail.is_resume(thread):
                 RESUME = thread
-                RESUME_ATTACHMENT = thread._message_first.find_attachment_pdf()
                 queue_log.put((f'[get_resume] :: {thread} :: {RESUME}', DEBUG))
 
         time.sleep(60)
@@ -307,12 +305,6 @@ def processor_email_new(gmail: AutomonGmailClient):
             identity = RESUME._message_first._email_from
             background = RESUME._message_first._attachments_first.body._data_html_text
 
-            # resume_prompt = OllamaClient.templates.markdown.str_to_markdown(
-            #     header='resume',
-            #     header_level=1,
-            #     text=resume_str,
-            # )
-
             human = HumanAgent(
                 name=identity,
                 memory=background,
@@ -321,25 +313,32 @@ def processor_email_new(gmail: AutomonGmailClient):
             response_passed = False
             response = False
             exit_loop = False
+            resume_docx = None
             while not response_passed or not exit_loop:
 
                 try:
-                    # if not is_job_email(thread):
-                    #     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-                    #     exit_loop = True
-                    #     break
-
-                    # if is_rejected_email(thread):
-                    #     gmail.thread_modify(id=thread.id, addLabelIds=[labels.unread, labels.skipped])
-                    #     exit_loop = True
-                    #     break
-
+                    # create new email reply
                     response, ollama = write_email_reply(identity=human, thread=thread)
                     if is_good_reply(response=response):
                         response_passed = True
-                        exit_loop = True
-                        break
 
+                        while not exit_loop:
+                            # create new resume docx
+                            response, ollama = write_resume(identity=human, thread=thread)
+
+                            try:
+                                resume_docx = json.loads(response)
+
+                                assert 'filename' in resume_docx
+                                assert 'data' in resume_docx
+
+                                exit_loop = True
+                            except Exception as error:
+                                queue_log.put(
+                                    (f'ERROR :: [processor_email_new] :: cant load new resume :: {error}', ERROR))
+
+                        if exit_loop:
+                            break
 
                 except Exception as error:
                     queue_log.put((f'ERROR :: [processor_email_new] :: {error}', ERROR))
@@ -350,7 +349,11 @@ def processor_email_new(gmail: AutomonGmailClient):
                     draft = None
 
                     if gmail.is_new(thread):
-                        resume_attachment = RESUME_ATTACHMENT
+                        resume_attachment = GmailEmailAttachment(
+                            bytes_=base64.urlsafe_b64encode(resume_docx['data']),
+                            filename=resume_docx['filename'],
+                            mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                        )
 
                         draft = draft_create(
                             thread=thread,
@@ -487,12 +490,9 @@ def processor_email_followup(gmail: AutomonGmailClient):
             draft = None
             if is_good_reply(response):
 
-                resume_attachment = RESUME_ATTACHMENT
-
                 draft = draft_create(
                     thread=thread,
                     response=response,
-                    resume_attachment=resume_attachment,
                 )
 
                 if draft is not None:
@@ -562,6 +562,32 @@ def write_email_reply(identity: Identity, thread: GmailThread) -> tuple[str, Oll
     return response, ollama
 
 
+def write_resume(identity: Identity, thread: GmailThread) -> tuple[str, OllamaClient]:
+    queue_log.put((f'[write_resume] :: {thread}', INFO))
+
+    ollama = OllamaClient(host=random_ollama_host()).set_model(OLLAMA_MODEL)
+
+    ollama.add_system_prompt(AgentTemplates.job_applicant())
+    ollama.add_system_prompt(identity)
+    ollama.add_prompt(thread.to_prompt())
+    ollama.add_prompt(f'You will be rewriting only the experience in the resume '
+                      f'to fit the job description. '
+                      f'Maintain the speech and tone of your identity. '
+                      f'Return only with the following JSON format as your response output: '
+                      f'''{"filename": "YOUR NAME RESUME CURRENT YEAR.docx", "data": "the resume binary data"} '''
+                      f'Replacing `YOUR NAME` with your name, '
+                      f'and `CURRENT YEAR` with the current year. '
+                      f'So it will look like: '
+                      f'`JOE DOE RESUME 2026.docx`. '
+                      f'I will write the `data` into a file. ')
+
+    chat = ollama.chat(print_stream=CHAT_STREAM)
+    response = chat.response()
+
+    queue_tokens.put(chat._total_tokens)
+    return response, ollama
+
+
 def write_email_followup(identity: Identity, thread: GmailThread) -> tuple[str, OllamaClient]:
     queue_log.put((f'[write_email_followup] :: {thread}', INFO))
 
@@ -602,6 +628,7 @@ def log_printer():
             debug(log)
 
         queue_log.task_done()
+        time.sleep(0.1)
 
 
 def run_gemini(prompts: list, chat: bool = False) -> tuple[str, GoogleGeminiClient]:
@@ -721,12 +748,9 @@ def run_llm(prompt: str, chat: bool = False) -> tuple[str, object]:
 def draft_create(
         thread: GmailThread,
         response: str,
-        resume_attachment: GmailMessagePayload = None,
+        resume_attachment: [GmailMessagePayload, GmailEmailAttachment] = None,
 ) -> GmailDraft:
     queue_log.put((f'[draft_create] :: {thread}', INFO))
-
-    if resume_attachment is not None:
-        assert resume_attachment.filename
 
     resume_attachment = [gmail.draft_attachment_create(resume_attachment)]
 
